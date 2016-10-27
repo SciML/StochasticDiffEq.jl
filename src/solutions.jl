@@ -21,7 +21,7 @@ Holds the data for the solution to a SDE problem.
 * `appxtrue::Bool`: Boolean flag for if u_analytic was an approximation.
 
 """
-type SDESolution <: AbstractODESolution
+type SDESolution <: AbstractSDESolution
   u#::AbstractArrayOrNumber
   trueknown::Bool
   u_analytic#::AbstractArrayOrNumber
