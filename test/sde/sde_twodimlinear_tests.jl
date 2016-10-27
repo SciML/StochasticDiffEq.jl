@@ -1,4 +1,4 @@
-using DifferentialEquations
+using StochasticDiffEq
 srand(70)
 prob = prob_sde_2Dlinear
 

@@ -2,8 +2,8 @@
 
 prob_sde_lorenz
 
-DifferentialEquations.oval2ModelExample()
+StochasticDiffEq.oval2ModelExample()
 
-DifferentialEquations.oval2ModelExample(useBigs=true,largeFluctuations=true)
+StochasticDiffEq.oval2ModelExample(useBigs=true,largeFluctuations=true)
 
 true
