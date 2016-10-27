@@ -1,4 +1,4 @@
-using DifferentialEquations
+using StochasticDiffEq
 
 SRIW1 = constructSRIW1()
 bool1 = minimum(checkSRIOrder(SRIW1))
