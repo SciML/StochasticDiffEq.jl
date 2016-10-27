@@ -1,4 +1,4 @@
-using DifferentialEquations
+using StochasticDiffEq
 srand(100)
 
 prob = prob_sde_additive

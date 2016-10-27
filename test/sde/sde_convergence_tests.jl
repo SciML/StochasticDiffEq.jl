@@ -1,4 +1,4 @@
-@everywhere using DifferentialEquations
+@everywhere using StochasticDiffEq
 srand(100)
 Δts = 1./2.^(10:-1:4) #14->7 good plot
 

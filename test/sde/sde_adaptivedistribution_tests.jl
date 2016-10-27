@@ -1,4 +1,4 @@
-using DifferentialEquations, StatsBase, Distributions, HypothesisTests
+using StochasticDiffEq, StatsBase, Distributions, HypothesisTests
 prob = prob_sde_linear
 srand(200)
 T = 1
