@@ -89,7 +89,11 @@ function solve(prob::AbstractSDEProblem,tspan::AbstractArray=[0,1];Δt::Number=0
     Δtmax = (tspan[2]-tspan[1])/2
   end
   if Δtmin == nothing
-    Δtmin = tType(1e-10)
+    if tType <: AbstractFloat
+      Δtmin = tType(10)*eps(tType)
+    else
+      Δtmin = tType(1//10^(10))
+    end
   end
 
 
