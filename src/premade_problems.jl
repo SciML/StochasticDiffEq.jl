@@ -115,11 +115,12 @@ A multiple dimension extension of `additiveSDEExample`
 """
 prob_sde_additivesystem = SDEProblem(f,σ,[1.;1.;1.;1.],analytic=analytic)
 
-f = @ode_def Lorenz begin
+f = @ode_def_nohes Lorenz begin
   dx = σ*(y-x)
   dy = x*(ρ-z) - y
   dz = x*y - β*z
-end σ=>10. ρ=>28. β=>:(8/3)
+end σ=>10. ρ=>28. β=>2.66
+
 σ = (t,u) -> 3.0 #Additive
 """
 Lorenz Attractor with additive noise
