@@ -1,4 +1,4 @@
-using StochasticDiffEq
+using StochasticDiffEq, DiffEqDevTools, DiffEqProblemLibrary
 using Base.Test
 
 const TEST_PLOT = false
