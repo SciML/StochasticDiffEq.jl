@@ -1,6 +1,6 @@
 module StochasticDiffEq
 
-  using DiffEqBase, ParameterizedFunctions, Parameters, ChunkedArrays
+  using DiffEqBase, ParameterizedFunctions, Parameters, ChunkedArrays, RecursiveArrayTools
   import DiffEqBase: solve
 
   macro def(name, definition)
