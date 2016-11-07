@@ -28,27 +28,27 @@ type SDESolution <: AbstractSDESolution
   errors#::Dict{}
   timeseries#::AbstractArrayOrVoid
   t#::AbstractArrayOrVoid
-  Δt#::AbstractArrayOrVoid
+  dt#::AbstractArrayOrVoid
   Ws#::AbstractArrayOrVoid
   timeseries_analytic#::AbstractArrayOrVoid
   appxtrue::Bool
   save_timeseries::Bool
   maxstacksize::Int
   W
-  function SDESolution(u::Union{AbstractArray,Number};timeseries=[],timeseries_analytic=[],t=[],Δt=[],Ws=[],maxstacksize=0,W=0.0)
+  function SDESolution(u::Union{AbstractArray,Number};timeseries=[],timeseries_analytic=[],t=[],dt=[],Ws=[],maxstacksize=0,W=0.0)
     save_timeseries = timeseries == nothing
     trueknown = false
-    return(new(u,trueknown,nothing,Dict(),timeseries,t,Δt,Ws,timeseries_analytic,false,save_timeseries,maxstacksize,W))
+    return(new(u,trueknown,nothing,Dict(),timeseries,t,dt,Ws,timeseries_analytic,false,save_timeseries,maxstacksize,W))
   end
-  function SDESolution(u,u_analytic;timeseries=[],timeseries_analytic=[],t=[],Δt=nothing,Ws=[],maxstacksize=0,W=0.0)
+  function SDESolution(u,u_analytic;timeseries=[],timeseries_analytic=[],t=[],dt=nothing,Ws=[],maxstacksize=0,W=0.0)
     save_timeseries = timeseries != []
     trueknown = true
     errors = Dict(:final=>mean(abs.(u-u_analytic)))
     if save_timeseries
       errors = Dict(:final=>mean(abs.(u-u_analytic)),:l∞=>maximum(vecvecapply((x)->abs.(x),timeseries-timeseries_analytic)),:l2=>sqrt(mean(vecvecapply((x)->x.^2,timeseries-timeseries_analytic))))
     end
-    return(new(u,trueknown,u_analytic,errors,timeseries,t,Δt,Ws,timeseries_analytic,false,save_timeseries,maxstacksize,W))
+    return(new(u,trueknown,u_analytic,errors,timeseries,t,dt,Ws,timeseries_analytic,false,save_timeseries,maxstacksize,W))
   end
   #Required to convert pmap results
-  SDESolution(a::Any) = new(a.u,a.trueknown,a.u_analytic,a.errors,a.timeseries,a.t,a.Δt,a.Ws,a.timeseries_analytic,a.appxtrue,a.save_timeseries,a.maxstacksize,a.W)
+  SDESolution(a::Any) = new(a.u,a.trueknown,a.u_analytic,a.errors,a.timeseries,a.t,a.dt,a.Ws,a.timeseries_analytic,a.appxtrue,a.save_timeseries,a.maxstacksize,a.W)
 end

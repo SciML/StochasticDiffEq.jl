@@ -7,18 +7,18 @@ Wraps the data which defines an SDE problem
 u = f(u,t)dt + Σgᵢ(u,t)dWⁱ
 ```
 
-with initial condition ``u₀``.
+with initial condition ``u0``.
 
 ### Constructors
 
-`SDEProblem(f,g,u₀;analytic=nothing)` : Defines the SDE with the specified functions and
+`SDEProblem(f,g,u0;analytic=nothing)` : Defines the SDE with the specified functions and
 defines the solution if analytic is given.
 
 ### Fields
 
 * `f`: The drift function in the SDE.
 * `g`: The noise function in the SDE.
-* `u₀`: The initial condition.
+* `u0`: The initial condition.
 * `analytic`: A function which describes the solution.
 * `knownanalytic`: True if the solution is given.
 * `numvars`: The number of variables in the system
@@ -29,14 +29,14 @@ defines the solution if analytic is given.
 type SDEProblem <: AbstractSDEProblem
   f::Function
   g::Function
-  u₀#::AbstractArray
+  u0#::AbstractArray
   analytic::Function
   knownanalytic::Bool
   numvars::Int
   sizeu#::Tuple
   isinplace::Bool
   noise::NoiseProcess
-  function SDEProblem(f,g,u₀;analytic=nothing,noise=WHITE_NOISE)
+  function SDEProblem(f,g,u0;analytic=nothing,noise=WHITE_NOISE)
     isinplace = numparameters(f)>=3
     if analytic==nothing
       knownanalytic = false
@@ -44,13 +44,13 @@ type SDEProblem <: AbstractSDEProblem
     else
       knownanalytic = true
     end
-    if typeof(u₀) <: Number
+    if typeof(u0) <: Number
       sizeu = (1,)
       numvars = 1
     else
-      sizeu = size(u₀)
-      numvars = size(u₀)[end]
+      sizeu = size(u0)
+      numvars = size(u0)[end]
     end
-    new(f,g,u₀,analytic,knownanalytic,numvars,sizeu,isinplace,noise)
+    new(f,g,u0,analytic,knownanalytic,numvars,sizeu,isinplace,noise)
   end
 end

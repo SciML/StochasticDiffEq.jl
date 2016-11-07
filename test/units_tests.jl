@@ -3,19 +3,19 @@
 #=
 β = 0.6
 σ = (t,y) -> β*y/(4.0s)
-u₀ = 1.5Newton
-prob = SDEProblem(f,σ,u₀)
+u0 = 1.5Newton
+prob = SDEProblem(f,σ,u0)
 
-sol =solve(prob::SDEProblem,[0,1],Δt=(1/2^4)Second,save_timeseries=true,alg=:EM)
-sol =solve(prob::SDEProblem,[0,1],Δt=(1/2^4)Second,save_timeseries=true,alg=:SRIW1Optimized)
+sol =solve(prob::SDEProblem,[0,1],dt=(1/2^4)Second,save_timeseries=true,alg=:EM)
+sol =solve(prob::SDEProblem,[0,1],dt=(1/2^4)Second,save_timeseries=true,alg=:SRIW1Optimized)
 
 TEST_PLOT && plot(sol)
 
-u₀ = [1.5Newton 2.0Newton
+u0 = [1.5Newton 2.0Newton
       3.0Newton 1.0Newton]
 
-prob = SDEProblem(f,σ,u₀)
+prob = SDEProblem(f,σ,u0)
 
-sol =solve(prob::SDEProblem,[0,1],Δt=(1/2^4)Second,save_timeseries=true,alg=:EM)
-sol =solve(prob::SDEProblem,[0,1],Δt=(1/2^4)Second,save_timeseries=true,alg=:SRIW1Optimized)
+sol =solve(prob::SDEProblem,[0,1],dt=(1/2^4)Second,save_timeseries=true,alg=:EM)
+sol =solve(prob::SDEProblem,[0,1],dt=(1/2^4)Second,save_timeseries=true,alg=:SRIW1Optimized)
 =#

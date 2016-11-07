@@ -10,7 +10,7 @@ ps = Vector{Float64}(M)
 for j = 1:M
   Wends = Vector{Float64}(N)
   for i = 1:N
-    sol =solve(prob::SDEProblem,[0,T],Δt=1/2^(4),save_timeseries=true,alg=:SRI,adaptive=true,abstol=1e-2,reltol=0,adaptivealg=:RSwM1)
+    sol =solve(prob::SDEProblem,[0,T],dt=1/2^(4),save_timeseries=true,alg=:SRI,adaptive=true,abstol=1e-2,reltol=0,adaptivealg=:RSwM1)
     Wends[i] = sol.Ws[end]
   end
   kssol = ApproximateOneSampleKSTest(Wends/sqrt(T), Normal())
@@ -22,7 +22,7 @@ bool1 = sum(ps .> 0.05) > length(ps)/2 ### Make sure more passes than fails
 for j = 1:M
   Wends = Vector{Float64}(N)
   for i = 1:N
-    sol =solve(prob::SDEProblem,[0,T],Δt=1/2^(4),save_timeseries=true,alg=:SRI,adaptive=true,abstol=1e-2,reltol=0,adaptivealg=:RSwM2)
+    sol =solve(prob::SDEProblem,[0,T],dt=1/2^(4),save_timeseries=true,alg=:SRI,adaptive=true,abstol=1e-2,reltol=0,adaptivealg=:RSwM2)
     Wends[i] = sol.Ws[end]
   end
   kssol = ApproximateOneSampleKSTest(Wends/sqrt(T), Normal())
@@ -34,7 +34,7 @@ bool2 = sum(ps .> 0.05) > length(ps)/2 ### Make sure more passes than fails
 for j = 1:M
   Wends = Vector{Float64}(N)
   for i = 1:N
-    sol =solve(prob::SDEProblem,[0,T],Δt=1/2^(4),save_timeseries=true,alg=:SRI,adaptive=true,abstol=1e-2,reltol=0,adaptivealg=:RSwM3)
+    sol =solve(prob::SDEProblem,[0,T],dt=1/2^(4),save_timeseries=true,alg=:SRI,adaptive=true,abstol=1e-2,reltol=0,adaptivealg=:RSwM3)
     Wends[i] = sol.Ws[end]
   end
   kssol = ApproximateOneSampleKSTest(Wends/sqrt(T), Normal())

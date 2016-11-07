@@ -1,7 +1,7 @@
 """
-`monteCarloSim(Δt::Number,prob::SDEProblem)`
+`monteCarloSim(dt::Number,prob::SDEProblem)`
 
-Performs a parallel Monte-Carlo simulation to solve the SDE problem with Δt numMonte times.
+Performs a parallel Monte-Carlo simulation to solve the SDE problem with dt numMonte times.
 Returns a vector of solution objects.
 
 ### Keyword Arguments
