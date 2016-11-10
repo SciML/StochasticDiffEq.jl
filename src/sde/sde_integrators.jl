@@ -24,7 +24,7 @@ immutable SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,
   numvars::Int
   discard_length::tType
   progressbar::Bool
-  atomloaded::Bool
+  progressbar_name::String
   progress_steps::Int
   rands::ChunkedArray{uEltypeNoUnits,Nm1,N}
   sqdt::tType
@@ -40,7 +40,10 @@ end
   local T::tType
   local ΔW::randType
   local ΔZ::randType
-  @unpack f,g,u,t,dt,T,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,numvars,discard_length,progressbar,atomloaded,progress_steps,rands,sqdt,W,Z,tableau = integrator
+  @unpack f,g,u,t,dt,T,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,numvars,discard_length,progressbar,progressbar_name,progress_steps,rands,sqdt,W,Z,tableau = integrator
+
+  progressbar && (prog = ProgressBar(name=progressbar_name))
+
   sizeu = size(u)
   iter = 0
   max_stack_size = 0
@@ -101,12 +104,20 @@ end
   ΔW = sqdt*next(rands)
   ΔZ = sqdt*next(rands)
   @sde_savevalues
-  (atomloaded && progressbar && iter%progress_steps==0) ? Main.Atom.progress(t/T) : nothing #Use Atom's progressbar if loaded
+  if progressbar && iter%progress_steps==0
+    msg(prog,"dt="*string(dt))
+    progress(prog,t/T)
+  end
 end
 
 @def sde_adaptiveprelim begin
-max_stack_size = 0
-max_stack_size2 = 0
+  max_stack_size = 0
+  max_stack_size2 = 0
+end
+
+@def sde_postamble begin
+  progressbar && done(prog)
+  u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
 end
 
 function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:Number,rateType<:Number}(integrator::SDEIntegrator{:EM,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
@@ -121,7 +132,7 @@ function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType
     ΔW = sqdt*next(rands)
     @sde_savevalues
   end
-  u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
+  @sde_postamble
 end
 
 function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:AbstractArray,rateType<:AbstractArray}(integrator::SDEIntegrator{:EM,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
@@ -139,7 +150,7 @@ function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tabl
     ΔW = sqdt*next(rands)
     @sde_savevalues
   end
-  u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
+  @sde_postamble
 end
 
 function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:AbstractArray,rateType<:AbstractArray}(integrator::SDEIntegrator{:SRI,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
@@ -219,7 +230,7 @@ function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tabl
 
     @sde_loopfooter
   end
-  u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
+  @sde_postamble
 end
 
 function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:AbstractArray,rateType<:AbstractArray}(integrator::SDEIntegrator{:SRIW1Optimized,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
@@ -282,7 +293,7 @@ function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tabl
 
     @sde_loopfooter
   end
-  u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
+  @sde_postamble
 end
 
 function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:Number,rateType<:Number}(integrator::SDEIntegrator{:SRIW1Optimized,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
@@ -332,7 +343,7 @@ function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType
 
     @sde_loopfooter
   end
-  u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
+  @sde_postamble
 end
 
 function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:Number,rateType<:Number}(integrator::SDEIntegrator{:SRI,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
@@ -390,7 +401,7 @@ function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType
 
     @sde_loopfooter
   end
-  u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
+  @sde_postamble
 end
 
 function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:Number,rateType<:Number}(integrator::SDEIntegrator{:SRIVectorized,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
@@ -422,7 +433,7 @@ function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType
 
     @sde_loopfooter
   end
-  u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
+  @sde_postamble
 end
 
 function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:AbstractArray,rateType<:AbstractArray}(integrator::SDEIntegrator{:RKMil,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
@@ -446,7 +457,7 @@ function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tabl
     ΔW = sqdt*next(rands)
     @sde_savevalues
   end
-  u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
+  @sde_postamble
 end
 
 function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:Number,rateType<:Number}(integrator::SDEIntegrator{:RKMil,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
@@ -465,7 +476,7 @@ function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType
     ΔW = sqdt*next(rands)
     @sde_savevalues
   end
-  u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
+  @sde_postamble
 end
 
 
@@ -487,7 +498,7 @@ function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType
 
     @sde_loopfooter
   end
-  u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
+  @sde_postamble
 end
 
 function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:AbstractArray,rateType<:AbstractArray}(integrator::SDEIntegrator{:SRA1Optimized,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
@@ -517,7 +528,7 @@ function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tabl
     end
     @sde_loopfooter
   end
-  u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
+  @sde_postamble
 end
 
 function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:AbstractArray,rateType<:AbstractArray}(integrator::SDEIntegrator{:SRA,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
@@ -579,7 +590,7 @@ function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tabl
 
     @sde_loopfooter
   end
-  u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
+  @sde_postamble
 end
 
 function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:Number,rateType<:Number}(integrator::SDEIntegrator{:SRA,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
@@ -625,7 +636,7 @@ function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType
 
     @sde_loopfooter
   end
-  u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
+  @sde_postamble
 end
 
 function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:Number,rateType<:Number}(integrator::SDEIntegrator{:SRAVectorized,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
@@ -652,5 +663,5 @@ function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType
 
     @sde_loopfooter
   end
-  u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
+  @sde_postamble
 end

@@ -40,9 +40,9 @@ function solve(prob::AbstractSDEProblem,tspan::AbstractArray=[0,1];dt::Number=0.
               timeseries_steps::Int = 1,alg=nothing,adaptive=false,γ=2.0,alg_hint=nothing,
               abstol=1e-3,reltol=1e-6,qmax=1.125,δ=1/6,maxiters::Int = round(Int,1e9),
               dtmax=nothing,dtmin=nothing,progress_steps=1000,internalnorm=2,
-              discard_length=1e-15,adaptivealg::Symbol=:RSwM3,progressbar=false,tType=typeof(dt),tableau = nothing)
+              discard_length=1e-15,adaptivealg::Symbol=:RSwM3,progressbar=false,
+              progressbar_name="SDE",tType=typeof(dt),tableau = nothing)
 
-  atomloaded = isdefined(Main,:Atom)
   @unpack u0,knownanalytic,analytic, numvars, sizeu,isinplace,noise = prob
   tspan = vec(tspan)
   if tspan[2]-tspan[1]<0 || length(tspan)>2
@@ -154,9 +154,7 @@ function solve(prob::AbstractSDEProblem,tspan::AbstractArray=[0,1];dt::Number=0.
 
   #@code_warntype sde_solve(SDEIntegrator{alg,typeof(u),eltype(u),ndims(u),ndims(u)+1,typeof(dt),typeof(tableau)}(f,g,u,t,dt,T,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,numvars,discard_length,progressbar,atomloaded,progress_steps,rands,sqdt,W,Z,tableau))
 
-  u,t,W,timeseries,ts,Ws,maxstacksize,maxstacksize2 = sde_solve(SDEIntegrator{alg,uType,uEltype,ndims(u),ndims(u)+1,tType,tableauType,uEltypeNoUnits,randType,rateType}(f,g,u,t,dt,T,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,numvars,discard_length,progressbar,atomloaded,progress_steps,rands,sqdt,W,Z,tableau))
-
-  (atomloaded && progressbar) ? Main.Atom.progress(1) : nothing #Use Atom's progressbar if loaded
+  u,t,W,timeseries,ts,Ws,maxstacksize,maxstacksize2 = sde_solve(SDEIntegrator{alg,uType,uEltype,ndims(u),ndims(u)+1,tType,tableauType,uEltypeNoUnits,randType,rateType}(f,g,u,t,dt,T,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,numvars,discard_length,progressbar,progressbar_name,progress_steps,rands,sqdt,W,Z,tableau))
 
   if knownanalytic
     u_analytic = analytic(t,u0,W)

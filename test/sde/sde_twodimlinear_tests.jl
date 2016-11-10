@@ -9,6 +9,10 @@ sol = solve(prob::SDEProblem,[0,1],dt=1/2^(3),save_timeseries=true,alg=:RKMil)
 sol = solve(prob::SDEProblem,[0,1],dt=1/2^(3),save_timeseries=true,alg=:SRI)
 sol = solve(prob::SDEProblem,[0,1],dt=1/2^(3),save_timeseries=true,alg=:SRIW1Optimized)
 
+
+sol = solve(prob::SDEProblem,[0,1],dt=1/2^(3),progressbar=true,progress_steps=1)
+
+
 #Now do the simulation 10000 times in parallel. Return an array
 solArr = monteCarloSim(prob::SDEProblem,dt=1//2^(3),numMonte=5)
 
