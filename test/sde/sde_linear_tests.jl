@@ -22,4 +22,4 @@ sim3 = test_convergence(dts,prob,SRI,numMonte=NUM_MONTE)
 
 #TEST_PLOT && plot(plot(sim),plot(sim2),plot(sim3),layout=@layout([a b c]),size=(1200,600))
 
-abs(sim.𝒪est[:l2]-.5) + abs(sim2.𝒪est[:l∞]-1) + abs(sim3.𝒪est[:final]-1.5)<.441  #High tolerance since low dts for testing!
+@test abs(sim.𝒪est[:l2]-.5) + abs(sim2.𝒪est[:l∞]-1) + abs(sim3.𝒪est[:final]-1.5)<.441  #High tolerance since low dts for testing!

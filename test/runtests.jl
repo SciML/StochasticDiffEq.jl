@@ -4,20 +4,13 @@ using Base.Test
 const TEST_PLOT = false
 
 #SDE
-println("Linear SDE Tests")
-@time @test include("sde/sde_linear_tests.jl")
-println("Two-dimensional Linear SDE Tests")
-@time @test include("sde/sde_twodimlinear_tests.jl")
-println("Additive SDE Tests")
-@time @test include("sde/sde_additive_tests.jl")
-println("Rossler Order Tests")
-@time @test include("sde/sde_rosslerorder_tests.jl")
-println("SDE Convergence Tests")
-@time @test include("sde/sde_convergence_tests.jl")
-println("SDE Number Type Tests")
-@time @test include("sde/sde_numbertype_tests.jl")
-println("Oval2")
-@time @test include("oval2_test.jl")
+@time @testset "Linear SDE Tests" begin include("sde/sde_linear_tests.jl") end
+@time @testset "Two-dimensional Linear SDE Tests" begin include("sde/sde_twodimlinear_tests.jl") end
+@time @testset "Additive SDE Tests" begin include("sde/sde_additive_tests.jl") end
+@time @testset "Rossler Order Tests" begin include("sde/sde_rosslerorder_tests.jl") end
+@time @testset "SDE Convergence Tests" begin include("sde/sde_convergence_tests.jl") end
+@time @testset "SDE Number Type Tests" begin include("sde/sde_numbertype_tests.jl") end
+@time @testset "Oval2" begin include("oval2_test.jl") end
 
 #Adaptive SDE
 #=

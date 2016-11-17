@@ -16,7 +16,7 @@ sol = solve(prob,SRIW1Optimized,dt=1/2^(3),progressbar=true,progress_steps=1)
 
 
 #Now do the simulation 5 times in parallel. Return an array
-solArr = monteCarloSim(prob,SRIW1Optimized,dt=1//2^(3),numMonte=5)
+solArr = monte_carlo_simulation(prob,SRIW1Optimized,dt=1//2^(3),numMonte=5)
 
 TEST_PLOT && plot(sol,plot_analytic=true)
 
@@ -32,4 +32,4 @@ sim3 = test_convergence(dts,prob,SRI,numMonte=5)
 
 sim4 = test_convergence(dts,prob,SRIW1Optimized,numMonte=5,save_timeseries=false)
 
-abs(sim.𝒪est[:l2]-.5) + abs(sim2.𝒪est[:l∞]-1) + abs(sim3.𝒪est[:final]-1.5) + abs(sim4.𝒪est[:final]-1.5) <.6 #High tolerance since low dts for testing!
+@test abs(sim.𝒪est[:l2]-.5) + abs(sim2.𝒪est[:l∞]-1) + abs(sim3.𝒪est[:final]-1.5) + abs(sim4.𝒪est[:final]-1.5) <.6 #High tolerance since low dts for testing!

@@ -3,6 +3,9 @@ module StochasticDiffEq
   using DiffEqBase, Parameters, ChunkedArrays, RecursiveArrayTools, Juno
   import DiffEqBase: solve
 
+
+  abstract AbstractMonteCarloSimulation
+
   macro def(name, definition)
       quote
           macro $name()
@@ -23,7 +26,7 @@ module StochasticDiffEq
           SRA1Optimized, SRAVectorized, SRIVectorized
 
    #Stochastic Utils
-   export monteCarloSim, construct_correlated_noisefunc, WHITE_NOISE, NoiseProcess
+   export monte_carlo_simulation
 
    #General Functions
    export solve
