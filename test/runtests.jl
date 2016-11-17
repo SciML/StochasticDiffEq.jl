@@ -3,7 +3,6 @@ using Base.Test
 
 const TEST_PLOT = false
 
-# write your own tests here
 #SDE
 println("Linear SDE Tests")
 @time @test include("sde/sde_linear_tests.jl")
