@@ -2,18 +2,18 @@ using StochasticDiffEq
 srand(100)
 
 prob = prob_sde_additive
-sol =solve(prob::SDEProblem,[0,1],dt=1/2^(3),save_timeseries=true,alg=:SRA)
-sol =solve(prob::SDEProblem,[0,1],dt=1/2^(3),save_timeseries=true,alg=:SRA1Optimized)
+sol =solve(prob,SRA,dt=1/2^(3))
+sol =solve(prob,SRA1Optimized,dt=1/2^(3))
 
 prob = prob_sde_additivesystem
 
 ## Solve and plot
 println("Solve and Plot")
-sol =solve(prob::SDEProblem,[0,1],dt=1/2^(3),save_timeseries=true,alg=:SRA)
-sol =solve(prob::SDEProblem,[0,1],dt=1/2^(3),save_timeseries=true,alg=:SRA1Optimized)
+sol =solve(prob,SRA,dt=1/2^(3))
+sol =solve(prob,SRA1Optimized,dt=1/2^(3))
 
 #Now do the simulation 10000 times in parallel. Return an array
-solArr = monteCarloSim(prob::SDEProblem,dt=1//2^(3),numMonte=5)
+solArr = monteCarloSim(prob,SRIW1Optimized,dt=1//2^(3),numMonte=5)
 
 #First index is the sime, so sol.timeseries[1,..] is the initial condition
 #Last indices are the indexes of the variables. Since our initial condition
@@ -25,8 +25,8 @@ TEST_PLOT && plot(sol,plot_analytic=true)
 println("Convergence Test on MultiDimAdditive")
 dts = 1./2.^(7:-1:4) #14->7 good plot
 
-sim = test_convergence(dts,prob,numMonte=5,alg=:SRA)
+sim = test_convergence(dts,prob,SRA,numMonte=5)
 
-sim2 = test_convergence(dts,prob,numMonte=5,alg=:SRA1Optimized)
+sim2 = test_convergence(dts,prob,SRA1Optimized,numMonte=5)
 
 abs(sim.𝒪est[:l2]-2) + abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!

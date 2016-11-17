@@ -1,5 +1,5 @@
 """
-`monteCarloSim(dt::Number,prob::SDEProblem)`
+`monteCarloSim(dt::Number,prob::SDEProblem,alg::AbstractSDEAlgorithm)`
 
 Performs a parallel Monte-Carlo simulation to solve the SDE problem with dt numMonte times.
 Returns a vector of solution objects.
@@ -9,10 +9,14 @@ Returns a vector of solution objects.
 * `numMonte` - Number of Monte-Carlo simulations to run. Default is 10000
 * `save_timeseries` - Denotes whether save_timeseries should be turned on in each run. Default is false.
 """
-function monteCarloSim(prob::AbstractSDEProblem,tspan=[0,1];numMonte=10000,save_timeseries=false,kwargs...)
-  elapsedTime = @elapsed solutions = pmap((i)->solve(prob,tspan;save_timeseries=save_timeseries,kwargs...),1:numMonte)
-  solutions = convert(Array{SDESolution},solutions)
-  if prob.knownanalytic
+function monteCarloSim(prob::AbstractSDEProblem,alg;numMonte=10000,save_timeseries=false,kwargs...)
+  elapsedTime = @elapsed solutions = pmap((i)->solve(prob,alg;save_timeseries=save_timeseries,kwargs...),1:numMonte)
+  if typeof(prob) <: SDEProblem
+    solutions = convert(Array{SDESolution},solutions)
+  elseif typeof(prob) <: SDETestProblem
+    solutions = convert(Array{SDETestSolution},solutions)
+  end
+  if typeof(prob) <: SDETestProblem
     N = size(solutions,1)
     errors = Dict() #Should add type information
     error_means  = Dict()

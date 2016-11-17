@@ -1,12 +1,16 @@
-function solve(prob::AbstractSDEProblem,tspan::AbstractArray=[0,1];dt::Number=0.0,save_timeseries::Bool = true,
-              timeseries_steps::Int = 1,alg=nothing,adaptive=false,γ=2.0,alg_hint=nothing,
+function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,alg}(
+              prob::AbstractSDEProblem{uType,tType,isinplace,NoiseClass,F,F2,F3},
+              algType::Type{alg};
+              dt::Number=0.0,save_timeseries::Bool = true,
+              timeseries_steps::Int = 1,adaptive=false,γ=2.0,alg_hint=nothing,
               abstol=1e-3,reltol=1e-6,qmax=1.125,δ=1/6,maxiters::Int = round(Int,1e9),
               dtmax=nothing,dtmin=nothing,progress_steps=1000,internalnorm=2,
               discard_length=1e-15,adaptivealg::Symbol=:RSwM3,progressbar=false,
-              progressbar_name="SDE",tType=typeof(dt),tableau = nothing)
+              timeseries_errors=true,
+              progressbar_name="SDE",tableau = nothing)
 
-  @unpack u0,knownanalytic,analytic, numvars, sizeu,isinplace,noise = prob
-  tspan = vec(tspan)
+  @unpack u0,noise,tspan = prob
+
   if tspan[2]-tspan[1]<0 || length(tspan)>2
     error("tspan must be two numbers and final time must be greater than starting time. Aborting.")
   end
@@ -24,10 +28,6 @@ function solve(prob::AbstractSDEProblem,tspan::AbstractArray=[0,1];dt::Number=0.
     g = prob.g
   end
 
-  if alg==nothing
-    alg = plan_sde(alg_hint,abstol,reltol,noise.noise_type)
-  end
-
   if adaptive && alg ∈ SDE_ADAPTIVEALGORITHMS
     dt = 1.0*dt
     initialize_backend(:DataStructures)
@@ -35,11 +35,11 @@ function solve(prob::AbstractSDEProblem,tspan::AbstractArray=[0,1];dt::Number=0.
       initialize_backend(:ResettableStacks)
     end
   end
-  tType=typeof(dt)
+
   if dt == 0.0
-    if alg==:Euler
+    if alg==Euler
       order = 0.5
-    elseif alg==:RKMil
+    elseif alg==RKMil
       order = 1.0
     else
       order = 1.5
@@ -58,9 +58,6 @@ function solve(prob::AbstractSDEProblem,tspan::AbstractArray=[0,1];dt::Number=0.
     end
   end
 
-
-  uType = typeof(u0)
-
   T = tType(tspan[2])
   t = tType(tspan[1])
 
@@ -70,18 +67,16 @@ function solve(prob::AbstractSDEProblem,tspan::AbstractArray=[0,1];dt::Number=0.
   push!(ts,t)
 
   #PreProcess
-  if (alg==:SRA || alg==:SRAVectorized) && tableau == nothing
+  if (alg== SRA || alg== SRAVectorized) && tableau == nothing
     tableau = constructSRA1()
   elseif tableau == nothing # && (alg==:SRI || alg==:SRIVectorized)
     tableau = constructSRIW1()
   end
 
   uEltype = eltype(u)
-  tType=typeof(dt)
-  uType = typeof(u)
   tableauType = typeof(tableau)
 
-  if numvars == 1
+  if !(uType <: AbstractArray)
     rands = ChunkedArray(noise.noise_func)
   else
     rands = ChunkedArray(noise.noise_func,map((x)->x/x,u)) # Strip units
@@ -97,49 +92,33 @@ function solve(prob::AbstractSDEProblem,tspan::AbstractArray=[0,1];dt::Number=0.
 
 
   Ws = Vector{randType}(0)
-  if numvars == 1
+  if !(uType <: AbstractArray)
     W = 0.0
     Z = 0.0
     push!(Ws,W)
   else
-    W = zeros(sizeu)
-    Z = zeros(sizeu)
+    W = zeros(u0)
+    Z = zeros(u0)
     push!(Ws,copy(W))
   end
   sqdt = sqrt(dt)
   iter = 0
   maxstacksize = 0
   #EEst = 0
-  typeof(u) <: Number ? value_type = :Number : value_type = :AbstractArray
 
   rateType = typeof(u/t) ## Can be different if united
 
-  #@code_warntype sde_solve(SDEIntegrator{alg,typeof(u),eltype(u),ndims(u),ndims(u)+1,typeof(dt),typeof(tableau)}(f,g,u,t,dt,T,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,numvars,discard_length,progressbar,atomloaded,progress_steps,rands,sqdt,W,Z,tableau))
+  #@code_warntype sde_solve(SDEIntegrator{alg,typeof(u),eltype(u),ndims(u),ndims(u)+1,typeof(dt),typeof(tableau)}(f,g,u,t,dt,T,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,discard_length,progressbar,atomloaded,progress_steps,rands,sqdt,W,Z,tableau))
 
-  u,t,W,timeseries,ts,Ws,maxstacksize,maxstacksize2 = sde_solve(SDEIntegrator{alg,uType,uEltype,ndims(u),ndims(u)+1,tType,tableauType,uEltypeNoUnits,randType,rateType}(f,g,u,t,dt,T,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,numvars,discard_length,progressbar,progressbar_name,progress_steps,rands,sqdt,W,Z,tableau))
+  u,t,W,timeseries,ts,Ws,maxstacksize,maxstacksize2 = sde_solve(SDEIntegrator{alg,uType,uEltype,ndims(u),ndims(u)+1,tType,tableauType,uEltypeNoUnits,randType,rateType}(f,g,u,t,dt,T,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,discard_length,progressbar,progressbar_name,progress_steps,rands,sqdt,W,Z,tableau))
 
-  if knownanalytic
-    u_analytic = analytic(t,u0,W)
-    if save_timeseries
-      timeseries_analytic = Vector{uType}(0)
-      for i in 1:size(Ws,1)
-        push!(timeseries_analytic,analytic(ts[i],u0,Ws[i]))
-      end
-      return(SDESolution(u,u_analytic,W=W,timeseries=timeseries,t=ts,Ws=Ws,timeseries_analytic=timeseries_analytic,maxstacksize=maxstacksize))
-    else
-      return(SDESolution(u,u_analytic,W=W,maxstacksize=maxstacksize))
-    end
-  else #No known analytic
-    if save_timeseries
-      timeseries = copy(timeseries)
-      return(SDESolution(u,timeseries=timeseries,W=W,t=ts,maxstacksize=maxstacksize))
-    else
-      return(SDESolution(u,W=W,maxstacksize=maxstacksize))
-    end
-  end
+  build_sde_solution(prob,alg,ts,timeseries,W=Ws,
+                  timeseries_errors = timeseries_errors,
+                  maxstacksize = maxstacksize)
+
 end
 
-const SDE_ADAPTIVEALGORITHMS = Set([:SRI,:SRIW1Optimized,:SRIVectorized,:SRAVectorized,:SRA1Optimized,:SRA])
+const SDE_ADAPTIVEALGORITHMS = Set([SRI,SRIW1Optimized,SRIVectorized,SRAVectorized,SRA1Optimized,SRA])
 
 function sde_determine_initdt(u0,t,abstol,reltol,internalnorm,f,g,order)
   d₀ = norm(u0./(abstol+u0*reltol),2)
@@ -177,8 +156,4 @@ function sde_determine_initdt(u0,t,abstol,reltol,internalnorm,f,g,order)
     dt₁ = 10.0^(-(2+log10(max(d₁,d₂)))/(order+.5))
   end
   dt = min(100dt₀,dt₁)
-end
-
-function plan_sde(alg_hint,abstol,reltol,noisetype)
-  :SRIW1Optimized
 end

@@ -11,17 +11,16 @@ module StochasticDiffEq
       end
   end
 
-
+  include("algorithms.jl")
   include("sde/sde_noise_process.jl")
-  include("problems.jl")
-  include("solutions.jl")
 
   include("stochastic_utils.jl")
   include("sde/sde_solve.jl")
   include("sde/sde_integrators.jl")
   include("sde/sde_tableaus.jl")
 
-  export SDEProblem, SDESolution
+   export StochasticDiffEqAlgorithm, EM, RKMil, SRA, SRI, SRIW1Optimized,
+          SRA1Optimized, SRAVectorized, SRIVectorized
 
    #Stochastic Utils
    export monteCarloSim, construct_correlated_noisefunc, WHITE_NOISE, NoiseProcess
