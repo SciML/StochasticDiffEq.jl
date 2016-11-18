@@ -112,7 +112,7 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,alg}(
 
   u,t,W,timeseries,ts,Ws,maxstacksize,maxstacksize2 = sde_solve(SDEIntegrator{alg,uType,uEltype,ndims(u),ndims(u)+1,tType,tableauType,uEltypeNoUnits,randType,rateType}(f,g,u,t,dt,T,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,discard_length,progressbar,progressbar_name,progress_steps,rands,sqdt,W,Z,tableau))
 
-  build_sde_solution(prob,alg,ts,timeseries,W=Ws,
+  build_solution(prob,alg,ts,timeseries,W=Ws,
                   timeseries_errors = timeseries_errors,
                   maxstacksize = maxstacksize)
 
