@@ -1,6 +1,6 @@
-function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,alg}(
+function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType}(
               prob::AbstractSDEProblem{uType,tType,isinplace,NoiseClass,F,F2,F3},
-              algType::Type{alg};
+              alg::algType;
               dt::Number=0.0,save_timeseries::Bool = true,
               timeseries_steps::Int = 1,adaptive=false,γ=2.0,alg_hint=nothing,
               abstol=1e-3,reltol=1e-6,qmax=1.125,δ=1/6,maxiters::Int = round(Int,1e9),
@@ -37,7 +37,7 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,alg}(
   end
 
   if dt == 0.0
-    if alg==Euler
+    if alg==EM
       order = 0.5
     elseif alg==RKMil
       order = 1.0
