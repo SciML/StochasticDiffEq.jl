@@ -1,7 +1,7 @@
 using StochasticDiffEq
 
-SRIW1 = constructSRIW1()
-@test minimum(checkSRIOrder(SRIW1))
+SRIW1_tab = constructSRIW1()
+@test minimum(checkSRIOrder(SRIW1_tab))
 
-SRA1 = constructSRA1()
-@test minimum(checkSRAOrder(SRA1))
+SRA1_tab = constructSRA1()
+@test minimum(checkSRAOrder(SRA1_tab))

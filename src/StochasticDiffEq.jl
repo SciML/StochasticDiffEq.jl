@@ -22,8 +22,8 @@ module StochasticDiffEq
   include("sde/sde_integrators.jl")
   include("sde/sde_tableaus.jl")
 
-   export StochasticDiffEqAlgorithm, EM, RKMil, SRA, SRI, SRIW1Optimized,
-          SRA1Optimized, SRAVectorized, SRIVectorized
+   export StochasticDiffEqAlgorithm, EM, RKMil, SRA, SRI, SRIW1,
+          SRA1, SRAVectorized, SRIVectorized
 
    #Stochastic Utils
    export monte_carlo_simulation

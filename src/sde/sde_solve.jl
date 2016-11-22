@@ -7,7 +7,7 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType}(
               dtmax=nothing,dtmin=nothing,progress_steps=1000,internalnorm=2,
               discard_length=1e-15,adaptivealg::Symbol=:RSwM3,progressbar=false,
               timeseries_errors=true,
-              progressbar_name="SDE",tableau = nothing)
+              progressbar_name="SDE",tableau = nothing,kwargs...)
 
   @unpack u0,noise,tspan = prob
 
@@ -28,7 +28,7 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType}(
     g = prob.g
   end
 
-  if adaptive && alg ∈ SDE_ADAPTIVEALGORITHMS
+  if adaptive && typeof(alg) ∈ SDE_ADAPTIVEALGORITHMS
     dt = 1.0*dt
     initialize_backend(:DataStructures)
     if adaptivealg == :RSwM3
@@ -37,9 +37,9 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType}(
   end
 
   if dt == 0.0
-    if alg==EM
+    if typeof(alg)==EM
       order = 0.5
-    elseif alg==RKMil
+    elseif typeof(alg)==RKMil
       order = 1.0
     else
       order = 1.5
@@ -67,9 +67,9 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType}(
   push!(ts,t)
 
   #PreProcess
-  if (alg== SRA || alg== SRAVectorized) && tableau == nothing
+  if (typeof(alg)== SRA || typeof(alg)== SRAVectorized) && tableau == nothing
     tableau = constructSRA1()
-  elseif tableau == nothing # && (alg==:SRI || alg==:SRIVectorized)
+  elseif tableau == nothing # && (typeof(alg)==:SRI || typeof(alg)==:SRIVectorized)
     tableau = constructSRIW1()
   end
 
@@ -108,9 +108,9 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType}(
 
   rateType = typeof(u/t) ## Can be different if united
 
-  #@code_warntype sde_solve(SDEIntegrator{alg,typeof(u),eltype(u),ndims(u),ndims(u)+1,typeof(dt),typeof(tableau)}(f,g,u,t,dt,T,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,discard_length,progressbar,atomloaded,progress_steps,rands,sqdt,W,Z,tableau))
+  #@code_warntype sde_solve(SDEIntegrator{typeof(alg),typeof(u),eltype(u),ndims(u),ndims(u)+1,typeof(dt),typeof(tableau)}(f,g,u,t,dt,T,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,discard_length,progressbar,atomloaded,progress_steps,rands,sqdt,W,Z,tableau))
 
-  u,t,W,timeseries,ts,Ws,maxstacksize,maxstacksize2 = sde_solve(SDEIntegrator{alg,uType,uEltype,ndims(u),ndims(u)+1,tType,tableauType,uEltypeNoUnits,randType,rateType}(f,g,u,t,dt,T,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,discard_length,progressbar,progressbar_name,progress_steps,rands,sqdt,W,Z,tableau))
+  u,t,W,timeseries,ts,Ws,maxstacksize,maxstacksize2 = sde_solve(SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,tType,tableauType,uEltypeNoUnits,randType,rateType}(f,g,u,t,dt,T,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,discard_length,progressbar,progressbar_name,progress_steps,rands,sqdt,W,Z,tableau))
 
   build_solution(prob,alg,ts,timeseries,W=Ws,
                   timeseries_errors = timeseries_errors,
@@ -118,7 +118,7 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType}(
 
 end
 
-const SDE_ADAPTIVEALGORITHMS = Set([SRI,SRIW1Optimized,SRIVectorized,SRAVectorized,SRA1Optimized,SRA])
+const SDE_ADAPTIVEALGORITHMS = Set([SRI,SRIW1,SRIVectorized,SRAVectorized,SRA1,SRA])
 
 function sde_determine_initdt(u0,t,abstol,reltol,internalnorm,f,g,order)
   d₀ = norm(u0./(abstol+u0*reltol),2)
