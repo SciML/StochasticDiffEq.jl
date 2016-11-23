@@ -1,10 +1,11 @@
-immutable SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType}
-  f::Function
-  g::Function
+immutable SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}
+  f::F4
+  g::F5
   u::uType
   t::tType
   dt::tType
   T::tType
+  alg::T1
   maxiters::Int
   timeseries::Vector{uType}
   Ws::Vector{randType}
@@ -20,11 +21,13 @@ immutable SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,
   qmax::uEltypeNoUnits
   dtmax::tType
   dtmin::tType
-  internalnorm::Int
+  internalnorm::F
   discard_length::tType
   progressbar::Bool
   progressbar_name::String
   progress_steps::Int
+  progress_message::F2
+  unstable_check::F3
   rands::ChunkedArray{uEltypeNoUnits,Nm1,N}
   sqdt::tType
   W::randType
@@ -39,11 +42,15 @@ end
   local T::tType
   local ΔW::randType
   local ΔZ::randType
-  @unpack f,g,u,t,dt,T,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,discard_length,progressbar,progressbar_name,progress_steps,rands,sqdt,W,Z,tableau = integrator
+  @unpack f,g,u,t,dt,T,alg,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,discard_length,progressbar,progressbar_name,progress_steps,progress_message,unstable_check,rands,sqdt,W,Z,tableau = integrator
 
   progressbar && (prog = ProgressBar(name=progressbar_name))
-
-  sizeu = size(u)
+  if uType <: AbstractArray
+    EEsttmp = zeros(u)
+  end
+  if uType <: AbstractArray
+    utmp = zeros(u)
+  end
   iter = 0
   max_stack_size = 0
   max_stack_size2 = 0
@@ -79,12 +86,15 @@ end
   iter += 1
   if iter > maxiters
     warn("Max Iters Reached. Aborting")
-    # u = map((x)->oftype(x,NaN),u)
-    break
+    @sde_postamble
   end
-  if any(isnan,u)
-    warn("NaNs detected. Aborting")
-    break
+  if dt == 0
+    warn("dt == 0. Aborting")
+    @sde_postamble
+  end
+  if unstable_check(dt,t,u)
+    warn("Instability detected. Aborting")
+    @sde_postamble
   end
 end
 
@@ -97,14 +107,169 @@ end
 end
 
 @def sde_loopfooter begin
-  t = t + dt
-  W = W + ΔW
-  Z = Z + ΔZ
-  ΔW = sqdt*next(rands)
-  ΔZ = sqdt*next(rands)
-  @sde_savevalues
+  if adaptive
+    standard = abs(1/(γ*EEst))^(2)
+    if isinf(standard)
+        q = qmax
+    else
+       q = min(qmax,max(standard,eps()))
+    end
+    if q > 1
+      acceptedIters += 1
+      t = t + dt
+      if uType <: AbstractArray
+        for i in eachindex(u)
+          W[i] = W[i] + ΔW[i]
+          Z[i] = Z[i] + ΔZ[i]
+        end
+      else
+        W = W + ΔW
+        Z = Z + ΔZ
+      end
+      if uType <: AbstractArray
+        recursivecopy!(u,utmp)
+      else
+        u = utmp
+      end
+      if adaptivealg==:RSwM3
+        ResettableStacks.reset!(S₂) #Empty S₂
+      end
+      @sde_savevalues
+      # Setup next step
+      if adaptivealg==:RSwM1
+        if !isempty(S₁)
+          dt,ΔW,ΔZ = pop!(S₁)
+          sqdt = sqrt(dt)
+        else # Stack is empty
+          c = min(dtmax,q*dt)
+          dt = max(min(c,abs(T-t)),dtmin)#abs to fix complex sqrt issue at end
+          #dt = min(c,abs(T-t))
+          sqdt = sqrt(dt)
+          ΔW = sqdt*next(rands)
+          ΔZ = sqdt*next(rands)
+        end
+      elseif adaptivealg==:RSwM2 || adaptivealg==:RSwM3
+        c = min(dtmax,q*dt)
+        dt = max(min(c,abs(T-t)),dtmin) #abs to fix complex sqrt issue at end
+        sqdt = sqrt(dt)
+        if !(uType <: AbstractArray)
+          dttmp = 0.0; ΔW = 0.0; ΔZ = 0.0
+        else
+          dttmp = 0.0; ΔW = zeros(u); ΔZ = zeros(u)
+        end
+        while !isempty(S₁)
+          L₁,L₂,L₃ = pop!(S₁)
+          qtmp = (dt-dttmp)/L₁
+          if qtmp>1
+            dttmp+=L₁
+            ΔW+=L₂
+            ΔZ+=L₃
+            if adaptivealg==:RSwM3
+              push!(S₂,(L₁,L₂,L₃))
+            end
+          else #Popped too far
+            ΔWtilde = qtmp*L₂ + sqrt((1-qtmp)*qtmp*L₁)*next(rands)
+            ΔZtilde = qtmp*L₃ + sqrt((1-qtmp)*qtmp*L₁)*next(rands)
+            ΔW += ΔWtilde
+            ΔZ += ΔZtilde
+            if (1-qtmp)*L₁ > discard_length
+              push!(S₁,((1-qtmp)*L₁,L₂-ΔWtilde,L₃-ΔZtilde))
+              if adaptivealg==:RSwM3 && qtmp*L₁ > discard_length
+                push!(S₂,(qtmp*L₁,ΔWtilde,ΔZtilde))
+              end
+            end
+            break
+          end
+        end #end while empty
+        dtleft = dt - dttmp
+        if dtleft != 0 #Stack emptied
+          ΔWtilde = sqrt(dtleft)*next(rands)
+          ΔZtilde = sqrt(dtleft)*next(rands)
+          ΔW += ΔWtilde
+          ΔZ += ΔZtilde
+          if adaptivealg==:RSwM3
+            push!(S₂,(dtleft,ΔWtilde,ΔZtilde))
+          end
+        end
+      end # End RSwM2 and RSwM3
+    else #Rejection
+      if adaptivealg==:RSwM1 || adaptivealg==:RSwM2
+        ΔWtmp = q*ΔW + sqrt((1-q)*q*dt)*next(rands)
+        ΔZtmp = q*ΔZ + sqrt((1-q)*q*dt)*next(rands)
+        cutLength = dt-q*dt
+        if cutLength > discard_length
+          push!(S₁,(cutLength,ΔW-ΔWtmp,ΔZ-ΔZtmp))
+        end
+        if length(S₁) > max_stack_size
+            max_stack_size = length(S₁)
+        end
+        ΔW = ΔWtmp
+        ΔZ = ΔZtmp
+        dt = q*dt
+      else # RSwM3
+        if !(uType <: AbstractArray)
+          dttmp = 0.0; ΔWtmp = 0.0; ΔZtmp = 0.0
+        else
+          dttmp = 0.0; ΔWtmp = zeros(u); ΔZtmp = zeros(u)
+        end
+        if length(S₂) > max_stack_size2
+          max_stack_size2= length(S₂)
+        end
+        while !isempty(S₂)
+          L₁,L₂,L₃ = pop!(S₂)
+          if dttmp + L₁ < (1-q)*dt #while the backwards movement is less than chop off
+            dttmp += L₁
+            ΔWtmp += L₂
+            ΔZtmp += L₃
+            push!(S₁,(L₁,L₂,L₃))
+          else
+            push!(S₂,(L₁,L₂,L₃))
+            break
+          end
+        end # end while
+        dtK = dt - dttmp
+        K₂ = ΔW - ΔWtmp
+        K₃ = ΔZ - ΔZtmp
+        qK = q*dt/dtK
+
+        ΔWtilde = qK*K₂ + sqrt((1-qK)*qK*dtK)*next(rands)
+        ΔZtilde = qK*K₃ + sqrt((1-qK)*qK*dtK)*next(rands)
+        cutLength = (1-qK)*dtK
+        if cutLength > discard_length
+          push!(S₁,(cutLength,K₂-ΔWtilde,K₃-ΔZtilde))
+        end
+        if length(S₁) > max_stack_size
+            max_stack_size = length(S₁)
+        end
+        dt = q*dt
+        ΔW = ΔWtilde
+        ΔZ = ΔZtilde
+      end
+    end
+  else # Non adaptive
+    t = t + dt
+    if uType <: AbstractArray
+      for i in eachindex(u)
+        W[i] = W[i] + ΔW[i]
+      end
+    else
+      W = W + ΔW
+    end
+    ΔW = sqdt*next(rands)
+    if !(typeof(alg) <: EM) || !(typeof(alg) <: RKMil)
+      if uType <: AbstractArray
+        for i in eachindex(u)
+          Z[i] = Z[i] + ΔZ[i]
+        end
+      else
+        Z = Z + ΔZ
+      end
+      ΔZ = sqdt*next(rands)
+    end
+    @sde_savevalues
+  end
   if progressbar && iter%progress_steps==0
-    msg(prog,"dt="*string(dt))
+    msg(prog,progress_message(dt,t,u))
     progress(prog,t/T)
   end
 end
@@ -112,52 +277,51 @@ end
 @def sde_adaptiveprelim begin
   max_stack_size = 0
   max_stack_size2 = 0
+  if adaptive
+    S₁ = DataStructures.Stack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
+    acceptedIters = 0
+    if adaptivealg==:RSwM3
+      S₂ = ResettableStacks.ResettableStack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
+    end
+  end
 end
 
 @def sde_postamble begin
   if ts[end] != t
-  push!(ts,t)
-  push!(timeseries,u)
-  push!(Ws,W)
-end
+    push!(ts,t)
+    push!(timeseries,u)
+    push!(Ws,W)
+  end
   progressbar && done(prog)
   u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
 end
 
-function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:Number,rateType<:Number}(integrator::SDEIntegrator{EM,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
+function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{EM,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
   @sde_preamble
-  @fastmath @inbounds while t<T
+  @inbounds while t<T
     @sde_loopheader
-
     u = u + dt.*f(t,u) + g(t,u).*ΔW
-
-    t = t + dt
-    W = W + ΔW
-    ΔW = sqdt*next(rands)
-    @sde_savevalues
+    @sde_loopfooter
   end
   @sde_postamble
 end
 
-function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:AbstractArray,rateType<:AbstractArray}(integrator::SDEIntegrator{EM,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
+function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{EM,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
   @sde_preamble
-  utmp1 = similar(u); utmp2 = similar(u)
-  @fastmath @inbounds while t<T
+  utmp1 = zeros(u); utmp2 = zeros(u)
+  @inbounds while t<T
     @sde_loopheader
     f(t,u,utmp1)
     g(t,u,utmp2)
     for i in eachindex(u)
       u[i] = u[i] + dt*utmp1[i] + utmp2[i]*ΔW[i]
-      W[i] = W[i] + ΔW[i]
     end
-    t = t + dt
-    ΔW = sqdt*next(rands)
-    @sde_savevalues
+    @sde_loopfooter
   end
   @sde_postamble
 end
 
-function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:AbstractArray,rateType<:AbstractArray}(integrator::SDEIntegrator{SRI,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
+function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRI,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
   @sde_preamble
   @sde_sritableaupreamble
   @unpack c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄ = tableau
@@ -165,20 +329,20 @@ function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tabl
   H0 = Vector{typeof(u)}(0)
   H1 = Vector{typeof(u)}(0)
   for i = 1:stages
-    push!(H0,similar(u))
-    push!(H1,similar(u))
+    push!(H0,zeros(u))
+    push!(H1,zeros(u))
   end
   #TODO Reduce memory
-  A0temp::uType = similar(u); A1temp::uType = similar(u)
-  B0temp::uType = similar(u); B1temp::uType = similar(u)
-  A0temp2::uType = similar(u); A1temp2::uType = similar(u)
-  B0temp2::uType = similar(u); B1temp2::uType = similar(u)
-  atemp::uType = similar(u); btemp::uType = similar(u)
-  E₁::uType = similar(u); E₂::uType = similar(u); E₁temp::uType = similar(u)
-  ftemp::uType = similar(u); gtemp::uType = similar(u)
+  A0temp::uType = zeros(u); A1temp::uType = zeros(u)
+  B0temp::uType = zeros(u); B1temp::uType = zeros(u)
+  A0temp2::uType = zeros(u); A1temp2::uType = zeros(u)
+  B0temp2::uType = zeros(u); B1temp2::uType = zeros(u)
+  atemp::uType = zeros(u); btemp::uType = zeros(u)
+  E₁::uType = zeros(u); E₂::uType = zeros(u); E₁temp::uType = zeros(u)
+  ftemp::uType = zeros(u); gtemp::uType = zeros(u)
   chi1::randType = similar(ΔW); chi2::randType = similar(ΔW); chi3::randType = similar(ΔW)
   @sde_adaptiveprelim
-  @fastmath @inbounds while t<T
+  @inbounds while t<T
     @sde_loopheader
 
     for i in eachindex(u)
@@ -229,7 +393,20 @@ function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tabl
 
     for i in eachindex(u)
       E₁[i] = dt*E₁temp[i]
-      u[i] = u[i] + dt*atemp[i] + btemp[i] + E₂[i]
+    end
+
+    if adaptive
+      for i in eachindex(u)
+        EEsttmp[i] = (δ*E₁[i]+E₂[i])/(abstol + u[i]*reltol)
+      end
+      EEst = internalnorm(EEsttmp)
+      for i in eachindex(u)
+        utmp[i] = u[i] + dt*atemp[i] + btemp[i] + E₂[i]
+      end
+    else
+      for i in eachindex(u)
+        u[i] = u[i] + dt*atemp[i] + btemp[i] + E₂[i]
+      end
     end
 
     @sde_loopfooter
@@ -237,28 +414,28 @@ function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tabl
   @sde_postamble
 end
 
-function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:AbstractArray,rateType<:AbstractArray}(integrator::SDEIntegrator{SRIW1,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
+function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRIW1,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
   @sde_preamble
   chi1::randType = similar(ΔW)
   chi2::randType = similar(ΔW)
   chi3::randType = similar(ΔW)
-  fH01o4::uType = similar(u)
-  g₁o2::uType = similar(u)
-  H0::uType = similar(u)
-  H11::uType = similar(u)
-  H12::uType = similar(u)
-  H13::uType = similar(u)
-  g₂o3::uType = similar(u)
-  Fg₂o3::uType = similar(u)
-  g₃o3::uType = similar(u)
-  Tg₃o3::uType = similar(u)
-  mg₁::uType = similar(u)
-  E₁::uType = similar(u)
-  E₂::uType = similar(u)
-  fH01::uType = similar(u); fH02::uType = similar(u)
-  g₁::uType = similar(u); g₂::uType = similar(u); g₃::uType = similar(u); g₄::uType = similar(u)
+  fH01o4::uType = zeros(u)
+  g₁o2::uType = zeros(u)
+  H0::uType = zeros(u)
+  H11::uType = zeros(u)
+  H12::uType = zeros(u)
+  H13::uType = zeros(u)
+  g₂o3::uType = zeros(u)
+  Fg₂o3::uType = zeros(u)
+  g₃o3::uType = zeros(u)
+  Tg₃o3::uType = zeros(u)
+  mg₁::uType = zeros(u)
+  E₁::uType = zeros(u)
+  E₂::uType = zeros(u)
+  fH01::uType = zeros(u); fH02::uType = zeros(u)
+  g₁::uType = zeros(u); g₂::uType = zeros(u); g₃::uType = zeros(u); g₄::uType = zeros(u)
   @sde_adaptiveprelim
-  @fastmath @inbounds while t<T
+  @inbounds while t<T
     @sde_loopheader
 
     for i in eachindex(u)
@@ -292,15 +469,27 @@ function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tabl
       mg₁[i] = -g₁[i]
       E₁[i] = fH01[i]+fH02[i]
       E₂[i] = chi2[i]*(2g₁[i] - Fg₂o3[i] - Tg₃o3[i]) + chi3[i]*(2mg₁[i] + 5g₂o3[i] - Tg₃o3[i] + g₄[i])
-      u[i] = u[i] +  (fH01[i] + 2fH02[i])/3 + ΔW[i]*(mg₁[i] + Fg₂o3[i] + Tg₃o3[i]) + chi1[i]*(mg₁[i] + Fg₂o3[i] - g₃o3[i]) + E₂[i]
     end
 
+    if adaptive
+      for i in eachindex(u)
+        EEsttmp[i] = (δ*E₁[i]+E₂[i])/(abstol + u[i]*reltol)
+      end
+      EEst = internalnorm(EEsttmp)
+      for i in eachindex(u)
+        utmp[i] = u[i] +  (fH01[i] + 2fH02[i])/3 + ΔW[i]*(mg₁[i] + Fg₂o3[i] + Tg₃o3[i]) + chi1[i]*(mg₁[i] + Fg₂o3[i] - g₃o3[i]) + E₂[i]
+      end
+    else
+      for i in eachindex(u)
+        u[i] = u[i] +  (fH01[i] + 2fH02[i])/3 + ΔW[i]*(mg₁[i] + Fg₂o3[i] + Tg₃o3[i]) + chi1[i]*(mg₁[i] + Fg₂o3[i] - g₃o3[i]) + E₂[i]
+      end
+    end
     @sde_loopfooter
   end
   @sde_postamble
 end
 
-function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:Number,rateType<:Number}(integrator::SDEIntegrator{SRIW1,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
+function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRIW1,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
   @sde_preamble
   local H0::uType
   @sde_adaptiveprelim
@@ -312,7 +501,7 @@ function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType
   local g₂o3::uType; local Fg₂o3::uType
   local g₃o3::uType; local Tg₃o3::uType
   local mg₁::uType; local E₁::uType; local E₂::uType
-  @fastmath @inbounds while t<T
+  @inbounds while t<T
     @sde_loopheader
 
     chi1 = (ΔW.^2 - dt)/2sqdt #I_(1,1)/sqrt(h)
@@ -343,14 +532,19 @@ function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType
     E₁ = fH01+fH02
     E₂ = chi2.*(2g₁ - Fg₂o3 - Tg₃o3) + chi3.*(2mg₁ + 5g₂o3 - Tg₃o3 + g₄)
 
-    u = u + (fH01 + 2fH02)/3 + ΔW.*(mg₁ + Fg₂o3 + Tg₃o3) + chi1.*(mg₁ + Fg₂o3 - g₃o3) + E₂
+    if adaptive
+      EEst = abs((δ*E₁+E₂)/(abstol + u*reltol))
+      utmp = u + (fH01 + 2fH02)/3 + ΔW.*(mg₁ + Fg₂o3 + Tg₃o3) + chi1.*(mg₁ + Fg₂o3 - g₃o3) + E₂
+    else
+      u = u + (fH01 + 2fH02)/3 + ΔW.*(mg₁ + Fg₂o3 + Tg₃o3) + chi1.*(mg₁ + Fg₂o3 - g₃o3) + E₂
+    end
 
     @sde_loopfooter
   end
   @sde_postamble
 end
 
-function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:Number,rateType<:Number}(integrator::SDEIntegrator{SRI,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
+function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRI,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
   @sde_preamble
   @sde_sritableaupreamble
   @unpack c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄ = tableau
@@ -363,7 +557,7 @@ function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType
   local E₁::uType; local E₂::uType
   local E₁temp::uType; local ftemp::uType
   @sde_adaptiveprelim
-  @fastmath @inbounds while t<T
+  @inbounds while t<T
     @sde_loopheader
 
     chi1 = .5*(ΔW.^2 - dt)/sqdt #I_(1,1)/sqrt(h)
@@ -401,50 +595,24 @@ function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType
     end
     E₁ = dt*E₁temp
 
-    u = u + dt*atemp + btemp + E₂
 
-    @sde_loopfooter
-  end
-  @sde_postamble
-end
-
-function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:Number,rateType<:Number}(integrator::SDEIntegrator{SRIVectorized,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
-  @sde_preamble
-  @sde_sritableaupreamble
-  @unpack c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄ = tableau
-  stages::Int = length(α)
-  H0 = Array{uEltype}(stages)
-  H1 = Array{uEltype}(stages)
-  @sde_adaptiveprelim
-  @fastmath @inbounds while t<T
-    @sde_loopheader
-
-    chi1 = .5*(ΔW.^2 - dt)/sqdt #I_(1,1)/sqrt(h)
-    chi2 = .5*(ΔW + ΔZ/sqrt(3)) #I_(1,0)/h
-    chi3 = 1/6 * (ΔW.^3 - 3*ΔW*dt)/dt #I_(1,1,1)/h
-    H0[:]=zeros(uType,4)
-    H1[:]=zeros(uType,4)
-    for i = 1:stages
-      H0temp = u + dt*dot(vec(A₀[i,:]),f(t + c₀*dt,H0)) + chi2*dot(vec(B₀[i,:]),g(t+c₁*dt,H1))
-      H1[i]  = u + dt*dot(vec(A₁[i,:]),f(t + c₀*dt,H0)) + sqdt*dot(vec(B₁[i,:]),g(t+c₁*dt,H1))
-      H0[i] = H0temp
+    if adaptive
+      EEst = abs((δ*E₁+E₂)./(abstol + u*reltol))
+      utmp = u + dt*atemp + btemp + E₂
+    else
+      u = u + dt*atemp + btemp + E₂
     end
-    fVec = dt*f(t+c₀*dt,H0)
-    E₁ = fVec[1]+fVec[2]
-    E₂ = dot(β₃*chi2 + β₄*chi3,g(t+c₁*dt,H1))
-
-    u = u + dot(α,fVec) + dot(β₁*ΔW + β₂*chi1,g(t+c₁*dt,H1)) + E₂
 
     @sde_loopfooter
   end
   @sde_postamble
 end
 
-function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:AbstractArray,rateType<:AbstractArray}(integrator::SDEIntegrator{RKMil,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
+function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{RKMil,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
   @sde_preamble
-  du1::uType = similar(u); du2::uType = similar(u)
-  K::uType = similar(u); utilde::uType = similar(u); L::uType = similar(u)
-  @fastmath @inbounds while t<T
+  du1::uType = zeros(u); du2::uType = zeros(u)
+  K::uType = zeros(u); utilde::uType = zeros(u); L::uType = zeros(u)
+  @inbounds while t<T
     @sde_loopheader
     f(t,u,du1)
     g(t,u,L)
@@ -455,19 +623,16 @@ function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tabl
     g(t,utilde,du2)
     for i in eachindex(u)
       u[i] = K[i]+L[i]*ΔW[i]+(du2[i]-L[i])./(2sqdt).*(ΔW[i].^2 - dt)
-      W[i] = W[i] + ΔW[i]
     end
-    t = t + dt
-    ΔW = sqdt*next(rands)
-    @sde_savevalues
+    @sde_loopfooter
   end
   @sde_postamble
 end
 
-function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:Number,rateType<:Number}(integrator::SDEIntegrator{RKMil,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
+function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{RKMil,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
   @sde_preamble
   local L::uType; local K::uType; local utilde::uType
-  @fastmath @inbounds while t<T
+  @inbounds while t<T
     @sde_loopheader
 
     K = u + dt.*f(t,u)
@@ -475,46 +640,48 @@ function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType
     utilde = K + L*sqdt
     u = K+L*ΔW+(g(t,utilde)-g(t,u))/(2sqdt)*(ΔW^2 - dt)
 
-    t = t + dt
-    W = W + ΔW
-    ΔW = sqdt*next(rands)
-    @sde_savevalues
+    @sde_loopfooter
   end
   @sde_postamble
 end
 
 
-function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:Number,rateType<:Number}(integrator::SDEIntegrator{SRA1,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
+function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRA1,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
   @sde_preamble
   H0 = Array{uEltype}(size(u)...,2)
   local k₁::uType; local k₂::uType; local E₁::uType; local E₂::uType
   @sde_adaptiveprelim
-  @fastmath @inbounds while t<T
+  @inbounds while t<T
     @sde_loopheader
-
+    gpdt = g(t+dt,u)
     chi2 = (ΔW + ΔZ/sqrt(3))/2 #I_(1,0)/h
     k₁ = dt*f(t,u)
     k₂ = dt*f(t+3dt/4,u+3k₁/4 + 3chi2*g(t+dt,u)/2)
     E₁ = k₁ + k₂
-    E₂ = chi2.*(g(t,u)-g(t+dt,u)) #Only for additive!
+    E₂ = chi2.*(g(t,u)-gpdt) #Only for additive!
 
-    u = u + k₁/3 + 2k₂/3 + E₂ + ΔW*g(t+dt,u)
+    if adaptive
+      EEst = abs((δ*E₁+E₂)./(abstol + u*reltol))
+      utmp = u + k₁/3 + 2k₂/3 + E₂ + ΔW*gpdt
+    else
+      u = u + k₁/3 + 2k₂/3 + E₂ + ΔW*gpdt
+    end
 
     @sde_loopfooter
   end
   @sde_postamble
 end
 
-function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:AbstractArray,rateType<:AbstractArray}(integrator::SDEIntegrator{SRA1,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
+function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRA1,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
   @sde_preamble
 
   H0 = Array{uEltype}(size(u)...,2)
   chi2::randType = similar(ΔW)
-  tmp1::uType = similar(u)
-  E₁::uType = similar(u); gt::uType = similar(u); gpdt::uType = similar(u)
-  E₂::uType = similar(u); k₁::uType = similar(u); k₂::uType = similar(u)
+  tmp1::uType = zeros(u)
+  E₁::uType = zeros(u); gt::uType = zeros(u); gpdt::uType = zeros(u)
+  E₂::uType = zeros(u); k₁::uType = zeros(u); k₂::uType = zeros(u)
   @sde_adaptiveprelim
-  @fastmath @inbounds while t<T
+  @inbounds while t<T
     @sde_loopheader
     g(t,u,gt)
     g(t+dt,u,gpdt)
@@ -525,31 +692,45 @@ function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tabl
     end
 
     f(t+3dt/4,tmp1,k₂); k₂*=dt
+
     for i in eachindex(u)
       E₁[i] = k₁[i] + k₂[i]
       E₂[i] = chi2[i]*(gt[i]-gpdt[i]) #Only for additive!
-      u[i] = u[i] + k₁[i]/3 + 2k₂[i]/3 + E₂[i] + ΔW[i]*gpdt[i]
+    end
+
+    if adaptive
+      for i in eachindex(u)
+        EEsttmp[i] = (δ*E₁[i]+E₂[i])/(abstol + u[i]*reltol)
+      end
+      EEst = internalnorm(EEsttmp)
+      for i in eachindex(u)
+        utmp[i] = u[i] + k₁[i]/3 + 2k₂[i]/3 + E₂[i] + ΔW[i]*gpdt[i]
+      end
+    else
+      for i in eachindex(u)
+        u[i] = u[i] + k₁[i]/3 + 2k₂[i]/3 + E₂[i] + ΔW[i]*gpdt[i]
+      end
     end
     @sde_loopfooter
   end
   @sde_postamble
 end
 
-function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:AbstractArray,rateType<:AbstractArray}(integrator::SDEIntegrator{SRA,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
+function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRA,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
   @sde_preamble
   @sde_sratableaupreamble
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂ = tableau
   stages::Int = length(α)
   H0 = Vector{typeof(u)}(0)
   for i = 1:stages
-    push!(H0,similar(u))
+    push!(H0,zeros(u))
   end
-  A0temp::uType = similar(u); B0temp::uType = similar(u)
-  ftmp::uType = similar(u); gtmp::uType = similar(u); chi2::uType = similar(u)
-  atemp::uType = similar(u); btemp::uType = similar(u); E₂::uType = similar(u); E₁temp::uType = similar(u)
-  E₁::uType = similar(u)
+  A0temp::uType = zeros(u); B0temp::uType = zeros(u)
+  ftmp::uType = zeros(u); gtmp::uType = zeros(u); chi2::uType = zeros(u)
+  atemp::uType = zeros(u); btemp::uType = zeros(u); E₂::uType = zeros(u); E₁temp::uType = zeros(u)
+  E₁::uType = zeros(u)
   @sde_adaptiveprelim
-  @fastmath @inbounds while t<T
+  @inbounds while t<T
     @sde_loopheader
     for i in eachindex(u)
       chi2[i] = .5*(ΔW[i] + ΔZ[i]/sqrt(3)) #I_(1,0)/h
@@ -589,15 +770,27 @@ function sde_solve{uType<:AbstractArray,uEltype<:Number,Nm1,N,tType<:Number,tabl
     end
     for i in eachindex(u)
       E₁[i] = dt*E₁temp[i]
-      u[i] = u[i] + dt*atemp[i] + btemp[i] + E₂[i]
     end
 
+    if adaptive
+      for i in eachindex(u)
+        EEsttmp[i] = (δ*E₁[i]+E₂[i])/(abstol + u[i]*reltol)
+      end
+      EEst = internalnorm(EEsttmp)
+      for i in eachindex(u)
+        utmp[i] = u[i] + dt*atemp[i] + btemp[i] + E₂[i]
+      end
+    else
+      for i in eachindex(u)
+        u[i] = u[i] + dt*atemp[i] + btemp[i] + E₂[i]
+      end
+    end
     @sde_loopfooter
   end
   @sde_postamble
 end
 
-function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:Number,rateType<:Number}(integrator::SDEIntegrator{SRA,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
+function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRA,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
   @sde_preamble
   @sde_sratableaupreamble
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂ = tableau
@@ -607,7 +800,7 @@ function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType
   local E₂::uType; local E₁::uType; local E₁temp::uType
   local ftemp::uType; local A0temp::uType; local B0temp::uType
   @sde_adaptiveprelim
-  @fastmath @inbounds while t<T
+  @inbounds while t<T
     @sde_loopheader
 
     chi2 = .5*(ΔW + ΔZ/sqrt(3)) #I_(1,0)/h
@@ -630,41 +823,18 @@ function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType
     for i = 1:stages
       ftemp = f(t+c₀[i]*dt,H0[i])
       atemp += α[i]*ftemp
-      btemp += (β₁[i]*ΔW ).*g(t+c₁[i]*dt,H0[i]) #H0[..,i] argument ignored
-      E₂    += (β₂[i]*chi2).*g(t+c₁[i]*dt,H0[i]) #H0[..,i] argument ignored
+      btemp += (β₁[i]*ΔW ).*g(t+c₁[i]*dt,H0[i]) #H0[i] argument ignored
+      E₂    += (β₂[i]*chi2).*g(t+c₁[i]*dt,H0[i]) #H0[i] argument ignored
+    end
 
+    if adaptive
       E₁temp += ftemp
+      E₁ = dt*E₁temp
+      EEst = abs((δ*E₁+E₂)./(abstol + u*reltol))
+      utmp = u + dt*atemp + btemp + E₂
+    else
+      u = u + dt*atemp + btemp + E₂
     end
-    E₁ = dt*E₁temp
-    u = u + dt*atemp + btemp + E₂
-
-    @sde_loopfooter
-  end
-  @sde_postamble
-end
-
-function sde_solve{uType<:Number,uEltype<:Number,Nm1,N,tType<:Number,tableauType<:Tableau,uEltypeNoUnits<:Number,randType<:Number,rateType<:Number}(integrator::SDEIntegrator{SRAVectorized,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType})
-  @sde_preamble
-  @sde_sratableaupreamble
-  @unpack c₀,c₁,A₀,B₀,α,β₁,β₂ = tableau
-  stages::Int = length(α)
-  @sde_adaptiveprelim
-  H0 = Array{uEltype}(stages)
-
-  @fastmath @inbounds while t<T
-    @sde_loopheader
-
-    chi2 = .5*(ΔW + ΔZ/sqrt(3)) #I_(1,0)/h
-    H0[:]=zeros(stages)
-    for i = 1:stages
-      H0[i] = u + dt*dot(vec(A₀[i,:]),f(t + c₀*dt,H0)) + chi2*dot(vec(B₀[i,:]),g(t+c₁*dt,H0))
-    end
-    fVec = f(t+c₀*dt,H0)
-    E₁ = dt*(fVec[1]+fVec[2])
-    E₂ = dot(β₂*chi2,g(t+c₁*dt,H0))
-
-    u = u + dt*dot(α,f(t+c₀*dt,H0)) + dot(β₁*ΔW,g(t+c₁*dt,H0)) + E₂
-
     @sde_loopfooter
   end
   @sde_postamble

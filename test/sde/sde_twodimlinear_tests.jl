@@ -24,12 +24,14 @@ TEST_PLOT && plot(sol,plot_analytic=true)
 println("Convergence Test on 2D Linear")
 dts = 1./2.^(7:-1:4) #14->7 good plot
 
-sim = test_convergence(dts,prob,EM(),numMonte=5)
+sim = test_convergence(dts,prob,EM(),numMonte=10)
+@test abs(sim.𝒪est[:l2]-.5) < 0.1
 
-sim2 = test_convergence(dts,prob,RKMil(),numMonte=5)
+sim2 = test_convergence(dts,prob,RKMil(),numMonte=10)
+@test abs(sim2.𝒪est[:l∞]-1) < 0.1
 
-sim3 = test_convergence(dts,prob,SRI(),numMonte=5)
+sim3 = test_convergence(dts,prob,SRI(),numMonte=10)
+@test abs(sim3.𝒪est[:final]-1.5) < 0.3
 
-sim4 = test_convergence(dts,prob,SRIW1(),numMonte=5,save_timeseries=false)
-
-@test abs(sim.𝒪est[:l2]-.5) + abs(sim2.𝒪est[:l∞]-1) + abs(sim3.𝒪est[:final]-1.5) + abs(sim4.𝒪est[:final]-1.5) <.6 #High tolerance since low dts for testing!
+sim4 = test_convergence(dts,prob,SRIW1(),numMonte=10,save_timeseries=false)
+@test abs(sim4.𝒪est[:final]-1.5) < 0.3

@@ -1,10 +1,9 @@
 abstract StochasticDiffEqAlgorithm <: AbstractSDEAlgorithm
+abstract StochasticDiffEqAdaptiveAlgorithm <: StochasticDiffEqAlgorithm
 
 immutable EM <: StochasticDiffEqAlgorithm end
 immutable RKMil <: StochasticDiffEqAlgorithm end
-immutable SRA <: StochasticDiffEqAlgorithm end
-immutable SRI <: StochasticDiffEqAlgorithm end
-immutable SRIW1 <: StochasticDiffEqAlgorithm end
-immutable SRA1 <: StochasticDiffEqAlgorithm end
-immutable SRAVectorized <: StochasticDiffEqAlgorithm end
-immutable SRIVectorized <: StochasticDiffEqAlgorithm end
+immutable SRA <: StochasticDiffEqAdaptiveAlgorithm end
+immutable SRI <: StochasticDiffEqAdaptiveAlgorithm end
+immutable SRIW1 <: StochasticDiffEqAdaptiveAlgorithm end
+immutable SRA1 <: StochasticDiffEqAdaptiveAlgorithm end

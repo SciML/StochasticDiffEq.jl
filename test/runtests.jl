@@ -13,15 +13,8 @@ const TEST_PLOT = false
 @time @testset "Oval2" begin include("oval2_test.jl") end
 
 #Adaptive SDE
-#=
-println("Adaptive SDE Linear Tests")
-@time @test include("sde/sde_linearadaptive_tests.jl")
-println("Adaptive SDE Distribution Test")
-@time @test include("sde/sde_adaptivedistribution_tests.jl")
-println("Multiple Dimension Linear Adaptive Test")
-@time @test include("sde/sde_twodimlinearadaptive_tests.jl")
-println("SDE Autostepsize Test")
-@time @test include("sde/sde_autostepsize_test.jl")
-println("SDE Additive Lorenz Attractor Test")
-@time @test include("sde/sde_lorenzattractor_tests.jl")
-=#
+@time @testset "Adaptive SDE Linear Tests" begin include("adaptive/sde_linearadaptive_tests.jl") end
+@time @testset "Adaptive SDE Distribution Test" begin include("adaptive/sde_adaptivedistribution_tests.jl") end
+@time @testset "Multiple Dimension Linear Adaptive Test" begin include("adaptive/sde_twodimlinearadaptive_tests.jl") end
+@time @testset "Autostepsize Test" begin include("adaptive/sde_autostepsize_test.jl") end
+@time @testset "Additive Lorenz Attractor Test" begin include("adaptive/sde_lorenzattractor_tests.jl") end

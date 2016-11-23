@@ -1,6 +1,7 @@
 module StochasticDiffEq
 
-  using DiffEqBase, Parameters, ChunkedArrays, RecursiveArrayTools, Juno
+  using DiffEqBase, Parameters, ChunkedArrays, RecursiveArrayTools, Juno,
+        DataStructures, ResettableStacks
   import DiffEqBase: solve
 
 
@@ -15,15 +16,13 @@ module StochasticDiffEq
   end
 
   include("algorithms.jl")
-  include("sde/sde_noise_process.jl")
-
   include("stochastic_utils.jl")
   include("sde/sde_solve.jl")
   include("sde/sde_integrators.jl")
   include("sde/sde_tableaus.jl")
 
    export StochasticDiffEqAlgorithm, EM, RKMil, SRA, SRI, SRIW1,
-          SRA1, SRAVectorized, SRIVectorized
+          SRA1
 
    #Stochastic Utils
    export monte_carlo_simulation
