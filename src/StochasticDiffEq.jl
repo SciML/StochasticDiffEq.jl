@@ -17,9 +17,12 @@ module StochasticDiffEq
 
   include("algorithms.jl")
   include("stochastic_utils.jl")
-  include("sde/sde_solve.jl")
-  include("sde/sde_integrators.jl")
-  include("sde/sde_tableaus.jl")
+  include("solve.jl")
+  include("integrators/integrator_utils.jl")
+  include("integrators/low_order.jl")
+  include("integrators/sri.jl")
+  include("integrators/sra.jl")
+  include("tableaus.jl")
 
    export StochasticDiffEqAlgorithm, EM, RKMil, SRA, SRI, SRIW1,
           SRA1

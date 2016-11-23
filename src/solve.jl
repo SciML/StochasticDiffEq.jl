@@ -13,8 +13,8 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType}(
               discard_length=1e-15,adaptivealg::Symbol=:RSwM3,
               progress_steps=1000,
               progress=false, progress_message = ODE_DEFAULT_PROG_MESSAGE,
-              timeseries_errors=true,
-              progress_name="SDE",tableau = nothing,kwargs...)
+              progress_name="SDE",
+              timeseries_errors=true,tableau = nothing,kwargs...)
 
   @unpack u0,noise,tspan = prob
 

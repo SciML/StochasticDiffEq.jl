@@ -12,7 +12,7 @@ sol = solve(prob,SRIW1(),dt=1/2^(3))
 sol = solve(prob,SRIW1(),dt=1/2^(3),save_timeseries=false)
 
 
-sol = solve(prob,SRIW1(),dt=1/2^(3),progressbar=true,progress_steps=1)
+sol = solve(prob,SRIW1(),dt=1/2^(3),progress=true,progress_steps=1)
 
 
 #Now do the simulation 5 times in parallel. Return an array
