@@ -1,4 +1,4 @@
-using StochasticDiffEq, Plots
+using StochasticDiffEq#, Plots
 srand(100)
 prob = prob_sde_2Dlinear
 
