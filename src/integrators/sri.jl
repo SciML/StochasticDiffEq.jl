@@ -120,7 +120,10 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tableauType,uEltypeN
       chi2[i] = (ΔW[i] + ΔZ[i]/sqrt(3))/2 #I_(1,0)/h
       chi3[i] = (ΔW[i].^3 - 3ΔW[i]*dt)/6dt #I_(1,1,1)/h
     end
-    f(t,u,fH01);fH01*=dt
+    f(t,u,fH01)
+    for i in eachindex(u)
+      fH01[i] = dt*fH01[i]
+    end
     g(t,u,g₁)
     dto4 = dt/4
     for i in eachindex(u)
@@ -137,8 +140,9 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tableauType,uEltypeN
     end
 
     g(t+dto4,H13,g₄)
-    f(t+3dto4,H0,fH02); fH02*=dt
+    f(t+3dto4,H0,fH02)
     for i in eachindex(u)
+      fH02[i] = fH02[i]*dt
       g₂o3[i] = g₂[i]/3
       Fg₂o3[i] = 4g₂o3[i]
       g₃o3[i] = g₃[i]/3

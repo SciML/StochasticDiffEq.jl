@@ -7,8 +7,9 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType}(
               alg::algType;
               dt::Number=0.0,save_timeseries::Bool = true,
               timeseries_steps::Int = 1,adaptive=true,γ=2.0,alg_hint=nothing,
-              abstol=1e-3,reltol=1e-6,qmax=1.125,δ=1/6,maxiters::Int = round(Int,1e9),
+              abstol=1e-2,reltol=1e-2,qmax=1.125,δ=1/6,maxiters::Int = round(Int,1e9),
               dtmax=nothing,dtmin=nothing,internalnorm=ODE_DEFAULT_NORM,
+              tstops=tType[],
               unstable_check = ODE_DEFAULT_UNSTABLE_CHECK,
               discard_length=1e-15,adaptivealg::Symbol=:RSwM3,
               progress_steps=1000,
@@ -20,6 +21,10 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType}(
 
   if tspan[2]-tspan[1]<0 || length(tspan)>2
     error("tspan must be two numbers and final time must be greater than starting time. Aborting.")
+  end
+
+  if !(typeof(alg) <: StochasticDiffEqAdaptiveAlgorithm) && dt == 0 && isempty(tstops)
+      error("Fixed timestep methods require a choice of dt or choosing the tstops")
   end
 
   u = copy(u0)
