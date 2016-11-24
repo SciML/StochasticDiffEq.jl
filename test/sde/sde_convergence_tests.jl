@@ -1,6 +1,6 @@
 @everywhere using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools
 srand(100)
-dts = 1./2.^(10:-1:4) #14->7 good plot
+dts = 1./2.^(10:-1:2) #14->7 good plot
 
 prob = prob_sde_wave
 sim  = test_convergence(dts,prob,EM(),numMonte=Int(1e1))
