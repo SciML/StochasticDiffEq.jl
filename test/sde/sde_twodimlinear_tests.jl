@@ -1,5 +1,5 @@
 using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools
-srand(70)
+srand(100)
 prob = prob_sde_2Dlinear
 
 ## Solve and plot
@@ -24,11 +24,11 @@ solArr = monte_carlo_simulation(prob,SRIW1(),dt=1//2^(3),numMonte=5)
 println("Convergence Test on 2D Linear")
 dts = 1./2.^(7:-1:4) #14->7 good plot
 
-sim = test_convergence(dts,prob,EM(),numMonte=10)
+sim = test_convergence(dts,prob,EM(),numMonte=100)
 
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
 
-sim2 = test_convergence(dts,prob,RKMil(),numMonte=10)
+sim2 = test_convergence(dts,prob,RKMil(),numMonte=100)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.1
 
 sim3 = test_convergence(dts,prob,SRI(),numMonte=10)
