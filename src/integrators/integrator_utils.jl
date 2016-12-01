@@ -44,7 +44,7 @@ end
   local ΔZ::randType
   @unpack f,g,u,t,dt,T,alg,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,discard_length,progress_on,progress_name,progress_steps,progress_message,unstable_check,rands,sqdt,W,Z,tableau = integrator
 
-  progress_on && (prog = ProgressBar(name=progress_name))
+  progress_on && (prog = Juno.ProgressBar(name=progress_name))
   if uType <: AbstractArray
     EEsttmp = zeros(u)
   end
@@ -270,7 +270,7 @@ end
   end
   if progress_on && iter%progress_steps==0
     msg(prog,progress_message(dt,t,u))
-    progress(prog,t/T)
+    Juno.progress(prog,t/T)
   end
 end
 
@@ -292,6 +292,6 @@ end
     push!(timeseries,u)
     push!(Ws,W)
   end
-  progress_on && done(prog)
+  progress_on && Juno.done(prog)
   u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
 end
