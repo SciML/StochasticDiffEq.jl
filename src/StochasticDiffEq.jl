@@ -1,3 +1,5 @@
+__precompile__()
+
 module StochasticDiffEq
 
   using DiffEqBase, Parameters, ChunkedArrays, RecursiveArrayTools, Juno,
