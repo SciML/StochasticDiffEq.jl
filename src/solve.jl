@@ -1,4 +1,4 @@
-@inline ODE_DEFAULT_NORM(u) = sqrt(sumabs2(u) / length(u))
+@inline ODE_DEFAULT_NORM(u) = sqrt(sum(abs2,u) / length(u))
 @inline ODE_DEFAULT_PROG_MESSAGE(dt,t,u) = "dt="*string(dt)*"\nt="*string(t)*"\nmax u="*string(maximum(abs.(u)))
 @inline ODE_DEFAULT_UNSTABLE_CHECK(dt,t,u) = any(isnan,u)
 
@@ -139,8 +139,7 @@ function sde_determine_initdt(u0,t,abstol,reltol,internalnorm,f,g,order)
     f(t,u0,f₀)
     g(t,u0,g₀); g₀.*=3
   end
-
-  d₁ = norm(max(abs.(f₀.+g₀),abs.(f₀-g₀))./(abstol+u0*reltol),2)
+  d₁ = norm(max.(abs.(f₀.+g₀),abs.(f₀-g₀))./(abstol+u0*reltol),2)
   if d₀ < 1e-5 || d₁ < 1e-5
     dt₀ = 1e-6
   else
@@ -156,8 +155,8 @@ function sde_determine_initdt(u0,t,abstol,reltol,internalnorm,f,g,order)
     f(t,u0,f₁)
     g(t,u0,g₁); g₁.*=3
   end
-  ΔgMax = max(abs.(g₀-g₁),abs.(g₀+g₁))
-  d₂ = norm(max(abs.(f₁.-f₀.+ΔgMax),abs.(f₁.-f₀.-ΔgMax))./(abstol+u0*reltol),2)/dt₀
+  ΔgMax = max.(abs.(g₀-g₁),abs.(g₀+g₁))
+  d₂ = norm(max.(abs.(f₁.-f₀.+ΔgMax),abs.(f₁.-f₀.-ΔgMax))./(abstol+u0*reltol),2)/dt₀
   if max(d₁,d₂)<=1e-15
     dt₁ = max(1e-6,dt₀*1e-3)
   else

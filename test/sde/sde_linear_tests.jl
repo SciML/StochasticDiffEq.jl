@@ -1,4 +1,4 @@
-using StochasticDiffEq, DiffEqDevTools
+using StochasticDiffEq, DiffEqDevTools, DiffEqProblemLibrary
 srand(100)
 prob = prob_sde_linear
 
