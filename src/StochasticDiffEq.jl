@@ -9,14 +9,6 @@ module StochasticDiffEq
 
   abstract AbstractMonteCarloSimulation
 
-  macro def(name, definition)
-      quote
-          macro $(esc(name))()
-              esc($(Expr(:quote, definition)))
-          end
-      end
-  end
-
   include("algorithms.jl")
   include("stochastic_utils.jl")
   include("solve.jl")
