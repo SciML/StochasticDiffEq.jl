@@ -1,3 +1,5 @@
+__precompile__()
+
 module StochasticDiffEq
 
   using DiffEqBase, Parameters, ChunkedArrays, RecursiveArrayTools, Juno,
@@ -6,14 +8,6 @@ module StochasticDiffEq
 
 
   abstract AbstractMonteCarloSimulation
-
-  macro def(name, definition)
-      quote
-          macro $name()
-              esc($(Expr(:quote, definition)))
-          end
-      end
-  end
 
   include("algorithms.jl")
   include("stochastic_utils.jl")
