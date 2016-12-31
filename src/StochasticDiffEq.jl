@@ -18,6 +18,7 @@ module StochasticDiffEq
   include("algorithms.jl")
   include("stochastic_utils.jl")
   include("solve.jl")
+  include("initdt.jl")
   include("integrators/integrator_utils.jl")
   include("integrators/low_order.jl")
   include("integrators/sri.jl")

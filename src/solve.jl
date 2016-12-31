@@ -9,7 +9,7 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
               timeseries_steps::Int = 1,adaptive=true,γ=2.0,alg_hint=nothing,
               abstol=1e-2,reltol=1e-2,qmax=1.125,δ=1/6,maxiters::Int = round(Int,1e9),
               dtmax=nothing,dtmin=nothing,internalnorm=ODE_DEFAULT_NORM,
-              tstops=tType[],
+              tstops=tType[],saveat=tType[],
               unstable_check = ODE_DEFAULT_UNSTABLE_CHECK,
               discard_length=1e-15,adaptivealg::Symbol=:RSwM3,
               progress_steps=1000,
@@ -18,6 +18,8 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
               timeseries_errors=true,tableau = nothing,kwargs...)
 
   @unpack u0,noise,tspan = prob
+
+  tdir = tspan[2]-tspan[1]
 
   if tspan[2]-tspan[1]<0 || length(tspan)>2
     error("tspan must be two numbers and final time must be greater than starting time. Aborting.")
@@ -44,6 +46,17 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
     adaptive = false
   end
 
+  if dtmax == nothing
+    dtmax = (tspan[2]-tspan[1])/2
+  end
+  if dtmin == nothing
+    if tType <: AbstractFloat
+      dtmin = tType(10)*eps(tType)
+    else
+      dtmin = tType(1//10^(10))
+    end
+  end
+
   if dt == 0.0
     if typeof(alg)==EM
       order = 0.5
@@ -54,18 +67,7 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
     else
       order = 1.5
     end
-    dt = sde_determine_initdt(u0,float(tspan[1]),abstol,reltol,internalnorm,f,g,order)
-  end
-
-  if dtmax == nothing
-    dtmax = (tspan[2]-tspan[1])/2
-  end
-  if dtmin == nothing
-    if tType <: AbstractFloat
-      dtmin = tType(10)*eps(tType)
-    else
-      dtmin = tType(1//10^(10))
-    end
+    dt = sde_determine_initdt(u0,float(tspan[1]),tdir,dtmax,abstol,reltol,internalnorm,f,g,order)
   end
 
   T = tType(tspan[2])
@@ -126,42 +128,4 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
                   timeseries_errors = timeseries_errors,
                   maxstacksize = maxstacksize)
 
-end
-
-function sde_determine_initdt(u0,t,abstol,reltol,internalnorm,f,g,order)
-  d₀ = norm(u0./(abstol+u0*reltol),2)
-  if typeof(u0) <: Number
-    f₀ = f(t,u0)
-    g₀ = 3g(t,u0)
-  else
-    f₀ = similar(u0)
-    g₀ = similar(u0)
-    f(t,u0,f₀)
-    g(t,u0,g₀); g₀.*=3
-  end
-
-  d₁ = norm(max(abs.(f₀.+g₀),abs.(f₀-g₀))./(abstol+u0*reltol),2)
-  if d₀ < 1e-5 || d₁ < 1e-5
-    dt₀ = 1e-6
-  else
-    dt₀ = 0.01*(d₀/d₁)
-  end
-  u₁ = u0 + dt₀*f₀
-  if typeof(u0) <: Number
-    f₁ = f(t+dt₀,u₁)
-    g₁ = 3g(t+dt₀,u₁)
-  else
-    f₁ = similar(u0)
-    g₁ = similar(u0)
-    f(t,u0,f₁)
-    g(t,u0,g₁); g₁.*=3
-  end
-  ΔgMax = max(abs.(g₀-g₁),abs.(g₀+g₁))
-  d₂ = norm(max(abs.(f₁.-f₀.+ΔgMax),abs.(f₁.-f₀.-ΔgMax))./(abstol+u0*reltol),2)/dt₀
-  if max(d₁,d₂)<=1e-15
-    dt₁ = max(1e-6,dt₀*1e-3)
-  else
-    dt₁ = 10.0^(-(2+log10(max(d₁,d₂)))/(order+.5))
-  end
-  dt = min(100dt₀,dt₁)
 end
