@@ -13,8 +13,8 @@ function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,
     E₂ = chi2.*(g(t,u)-gpdt) #Only for additive!
 
     if adaptive
-      EEst = abs((δ*E₁+E₂)./(abstol + u*reltol))
       utmp = u + k₁/3 + 2k₂/3 + E₂ + ΔW*gpdt
+      EEst = abs((δ*E₁+E₂)./(abstol + max(abs(u),abs(utmp))*reltol))
     else
       u = u + k₁/3 + 2k₂/3 + E₂ + ΔW*gpdt
     end
@@ -52,12 +52,12 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tableauType,uEltypeN
 
     if adaptive
       for i in eachindex(u)
-        EEsttmp[i] = (δ*E₁[i]+E₂[i])/(abstol + u[i]*reltol)
-      end
-      EEst = internalnorm(EEsttmp)
-      for i in eachindex(u)
         utmp[i] = u[i] + k₁[i]/3 + 2k₂[i]/3 + E₂[i] + ΔW[i]*gpdt[i]
       end
+      for i in eachindex(u)
+        EEsttmp[i] = (δ*E₁[i]+E₂[i])/(abstol + max(abs(u[i]),abs(utmp[i]))*reltol)
+      end
+      EEst = internalnorm(EEsttmp)
     else
       for i in eachindex(u)
         u[i] = u[i] + k₁[i]/3 + 2k₂[i]/3 + E₂[i] + ΔW[i]*gpdt[i]
@@ -125,14 +125,13 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tableauType,uEltypeN
     end
 
     if adaptive
-
-      for i in eachindex(u)
-        EEsttmp[i] = (δ*E₁[i]+E₂[i])/(abstol + u[i]*reltol)
-      end
-      EEst = internalnorm(EEsttmp)
       for i in eachindex(u)
         utmp[i] = u[i] + dt*atemp[i] + btemp[i] + E₂[i]
       end
+      for i in eachindex(u)
+        EEsttmp[i] = (δ*E₁[i]+E₂[i])/(abstol + max(abs(u[i]),abs(utmp[i]))*reltol)
+      end
+      EEst = internalnorm(EEsttmp)
     else
       for i in eachindex(u)
         u[i] = u[i] + dt*atemp[i] + btemp[i] + E₂[i]
@@ -183,8 +182,8 @@ function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,
 
     if adaptive
       E₁ = dt*E₁temp
-      EEst = abs((δ*E₁+E₂)./(abstol + u*reltol))
       utmp = u + dt*atemp + btemp + E₂
+      EEst = abs((δ*E₁+E₂)./(abstol + max(abs(u),abs(utmp))*reltol))
     else
       u = u + dt*atemp + btemp + E₂
     end

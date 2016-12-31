@@ -74,12 +74,12 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tableauType,uEltypeN
 
     if adaptive
       for i in eachindex(u)
-        EEsttmp[i] = (δ*E₁[i]+E₂[i])/(abstol + u[i]*reltol)
-      end
-      EEst = internalnorm(EEsttmp)
-      for i in eachindex(u)
         utmp[i] = u[i] + dt*atemp[i] + btemp[i] + E₂[i]
       end
+      for i in eachindex(u)
+        EEsttmp[i] = (δ*E₁[i]+E₂[i])/(abstol + max(abs(u[i]),abs(utmp[i]))*reltol)
+      end
+      EEst = internalnorm(EEsttmp)
     else
       for i in eachindex(u)
         u[i] = u[i] + dt*atemp[i] + btemp[i] + E₂[i]
@@ -154,12 +154,12 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tableauType,uEltypeN
 
     if adaptive
       for i in eachindex(u)
-        EEsttmp[i] = (δ*E₁[i]+E₂[i])/(abstol + u[i]*reltol)
-      end
-      EEst = internalnorm(EEsttmp)
-      for i in eachindex(u)
         utmp[i] = u[i] +  (fH01[i] + 2fH02[i])/3 + ΔW[i]*(mg₁[i] + Fg₂o3[i] + Tg₃o3[i]) + chi1[i]*(mg₁[i] + Fg₂o3[i] - g₃o3[i]) + E₂[i]
       end
+      for i in eachindex(u)
+        EEsttmp[i] = (δ*E₁[i]+E₂[i])/(abstol + max(abs(u[i]),abs(utmp[i]))*reltol)
+      end
+      EEst = internalnorm(EEsttmp)
     else
       for i in eachindex(u)
         u[i] = u[i] +  (fH01[i] + 2fH02[i])/3 + ΔW[i]*(mg₁[i] + Fg₂o3[i] + Tg₃o3[i]) + chi1[i]*(mg₁[i] + Fg₂o3[i] - g₃o3[i]) + E₂[i]
@@ -214,8 +214,8 @@ function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,
     E₂ = chi2.*(2g₁ - Fg₂o3 - Tg₃o3) + chi3.*(2mg₁ + 5g₂o3 - Tg₃o3 + g₄)
 
     if adaptive
-      EEst = abs((δ*E₁+E₂)/(abstol + u*reltol))
       utmp = u + (fH01 + 2fH02)/3 + ΔW.*(mg₁ + Fg₂o3 + Tg₃o3) + chi1.*(mg₁ + Fg₂o3 - g₃o3) + E₂
+      EEst = abs((δ*E₁+E₂)/(abstol + max(abs(u),abs(utmp))*reltol))
     else
       u = u + (fH01 + 2fH02)/3 + ΔW.*(mg₁ + Fg₂o3 + Tg₃o3) + chi1.*(mg₁ + Fg₂o3 - g₃o3) + E₂
     end
@@ -278,8 +278,8 @@ function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,
 
 
     if adaptive
-      EEst = abs((δ*E₁+E₂)./(abstol + u*reltol))
       utmp = u + dt*atemp + btemp + E₂
+      EEst = abs((δ*E₁+E₂)./(abstol + max(abs(u),abs(utmp))*reltol))
     else
       u = u + dt*atemp + btemp + E₂
     end
