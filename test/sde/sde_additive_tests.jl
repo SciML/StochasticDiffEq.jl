@@ -12,8 +12,6 @@ println("Solve and Plot")
 sol =solve(prob,SRA(),dt=1/2^(3))
 sol =solve(prob,SRA1(),dt=1/2^(3))
 
-#Now do the simulation 10000 times in parallel. Return an array
-solArr = monte_carlo_simulation(prob,SRA1(),dt=1//2^(3),numMonte=5)
 
 #First index is the sime, so sol.timeseries[1,..] is the initial condition
 #Last indices are the indexes of the variables. Since our initial condition

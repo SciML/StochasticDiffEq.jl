@@ -6,11 +6,7 @@ module StochasticDiffEq
         DataStructures, ResettableStacks
   import DiffEqBase: solve
 
-
-  abstract AbstractMonteCarloSimulation
-
   include("algorithms.jl")
-  include("stochastic_utils.jl")
   include("solve.jl")
   include("initdt.jl")
   include("integrators/integrator_utils.jl")
@@ -21,9 +17,6 @@ module StochasticDiffEq
 
    export StochasticDiffEqAlgorithm, EM, RKMil, SRA, SRI, SRIW1,
           SRA1
-
-   #Stochastic Utils
-   export monte_carlo_simulation
 
    #General Functions
    export solve
