@@ -2,9 +2,9 @@
 @inline ODE_DEFAULT_PROG_MESSAGE(dt,t,u) = "dt="*string(dt)*"\nt="*string(t)*"\nmax u="*string(maximum(abs.(u)))
 @inline ODE_DEFAULT_UNSTABLE_CHECK(dt,t,u) = any(isnan,u)
 
-function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgorithm}(
+function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgorithm,recompile_flag}(
               prob::AbstractSDEProblem{uType,tType,isinplace,NoiseClass,F,F2,F3},
-              alg::algType;
+              alg::algType,timeseries=[],ts=[],ks=[],recompile::Type{Val{recompile_flag}}=Val{true};
               dt::Number=0.0,save_timeseries::Bool = true,
               timeseries_steps::Int = 1,adaptive=true,γ=2.0,alg_hint=nothing,
               abstol=1e-2,reltol=1e-2,qmax=1.125,δ=1/6,maxiters::Int = round(Int,1e9),
@@ -67,7 +67,7 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
     else
       order = 1.5
     end
-    dt = sde_determine_initdt(u0,float(tspan[1]),tdir,dtmax,abstol,reltol,internalnorm,f,g,order)
+    dt = sde_determine_initdt(u0,float(tspan[1]),tdir,dtmax,abstol,reltol,internalnorm,prob,order)
   end
 
   T = tType(tspan[2])
@@ -122,7 +122,7 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
 
   #@code_warntype sde_solve(SDEIntegrator{typeof(alg),typeof(u),eltype(u),ndims(u),ndims(u)+1,typeof(dt),typeof(tableau)}(f,g,u,t,dt,T,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,discard_length,progress,atomloaded,progress_steps,rands,sqdt,W,Z,tableau))
 
-  u,t,W,timeseries,ts,Ws,maxstacksize,maxstacksize2 = sde_solve(SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,tType,tableauType,uEltypeNoUnits,randType,rateType,typeof(internalnorm),typeof(progress_message),typeof(unstable_check),typeof(f),typeof(g)}(f,g,u,t,dt,T,alg,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,discard_length,progress,progress_name,progress_steps,progress_message,unstable_check,rands,sqdt,W,Z,tableau))
+  u,t,W,timeseries,ts,Ws,maxstacksize,maxstacksize2 = sde_solve(SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,tType,tableauType,uEltypeNoUnits,randType,rateType,typeof(internalnorm),typeof(progress_message),typeof(unstable_check),F,F2}(f,g,u,t,dt,T,alg,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,discard_length,progress,progress_name,progress_steps,progress_message,unstable_check,rands,sqdt,W,Z,tableau))
 
   build_solution(prob,alg,ts,timeseries,W=Ws,
                   timeseries_errors = timeseries_errors,

@@ -1,4 +1,6 @@
-function sde_determine_initdt(u0,t,tdir,dtmax,abstol,reltol,internalnorm,f,g,order)
+function sde_determine_initdt(u0,t,tdir,dtmax,abstol,reltol,internalnorm,prob,order)
+  f = prob.f
+  g = prob.g
   d₀ = norm(u0./(abstol+abs.(u0)*reltol),2)
   if typeof(u0) <: Number
     f₀ = f(t,u0)

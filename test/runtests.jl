@@ -1,6 +1,7 @@
 using StochasticDiffEq, DiffEqDevTools, DiffEqProblemLibrary
 using Base.Test
 
+tic()
 const TEST_PLOT = false
 const LONGER_TESTS = false
 #SDE
@@ -19,3 +20,4 @@ LONGER_TESTS && @time @testset "Weak Convergence Tests" begin include("weak_conv
 @time @testset "Multiple Dimension Linear Adaptive Test" begin include("adaptive/sde_twodimlinearadaptive_tests.jl") end
 @time @testset "Autostepsize Test" begin include("adaptive/sde_autostepsize_test.jl") end
 @time @testset "Additive Lorenz Attractor Test" begin include("adaptive/sde_lorenzattractor_tests.jl") end
+toc()
