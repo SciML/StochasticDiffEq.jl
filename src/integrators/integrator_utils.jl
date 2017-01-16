@@ -293,5 +293,5 @@ end
     push!(Ws,W)
   end
   progress_on && Juno.done(prog)
-  u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
+  return u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
 end
