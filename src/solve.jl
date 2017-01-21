@@ -90,11 +90,12 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
 
   if !(uType <: AbstractArray)
     rands = ChunkedArray(noise.noise_func)
+    randType = typeof(u/u) # Strip units and type info
   else
-    rands = ChunkedArray(noise.noise_func,map((x)->x/x,u)) # Strip units
+    rand_prototype = similar(map((x)->x/x,u),indices(u))
+    rands = ChunkedArray(noise.noise_func,rand_prototype) # Strip units
+    randType = typeof(rand_prototype) # Strip units and type info
   end
-
-  randType = typeof(map((x)->x/x,u)) # Strip units
 
   if uType <: AbstractArray
     uEltypeNoUnits = eltype(u./u)
@@ -109,8 +110,8 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
     Z = 0.0
     push!(Ws,W)
   else
-    W = zeros(u0)
-    Z = zeros(u0)
+    W = zeros(rand_prototype)
+    Z = zeros(rand_prototype)
     push!(Ws,copy(W))
   end
   sqdt = sqrt(dt)

@@ -155,7 +155,7 @@ end
         if !(uType <: AbstractArray)
           dttmp = 0.0; ΔW = 0.0; ΔZ = 0.0
         else
-          dttmp = 0.0; ΔW = zeros(u); ΔZ = zeros(u)
+          dttmp = 0.0; ΔW = zeros(size(u)...); ΔZ = zeros(size(u)...)
         end
         while !isempty(S₁)
           L₁,L₂,L₃ = pop!(S₁)
@@ -210,7 +210,7 @@ end
         if !(uType <: AbstractArray)
           dttmp = 0.0; ΔWtmp = 0.0; ΔZtmp = 0.0
         else
-          dttmp = 0.0; ΔWtmp = zeros(u); ΔZtmp = zeros(u)
+          dttmp = 0.0; ΔWtmp = zeros(size(u)...); ΔZtmp = zeros(size(u)...)
         end
         if length(S₂) > max_stack_size2
           max_stack_size2= length(S₂)
