@@ -7,6 +7,7 @@ module StochasticDiffEq
   import DiffEqBase: solve
 
   include("algorithms.jl")
+  include("alg_utils.jl")
   include("solve.jl")
   include("initdt.jl")
   include("integrators/integrator_utils.jl")
