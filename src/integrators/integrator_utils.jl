@@ -1,4 +1,4 @@
-immutable SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}
+immutable SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}
   f::F4
   g::F5
   u::uType
@@ -33,6 +33,10 @@ immutable SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,
   W::randType
   Z::randType
   tableau::tableauType
+  beta1::tTypeNoUnits
+  beta2::tTypeNoUnits
+  qoldinit::tTypeNoUnits
+  qmin::tTypeNoUnits
 end
 
 @def sde_preamble begin

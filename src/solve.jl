@@ -118,13 +118,14 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
   #@code_warntype sde_solve(SDEIntegrator{typeof(alg),typeof(u),eltype(u),ndims(u),ndims(u)+1,typeof(dt),typeof(tableau)}(f,g,u,t,dt,T,Int(maxiters),timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,discard_length,progress,atomloaded,progress_steps,rands,sqdt,W,Z,tableau))
 
   u,t,W,timeseries,ts,Ws,maxstacksize,maxstacksize2 = sde_solve(
-  SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,tType,tableauType,
+  SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,tType,tTypeNoUnits,tableauType,
                 uEltypeNoUnits,randType,rateType,typeof(internalnorm),typeof(progress_message),
                 typeof(unstable_check),F,F2}(f,g,u,t,dt,T,alg,Int(maxiters),timeseries,Ws,
                 ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,
                 abstol,reltol,tTypeNoUnits(qmax),dtmax,dtmin,internalnorm,discard_length,
                 progress,progress_name,progress_steps,progress_message,
-                unstable_check,rands,sqdt,W,Z,tableau))
+                unstable_check,rands,sqdt,W,Z,tableau,
+                tTypeNoUnits(beta1),tTypeNoUnits(beta2),tTypeNoUnits(qoldinit),tTypeNoUnits(qmin)))
 
   build_solution(prob,alg,ts,timeseries,W=Ws,
                   timeseries_errors = timeseries_errors,
