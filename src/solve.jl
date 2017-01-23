@@ -6,7 +6,7 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
               prob::AbstractSDEProblem{uType,tType,isinplace,NoiseClass,F,F2,F3},
               alg::algType,timeseries=[],ts=[],ks=[],recompile::Type{Val{recompile_flag}}=Val{true};
               dt::Number=0.0,save_timeseries::Bool = true,
-              timeseries_steps::Int = 1,adaptive=true,γ=2.0,alg_hint=nothing,
+              timeseries_steps::Int = 1,adaptive=true,γ=9//10,alg_hint=nothing,
               abstol=1e-2,reltol=1e-2,
               qmax=qmax_default(alg),qmin=qmin_default(alg),
               qoldinit=1//10^4, fullnormalize=true,
@@ -112,19 +112,21 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
   iter = 0
   maxstacksize = 0
   #EEst = 0
+  q11 = tTypeNoUnits(1)
 
   rateType = typeof(u/t) ## Can be different if united
 
   #@code_warntype sde_solve(SDEIntegrator{typeof(alg),typeof(u),eltype(u),ndims(u),ndims(u)+1,typeof(dt),typeof(tableau)}(f,g,u,t,dt,T,Int(maxiters),timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,discard_length,progress,atomloaded,progress_steps,rands,sqdt,W,Z,tableau))
 
   u,t,W,timeseries,ts,Ws,maxstacksize,maxstacksize2 = sde_solve(
-  SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,tType,tableauType,
+  SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,tType,tTypeNoUnits,tableauType,
                 uEltypeNoUnits,randType,rateType,typeof(internalnorm),typeof(progress_message),
                 typeof(unstable_check),F,F2}(f,g,u,t,dt,T,alg,Int(maxiters),timeseries,Ws,
-                ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,
+                ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,tTypeNoUnits(γ),
                 abstol,reltol,tTypeNoUnits(qmax),dtmax,dtmin,internalnorm,discard_length,
                 progress,progress_name,progress_steps,progress_message,
-                unstable_check,rands,sqdt,W,Z,tableau))
+                unstable_check,rands,sqdt,W,Z,tableau,
+                tTypeNoUnits(beta1),tTypeNoUnits(beta2),tTypeNoUnits(qoldinit),tTypeNoUnits(qmin),q11,tTypeNoUnits(qoldinit)))
 
   build_solution(prob,alg,ts,timeseries,W=Ws,
                   timeseries_errors = timeseries_errors,

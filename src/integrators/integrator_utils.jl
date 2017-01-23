@@ -1,4 +1,4 @@
-immutable SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}
+type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}
   f::F4
   g::F5
   u::uType
@@ -33,6 +33,12 @@ immutable SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tableauType,uEltypeNoUnits,
   W::randType
   Z::randType
   tableau::tableauType
+  beta1::tTypeNoUnits
+  beta2::tTypeNoUnits
+  qold::tTypeNoUnits
+  qmin::tTypeNoUnits
+  q11::tTypeNoUnits
+  qoldinit::tTypeNoUnits
 end
 
 @def sde_preamble begin
@@ -108,15 +114,37 @@ end
 
 @def sde_loopfooter begin
   if adaptive
+    #=
     standard = abs(1/(γ*EEst))^(2)
     if isinf(standard)
         q = qmax
     else
        q = min(qmax,max(standard,eps()))
     end
-    if q > 1
+    =#
+    integrator.q11 = EEst^integrator.beta1
+    q = integrator.q11/(integrator.qold^integrator.beta2)
+    q = max(inv(integrator.qmax),min(inv(integrator.qmin),q/γ))
+    dtnew = dt/q
+    ttmp = t + dt
+    #integrator.isout = integrator.opts.isoutofdomain(ttmp,integrator.u)
+    #integrator.accept_step = (!integrator.isout && integrator.EEst <= 1.0)
+    if EEst <= 1 # Accepted
       acceptedIters += 1
-      t = t + dt
+      t = ttmp
+      integrator.qold = max(EEst,integrator.qoldinit)
+      #if integrator.tdir > 0
+        dtpropose = min(integrator.dtmax,dtnew)
+      #else
+      #  integrator.dtpropose = max(integrator.opts.dtmax,dtnew)
+      #end
+      #if integrator.tdir > 0
+        dtpropose = max(dtpropose,integrator.dtmin) #abs to fix complex sqrt issue at end
+      #else
+      #  integrator.dtpropose = min(integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
+      #end
+
+
       if uType <: AbstractArray
         for i in eachindex(u)
           W[i] = W[i] + ΔW[i]
@@ -141,7 +169,7 @@ end
           dt,ΔW,ΔZ = pop!(S₁)
           sqdt = sqrt(dt)
         else # Stack is empty
-          c = min(dtmax,q*dt)
+          c = min(dtmax,dtnew)
           dt = max(min(c,abs(T-t)),dtmin)#abs to fix complex sqrt issue at end
           #dt = min(c,abs(T-t))
           sqdt = sqrt(dt)
@@ -149,7 +177,7 @@ end
           ΔZ = sqdt*next(rands)
         end
       elseif adaptivealg==:RSwM2 || adaptivealg==:RSwM3
-        c = min(dtmax,q*dt)
+        c = min(dtmax,dtnew)
         dt = max(min(c,abs(T-t)),dtmin) #abs to fix complex sqrt issue at end
         sqdt = sqrt(dt)
         if !(uType <: AbstractArray)
@@ -193,10 +221,12 @@ end
         end
       end # End RSwM2 and RSwM3
     else #Rejection
+      dtnew = dt/min(inv(integrator.qmin),integrator.q11/integrator.γ)
+      q = dtnew/dt
       if adaptivealg==:RSwM1 || adaptivealg==:RSwM2
-        ΔWtmp = q*ΔW + sqrt((1-q)*q*dt)*next(rands)
-        ΔZtmp = q*ΔZ + sqrt((1-q)*q*dt)*next(rands)
-        cutLength = dt-q*dt
+        ΔWtmp = q*ΔW + sqrt((1-q)*dtnew)*next(rands)
+        ΔZtmp = q*ΔZ + sqrt((1-q)*dtnew)*next(rands)
+        cutLength = dt-dtnew
         if cutLength > discard_length
           push!(S₁,(cutLength,ΔW-ΔWtmp,ΔZ-ΔZtmp))
         end
@@ -205,7 +235,7 @@ end
         end
         ΔW = ΔWtmp
         ΔZ = ΔZtmp
-        dt = q*dt
+        dt = dtnew
       else # RSwM3
         if !(uType <: AbstractArray)
           dttmp = 0.0; ΔWtmp = 0.0; ΔZtmp = 0.0
@@ -231,7 +261,6 @@ end
         K₂ = ΔW - ΔWtmp
         K₃ = ΔZ - ΔZtmp
         qK = q*dt/dtK
-
         ΔWtilde = qK*K₂ + sqrt((1-qK)*qK*dtK)*next(rands)
         ΔZtilde = qK*K₃ + sqrt((1-qK)*qK*dtK)*next(rands)
         cutLength = (1-qK)*dtK
@@ -241,7 +270,7 @@ end
         if length(S₁) > max_stack_size
             max_stack_size = length(S₁)
         end
-        dt = q*dt
+        dt = dtnew
         ΔW = ΔWtilde
         ΔZ = ΔZtilde
       end
