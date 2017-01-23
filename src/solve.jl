@@ -5,22 +5,30 @@
 function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgorithm,recompile_flag}(
               prob::AbstractSDEProblem{uType,tType,isinplace,NoiseClass,F,F2,F3},
               alg::algType,timeseries=[],ts=[],ks=[],recompile::Type{Val{recompile_flag}}=Val{true};
-              dt::Number=0.0,save_timeseries::Bool = true,
-              timeseries_steps::Int = 1,adaptive=true,γ=9//10,alg_hint=nothing,
+              dt = tType(0),save_timeseries::Bool = true,
+              timeseries_steps::Int = 1,
+              dense = false,
+              saveat = tType[],tstops = tType[],d_discontinuities= tType[],
+              calck = (!isempty(setdiff(saveat,tstops)) || dense),
+              adaptive=isadaptive(alg),γ=9//10,
               abstol=1e-2,reltol=1e-2,
               qmax=qmax_default(alg),qmin=qmin_default(alg),
               qoldinit=1//10^4, fullnormalize=true,
               beta2=beta2_default(alg),
               beta1=beta1_default(alg,beta2),
-              δ=1/6,maxiters = round(Int,1e9),
-              dtmax=nothing,dtmin=nothing,internalnorm=ODE_DEFAULT_NORM,
-              tstops=tType[],saveat=tType[],
+              δ=1/6,maxiters = 1e9,
+              dtmax=tType((prob.tspan[end]-prob.tspan[1])),
+              dtmin=tType <: AbstractFloat ? tType(10)*eps(tType) : tType(1//10^(10)),
+              internalnorm=ODE_DEFAULT_NORM,
               unstable_check = ODE_DEFAULT_UNSTABLE_CHECK,
+              advance_to_tstop = false,stop_at_next_tstop=false,
               discard_length=1e-15,adaptivealg::Symbol=:RSwM3,
               progress_steps=1000,
               progress=false, progress_message = ODE_DEFAULT_PROG_MESSAGE,
               progress_name="SDE",
-              timeseries_errors=true,tableau = nothing,kwargs...)
+              userdata=nothing,callback=nothing,
+              timeseries_errors = true, dense_errors=false,
+              tableau = nothing,kwargs...)
 
   @unpack u0,noise,tspan = prob
 
