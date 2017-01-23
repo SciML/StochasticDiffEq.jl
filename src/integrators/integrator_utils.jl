@@ -1,4 +1,4 @@
-type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}
+type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}
   f::F4
   g::F5
   u::uType
@@ -32,7 +32,6 @@ type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uEltype
   sqdt::tType
   W::randType
   Z::randType
-  tableau::tableauType
   beta1::tTypeNoUnits
   beta2::tTypeNoUnits
   qold::tTypeNoUnits
@@ -48,7 +47,7 @@ end
   local T::tType
   local ΔW::randType
   local ΔZ::randType
-  @unpack f,g,u,t,dt,T,alg,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,discard_length,progress_on,progress_name,progress_steps,progress_message,unstable_check,rands,sqdt,W,Z,tableau = integrator
+  @unpack f,g,u,t,dt,T,alg,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,discard_length,progress_on,progress_name,progress_steps,progress_message,unstable_check,rands,sqdt,W,Z = integrator
 
   progress_on && (prog = Juno.ProgressBar(name=progress_name))
   if uType <: AbstractArray

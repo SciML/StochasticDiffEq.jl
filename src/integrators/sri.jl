@@ -1,7 +1,7 @@
-function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRI,uType,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
+function sde_solve{algType<:SRI,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
   @sde_preamble
   @sde_sritableaupreamble
-  @unpack c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄ = tableau
+  @unpack c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄ = alg.tableau
   stages = length(α)
   H0 = Vector{typeof(u)}(0)
   H1 = Vector{typeof(u)}(0)
@@ -91,7 +91,7 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,tableau
   @sde_postamble
 end
 
-function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRIW1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
+function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRIW1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
   @sde_preamble
   chi1::randType = similar(ΔW)
   chi2::randType = similar(ΔW)
@@ -170,7 +170,7 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,tableau
   @sde_postamble
 end
 
-function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRIW1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
+function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRIW1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
   @sde_preamble
   local H0::uType
   @sde_adaptiveprelim
@@ -225,10 +225,10 @@ function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uE
   @sde_postamble
 end
 
-function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRI,uType,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
+function sde_solve{algType<:SRI,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
   @sde_preamble
   @sde_sritableaupreamble
-  @unpack c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄ = tableau
+  @unpack c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄ = alg.tableau
   stages::Int = length(α)
   H0 = Array{typeof(u)}(stages)
   H1 = Array{typeof(u)}(stages)

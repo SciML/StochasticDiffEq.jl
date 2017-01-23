@@ -1,4 +1,4 @@
-function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRA1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
+function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRA1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
   @sde_preamble
   H0 = Array{uEltype}(size(u)...,2)
   local k₁::uType; local k₂::uType; local E₁::uType; local E₂::uType
@@ -24,7 +24,7 @@ function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uE
   @sde_postamble
 end
 
-function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRA1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
+function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRA1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
   @sde_preamble
 
   H0 = Array{uEltype}(size(u)...,2)
@@ -68,10 +68,10 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,tableau
   @sde_postamble
 end
 
-function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRA,uType,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
+function sde_solve{algType<:SRA,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
   @sde_preamble
   @sde_sratableaupreamble
-  @unpack c₀,c₁,A₀,B₀,α,β₁,β₂ = tableau
+  @unpack c₀,c₁,A₀,B₀,α,β₁,β₂ = alg.tableau
   stages::Int = length(α)
   H0 = Vector{typeof(u)}(0)
   for i = 1:stages
@@ -142,10 +142,10 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,tableau
   @sde_postamble
 end
 
-function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRA,uType,uEltype,Nm1,N,tType,tTypeNoUnits,tableauType,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
+function sde_solve{algType<:SRA,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
   @sde_preamble
   @sde_sratableaupreamble
-  @unpack c₀,c₁,A₀,B₀,α,β₁,β₂ = tableau
+  @unpack c₀,c₁,A₀,B₀,α,β₁,β₂ = alg.tableau
   stages::Int = length(α)
   H0 = Array{uEltype}(stages)
   local atemp::uType; local btemp::uType

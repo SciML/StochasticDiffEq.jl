@@ -28,11 +28,12 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
               progress_name="SDE",
               userdata=nothing,callback=nothing,
               timeseries_errors = true, dense_errors=false,
-              tableau = nothing,kwargs...)
+              kwargs...)
 
   @unpack u0,noise,tspan = prob
 
-  tdir = tspan[2]-tspan[1]
+  tspan = prob.tspan
+  tdir = sign(tspan[end]-tspan[1])
 
   if tspan[2]-tspan[1]<0 || length(tspan)>2
     error("tspan must be two numbers and final time must be greater than starting time. Aborting.")
@@ -42,32 +43,39 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
       error("Fixed timestep methods require a choice of dt or choosing the tstops")
   end
 
-  u = copy(u0)
+  d_discontinuities_col = collect(d_discontinuities)
 
+  if tdir>0
+    tstops_internal = binary_minheap(convert(Vector{tType},append!(collect(tstops),d_discontinuities_col)))
+  else
+    tstops_internal = binary_maxheap(convert(Vector{tType},append!(collect(tstops),d_discontinuities_col)))
+  end
+
+  if !isempty(tstops) && tstops[end] != tspan[2]
+    push!(tstops_internal,tspan[2])
+  elseif isempty(tstops)
+    push!(tstops_internal,tspan[2])
+  end
+
+  if top(tstops_internal) == tspan[1]
+    pop!(tstops_internal)
+  end
   f = prob.f
   g = prob.g
+  u0 = prob.u0
+  uEltype = eltype(u0)
 
-  if typeof(alg) <: StochasticDiffEqAdaptiveAlgorithm
-    if adaptive
-      dt = 1.0*dt
-    end
-  else
-    adaptive = false
-  end
+  (uType<:Array || uType <: Number) ? u = copy(u0) : u = deepcopy(u0)
 
-  if dtmax == nothing
-    dtmax = (tspan[2]-tspan[1])/2
-  end
-  if dtmin == nothing
-    if tType <: AbstractFloat
-      dtmin = tType(10)*eps(tType)
-    else
-      dtmin = tType(1//10^(10))
-    end
+  ks = Vector{uType}(0)
+
+  order = alg_order(alg)
+
+  if typeof(alg) <: SRI || typeof(alg) <: SRA
+    order = alg.tableau.order
   end
 
   if dt == 0.0
-    order = alg_order(alg)
     dt = sde_determine_initdt(u0,float(tspan[1]),tdir,dtmax,abstol,reltol,internalnorm,prob,order)
   end
 
@@ -79,15 +87,7 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
   ts = Vector{tType}(0)
   push!(ts,t)
 
-  #PreProcess
-  if typeof(alg)== SRA && tableau == nothing
-    tableau = constructSRA1()
-  elseif tableau == nothing # && (typeof(alg)==:SRI)
-    tableau = constructSRIW1()
-  end
-
   uEltype = eltype(u)
-  tableauType = typeof(tableau)
 
   if !(uType <: AbstractArray)
     rands = ChunkedArray(noise.noise_func)
@@ -123,13 +123,13 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
   #@code_warntype sde_solve(SDEIntegrator{typeof(alg),typeof(u),eltype(u),ndims(u),ndims(u)+1,typeof(dt),typeof(tableau)}(f,g,u,t,dt,T,Int(maxiters),timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,discard_length,progress,atomloaded,progress_steps,rands,sqdt,W,Z,tableau))
 
   u,t,W,timeseries,ts,Ws,maxstacksize,maxstacksize2 = sde_solve(
-  SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,tType,tTypeNoUnits,tableauType,
+  SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,tType,tTypeNoUnits,
                 uEltypeNoUnits,randType,rateType,typeof(internalnorm),typeof(progress_message),
                 typeof(unstable_check),F,F2}(f,g,u,t,dt,T,alg,Int(maxiters),timeseries,Ws,
                 ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,tTypeNoUnits(γ),
                 abstol,reltol,tTypeNoUnits(qmax),dtmax,dtmin,internalnorm,discard_length,
                 progress,progress_name,progress_steps,progress_message,
-                unstable_check,rands,sqdt,W,Z,tableau,
+                unstable_check,rands,sqdt,W,Z,
                 tTypeNoUnits(beta1),tTypeNoUnits(beta2),tTypeNoUnits(qoldinit),tTypeNoUnits(qmin),q11,tTypeNoUnits(qoldinit)))
 
   build_solution(prob,alg,ts,timeseries,W=Ws,
