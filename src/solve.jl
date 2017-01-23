@@ -35,13 +35,9 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
   end
 
   u = copy(u0)
-  if !isinplace && typeof(u)<:AbstractArray
-    f = (t,u,du) -> (du[:] = prob.f(t,u))
-    g = (t,u,du) -> (du[:] = prob.g(t,u))
-  else
-    f = prob.f
-    g = prob.g
-  end
+
+  f = prob.f
+  g = prob.g
 
   if typeof(alg) <: StochasticDiffEqAdaptiveAlgorithm
     if adaptive
