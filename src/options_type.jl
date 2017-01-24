@@ -23,6 +23,7 @@ type SDEOptions{uEltype,uEltypeNoUnits,tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsT
   dense_errors::Bool
   beta1::tTypeNoUnits
   beta2::tTypeNoUnits
+  delta::uEltypeNoUnits
   qoldinit::tTypeNoUnits
   dense::Bool
   callback::F3

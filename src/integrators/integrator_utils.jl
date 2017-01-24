@@ -9,7 +9,6 @@ type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,rand
   timeseries::Vector{uType}
   Ws::Vector{randType}
   ts::Vector{tType}
-  δ::uEltypeNoUnits
   rands::ChunkedArray{uEltypeNoUnits,Nm1,N}
   sqdt::tType
   W::randType
@@ -26,7 +25,7 @@ end
   local T::tType
   local ΔW::randType
   local ΔZ::randType
-  @unpack u,t,dt,T,timeseries,Ws,ts,δ,rands,W,Z = integrator
+  @unpack u,t,dt,T,timeseries,Ws,ts,rands,W,Z = integrator
 
   integrator.opts.progress && (prog = Juno.ProgressBar(name=integrator.opts.progress_name))
   if uType <: AbstractArray

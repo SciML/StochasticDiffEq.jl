@@ -13,7 +13,7 @@ function sde_solve{algType<:SRA1,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,
 
     if integrator.opts.adaptive
       utmp = u + k₁/3 + 2k₂/3 + E₂ + ΔW*gpdt
-      EEst = abs((δ*E₁+E₂)./(integrator.opts.abstol + max(abs(u),abs(utmp))*integrator.opts.reltol))
+      EEst = abs((integrator.opts.delta*E₁+E₂)./(integrator.opts.abstol + max(abs(u),abs(utmp))*integrator.opts.reltol))
     else
       u = u + k₁/3 + 2k₂/3 + E₂ + ΔW*gpdt
     end
@@ -54,7 +54,7 @@ function sde_solve{algType<:SRA1,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeN
         utmp[i] = u[i] + k₁[i]/3 + 2k₂[i]/3 + E₂[i] + ΔW[i]*gpdt[i]
       end
       for i in eachindex(u)
-        EEsttmp[i] = (δ*E₁[i]+E₂[i])/(integrator.opts.abstol + max(abs(u[i]),abs(utmp[i]))*integrator.opts.reltol)
+        EEsttmp[i] = (integrator.opts.delta*E₁[i]+E₂[i])/(integrator.opts.abstol + max(abs(u[i]),abs(utmp[i]))*integrator.opts.reltol)
       end
       EEst = integrator.opts.internalnorm(EEsttmp)
     else
@@ -128,7 +128,7 @@ function sde_solve{algType<:SRA,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNo
         utmp[i] = u[i] + dt*atemp[i] + btemp[i] + E₂[i]
       end
       for i in eachindex(u)
-        EEsttmp[i] = (δ*E₁[i]+E₂[i])/(integrator.opts.abstol + max(abs(u[i]),abs(utmp[i]))*integrator.opts.reltol)
+        EEsttmp[i] = (integrator.opts.delta*E₁[i]+E₂[i])/(integrator.opts.abstol + max(abs(u[i]),abs(utmp[i]))*integrator.opts.reltol)
       end
       EEst = integrator.opts.internalnorm(EEsttmp)
     else
@@ -179,7 +179,7 @@ function sde_solve{algType<:SRA,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,u
     if integrator.opts.adaptive
       E₁ = dt*E₁temp
       utmp = u + dt*atemp + btemp + E₂
-      EEst = abs((δ*E₁+E₂)./(integrator.opts.abstol + max(abs(u),abs(utmp))*integrator.opts.reltol))
+      EEst = abs((integrator.opts.delta*E₁+E₂)./(integrator.opts.abstol + max(abs(u),abs(utmp))*integrator.opts.reltol))
     else
       u = u + dt*atemp + btemp + E₂
     end

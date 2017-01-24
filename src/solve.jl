@@ -17,7 +17,7 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
               qoldinit=1//10^4, fullnormalize=true,
               beta2=beta2_default(alg),
               beta1=beta1_default(alg,beta2),
-              δ=1/6,maxiters = 1e9,
+              delta=1//6,maxiters = 1e9,
               dtmax=tType((prob.tspan[end]-prob.tspan[1])),
               dtmin=tType <: AbstractFloat ? tType(10)*eps(tType) : tType(1//10^(10)),
               internalnorm=ODE_DEFAULT_NORM,
@@ -145,7 +145,7 @@ gamma
     progress,progress_steps,
     progress_name,progress_message,
     timeseries_errors,dense_errors,
-    tTypeNoUnits(beta1),tTypeNoUnits(beta2),tTypeNoUnits(qoldinit),dense,
+    tTypeNoUnits(beta1),tTypeNoUnits(beta2),uEltypeNoUnits(delta),tTypeNoUnits(qoldinit),dense,
     callbacks_internal,isoutofdomain,unstable_check,calck,advance_to_tstop,stop_at_next_tstop)
 
   progress ? (prog = Juno.ProgressBar(name=progress_name)) : prog = nothing
@@ -194,7 +194,7 @@ gamma
                 uEltypeNoUnits,randType,rateType,
                 F,F2,typeof(opts)}(f,g,u,t,dt,T,alg,
                 timeseries,Ws,
-                ts,δ,
+                ts,
                 rands,sqdt,W,Z,opts,
                 tTypeNoUnits(qoldinit),q11))
 
