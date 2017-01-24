@@ -160,7 +160,7 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
 
 
   if !(uType <: AbstractArray)
-    rands = ChunkedArray(prob.noise.noise_func)
+    rands = ChunkedArray(prob.noise.noise_func,ChunkedArrays.BUFFER_SIZE_DEFAULT,typeof(u/u))
     randType = typeof(u/u) # Strip units and type info
   else
     rand_prototype = similar(map((x)->x/x,u),indices(u))
@@ -198,7 +198,7 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
                   tType,tTypeNoUnits,
                   uEltypeNoUnits,randType,rateType,typeof(sol),typeof(cache),
                   typeof(prog),
-                  F,F2,typeof(opts)}(f,g,u,t,dt,T,alg,sol,cache,
+                  F,F2,typeof(opts)}(f,g,uprev,t,u,tType(dt),T,alg,sol,cache,
                   rands,sqdt,W,Z,opts,iter,prog,
                   tTypeNoUnits(qoldinit),q11)
 

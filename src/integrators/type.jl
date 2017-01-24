@@ -3,6 +3,7 @@ type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,rand
   g::F5
   uprev::uType
   t::tType
+  u::uType
   dt::tType
   T::tType
   alg::T1
