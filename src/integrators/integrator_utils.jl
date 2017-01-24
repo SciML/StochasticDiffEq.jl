@@ -1,4 +1,4 @@
-type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5,OType}
+type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F3,F4,F5,OType}
   f::F4
   g::F5
   u::uType
@@ -11,7 +11,6 @@ type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,rand
   ts::Vector{tType}
   adaptivealg::Symbol
   δ::uEltypeNoUnits
-  internalnorm::F
   discard_length::tType
   unstable_check::F3
   rands::ChunkedArray{uEltypeNoUnits,Nm1,N}

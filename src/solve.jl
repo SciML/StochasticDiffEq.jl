@@ -190,20 +190,17 @@ gamma
 
   rateType = typeof(u/t) ## Can be different if united
 
-  #@code_warntype sde_solve(SDEIntegrator{typeof(alg),typeof(u),eltype(u),ndims(u),ndims(u)+1,typeof(dt),typeof(tableau)}(f,g,u,t,dt,T,Int(maxiters),timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,gamma,abstol,reltol,qmax,dtmax,dtmin,internalnorm,discard_length,progress,atomloaded,progress_steps,rands,sqdt,W,Z,tableau))
-
   u,t,W,timeseries,ts,Ws,maxstacksize,maxstacksize2 = sde_solve(
   SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,tType,tTypeNoUnits,
-                uEltypeNoUnits,randType,rateType,typeof(internalnorm),typeof(progress_message),
+                uEltypeNoUnits,randType,rateType,
                 typeof(unstable_check),F,F2,typeof(opts)}(f,g,u,t,dt,T,alg,
                 timeseries,Ws,
                 ts,adaptivealg,δ,
-                internalnorm,discard_length,
+                discard_length,
                 unstable_check,rands,sqdt,W,Z,opts,
                 tTypeNoUnits(qoldinit),q11))
 
-  build_solution(prob,alg,ts,timeseries,W=Ws,
+  sol = build_solution(prob,alg,ts,timeseries,W=Ws,
                   timeseries_errors = timeseries_errors,
                   maxstacksize = maxstacksize)
-
 end
