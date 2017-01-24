@@ -1,6 +1,5 @@
 function sde_solve{algType<:SRA1,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,F4,F5,OType})
   @sde_preamble
-  H0 = Array{uEltype}(size(u)...,2)
   @sde_adaptiveprelim
   @inbounds while t<T
     @sde_loopheader
@@ -25,15 +24,10 @@ end
 
 function sde_solve{algType<:SRA1,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,F4,F5,OType})
   @sde_preamble
-
-  H0 = Array{uEltype}(size(u)...,2)
-  chi2::randType = similar(ΔW)
-  tmp1::uType = zeros(u)
-  E₁::uType = zeros(u); gt::uType = zeros(u); gpdt::uType = zeros(u)
-  E₂::uType = zeros(u); k₁::uType = zeros(u); k₂::uType = zeros(u)
   @sde_adaptiveprelim
   @inbounds while t<T
     @sde_loopheader
+    @unpack chi2,tmp1,E₁,E₂,gt,k₁,k₂,gpdt = cache
     integrator.g(t,uprev,gt)
     integrator.g(t+dt,uprev,gpdt)
     integrator.f(t,uprev,k₁); k₁*=dt
@@ -69,19 +63,11 @@ end
 
 function sde_solve{algType<:SRA,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,F4,F5,OType})
   @sde_preamble
-  @unpack c₀,c₁,A₀,B₀,α,β₁,β₂ = integrator.alg.tableau
-  stages::Int = length(α)
-  H0 = Vector{typeof(u)}(0)
-  for i = 1:stages
-    push!(H0,zeros(u))
-  end
-  A0temp::uType = zeros(u); B0temp::uType = zeros(u)
-  ftmp::uType = zeros(u); gtmp::uType = zeros(u); chi2::uType = zeros(u)
-  atemp::uType = zeros(u); btemp::uType = zeros(u); E₂::uType = zeros(u); E₁temp::uType = zeros(u)
-  E₁::uType = zeros(u)
   @sde_adaptiveprelim
   @inbounds while t<T
     @sde_loopheader
+    @unpack H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂ = cache
+    @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages = cache.tab
     for i in eachindex(u)
       chi2[i] = .5*(ΔW[i] + ΔZ[i]/sqrt(3)) #I_(1,0)/h
     end
@@ -142,13 +128,10 @@ end
 
 function sde_solve{algType<:SRA,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,F4,F5,OType})
   @sde_preamble
-  @unpack c₀,c₁,A₀,B₀,α,β₁,β₂ = integrator.alg.tableau
-  stages::Int = length(α)
-  H0 = Array{uEltype}(stages)
   @sde_adaptiveprelim
   @inbounds while t<T
     @sde_loopheader
-
+    @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages,H0 = cache
     chi2 = .5*(ΔW + ΔZ/sqrt(3)) #I_(1,0)/h
     H0[:]=zeros(stages)
     for i = 1:stages

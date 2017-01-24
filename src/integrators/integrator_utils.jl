@@ -5,7 +5,7 @@
   local T::tType
   local ΔW::randType
   local ΔZ::randType
-  @unpack uprev,t,dt,T,rands,W,Z = integrator
+  @unpack uprev,t,dt,T,rands,W,Z,cache = integrator
   if uType <: AbstractArray
     u = zeros(uprev)
   else

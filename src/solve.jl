@@ -180,21 +180,25 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
     push!(Ws,copy(W))
   end
 
-  rateType = typeof(u/t) ## Can be different if united
-
-  sol = build_solution(prob,alg,ts,timeseries,W=Ws,
-                  calculate_error = false)
 
   sqdt = sqrt(dt)
   iter = 0
   #EEst = 0
   q11 = tTypeNoUnits(1)
+  ΔW = sqdt*next(rands) # Take one first
+
+  rateType = typeof(u/t) ## Can be different if united
+
+  cache = alg_cache(alg,u,rate_prototype,ΔW,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,Val{isinplace})
+
+  sol = build_solution(prob,alg,ts,timeseries,W=Ws,
+                  calculate_error = false)
 
   integrator =    SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,
                   tType,tTypeNoUnits,
-                  uEltypeNoUnits,randType,rateType,typeof(sol),
+                  uEltypeNoUnits,randType,rateType,typeof(sol),typeof(cache),
                   typeof(prog),
-                  F,F2,typeof(opts)}(f,g,u,t,dt,T,alg,sol,
+                  F,F2,typeof(opts)}(f,g,u,t,dt,T,alg,sol,cache,
                   rands,sqdt,W,Z,opts,iter,prog,
                   tTypeNoUnits(qoldinit),q11)
 

@@ -10,6 +10,7 @@ module StochasticDiffEq
   include("algorithms.jl")
   include("options_type.jl")
   include("constants.jl")
+  include("caches.jl")
   include("alg_utils.jl")
   include("solve.jl")
   include("initdt.jl")
