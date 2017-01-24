@@ -1,7 +1,6 @@
 function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5,OType}(integrator::SDEIntegrator{SRA1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5,OType})
   @sde_preamble
   H0 = Array{uEltype}(size(u)...,2)
-  local k₁::uType; local k₂::uType; local E₁::uType; local E₂::uType
   @sde_adaptiveprelim
   @inbounds while t<T
     @sde_loopheader
@@ -148,9 +147,6 @@ function sde_solve{algType<:SRA,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,u
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂ = integrator.alg.tableau
   stages::Int = length(α)
   H0 = Array{uEltype}(stages)
-  local atemp::uType; local btemp::uType
-  local E₂::uType; local E₁::uType; local E₁temp::uType
-  local ftemp::uType; local A0temp::uType; local B0temp::uType
   @sde_adaptiveprelim
   @inbounds while t<T
     @sde_loopheader

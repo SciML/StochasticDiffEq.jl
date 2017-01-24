@@ -172,16 +172,7 @@ end
 
 function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5,OType}(integrator::SDEIntegrator{SRIW1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5,OType})
   @sde_preamble
-  local H0::uType
   @sde_adaptiveprelim
-  local fH01::uType; local g₁::uType
-  local fH01o4::uType; local g₁o2::uType
-  local H11::uType; local H12::uType
-  local g₂::uType; local g₃::uType; local g₄::uType
-  local H13::uType; local fH02::uType
-  local g₂o3::uType; local Fg₂o3::uType
-  local g₃o3::uType; local Tg₃o3::uType
-  local mg₁::uType; local E₁::uType; local E₂::uType
   @inbounds while t<T
     @sde_loopheader
 
@@ -232,11 +223,6 @@ function sde_solve{algType<:SRI,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,u
   stages::Int = length(α)
   H0 = Array{typeof(u)}(stages)
   H1 = Array{typeof(u)}(stages)
-  local A0temp::uType; local A1temp::uType
-  local B0temp::uType; local B1temp::uType
-  local atemp::uType;  local btemp::uType
-  local E₁::uType; local E₂::uType
-  local E₁temp::uType; local ftemp::uType
   @sde_adaptiveprelim
   @inbounds while t<T
     @sde_loopheader

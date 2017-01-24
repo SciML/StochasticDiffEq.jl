@@ -46,7 +46,6 @@ end
 
 function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5,OType}(integrator::SDEIntegrator{RKMil,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5,OType})
   @sde_preamble
-  local L::uType; local K::uType; local utilde::uType
   @inbounds while t<T
     @sde_loopheader
 
