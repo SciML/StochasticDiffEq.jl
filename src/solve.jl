@@ -147,7 +147,7 @@ gamma
     progress_name,progress_message,
     timeseries_errors,dense_errors,
     tTypeNoUnits(beta1),tTypeNoUnits(beta2),tTypeNoUnits(qoldinit),dense,
-    callbacks_internal,isoutofdomain,calck,advance_to_tstop,stop_at_next_tstop)
+    callbacks_internal,isoutofdomain,unstable_check,calck,advance_to_tstop,stop_at_next_tstop)
 
   progress ? (prog = Juno.ProgressBar(name=progress_name)) : prog = nothing
 
@@ -193,11 +193,11 @@ gamma
   u,t,W,timeseries,ts,Ws,maxstacksize,maxstacksize2 = sde_solve(
   SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,tType,tTypeNoUnits,
                 uEltypeNoUnits,randType,rateType,
-                typeof(unstable_check),F,F2,typeof(opts)}(f,g,u,t,dt,T,alg,
+                F,F2,typeof(opts)}(f,g,u,t,dt,T,alg,
                 timeseries,Ws,
                 ts,adaptivealg,δ,
                 discard_length,
-                unstable_check,rands,sqdt,W,Z,opts,
+                rands,sqdt,W,Z,opts,
                 tTypeNoUnits(qoldinit),q11))
 
   sol = build_solution(prob,alg,ts,timeseries,W=Ws,

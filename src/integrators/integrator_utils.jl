@@ -1,4 +1,4 @@
-type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F3,F4,F5,OType}
+type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F4,F5,OType}
   f::F4
   g::F5
   u::uType
@@ -12,7 +12,6 @@ type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,rand
   adaptivealg::Symbol
   δ::uEltypeNoUnits
   discard_length::tType
-  unstable_check::F3
   rands::ChunkedArray{uEltypeNoUnits,Nm1,N}
   sqdt::tType
   W::randType
@@ -29,7 +28,7 @@ end
   local T::tType
   local ΔW::randType
   local ΔZ::randType
-  @unpack u,t,dt,T,timeseries,Ws,ts,adaptivealg,δ,discard_length,unstable_check,rands,W,Z = integrator
+  @unpack u,t,dt,T,timeseries,Ws,ts,adaptivealg,δ,discard_length,rands,W,Z = integrator
 
   integrator.opts.progress && (prog = Juno.ProgressBar(name=integrator.opts.progress_name))
   if uType <: AbstractArray
@@ -79,7 +78,7 @@ end
     warn("dt == 0. Aborting")
     @sde_postamble
   end
-  if unstable_check(dt,t,u)
+  if integrator.opts.unstable_check(dt,t,u)
     warn("Instability detected. Aborting")
     @sde_postamble
   end
