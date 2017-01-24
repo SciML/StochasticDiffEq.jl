@@ -30,8 +30,6 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
               userdata=nothing,callback=nothing,
               timeseries_errors = true, dense_errors=false,
               kwargs...)
-gamma
-  @unpack u0,noise,tspan = prob
 
   tspan = prob.tspan
   tdir = sign(tspan[end]-tspan[1])
@@ -162,11 +160,11 @@ gamma
 
 
   if !(uType <: AbstractArray)
-    rands = ChunkedArray(noise.noise_func)
+    rands = ChunkedArray(prob.noise.noise_func)
     randType = typeof(u/u) # Strip units and type info
   else
     rand_prototype = similar(map((x)->x/x,u),indices(u))
-    rands = ChunkedArray(noise.noise_func,rand_prototype) # Strip units
+    rands = ChunkedArray(prob.noise.noise_func,rand_prototype) # Strip units
     randType = typeof(rand_prototype) # Strip units and type info
   end
 
@@ -181,21 +179,23 @@ gamma
     Z = zeros(rand_prototype)
     push!(Ws,copy(W))
   end
-  sqdt = sqrt(dt)
-  iter = 0
-  #EEst = 0
-  q11 = tTypeNoUnits(1)
 
   rateType = typeof(u/t) ## Can be different if united
 
   sol = build_solution(prob,alg,ts,timeseries,W=Ws,
                   calculate_error = false)
 
+  sqdt = sqrt(dt)
+  iter = 0
+  #EEst = 0
+  q11 = tTypeNoUnits(1)
+
   integrator =    SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,
                   tType,tTypeNoUnits,
                   uEltypeNoUnits,randType,rateType,typeof(sol),
+                  typeof(prog),
                   F,F2,typeof(opts)}(f,g,u,t,dt,T,alg,sol,
-                  rands,sqdt,W,Z,opts,
+                  rands,sqdt,W,Z,opts,iter,prog,
                   tTypeNoUnits(qoldinit),q11)
 
   sde_solve(integrator)

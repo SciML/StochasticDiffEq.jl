@@ -1,21 +1,3 @@
-type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,F4,F5,OType}
-  f::F4
-  g::F5
-  uprev::uType
-  t::tType
-  dt::tType
-  T::tType
-  alg::T1
-  sol::solType
-  rands::ChunkedArray{uEltypeNoUnits,Nm1,N}
-  sqdt::tType
-  W::randType
-  Z::randType
-  opts::OType
-  qold::tTypeNoUnits
-  q11::tTypeNoUnits
-end
-
 @def sde_preamble begin
   local u::uType
   local t::tType
@@ -24,7 +6,6 @@ end
   local ΔW::randType
   local ΔZ::randType
   @unpack uprev,t,dt,T,rands,W,Z = integrator
-  integrator.opts.progress && (prog = Juno.ProgressBar(name=integrator.opts.progress_name))
   if uType <: AbstractArray
     u = zeros(uprev)
   else
@@ -33,14 +14,13 @@ end
   if uType <: AbstractArray
     EEsttmp = zeros(u)
   end
-  iter = 0
   ΔW = integrator.sqdt*next(rands) # Take one first
   ΔZ = integrator.sqdt*next(rands) # Take one first
 end
 
 @def sde_loopheader begin
-  iter += 1
-  if iter > integrator.opts.maxiters
+  integrator.iter += 1
+  if integrator.iter > integrator.opts.maxiters
     warn("Max Iters Reached. Aborting")
     @sde_postamble
   end
@@ -55,7 +35,7 @@ end
 end
 
 @def sde_savevalues begin
-  if integrator.opts.save_timeseries && iter%integrator.opts.timeseries_steps==0
+  if integrator.opts.save_timeseries && integrator.iter%integrator.opts.timeseries_steps==0
     push!(integrator.sol.u,copy(u))
     push!(integrator.sol.t,t)
     push!(integrator.sol.W,copy(W))
@@ -246,9 +226,9 @@ end
     end
     @sde_savevalues
   end
-  if integrator.opts.progress && iter%integrator.opts.progress_steps==0
-    Juno.msg(prog,integrator.opts.progress_message(dt,t,u))
-    Juno.progress(prog,t/T)
+  if integrator.opts.progress && integrator.iter%integrator.opts.progress_steps==0
+    Juno.msg(integrator.prog,integrator.opts.progress_message(dt,t,u))
+    Juno.progress(integrator.prog,t/T)
   end
 end
 
@@ -268,6 +248,6 @@ end
     push!(integrator.sol.u,u)
     push!(integrator.sol.W,W)
   end
-  integrator.opts.progress && Juno.done(prog)
+  integrator.opts.progress && Juno.done(integrator.prog)
   return nothing
 end

@@ -1,0 +1,19 @@
+type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,progType,F4,F5,OType}
+  f::F4
+  g::F5
+  uprev::uType
+  t::tType
+  dt::tType
+  T::tType
+  alg::T1
+  sol::solType
+  rands::ChunkedArray{uEltypeNoUnits,Nm1,N}
+  sqdt::tType
+  W::randType
+  Z::randType
+  opts::OType
+  iter::Int
+  prog::progType
+  qold::tTypeNoUnits
+  q11::tTypeNoUnits
+end
