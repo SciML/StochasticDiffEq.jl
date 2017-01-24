@@ -24,7 +24,6 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
               unstable_check = ODE_DEFAULT_UNSTABLE_CHECK,
               isoutofdomain = ODE_DEFAULT_ISOUTOFDOMAIN,
               advance_to_tstop = false,stop_at_next_tstop=false,
-              discard_length=1e-15,adaptivealg::Symbol=:RSwM3,
               progress_steps=1000,
               progress=false, progress_message = ODE_DEFAULT_PROG_MESSAGE,
               progress_name="SDE",
@@ -195,8 +194,7 @@ gamma
                 uEltypeNoUnits,randType,rateType,
                 F,F2,typeof(opts)}(f,g,u,t,dt,T,alg,
                 timeseries,Ws,
-                ts,adaptivealg,δ,
-                discard_length,
+                ts,δ,
                 rands,sqdt,W,Z,opts,
                 tTypeNoUnits(qoldinit),q11))
 

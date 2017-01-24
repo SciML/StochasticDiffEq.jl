@@ -9,9 +9,7 @@ type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,rand
   timeseries::Vector{uType}
   Ws::Vector{randType}
   ts::Vector{tType}
-  adaptivealg::Symbol
   δ::uEltypeNoUnits
-  discard_length::tType
   rands::ChunkedArray{uEltypeNoUnits,Nm1,N}
   sqdt::tType
   W::randType
@@ -28,7 +26,7 @@ end
   local T::tType
   local ΔW::randType
   local ΔZ::randType
-  @unpack u,t,dt,T,timeseries,Ws,ts,adaptivealg,δ,discard_length,rands,W,Z = integrator
+  @unpack u,t,dt,T,timeseries,Ws,ts,δ,rands,W,Z = integrator
 
   integrator.opts.progress && (prog = Juno.ProgressBar(name=integrator.opts.progress_name))
   if uType <: AbstractArray
@@ -131,12 +129,12 @@ end
       else
         u = utmp
       end
-      if adaptivealg==:RSwM3
+      if adaptive_alg(integrator.alg.rswm)==:RSwM3
         ResettableStacks.reset!(S₂) #Empty S₂
       end
       @sde_savevalues
       # Setup next step
-      if adaptivealg==:RSwM1
+      if adaptive_alg(integrator.alg.rswm)==:RSwM1
         if !isempty(S₁)
           dt,ΔW,ΔZ = pop!(S₁)
           integrator.sqdt = sqrt(dt)
@@ -148,7 +146,7 @@ end
           ΔW = integrator.sqdt*next(rands)
           ΔZ = integrator.sqdt*next(rands)
         end
-      elseif adaptivealg==:RSwM2 || adaptivealg==:RSwM3
+      elseif adaptive_alg(integrator.alg.rswm)==:RSwM2 || adaptive_alg(integrator.alg.rswm)==:RSwM3
         c = min(integrator.opts.dtmax,dtnew)
         dt = max(min(c,abs(T-t)),integrator.opts.dtmin) #abs to fix complex sqrt issue at end
         integrator.sqdt = sqrt(dt)
@@ -164,7 +162,7 @@ end
             dttmp+=L₁
             ΔW+=L₂
             ΔZ+=L₃
-            if adaptivealg==:RSwM3
+            if adaptive_alg(integrator.alg.rswm)==:RSwM3
               push!(S₂,(L₁,L₂,L₃))
             end
           else #Popped too far
@@ -172,9 +170,9 @@ end
             ΔZtilde = qtmp*L₃ + sqrt((1-qtmp)*qtmp*L₁)*next(rands)
             ΔW += ΔWtilde
             ΔZ += ΔZtilde
-            if (1-qtmp)*L₁ > discard_length
+            if (1-qtmp)*L₁ > integrator.alg.rswm.discard_length
               push!(S₁,((1-qtmp)*L₁,L₂-ΔWtilde,L₃-ΔZtilde))
-              if adaptivealg==:RSwM3 && qtmp*L₁ > discard_length
+              if adaptive_alg(integrator.alg.rswm)==:RSwM3 && qtmp*L₁ > integrator.alg.rswm.discard_length
                 push!(S₂,(qtmp*L₁,ΔWtilde,ΔZtilde))
               end
             end
@@ -187,7 +185,7 @@ end
           ΔZtilde = sqrt(dtleft)*next(rands)
           ΔW += ΔWtilde
           ΔZ += ΔZtilde
-          if adaptivealg==:RSwM3
+          if adaptive_alg(integrator.alg.rswm)==:RSwM3
             push!(S₂,(dtleft,ΔWtilde,ΔZtilde))
           end
         end
@@ -195,11 +193,11 @@ end
     else #Rejection
       dtnew = dt/min(inv(integrator.opts.qmin),integrator.q11/integrator.opts.gamma)
       q = dtnew/dt
-      if adaptivealg==:RSwM1 || adaptivealg==:RSwM2
+      if adaptive_alg(integrator.alg.rswm)==:RSwM1 || adaptive_alg(integrator.alg.rswm)==:RSwM2
         ΔWtmp = q*ΔW + sqrt((1-q)*dtnew)*next(rands)
         ΔZtmp = q*ΔZ + sqrt((1-q)*dtnew)*next(rands)
         cutLength = dt-dtnew
-        if cutLength > discard_length
+        if cutLength > integrator.alg.rswm.discard_length
           push!(S₁,(cutLength,ΔW-ΔWtmp,ΔZ-ΔZtmp))
         end
         if length(S₁) > max_stack_size
@@ -236,7 +234,7 @@ end
         ΔWtilde = qK*K₂ + sqrt((1-qK)*qK*dtK)*next(rands)
         ΔZtilde = qK*K₃ + sqrt((1-qK)*qK*dtK)*next(rands)
         cutLength = (1-qK)*dtK
-        if cutLength > discard_length
+        if cutLength > integrator.alg.rswm.discard_length
           push!(S₁,(cutLength,K₂-ΔWtilde,K₃-ΔZtilde))
         end
         if length(S₁) > max_stack_size
@@ -281,7 +279,7 @@ end
   if integrator.opts.adaptive
     S₁ = DataStructures.Stack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
     acceptedIters = 0
-    if adaptivealg==:RSwM3
+    if adaptive_alg(integrator.alg.rswm)==:RSwM3
       S₂ = ResettableStacks.ResettableStack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
     end
   end

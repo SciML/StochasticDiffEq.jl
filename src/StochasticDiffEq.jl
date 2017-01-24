@@ -6,6 +6,7 @@ module StochasticDiffEq
         DataStructures, ResettableStacks
   import DiffEqBase: solve
 
+  include("rswm.jl")
   include("algorithms.jl")
   include("options_type.jl")
   include("constants.jl")
