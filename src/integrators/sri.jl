@@ -23,7 +23,7 @@ function sde_solve{algType<:SRI,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNo
     @sde_loopheader
 
     for i in eachindex(u)
-      chi1[i] = .5*(ΔW[i].^2 - dt)/sqdt #I_(1,1)/sqrt(h)
+      chi1[i] = .5*(ΔW[i].^2 - dt)/integrator.sqdt #I_(1,1)/sqrt(h)
       chi2[i] = .5*(ΔW[i] + ΔZ[i]/sqrt(3)) #I_(1,0)/h
       chi3[i] = 1/6 * (ΔW[i].^3 - 3*ΔW[i]*dt)/dt #I_(1,1,1)/h
     end
@@ -47,7 +47,7 @@ function sde_solve{algType<:SRI,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNo
         end
       end
       H0[i] = u + A0temp*dt + B0temp.*chi2
-      H1[i] = u + A1temp*dt + B1temp*sqdt
+      H1[i] = u + A1temp*dt + B1temp*integrator.sqdt
     end
     atemp[:]=zero(uEltype)
     btemp[:]=zero(uEltype)
@@ -116,7 +116,7 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltype
     @sde_loopheader
 
     for i in eachindex(u)
-      chi1[i] = (ΔW[i].^2 - dt)/2sqdt #I_(1,1)/sqrt(h)
+      chi1[i] = (ΔW[i].^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
       chi2[i] = (ΔW[i] + ΔZ[i]/sqrt(3))/2 #I_(1,0)/h
       chi3[i] = (ΔW[i].^3 - 3ΔW[i]*dt)/6dt #I_(1,1,1)/h
     end
@@ -130,13 +130,13 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltype
       fH01o4[i] = fH01[i]/4
       g₁o2[i] = g₁[i]/2
       H0[i] =  u[i] + 3*(fH01o4[i]  + chi2[i]*g₁o2[i])
-      H11[i] = u[i] + fH01o4[i]   + sqdt*g₁o2[i]
-      H12[i] = u[i] + fH01[i]     - sqdt*g₁[i]
+      H11[i] = u[i] + fH01o4[i]   + integrator.sqdt*g₁o2[i]
+      H12[i] = u[i] + fH01[i]     - integrator.sqdt*g₁[i]
     end
     integrator.g(t+dto4,H11,g₂)
     integrator.g(t+dt,H12,g₃)
     for i in eachindex(u)
-      H13[i] = u[i] + fH01o4[i] + sqdt*(-5g₁[i] + 3g₂[i] + g₃[i]/2)
+      H13[i] = u[i] + fH01o4[i] + integrator.sqdt*(-5g₁[i] + 3g₂[i] + g₃[i]/2)
     end
 
     integrator.g(t+dto4,H13,g₄)
@@ -185,7 +185,7 @@ function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits
   @inbounds while t<T
     @sde_loopheader
 
-    chi1 = (ΔW.^2 - dt)/2sqdt #I_(1,1)/sqrt(h)
+    chi1 = (ΔW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
     chi2 = (ΔW + ΔZ/sqrt(3))/2 #I_(1,0)/h
     chi3 = (ΔW.^3 - 3ΔW*dt)/6dt #I_(1,1,1)/h
     fH01 = dt*integrator.f(t,u)
@@ -195,11 +195,11 @@ function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits
     dto4 = dt/4
     g₁o2 = g₁/2
     H0 =  u + 3*(fH01o4  + chi2.*g₁o2)
-    H11 = u + fH01o4   + sqdt*g₁o2
-    H12 = u + fH01     - sqdt*g₁
+    H11 = u + fH01o4   + integrator.sqdt*g₁o2
+    H12 = u + fH01     - integrator.sqdt*g₁
     g₂ = integrator.g(t+dto4,H11)
     g₃ = integrator.g(t+dt,H12)
-    H13 = u + fH01o4 + sqdt*(-5g₁ + 3g₂ + g₃/2)
+    H13 = u + fH01o4 + integrator.sqdt*(-5g₁ + 3g₂ + g₃/2)
 
 
     g₄ = integrator.g(t+dto4,H13)
@@ -241,7 +241,7 @@ function sde_solve{algType<:SRI,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,u
   @inbounds while t<T
     @sde_loopheader
 
-    chi1 = .5*(ΔW.^2 - dt)/sqdt #I_(1,1)/sqrt(h)
+    chi1 = .5*(ΔW.^2 - dt)/integrator.sqdt #I_(1,1)/sqrt(h)
     chi2 = .5*(ΔW + ΔZ/sqrt(3)) #I_(1,0)/h
     chi3 = 1/6 * (ΔW.^3 - 3*ΔW*dt)/dt #I_(1,1,1)/h
 
@@ -259,7 +259,7 @@ function sde_solve{algType<:SRI,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,u
         B1temp += B₁[i,j]*integrator.g(t + c₁[j]*dt,H1[j])
       end
       H0[i] = u + A0temp*dt + B0temp.*chi2
-      H1[i] = u + A1temp*dt + B1temp*sqdt
+      H1[i] = u + A1temp*dt + B1temp*integrator.sqdt
     end
     atemp = zero(u)
     btemp = zero(u)

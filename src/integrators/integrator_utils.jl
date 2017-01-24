@@ -30,7 +30,7 @@ end
   local T::tType
   local ΔW::randType
   local ΔZ::randType
-  @unpack u,t,dt,T,timeseries,Ws,ts,adaptivealg,δ,discard_length,unstable_check,rands,sqdt,W,Z = integrator
+  @unpack u,t,dt,T,timeseries,Ws,ts,adaptivealg,δ,discard_length,unstable_check,rands,W,Z = integrator
 
   integrator.opts.progress && (prog = Juno.ProgressBar(name=integrator.opts.progress_name))
   if uType <: AbstractArray
@@ -42,8 +42,8 @@ end
   iter = 0
   max_stack_size = 0
   max_stack_size2 = 0
-  ΔW = sqdt*next(rands) # Take one first
-  ΔZ = sqdt*next(rands) # Take one first
+  ΔW = integrator.sqdt*next(rands) # Take one first
+  ΔZ = integrator.sqdt*next(rands) # Take one first
 end
 
 @def sde_sritableaupreamble begin
@@ -141,19 +141,19 @@ end
       if adaptivealg==:RSwM1
         if !isempty(S₁)
           dt,ΔW,ΔZ = pop!(S₁)
-          sqdt = sqrt(dt)
+          integrator.sqdt = sqrt(dt)
         else # Stack is empty
           c = min(integrator.opts.dtmax,dtnew)
           dt = max(min(c,abs(T-t)),integrator.opts.dtmin)#abs to fix complex sqrt issue at end
           #dt = min(c,abs(T-t))
-          sqdt = sqrt(dt)
-          ΔW = sqdt*next(rands)
-          ΔZ = sqdt*next(rands)
+          integrator.sqdt = sqrt(dt)
+          ΔW = integrator.sqdt*next(rands)
+          ΔZ = integrator.sqdt*next(rands)
         end
       elseif adaptivealg==:RSwM2 || adaptivealg==:RSwM3
         c = min(integrator.opts.dtmax,dtnew)
         dt = max(min(c,abs(T-t)),integrator.opts.dtmin) #abs to fix complex sqrt issue at end
-        sqdt = sqrt(dt)
+        integrator.sqdt = sqrt(dt)
         if !(uType <: AbstractArray)
           dttmp = 0.0; ΔW = 0.0; ΔZ = 0.0
         else
@@ -258,7 +258,7 @@ end
     else
       W = W + ΔW
     end
-    ΔW = sqdt*next(rands)
+    ΔW = integrator.sqdt*next(rands)
     if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
       if uType <: AbstractArray
         for i in eachindex(u)
@@ -267,7 +267,7 @@ end
       else
         Z = Z + ΔZ
       end
-      ΔZ = sqdt*next(rands)
+      ΔZ = integrator.sqdt*next(rands)
     end
     @sde_savevalues
   end

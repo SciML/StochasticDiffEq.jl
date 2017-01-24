@@ -33,11 +33,11 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltype
     integrator.g(t,u,L)
     for i in eachindex(u)
       K[i] = u[i] + dt*du1[i]
-      utilde[i] = K[i] + L[i]*sqdt
+      utilde[i] = K[i] + L[i]*integrator.sqdt
     end
     integrator.g(t,utilde,du2)
     for i in eachindex(u)
-      u[i] = K[i]+L[i]*ΔW[i]+(du2[i]-L[i])./(2sqdt).*(ΔW[i].^2 - dt)
+      u[i] = K[i]+L[i]*ΔW[i]+(du2[i]-L[i])./(2integrator.sqdt).*(ΔW[i].^2 - dt)
     end
     @sde_loopfooter
   end
@@ -52,8 +52,8 @@ function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits
 
     K = u + dt.*integrator.f(t,u)
     L = integrator.g(t,u)
-    utilde = K + L*sqdt
-    u = K+L*ΔW+(integrator.g(t,utilde)-integrator.g(t,u))/(2sqdt)*(ΔW^2 - dt)
+    utilde = K + L*integrator.sqdt
+    u = K+L*ΔW+(integrator.g(t,utilde)-integrator.g(t,u))/(2integrator.sqdt)*(ΔW^2 - dt)
 
     @sde_loopfooter
   end
