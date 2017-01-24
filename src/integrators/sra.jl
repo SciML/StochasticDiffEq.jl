@@ -1,20 +1,20 @@
-function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRA1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
+function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5,OType}(integrator::SDEIntegrator{SRA1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5,OType})
   @sde_preamble
   H0 = Array{uEltype}(size(u)...,2)
   local k₁::uType; local k₂::uType; local E₁::uType; local E₂::uType
   @sde_adaptiveprelim
   @inbounds while t<T
     @sde_loopheader
-    gpdt = g(t+dt,u)
+    gpdt = integrator.g(t+dt,u)
     chi2 = (ΔW + ΔZ/sqrt(3))/2 #I_(1,0)/h
-    k₁ = dt*f(t,u)
-    k₂ = dt*f(t+3dt/4,u+3k₁/4 + 3chi2*g(t+dt,u)/2)
+    k₁ = dt*integrator.f(t,u)
+    k₂ = dt*integrator.f(t+3dt/4,u+3k₁/4 + 3chi2*integrator.g(t+dt,u)/2)
     E₁ = k₁ + k₂
-    E₂ = chi2.*(g(t,u)-gpdt) #Only for additive!
+    E₂ = chi2.*(integrator.g(t,u)-gpdt) #Only for additive!
 
-    if adaptive
+    if integrator.opts.adaptive
       utmp = u + k₁/3 + 2k₂/3 + E₂ + ΔW*gpdt
-      EEst = abs((δ*E₁+E₂)./(abstol + max(abs(u),abs(utmp))*reltol))
+      EEst = abs((δ*E₁+E₂)./(integrator.opts.abstol + max(abs(u),abs(utmp))*integrator.opts.reltol))
     else
       u = u + k₁/3 + 2k₂/3 + E₂ + ΔW*gpdt
     end
@@ -24,7 +24,7 @@ function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits
   @sde_postamble
 end
 
-function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{SRA1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
+function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5,OType}(integrator::SDEIntegrator{SRA1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5,OType})
   @sde_preamble
 
   H0 = Array{uEltype}(size(u)...,2)
@@ -35,29 +35,29 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltype
   @sde_adaptiveprelim
   @inbounds while t<T
     @sde_loopheader
-    g(t,u,gt)
-    g(t+dt,u,gpdt)
-    f(t,u,k₁); k₁*=dt
+    integrator.g(t,u,gt)
+    integrator.g(t+dt,u,gpdt)
+    integrator.f(t,u,k₁); k₁*=dt
     for i in eachindex(u)
       chi2[i] = (ΔW[i] + ΔZ[i]/sqrt(3))/2 #I_(1,0)/h
       tmp1[i] = u[i]+3k₁[i]/4 + 3chi2[i]*gpdt[i]/2
     end
 
-    f(t+3dt/4,tmp1,k₂); k₂*=dt
+    integrator.f(t+3dt/4,tmp1,k₂); k₂*=dt
 
     for i in eachindex(u)
       E₁[i] = k₁[i] + k₂[i]
       E₂[i] = chi2[i]*(gt[i]-gpdt[i]) #Only for additive!
     end
 
-    if adaptive
+    if integrator.opts.adaptive
       for i in eachindex(u)
         utmp[i] = u[i] + k₁[i]/3 + 2k₂[i]/3 + E₂[i] + ΔW[i]*gpdt[i]
       end
       for i in eachindex(u)
-        EEsttmp[i] = (δ*E₁[i]+E₂[i])/(abstol + max(abs(u[i]),abs(utmp[i]))*reltol)
+        EEsttmp[i] = (δ*E₁[i]+E₂[i])/(integrator.opts.abstol + max(abs(u[i]),abs(utmp[i]))*integrator.opts.reltol)
       end
-      EEst = internalnorm(EEsttmp)
+      EEst = integrator.opts.internalnorm(EEsttmp)
     else
       for i in eachindex(u)
         u[i] = u[i] + k₁[i]/3 + 2k₂[i]/3 + E₂[i] + ΔW[i]*gpdt[i]
@@ -68,10 +68,10 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltype
   @sde_postamble
 end
 
-function sde_solve{algType<:SRA,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
+function sde_solve{algType<:SRA,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5,OType})
   @sde_preamble
   @sde_sratableaupreamble
-  @unpack c₀,c₁,A₀,B₀,α,β₁,β₂ = alg.tableau
+  @unpack c₀,c₁,A₀,B₀,α,β₁,β₂ = integrator.alg.tableau
   stages::Int = length(α)
   H0 = Vector{typeof(u)}(0)
   for i = 1:stages
@@ -94,8 +94,8 @@ function sde_solve{algType<:SRA,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNo
       A0temp[:] = zero(uEltype)
       B0temp[:] = zero(uEltype)
       for j = 1:i-1
-        f(t + c₀[j]*dt,H0[j],ftmp)
-        g(t + c₁[j]*dt,H0[j],gtmp)
+        integrator.f(t + c₀[j]*dt,H0[j],ftmp)
+        integrator.g(t + c₁[j]*dt,H0[j],gtmp)
         for k in eachindex(u)
           A0temp[k] += A₀[i,j]*ftmp[k]
           B0temp[k] += B₀[i,j]*gtmp[k]
@@ -111,8 +111,8 @@ function sde_solve{algType<:SRA,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNo
     E₁temp[:]= zero(uEltype)
 
     for i = 1:stages
-      f(t+c₀[i]*dt,H0[i],ftmp)
-      g(t+c₁[i]*dt,H0[i],gtmp)
+      integrator.f(t+c₀[i]*dt,H0[i],ftmp)
+      integrator.g(t+c₁[i]*dt,H0[i],gtmp)
       for j in eachindex(u)
         atemp[j] += α[i]*ftmp[j]
         btemp[j] += (β₁[i]*ΔW[j])*gtmp[j]
@@ -124,14 +124,14 @@ function sde_solve{algType<:SRA,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNo
       E₁[i] = dt*E₁temp[i]
     end
 
-    if adaptive
+    if integrator.opts.adaptive
       for i in eachindex(u)
         utmp[i] = u[i] + dt*atemp[i] + btemp[i] + E₂[i]
       end
       for i in eachindex(u)
-        EEsttmp[i] = (δ*E₁[i]+E₂[i])/(abstol + max(abs(u[i]),abs(utmp[i]))*reltol)
+        EEsttmp[i] = (δ*E₁[i]+E₂[i])/(integrator.opts.abstol + max(abs(u[i]),abs(utmp[i]))*integrator.opts.reltol)
       end
-      EEst = internalnorm(EEsttmp)
+      EEst = integrator.opts.internalnorm(EEsttmp)
     else
       for i in eachindex(u)
         u[i] = u[i] + dt*atemp[i] + btemp[i] + E₂[i]
@@ -142,10 +142,10 @@ function sde_solve{algType<:SRA,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNo
   @sde_postamble
 end
 
-function sde_solve{algType<:SRA,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5})
+function sde_solve{algType<:SRA,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5,OType})
   @sde_preamble
   @sde_sratableaupreamble
-  @unpack c₀,c₁,A₀,B₀,α,β₁,β₂ = alg.tableau
+  @unpack c₀,c₁,A₀,B₀,α,β₁,β₂ = integrator.alg.tableau
   stages::Int = length(α)
   H0 = Array{uEltype}(stages)
   local atemp::uType; local btemp::uType
@@ -161,8 +161,8 @@ function sde_solve{algType<:SRA,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,u
       A0temp = zero(u)
       B0temp = zero(u)
       for j = 1:i-1
-        A0temp += A₀[i,j]*f(t + c₀[j]*dt,H0[j])
-        B0temp += B₀[i,j]*g(t + c₁[j]*dt,H0[j]) #H0[..,i] argument ignored
+        A0temp += A₀[i,j]*integrator.f(t + c₀[j]*dt,H0[j])
+        B0temp += B₀[i,j]*integrator.g(t + c₁[j]*dt,H0[j]) #H0[..,i] argument ignored
       end
       H0[i] = u + A0temp*dt + B0temp.*chi2
     end
@@ -173,17 +173,17 @@ function sde_solve{algType<:SRA,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,u
     E₁temp= zero(u)
 
     for i = 1:stages
-      ftemp = f(t+c₀[i]*dt,H0[i])
+      ftemp = integrator.f(t+c₀[i]*dt,H0[i])
       E₁temp += ftemp
       atemp += α[i]*ftemp
-      btemp += (β₁[i]*ΔW ).*g(t+c₁[i]*dt,H0[i]) #H0[i] argument ignored
-      E₂    += (β₂[i]*chi2).*g(t+c₁[i]*dt,H0[i]) #H0[i] argument ignored
+      btemp += (β₁[i]*ΔW ).*integrator.g(t+c₁[i]*dt,H0[i]) #H0[i] argument ignored
+      E₂    += (β₂[i]*chi2).*integrator.g(t+c₁[i]*dt,H0[i]) #H0[i] argument ignored
     end
 
-    if adaptive
+    if integrator.opts.adaptive
       E₁ = dt*E₁temp
       utmp = u + dt*atemp + btemp + E₂
-      EEst = abs((δ*E₁+E₂)./(abstol + max(abs(u),abs(utmp))*reltol))
+      EEst = abs((δ*E₁+E₂)./(integrator.opts.abstol + max(abs(u),abs(utmp))*integrator.opts.reltol))
     else
       u = u + dt*atemp + btemp + E₂
     end

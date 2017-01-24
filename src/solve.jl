@@ -195,12 +195,12 @@ gamma
   u,t,W,timeseries,ts,Ws,maxstacksize,maxstacksize2 = sde_solve(
   SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,tType,tTypeNoUnits,
                 uEltypeNoUnits,randType,rateType,typeof(internalnorm),typeof(progress_message),
-                typeof(unstable_check),F,F2}(f,g,u,t,dt,T,alg,Int(maxiters),timeseries,Ws,
-                ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,tTypeNoUnits(gamma),
-                abstol,reltol,tTypeNoUnits(qmax),dtmax,dtmin,internalnorm,discard_length,
-                progress,progress_name,progress_steps,progress_message,
-                unstable_check,rands,sqdt,W,Z,
-                tTypeNoUnits(beta1),tTypeNoUnits(beta2),tTypeNoUnits(qoldinit),tTypeNoUnits(qmin),q11,tTypeNoUnits(qoldinit)))
+                typeof(unstable_check),F,F2,typeof(opts)}(f,g,u,t,dt,T,alg,
+                timeseries,Ws,
+                ts,adaptivealg,δ,
+                internalnorm,discard_length,
+                unstable_check,rands,sqdt,W,Z,opts,
+                tTypeNoUnits(qoldinit),q11))
 
   build_solution(prob,alg,ts,timeseries,W=Ws,
                   timeseries_errors = timeseries_errors,

@@ -1,4 +1,4 @@
-type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5}
+type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F,F2,F3,F4,F5,OType}
   f::F4
   g::F5
   u::uType
@@ -6,38 +6,21 @@ type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,rand
   dt::tType
   T::tType
   alg::T1
-  maxiters::Int
   timeseries::Vector{uType}
   Ws::Vector{randType}
   ts::Vector{tType}
-  timeseries_steps::Int
-  save_timeseries::Bool
-  adaptive::Bool
   adaptivealg::Symbol
   δ::uEltypeNoUnits
-  γ::uEltypeNoUnits
-  abstol::uEltype
-  reltol::uEltypeNoUnits
-  qmax::uEltypeNoUnits
-  dtmax::tType
-  dtmin::tType
   internalnorm::F
   discard_length::tType
-  progress_on::Bool
-  progress_name::String
-  progress_steps::Int
-  progress_message::F2
   unstable_check::F3
   rands::ChunkedArray{uEltypeNoUnits,Nm1,N}
   sqdt::tType
   W::randType
   Z::randType
-  beta1::tTypeNoUnits
-  beta2::tTypeNoUnits
+  opts::OType
   qold::tTypeNoUnits
-  qmin::tTypeNoUnits
   q11::tTypeNoUnits
-  qoldinit::tTypeNoUnits
 end
 
 @def sde_preamble begin
@@ -47,9 +30,9 @@ end
   local T::tType
   local ΔW::randType
   local ΔZ::randType
-  @unpack f,g,u,t,dt,T,alg,maxiters,timeseries,Ws,ts,timeseries_steps,save_timeseries,adaptive,adaptivealg,δ,γ,abstol,reltol,qmax,dtmax,dtmin,internalnorm,discard_length,progress_on,progress_name,progress_steps,progress_message,unstable_check,rands,sqdt,W,Z = integrator
+  @unpack u,t,dt,T,timeseries,Ws,ts,adaptivealg,δ,discard_length,unstable_check,rands,sqdt,W,Z = integrator
 
-  progress_on && (prog = Juno.ProgressBar(name=progress_name))
+  integrator.opts.progress && (prog = Juno.ProgressBar(name=integrator.opts.progress_name))
   if uType <: AbstractArray
     EEsttmp = zeros(u)
   end
@@ -89,7 +72,7 @@ end
 
 @def sde_loopheader begin
   iter += 1
-  if iter > maxiters
+  if iter > integrator.opts.maxiters
     warn("Max Iters Reached. Aborting")
     @sde_postamble
   end
@@ -104,7 +87,7 @@ end
 end
 
 @def sde_savevalues begin
-  if save_timeseries && iter%timeseries_steps==0
+  if integrator.opts.save_timeseries && iter%integrator.opts.timeseries_steps==0
     push!(timeseries,copy(u))
     push!(ts,t)
     push!(Ws,copy(W))
@@ -112,18 +95,10 @@ end
 end
 
 @def sde_loopfooter begin
-  if adaptive
-    #=
-    standard = abs(1/(γ*EEst))^(2)
-    if isinf(standard)
-        q = qmax
-    else
-       q = min(qmax,max(standard,eps()))
-    end
-    =#
-    integrator.q11 = EEst^integrator.beta1
-    q = integrator.q11/(integrator.qold^integrator.beta2)
-    q = max(inv(integrator.qmax),min(inv(integrator.qmin),q/γ))
+  if integrator.opts.adaptive
+    integrator.q11 = EEst^integrator.opts.beta1
+    q = integrator.q11/(integrator.qold^integrator.opts.beta2)
+    q = max(inv(integrator.opts.qmax),min(inv(integrator.opts.qmin),q/integrator.opts.gamma))
     dtnew = dt/q
     ttmp = t + dt
     #integrator.isout = integrator.opts.isoutofdomain(ttmp,integrator.u)
@@ -131,14 +106,14 @@ end
     if EEst <= 1 # Accepted
       acceptedIters += 1
       t = ttmp
-      integrator.qold = max(EEst,integrator.qoldinit)
+      integrator.qold = max(EEst,integrator.opts.qoldinit)
       #if integrator.tdir > 0
-        dtpropose = min(integrator.dtmax,dtnew)
+        dtpropose = min(integrator.opts.dtmax,dtnew)
       #else
       #  integrator.dtpropose = max(integrator.opts.dtmax,dtnew)
       #end
       #if integrator.tdir > 0
-        dtpropose = max(dtpropose,integrator.dtmin) #abs to fix complex sqrt issue at end
+        dtpropose = max(dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
       #else
       #  integrator.dtpropose = min(integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
       #end
@@ -168,16 +143,16 @@ end
           dt,ΔW,ΔZ = pop!(S₁)
           sqdt = sqrt(dt)
         else # Stack is empty
-          c = min(dtmax,dtnew)
-          dt = max(min(c,abs(T-t)),dtmin)#abs to fix complex sqrt issue at end
+          c = min(integrator.opts.dtmax,dtnew)
+          dt = max(min(c,abs(T-t)),integrator.opts.dtmin)#abs to fix complex sqrt issue at end
           #dt = min(c,abs(T-t))
           sqdt = sqrt(dt)
           ΔW = sqdt*next(rands)
           ΔZ = sqdt*next(rands)
         end
       elseif adaptivealg==:RSwM2 || adaptivealg==:RSwM3
-        c = min(dtmax,dtnew)
-        dt = max(min(c,abs(T-t)),dtmin) #abs to fix complex sqrt issue at end
+        c = min(integrator.opts.dtmax,dtnew)
+        dt = max(min(c,abs(T-t)),integrator.opts.dtmin) #abs to fix complex sqrt issue at end
         sqdt = sqrt(dt)
         if !(uType <: AbstractArray)
           dttmp = 0.0; ΔW = 0.0; ΔZ = 0.0
@@ -220,7 +195,7 @@ end
         end
       end # End RSwM2 and RSwM3
     else #Rejection
-      dtnew = dt/min(inv(integrator.qmin),integrator.q11/integrator.γ)
+      dtnew = dt/min(inv(integrator.opts.qmin),integrator.q11/integrator.opts.gamma)
       q = dtnew/dt
       if adaptivealg==:RSwM1 || adaptivealg==:RSwM2
         ΔWtmp = q*ΔW + sqrt((1-q)*dtnew)*next(rands)
@@ -284,7 +259,7 @@ end
       W = W + ΔW
     end
     ΔW = sqdt*next(rands)
-    if !(typeof(alg) <: EM) || !(typeof(alg) <: RKMil)
+    if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
       if uType <: AbstractArray
         for i in eachindex(u)
           Z[i] = Z[i] + ΔZ[i]
@@ -296,8 +271,8 @@ end
     end
     @sde_savevalues
   end
-  if progress_on && iter%progress_steps==0
-    Juno.msg(prog,progress_message(dt,t,u))
+  if integrator.opts.progress && iter%integrator.opts.progress_steps==0
+    Juno.msg(prog,integrator.opts.progress_message(dt,t,u))
     Juno.progress(prog,t/T)
   end
 end
@@ -305,7 +280,7 @@ end
 @def sde_adaptiveprelim begin
   max_stack_size = 0
   max_stack_size2 = 0
-  if adaptive
+  if integrator.opts.adaptive
     S₁ = DataStructures.Stack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
     acceptedIters = 0
     if adaptivealg==:RSwM3
@@ -320,6 +295,6 @@ end
     push!(timeseries,u)
     push!(Ws,W)
   end
-  progress_on && Juno.done(prog)
+  integrator.opts.progress && Juno.done(prog)
   return u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
 end
