@@ -183,22 +183,25 @@ gamma
   end
   sqdt = sqrt(dt)
   iter = 0
-  maxstacksize = 0
   #EEst = 0
   q11 = tTypeNoUnits(1)
 
   rateType = typeof(u/t) ## Can be different if united
 
-  u,t,W,timeseries,ts,Ws,maxstacksize,maxstacksize2 = sde_solve(
-  SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,tType,tTypeNoUnits,
-                uEltypeNoUnits,randType,rateType,
-                F,F2,typeof(opts)}(f,g,u,t,dt,T,alg,
-                timeseries,Ws,
-                ts,
-                rands,sqdt,W,Z,opts,
-                tTypeNoUnits(qoldinit),q11))
-
   sol = build_solution(prob,alg,ts,timeseries,W=Ws,
-                  timeseries_errors = timeseries_errors,
-                  maxstacksize = maxstacksize)
+                  calculate_error = false)
+
+  integrator =    SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,
+                  tType,tTypeNoUnits,
+                  uEltypeNoUnits,randType,rateType,typeof(sol),
+                  F,F2,typeof(opts)}(f,g,u,t,dt,T,alg,sol,
+                  rands,sqdt,W,Z,opts,
+                  tTypeNoUnits(qoldinit),q11)
+
+  sde_solve(integrator)
+
+  if typeof(integrator.sol.prob) <: AbstractSDETestProblem
+    calculate_solution_errors!(sol;timeseries_errors=integrator.opts.timeseries_errors,dense_errors=integrator.opts.dense_errors)
+  end
+  sol
 end

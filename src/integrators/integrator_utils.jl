@@ -1,4 +1,4 @@
-type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F4,F5,OType}
+type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,F4,F5,OType}
   f::F4
   g::F5
   u::uType
@@ -6,9 +6,7 @@ type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,rand
   dt::tType
   T::tType
   alg::T1
-  timeseries::Vector{uType}
-  Ws::Vector{randType}
-  ts::Vector{tType}
+  sol::solType
   rands::ChunkedArray{uEltypeNoUnits,Nm1,N}
   sqdt::tType
   W::randType
@@ -25,7 +23,7 @@ end
   local T::tType
   local ΔW::randType
   local ΔZ::randType
-  @unpack u,t,dt,T,timeseries,Ws,ts,rands,W,Z = integrator
+  @unpack u,t,dt,T,rands,W,Z = integrator
 
   integrator.opts.progress && (prog = Juno.ProgressBar(name=integrator.opts.progress_name))
   if uType <: AbstractArray
@@ -35,8 +33,6 @@ end
     utmp = zeros(u)
   end
   iter = 0
-  max_stack_size = 0
-  max_stack_size2 = 0
   ΔW = integrator.sqdt*next(rands) # Take one first
   ΔZ = integrator.sqdt*next(rands) # Take one first
 end
@@ -59,9 +55,9 @@ end
 
 @def sde_savevalues begin
   if integrator.opts.save_timeseries && iter%integrator.opts.timeseries_steps==0
-    push!(timeseries,copy(u))
-    push!(ts,t)
-    push!(Ws,copy(W))
+    push!(integrator.sol.u,copy(u))
+    push!(integrator.sol.t,t)
+    push!(integrator.sol.W,copy(W))
   end
 end
 
@@ -175,8 +171,8 @@ end
         if cutLength > integrator.alg.rswm.discard_length
           push!(S₁,(cutLength,ΔW-ΔWtmp,ΔZ-ΔZtmp))
         end
-        if length(S₁) > max_stack_size
-            max_stack_size = length(S₁)
+        if length(S₁) > integrator.sol.maxstacksize
+            integrator.sol.maxstacksize = length(S₁)
         end
         ΔW = ΔWtmp
         ΔZ = ΔZtmp
@@ -187,8 +183,8 @@ end
         else
           dttmp = 0.0; ΔWtmp = zeros(size(u)...); ΔZtmp = zeros(size(u)...)
         end
-        if length(S₂) > max_stack_size2
-          max_stack_size2= length(S₂)
+        if length(S₂) > integrator.sol.maxstacksize2
+          integrator.sol.maxstacksize2= length(S₂)
         end
         while !isempty(S₂)
           L₁,L₂,L₃ = pop!(S₂)
@@ -212,8 +208,8 @@ end
         if cutLength > integrator.alg.rswm.discard_length
           push!(S₁,(cutLength,K₂-ΔWtilde,K₃-ΔZtilde))
         end
-        if length(S₁) > max_stack_size
-            max_stack_size = length(S₁)
+        if length(S₁) > integrator.sol.maxstacksize
+            integrator.sol.maxstacksize = length(S₁)
         end
         dt = dtnew
         ΔW = ΔWtilde
@@ -249,8 +245,6 @@ end
 end
 
 @def sde_adaptiveprelim begin
-  max_stack_size = 0
-  max_stack_size2 = 0
   if integrator.opts.adaptive
     S₁ = DataStructures.Stack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
     acceptedIters = 0
@@ -261,11 +255,11 @@ end
 end
 
 @def sde_postamble begin
-  if ts[end] != t
-    push!(ts,t)
-    push!(timeseries,u)
-    push!(Ws,W)
+  if integrator.sol.t[end] != t
+    push!(integrator.sol.t,t)
+    push!(integrator.sol.u,u)
+    push!(integrator.sol.W,W)
   end
   integrator.opts.progress && Juno.done(prog)
-  return u,t,W,timeseries,ts,Ws,max_stack_size,max_stack_size2
+  return nothing
 end
