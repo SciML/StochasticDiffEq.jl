@@ -69,7 +69,6 @@ end
 
 function sde_solve{algType<:SRA,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F4,F5,OType})
   @sde_preamble
-  @sde_sratableaupreamble
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂ = integrator.alg.tableau
   stages::Int = length(α)
   H0 = Vector{typeof(u)}(0)
@@ -143,7 +142,6 @@ end
 
 function sde_solve{algType<:SRA,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,F4,F5,OType})
   @sde_preamble
-  @sde_sratableaupreamble
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂ = integrator.alg.tableau
   stages::Int = length(α)
   H0 = Array{uEltype}(stages)

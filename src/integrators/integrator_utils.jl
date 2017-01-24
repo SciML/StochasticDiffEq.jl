@@ -41,30 +41,6 @@ end
   ΔZ = integrator.sqdt*next(rands) # Take one first
 end
 
-@def sde_sritableaupreamble begin
-  local c₀::Vector{uEltypeNoUnits}
-  local c₁::Vector{uEltypeNoUnits}
-  local A₀::Matrix{uEltypeNoUnits}
-  local A₁::Matrix{uEltypeNoUnits}
-  local B₀::Matrix{uEltypeNoUnits}
-  local B₁::Matrix{uEltypeNoUnits}
-  local α::Vector{uEltypeNoUnits}
-  local β₁::Vector{uEltypeNoUnits}
-  local β₂::Vector{uEltypeNoUnits}
-  local β₃::Vector{uEltypeNoUnits}
-  local β₄::Vector{uEltypeNoUnits}
-end
-
-@def sde_sratableaupreamble begin
-  local c₀::Vector{uEltypeNoUnits}
-  local c₁::Vector{uEltypeNoUnits}
-  local A₀::Matrix{uEltypeNoUnits}
-  local B₀::Matrix{uEltypeNoUnits}
-  local α::Vector{uEltypeNoUnits}
-  local β₁::Vector{uEltypeNoUnits}
-  local β₂::Vector{uEltypeNoUnits}
-end
-
 @def sde_loopheader begin
   iter += 1
   if iter > integrator.opts.maxiters
