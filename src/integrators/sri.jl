@@ -45,8 +45,8 @@ function sde_solve{algType<:SRI,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNo
           B1temp[k] += B₁[i,j]*gtemp[k]
         end
       end
-      H0[i] = u + A0temp*dt + B0temp.*chi2
-      H1[i] = u + A1temp*dt + B1temp*integrator.sqdt
+      H0[i] = uprev + A0temp*dt + B0temp.*chi2
+      H1[i] = uprev + A1temp*dt + B1temp*integrator.sqdt
     end
     atemp[:]=zero(uEltype)
     btemp[:]=zero(uEltype)
@@ -73,15 +73,15 @@ function sde_solve{algType<:SRI,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNo
 
     if integrator.opts.adaptive
       for i in eachindex(u)
-        utmp[i] = u[i] + dt*atemp[i] + btemp[i] + E₂[i]
+        u[i] = uprev[i] + dt*atemp[i] + btemp[i] + E₂[i]
       end
       for i in eachindex(u)
-        EEsttmp[i] = (integrator.opts.delta*E₁[i]+E₂[i])/(integrator.opts.abstol + max(abs(u[i]),abs(utmp[i]))*integrator.opts.reltol)
+        EEsttmp[i] = (integrator.opts.delta*E₁[i]+E₂[i])/(integrator.opts.abstol + max(abs(uprev[i]),abs(u[i]))*integrator.opts.reltol)
       end
       EEst = integrator.opts.internalnorm(EEsttmp)
     else
       for i in eachindex(u)
-        u[i] = u[i] + dt*atemp[i] + btemp[i] + E₂[i]
+        u[i] = uprev[i] + dt*atemp[i] + btemp[i] + E₂[i]
       end
     end
 
@@ -95,7 +95,7 @@ function sde_solve{algType<:SRIW1,uType<:AbstractArray,uEltype,Nm1,N,tType,tType
   chi1::randType = similar(ΔW)
   chi2::randType = similar(ΔW)
   chi3::randType = similar(ΔW)
-  fH01o4::uType = zeros(u)
+  fH01o4::uType = zeros(uprev)
   g₁o2::uType = zeros(u)
   H0::uType = zeros(u)
   H11::uType = zeros(u)
@@ -119,23 +119,23 @@ function sde_solve{algType<:SRIW1,uType<:AbstractArray,uEltype,Nm1,N,tType,tType
       chi2[i] = (ΔW[i] + ΔZ[i]/sqrt(3))/2 #I_(1,0)/h
       chi3[i] = (ΔW[i].^3 - 3ΔW[i]*dt)/6dt #I_(1,1,1)/h
     end
-    integrator.f(t,u,fH01)
+    integrator.f(t,uprev,fH01)
     for i in eachindex(u)
       fH01[i] = dt*fH01[i]
     end
-    integrator.g(t,u,g₁)
+    integrator.g(t,uprev,g₁)
     dto4 = dt/4
     for i in eachindex(u)
       fH01o4[i] = fH01[i]/4
       g₁o2[i] = g₁[i]/2
-      H0[i] =  u[i] + 3*(fH01o4[i]  + chi2[i]*g₁o2[i])
-      H11[i] = u[i] + fH01o4[i]   + integrator.sqdt*g₁o2[i]
-      H12[i] = u[i] + fH01[i]     - integrator.sqdt*g₁[i]
+      H0[i] =  uprev[i] + 3*(fH01o4[i]  + chi2[i]*g₁o2[i])
+      H11[i] = uprev[i] + fH01o4[i]   + integrator.sqdt*g₁o2[i]
+      H12[i] = uprev[i] + fH01[i]     - integrator.sqdt*g₁[i]
     end
     integrator.g(t+dto4,H11,g₂)
     integrator.g(t+dt,H12,g₃)
     for i in eachindex(u)
-      H13[i] = u[i] + fH01o4[i] + integrator.sqdt*(-5g₁[i] + 3g₂[i] + g₃[i]/2)
+      H13[i] = uprev[i] + fH01o4[i] + integrator.sqdt*(-5g₁[i] + 3g₂[i] + g₃[i]/2)
     end
 
     integrator.g(t+dto4,H13,g₄)
@@ -153,15 +153,15 @@ function sde_solve{algType<:SRIW1,uType<:AbstractArray,uEltype,Nm1,N,tType,tType
 
     if integrator.opts.adaptive
       for i in eachindex(u)
-        utmp[i] = u[i] +  (fH01[i] + 2fH02[i])/3 + ΔW[i]*(mg₁[i] + Fg₂o3[i] + Tg₃o3[i]) + chi1[i]*(mg₁[i] + Fg₂o3[i] - g₃o3[i]) + E₂[i]
+        u[i] = uprev[i] +  (fH01[i] + 2fH02[i])/3 + ΔW[i]*(mg₁[i] + Fg₂o3[i] + Tg₃o3[i]) + chi1[i]*(mg₁[i] + Fg₂o3[i] - g₃o3[i]) + E₂[i]
       end
       for i in eachindex(u)
-        EEsttmp[i] = (integrator.opts.delta*E₁[i]+E₂[i])/(integrator.opts.abstol + max(abs(u[i]),abs(utmp[i]))*integrator.opts.reltol)
+        EEsttmp[i] = (integrator.opts.delta*E₁[i]+E₂[i])/(integrator.opts.abstol + max(abs(uprev[i]),abs(u[i]))*integrator.opts.reltol)
       end
       EEst = integrator.opts.internalnorm(EEsttmp)
     else
       for i in eachindex(u)
-        u[i] = u[i] +  (fH01[i] + 2fH02[i])/3 + ΔW[i]*(mg₁[i] + Fg₂o3[i] + Tg₃o3[i]) + chi1[i]*(mg₁[i] + Fg₂o3[i] - g₃o3[i]) + E₂[i]
+        u[i] = uprev[i] +  (fH01[i] + 2fH02[i])/3 + ΔW[i]*(mg₁[i] + Fg₂o3[i] + Tg₃o3[i]) + chi1[i]*(mg₁[i] + Fg₂o3[i] - g₃o3[i]) + E₂[i]
       end
     end
     @sde_loopfooter
@@ -178,18 +178,18 @@ function sde_solve{algType<:SRIW1,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits
     chi1 = (ΔW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
     chi2 = (ΔW + ΔZ/sqrt(3))/2 #I_(1,0)/h
     chi3 = (ΔW.^3 - 3ΔW*dt)/6dt #I_(1,1,1)/h
-    fH01 = dt*integrator.f(t,u)
+    fH01 = dt*integrator.f(t,uprev)
 
-    g₁ = integrator.g(t,u)
+    g₁ = integrator.g(t,uprev)
     fH01o4 = fH01/4
     dto4 = dt/4
     g₁o2 = g₁/2
-    H0 =  u + 3*(fH01o4  + chi2.*g₁o2)
-    H11 = u + fH01o4   + integrator.sqdt*g₁o2
-    H12 = u + fH01     - integrator.sqdt*g₁
+    H0 =  uprev + 3*(fH01o4  + chi2.*g₁o2)
+    H11 = uprev + fH01o4   + integrator.sqdt*g₁o2
+    H12 = uprev + fH01     - integrator.sqdt*g₁
     g₂ = integrator.g(t+dto4,H11)
     g₃ = integrator.g(t+dt,H12)
-    H13 = u + fH01o4 + integrator.sqdt*(-5g₁ + 3g₂ + g₃/2)
+    H13 = uprev + fH01o4 + integrator.sqdt*(-5g₁ + 3g₂ + g₃/2)
 
 
     g₄ = integrator.g(t+dto4,H13)
@@ -204,10 +204,10 @@ function sde_solve{algType<:SRIW1,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits
     E₂ = chi2.*(2g₁ - Fg₂o3 - Tg₃o3) + chi3.*(2mg₁ + 5g₂o3 - Tg₃o3 + g₄)
 
     if integrator.opts.adaptive
-      utmp = u + (fH01 + 2fH02)/3 + ΔW.*(mg₁ + Fg₂o3 + Tg₃o3) + chi1.*(mg₁ + Fg₂o3 - g₃o3) + E₂
-      EEst = abs((integrator.opts.delta*E₁+E₂)/(integrator.opts.abstol + max(abs(u),abs(utmp))*integrator.opts.reltol))
+      u = uprev + (fH01 + 2fH02)/3 + ΔW.*(mg₁ + Fg₂o3 + Tg₃o3) + chi1.*(mg₁ + Fg₂o3 - g₃o3) + E₂
+      EEst = abs((integrator.opts.delta*E₁+E₂)/(integrator.opts.abstol + max(abs(uprev),abs(u))*integrator.opts.reltol))
     else
-      u = u + (fH01 + 2fH02)/3 + ΔW.*(mg₁ + Fg₂o3 + Tg₃o3) + chi1.*(mg₁ + Fg₂o3 - g₃o3) + E₂
+      u = uprev + (fH01 + 2fH02)/3 + ΔW.*(mg₁ + Fg₂o3 + Tg₃o3) + chi1.*(mg₁ + Fg₂o3 - g₃o3) + E₂
     end
 
     @sde_loopfooter
@@ -242,8 +242,8 @@ function sde_solve{algType<:SRI,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,u
         A1temp += A₁[i,j]*integrator.f(t + c₀[j]*dt,H0[j])
         B1temp += B₁[i,j]*integrator.g(t + c₁[j]*dt,H1[j])
       end
-      H0[i] = u + A0temp*dt + B0temp.*chi2
-      H1[i] = u + A1temp*dt + B1temp*integrator.sqdt
+      H0[i] = uprev + A0temp*dt + B0temp.*chi2
+      H1[i] = uprev + A1temp*dt + B1temp*integrator.sqdt
     end
     atemp = zero(u)
     btemp = zero(u)
@@ -262,10 +262,10 @@ function sde_solve{algType<:SRI,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,u
 
 
     if integrator.opts.adaptive
-      utmp = u + dt*atemp + btemp + E₂
-      EEst = abs((integrator.opts.delta*E₁+E₂)./(integrator.opts.abstol + max(abs(u),abs(utmp))*integrator.opts.reltol))
+      u = uprev + dt*atemp + btemp + E₂
+      EEst = abs((integrator.opts.delta*E₁+E₂)./(integrator.opts.abstol + max(abs(uprev),abs(u))*integrator.opts.reltol))
     else
-      u = u + dt*atemp + btemp + E₂
+      u = uprev + dt*atemp + btemp + E₂
     end
 
     @sde_loopfooter

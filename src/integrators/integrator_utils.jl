@@ -1,7 +1,7 @@
 type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,F4,F5,OType}
   f::F4
   g::F5
-  u::uType
+  uprev::uType
   t::tType
   dt::tType
   T::tType
@@ -23,14 +23,15 @@ end
   local T::tType
   local ΔW::randType
   local ΔZ::randType
-  @unpack u,t,dt,T,rands,W,Z = integrator
-
+  @unpack uprev,t,dt,T,rands,W,Z = integrator
   integrator.opts.progress && (prog = Juno.ProgressBar(name=integrator.opts.progress_name))
   if uType <: AbstractArray
-    EEsttmp = zeros(u)
+    u = zeros(uprev)
+  else
+    u = zero(uprev)
   end
   if uType <: AbstractArray
-    utmp = zeros(u)
+    EEsttmp = zeros(u)
   end
   iter = 0
   ΔW = integrator.sqdt*next(rands) # Take one first
@@ -96,9 +97,9 @@ end
         Z = Z + ΔZ
       end
       if uType <: AbstractArray
-        recursivecopy!(u,utmp)
+        recursivecopy!(uprev,u)
       else
-        u = utmp
+        uprev = u
       end
       if adaptive_alg(integrator.alg.rswm)==:RSwM3
         ResettableStacks.reset!(S₂) #Empty S₂
@@ -218,6 +219,13 @@ end
     end
   else # Non adaptive
     t = t + dt
+
+    if typeof(u) <: AbstractArray
+      recursivecopy!(uprev,u)
+    else
+      uprev = u
+    end
+
     if uType <: AbstractArray
       for i in eachindex(u)
         W[i] = W[i] + ΔW[i]

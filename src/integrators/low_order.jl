@@ -2,7 +2,7 @@ function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits
   @sde_preamble
   @inbounds while t<T
     @sde_loopheader
-    u = u + dt.*integrator.f(t,u) + integrator.g(t,u).*ΔW
+    u = uprev + dt.*integrator.f(t,uprev) + integrator.g(t,uprev).*ΔW
     @sde_loopfooter
   end
   @sde_postamble
@@ -13,10 +13,10 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltype
   utmp1 = zeros(u); utmp2 = zeros(u)
   @inbounds while t<T
     @sde_loopheader
-    integrator.f(t,u,utmp1)
-    integrator.g(t,u,utmp2)
+    integrator.f(t,uprev,utmp1)
+    integrator.g(t,uprev,utmp2)
     for i in eachindex(u)
-      u[i] = u[i] + dt*utmp1[i] + utmp2[i]*ΔW[i]
+      u[i] = uprev[i] + dt*utmp1[i] + utmp2[i]*ΔW[i]
     end
     @sde_loopfooter
   end
@@ -29,10 +29,10 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltype
   K::uType = zeros(u); utilde::uType = zeros(u); L::uType = zeros(u)
   @inbounds while t<T
     @sde_loopheader
-    integrator.f(t,u,du1)
-    integrator.g(t,u,L)
+    integrator.f(t,uprev,du1)
+    integrator.g(t,uprev,L)
     for i in eachindex(u)
-      K[i] = u[i] + dt*du1[i]
+      K[i] = uprev[i] + dt*du1[i]
       utilde[i] = K[i] + L[i]*integrator.sqdt
     end
     integrator.g(t,utilde,du2)
@@ -49,10 +49,10 @@ function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits
   @inbounds while t<T
     @sde_loopheader
 
-    K = u + dt.*integrator.f(t,u)
-    L = integrator.g(t,u)
+    K = uprev + dt.*integrator.f(t,uprev)
+    L = integrator.g(t,uprev)
     utilde = K + L*integrator.sqdt
-    u = K+L*ΔW+(integrator.g(t,utilde)-integrator.g(t,u))/(2integrator.sqdt)*(ΔW^2 - dt)
+    u = K+L*ΔW+(integrator.g(t,utilde)-integrator.g(t,uprev))/(2integrator.sqdt)*(ΔW^2 - dt)
 
     @sde_loopfooter
   end
