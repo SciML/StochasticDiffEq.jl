@@ -1,4 +1,4 @@
-type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,cacheType,progType,F4,F5,OType}
+type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,F4,F5,OType}
   f::F4
   g::F5
   uprev::uType
@@ -13,6 +13,8 @@ type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,rand
   sqdt::tType
   W::randType
   Z::randType
+  ΔW::randElType
+  ΔZ::randElType
   opts::OType
   iter::Int
   prog::progType

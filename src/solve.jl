@@ -188,6 +188,7 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
   #EEst = 0
   q11 = tTypeNoUnits(1)
   ΔW = sqdt*next(rands) # Take one first
+  ΔZ = sqdt*next(rands) # Take one first
 
   rateType = typeof(u/t) ## Can be different if united
 
@@ -198,10 +199,10 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
 
   integrator =    SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,
                   tType,tTypeNoUnits,
-                  uEltypeNoUnits,randType,rateType,typeof(sol),typeof(cache),
+                  uEltypeNoUnits,randType,typeof(ΔW),rateType,typeof(sol),typeof(cache),
                   typeof(prog),
                   F,F2,typeof(opts)}(f,g,uprev,t,u,tType(dt),T,alg,sol,cache,
-                  rands,sqdt,W,Z,opts,iter,prog,
+                  rands,sqdt,W,Z,ΔW,ΔZ,opts,iter,prog,
                   tTypeNoUnits(qoldinit),q11)
 
   sde_solve(integrator)

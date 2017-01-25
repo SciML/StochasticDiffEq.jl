@@ -1,14 +1,6 @@
 @def sde_preamble begin
   local T::tType
-  local ΔW::randType
-  local ΔZ::randType
-  @unpack T,rands,W,Z,cache = integrator
-
-  if uType <: AbstractArray
-    EEsttmp = zeros(integrator.u)
-  end
-  ΔW = integrator.sqdt*next(rands) # Take one first
-  ΔZ = integrator.sqdt*next(rands) # Take one first
+  @unpack T,rands,cache = integrator
 end
 
 @def sde_loopheader begin
@@ -65,12 +57,12 @@ end
       if integrator.opts.save_noise
         if uType <: AbstractArray
           for i in eachindex(integrator.u)
-            integrator.W[i] = integrator.W[i] + ΔW[i]
-            integrator.Z[i] = integrator.Z[i] + ΔZ[i]
+            integrator.W[i] = integrator.W[i] + integrator.ΔW[i]
+            integrator.Z[i] = integrator.Z[i] + integrator.ΔZ[i]
           end
         else
-          integrator.W = integrator.W + ΔW
-          integrator.Z = integrator.Z + ΔZ
+          integrator.W = integrator.W + integrator.ΔW
+          integrator.Z = integrator.Z + integrator.ΔZ
         end
       end
       if uType <: AbstractArray
@@ -85,40 +77,40 @@ end
       # Setup next step
       if adaptive_alg(integrator.alg.rswm)==:RSwM1
         if !isempty(S₁)
-          integrator.dt,ΔW,ΔZ = pop!(S₁)
+          integrator.dt,integrator.ΔW,integrator.ΔZ = pop!(S₁)
           integrator.sqdt = sqrt(integrator.dt)
         else # Stack is empty
           c = min(integrator.opts.dtmax,dtnew)
           integrator.dt = max(min(c,abs(T-integrator.t)),integrator.opts.dtmin)#abs to fix complex sqrt issue at end
           #integrator.dt = min(c,abs(T-integrator.t))
           integrator.sqdt = sqrt(integrator.dt)
-          ΔW = integrator.sqdt*next(rands)
-          ΔZ = integrator.sqdt*next(rands)
+          integrator.ΔW = integrator.sqdt*next(rands)
+          integrator.ΔZ = integrator.sqdt*next(rands)
         end
       elseif adaptive_alg(integrator.alg.rswm)==:RSwM2 || adaptive_alg(integrator.alg.rswm)==:RSwM3
         c = min(integrator.opts.dtmax,dtnew)
         integrator.dt = max(min(c,abs(T-integrator.t)),integrator.opts.dtmin) #abs to fix complex sqrt issue at end
         integrator.sqdt = sqrt(integrator.dt)
         if !(uType <: AbstractArray)
-          dttmp = 0.0; ΔW = 0.0; ΔZ = 0.0
+          dttmp = 0.0; integrator.ΔW = 0.0; integrator.ΔZ = 0.0
         else
-          dttmp = 0.0; ΔW = zeros(size(integrator.u)...); ΔZ = zeros(size(integrator.u)...)
+          dttmp = 0.0; integrator.ΔW = zeros(size(integrator.u)...); integrator.ΔZ = zeros(size(integrator.u)...)
         end
         while !isempty(S₁)
           L₁,L₂,L₃ = pop!(S₁)
           qtmp = (integrator.dt-dttmp)/L₁
           if qtmp>1
             dttmp+=L₁
-            ΔW+=L₂
-            ΔZ+=L₃
+            integrator.ΔW+=L₂
+            integrator.ΔZ+=L₃
             if adaptive_alg(integrator.alg.rswm)==:RSwM3
               push!(S₂,(L₁,L₂,L₃))
             end
           else #Popped too far
             ΔWtilde = qtmp*L₂ + sqrt((1-qtmp)*qtmp*L₁)*next(rands)
             ΔZtilde = qtmp*L₃ + sqrt((1-qtmp)*qtmp*L₁)*next(rands)
-            ΔW += ΔWtilde
-            ΔZ += ΔZtilde
+            integrator.ΔW += ΔWtilde
+            integrator.ΔZ += ΔZtilde
             if (1-qtmp)*L₁ > integrator.alg.rswm.discard_length
               push!(S₁,((1-qtmp)*L₁,L₂-ΔWtilde,L₃-ΔZtilde))
               if adaptive_alg(integrator.alg.rswm)==:RSwM3 && qtmp*L₁ > integrator.alg.rswm.discard_length
@@ -132,8 +124,8 @@ end
         if dtleft != 0 #Stack emptied
           ΔWtilde = sqrt(dtleft)*next(rands)
           ΔZtilde = sqrt(dtleft)*next(rands)
-          ΔW += ΔWtilde
-          ΔZ += ΔZtilde
+          integrator.ΔW += ΔWtilde
+          integrator.ΔZ += ΔZtilde
           if adaptive_alg(integrator.alg.rswm)==:RSwM3
             push!(S₂,(dtleft,ΔWtilde,ΔZtilde))
           end
@@ -143,17 +135,17 @@ end
       dtnew = integrator.dt/min(inv(integrator.opts.qmin),integrator.q11/integrator.opts.gamma)
       q = dtnew/integrator.dt
       if adaptive_alg(integrator.alg.rswm)==:RSwM1 || adaptive_alg(integrator.alg.rswm)==:RSwM2
-        ΔWtmp = q*ΔW + sqrt((1-q)*dtnew)*next(rands)
-        ΔZtmp = q*ΔZ + sqrt((1-q)*dtnew)*next(rands)
+        ΔWtmp = q*integrator.ΔW + sqrt((1-q)*dtnew)*next(rands)
+        ΔZtmp = q*integrator.ΔZ + sqrt((1-q)*dtnew)*next(rands)
         cutLength = integrator.dt-dtnew
         if cutLength > integrator.alg.rswm.discard_length
-          push!(S₁,(cutLength,ΔW-ΔWtmp,ΔZ-ΔZtmp))
+          push!(S₁,(cutLength,integrator.ΔW-ΔWtmp,integrator.ΔZ-ΔZtmp))
         end
         if length(S₁) > integrator.sol.maxstacksize
             integrator.sol.maxstacksize = length(S₁)
         end
-        ΔW = ΔWtmp
-        ΔZ = ΔZtmp
+        integrator.ΔW = ΔWtmp
+        integrator.ΔZ = ΔZtmp
         integrator.dt = dtnew
       else # RSwM3
         if !(uType <: AbstractArray)
@@ -177,8 +169,8 @@ end
           end
         end # end while
         dtK = integrator.dt - dttmp
-        K₂ = ΔW - ΔWtmp
-        K₃ = ΔZ - ΔZtmp
+        K₂ = integrator.ΔW - ΔWtmp
+        K₃ = integrator.ΔZ - ΔZtmp
         qK = q*integrator.dt/dtK
         ΔWtilde = qK*K₂ + sqrt((1-qK)*qK*dtK)*next(rands)
         ΔZtilde = qK*K₃ + sqrt((1-qK)*qK*dtK)*next(rands)
@@ -190,8 +182,8 @@ end
             integrator.sol.maxstacksize = length(S₁)
         end
         integrator.dt = dtnew
-        ΔW = ΔWtilde
-        ΔZ = ΔZtilde
+        integrator.ΔW = ΔWtilde
+        integrator.ΔZ = ΔZtilde
       end
     end
   else # Non adaptive
@@ -206,23 +198,23 @@ end
     if integrator.opts.save_noise
       if uType <: AbstractArray
         for i in eachindex(integrator.u)
-          integrator.W[i] = integrator.W[i] + ΔW[i]
+          integrator.W[i] = integrator.W[i] + integrator.ΔW[i]
         end
       else
-        integrator.W = integrator.W + ΔW
+        integrator.W = integrator.W + integrator.ΔW
       end
       if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
         if uType <: AbstractArray
           for i in eachindex(integrator.u)
-            integrator.Z[i] = integrator.Z[i] + ΔZ[i]
+            integrator.Z[i] = integrator.Z[i] + integrator.ΔZ[i]
           end
         else
-          integrator.Z = integrator.Z + ΔZ
+          integrator.Z = integrator.Z + integrator.ΔZ
         end
-        ΔZ = integrator.sqdt*next(rands)
+        integrator.ΔZ = integrator.sqdt*next(rands)
       end
     end
-    ΔW = integrator.sqdt*next(rands)
+    integrator.ΔW = integrator.sqdt*next(rands)
     savevalues!(integrator)
   end
   if integrator.opts.progress && integrator.iter%integrator.opts.progress_steps==0

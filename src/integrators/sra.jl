@@ -1,9 +1,9 @@
-function sde_solve{algType<:SRA1,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,F4,F5,OType})
+function sde_solve{algType<:SRA1,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,F4,F5,OType})
   @sde_preamble
   @sde_adaptiveprelim
   @inbounds while integrator.t < integrator.T
     @sde_loopheader
-    @unpack t,dt,uprev,u = integrator
+    @unpack t,dt,uprev,u,ΔW,ΔZ = integrator
     gpdt = integrator.g(t+dt,uprev)
     chi2 = (ΔW + ΔZ/sqrt(3))/2 #I_(1,0)/h
     k₁ = dt*integrator.f(t,uprev)
@@ -23,13 +23,13 @@ function sde_solve{algType<:SRA1,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,
   @sde_postamble
 end
 
-function sde_solve{algType<:SRA1,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,F4,F5,OType})
+function sde_solve{algType<:SRA1,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,F4,F5,OType})
   @sde_preamble
   @sde_adaptiveprelim
   @inbounds while integrator.t < integrator.T
     @sde_loopheader
-    @unpack chi2,tmp1,E₁,E₂,gt,k₁,k₂,gpdt = cache
-    @unpack t,dt,uprev,u = integrator
+    @unpack chi2,tmp1,E₁,E₂,gt,k₁,k₂,gpdt,EEsttmp = cache
+    @unpack t,dt,uprev,u,ΔW,ΔZ = integrator
     integrator.g(t,uprev,gt)
     integrator.g(t+dt,uprev,gpdt)
     integrator.f(t,uprev,k₁); k₁*=dt
@@ -64,13 +64,13 @@ function sde_solve{algType<:SRA1,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeN
   @sde_postamble
 end
 
-function sde_solve{algType<:SRA,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,F4,F5,OType})
+function sde_solve{algType<:SRA,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,F4,F5,OType})
   @sde_preamble
   @sde_adaptiveprelim
   @inbounds while integrator.t < integrator.T
     @sde_loopheader
-    @unpack t,dt,uprev,u = integrator
-    @unpack H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂ = cache
+    @unpack t,dt,uprev,u,ΔW,ΔZ = integrator
+    @unpack H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂,EEsttmp = cache
     @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages = cache.tab
     for i in eachindex(u)
       chi2[i] = .5*(ΔW[i] + ΔZ[i]/sqrt(3)) #I_(1,0)/h
@@ -131,13 +131,13 @@ function sde_solve{algType<:SRA,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNo
   @sde_postamble
 end
 
-function sde_solve{algType<:SRA,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,F4,F5,OType})
+function sde_solve{algType<:SRA,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,F4,F5,OType})
   @sde_preamble
   @sde_adaptiveprelim
   @inbounds while integrator.t < integrator.T
     @sde_loopheader
     @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages,H0 = cache
-    @unpack t,dt,uprev,u = integrator
+    @unpack t,dt,uprev,u,ΔW,ΔZ = integrator
     chi2 = .5*(ΔW + ΔZ/sqrt(3)) #I_(1,0)/h
     H0[:]=zeros(stages)
     for i = 1:stages
