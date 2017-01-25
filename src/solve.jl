@@ -9,6 +9,7 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
               dt = tType(0),save_timeseries::Bool = true,
               timeseries_steps::Int = 1,
               dense = false,
+              save_noise = true,
               saveat = tType[],tstops = tType[],d_discontinuities= tType[],
               calck = (!isempty(setdiff(saveat,tstops)) || dense),
               adaptive=isadaptive(alg),gamma=9//10,
@@ -143,7 +144,8 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
     progress,progress_steps,
     progress_name,progress_message,
     timeseries_errors,dense_errors,
-    tTypeNoUnits(beta1),tTypeNoUnits(beta2),uEltypeNoUnits(delta),tTypeNoUnits(qoldinit),dense,
+    tTypeNoUnits(beta1),tTypeNoUnits(beta2),uEltypeNoUnits(delta),tTypeNoUnits(qoldinit),
+    dense,save_noise,
     callbacks_internal,isoutofdomain,unstable_check,calck,advance_to_tstop,stop_at_next_tstop)
 
   progress ? (prog = Juno.ProgressBar(name=progress_name)) : prog = nothing
@@ -191,8 +193,13 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
 
   cache = alg_cache(alg,u,rate_prototype,ΔW,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,Val{isinplace})
 
-  sol = build_solution(prob,alg,ts,timeseries,W=Ws,
+  if save_noise
+    sol = build_solution(prob,alg,ts,timeseries,W=Ws,
                   calculate_error = false)
+  else
+    sol = build_solution(prob,alg,ts,timeseries,
+                  calculate_error = false)
+  end
 
   integrator =    SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,
                   tType,tTypeNoUnits,

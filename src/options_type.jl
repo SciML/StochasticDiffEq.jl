@@ -26,6 +26,7 @@ type SDEOptions{uEltype,uEltypeNoUnits,tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsT
   delta::uEltypeNoUnits
   qoldinit::tTypeNoUnits
   dense::Bool
+  save_noise::Bool
   callback::F3
   isoutofdomain::F4
   unstable_check::F6

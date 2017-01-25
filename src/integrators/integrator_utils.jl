@@ -31,7 +31,7 @@ end
   if integrator.opts.save_timeseries && integrator.iter%integrator.opts.timeseries_steps==0
     push!(integrator.sol.u,copy(integrator.u))
     push!(integrator.sol.t,integrator.t)
-    push!(integrator.sol.W,copy(W))
+    push!(integrator.sol.W,copy(integrator.W))
   end
 end
 
@@ -60,14 +60,16 @@ end
       #end
 
 
-      if uType <: AbstractArray
-        for i in eachindex(integrator.u)
-          W[i] = W[i] + ΔW[i]
-          Z[i] = Z[i] + ΔZ[i]
+      if integrator.opts.save_noise
+        if uType <: AbstractArray
+          for i in eachindex(integrator.u)
+            integrator.W[i] = integrator.W[i] + ΔW[i]
+            integrator.Z[i] = integrator.Z[i] + ΔZ[i]
+          end
+        else
+          integrator.W = integrator.W + ΔW
+          integrator.Z = integrator.Z + ΔZ
         end
-      else
-        W = W + ΔW
-        Z = Z + ΔZ
       end
       if uType <: AbstractArray
         recursivecopy!(integrator.uprev,integrator.u)
@@ -199,24 +201,26 @@ end
       integrator.uprev = integrator.u
     end
 
-    if uType <: AbstractArray
-      for i in eachindex(integrator.u)
-        W[i] = W[i] + ΔW[i]
-      end
-    else
-      W = W + ΔW
-    end
-    ΔW = integrator.sqdt*next(rands)
-    if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+    if integrator.opts.save_noise
       if uType <: AbstractArray
         for i in eachindex(integrator.u)
-          Z[i] = Z[i] + ΔZ[i]
+          integrator.W[i] = integrator.W[i] + ΔW[i]
         end
       else
-        Z = Z + ΔZ
+        integrator.W = integrator.W + ΔW
       end
-      ΔZ = integrator.sqdt*next(rands)
+      if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+        if uType <: AbstractArray
+          for i in eachindex(integrator.u)
+            integrator.Z[i] = integrator.Z[i] + ΔZ[i]
+          end
+        else
+          integrator.Z = integrator.Z + ΔZ
+        end
+        ΔZ = integrator.sqdt*next(rands)
+      end
     end
+    ΔW = integrator.sqdt*next(rands)
     @sde_savevalues
   end
   if integrator.opts.progress && integrator.iter%integrator.opts.progress_steps==0
@@ -227,10 +231,10 @@ end
 
 @def sde_adaptiveprelim begin
   if integrator.opts.adaptive
-    S₁ = DataStructures.Stack{}(Tuple{typeof(integrator.t),typeof(W),typeof(Z)})
+    S₁ = DataStructures.Stack{}(Tuple{typeof(integrator.t),typeof(integrator.W),typeof(integrator.Z)})
     acceptedIters = 0
     if adaptive_alg(integrator.alg.rswm)==:RSwM3
-      S₂ = ResettableStacks.ResettableStack{}(Tuple{typeof(integrator.t),typeof(W),typeof(Z)})
+      S₂ = ResettableStacks.ResettableStack{}(Tuple{typeof(integrator.t),typeof(integrator.W),typeof(integrator.Z)})
     end
   end
 end
@@ -239,7 +243,7 @@ end
   if integrator.sol.t[end] != integrator.t
     push!(integrator.sol.t,integrator.t)
     push!(integrator.sol.u,integrator.u)
-    push!(integrator.sol.W,W)
+    push!(integrator.sol.W,integrator.W)
   end
   integrator.opts.progress && Juno.done(integrator.prog)
   return nothing

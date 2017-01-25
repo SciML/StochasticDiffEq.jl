@@ -30,5 +30,5 @@ sim2 = test_convergence(dts,prob,RKMil(),numMonte=10)
 sim3 = test_convergence(dts,prob,SRI(),numMonte=10)
 @test abs(sim3.𝒪est[:final]-1.5) < 0.3
 
-sim4 = test_convergence(dts,prob,SRIW1(),numMonte=100,save_timeseries=false)
+sim4 = test_convergence(dts,prob,SRIW1(),numMonte=100)
 @test abs(sim4.𝒪est[:final]-1.5) < 0.3
