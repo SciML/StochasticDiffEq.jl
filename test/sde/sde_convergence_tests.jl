@@ -1,11 +1,11 @@
-@everywhere using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools
+@everywhere using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Base.Test
 srand(100)
 dts = 1./2.^(10:-1:2) #14->7 good plot
 
 prob = prob_sde_wave
 sim  = test_convergence(dts,prob,EM(),numMonte=Int(1e1))
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
-sim2 = test_convergence(dts,prob,RKMil(),numMonte=Int(1e1))
+sim2 = test_convergence(dts,prob,RKMil(),numMonte=Int(1e2))
 @test abs(sim2.𝒪est[:l∞]-1) < 0.1
 sim3 = test_convergence(dts,prob,SRI(),numMonte=Int(1e1))
 @test abs(sim3.𝒪est[:final]-1.5) < 0.3

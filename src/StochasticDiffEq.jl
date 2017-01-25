@@ -2,15 +2,34 @@ __precompile__()
 
 module StochasticDiffEq
 
-  using DiffEqBase, Parameters, ChunkedArrays, RecursiveArrayTools, Juno,
-        DataStructures, ResettableStacks
-  import DiffEqBase: solve
+  import Base: linspace
 
+  import Base: start, next, done, eltype
+
+  using DiffEqBase, Parameters, ChunkedArrays, RecursiveArrayTools, Juno,
+        DataStructures, ResettableStacks, Roots
+        
+  import DiffEqBase: solve, solve!, init, step!, build_solution
+
+  import DiffEqBase: resize!,deleteat!,full_cache,u_cache,du_cache,terminate!,get_du,
+                     get_dt,get_proposed_dt,modify_proposed_dt!,
+                     u_modified!,savevalues!,add_tstop!,add_saveat!,set_reltol!,
+                     set_abstol!
+
+  include("rswm.jl")
   include("algorithms.jl")
+  include("options_type.jl")
+  include("constants.jl")
+  include("caches.jl")
+  include("integrators/type.jl")
+  include("dense.jl")
+  include("callbacks.jl")
   include("alg_utils.jl")
+  include("integrators/integrator_utils.jl")
+  include("integrators/integrator_interface.jl")
+  include("iterator_interface.jl")
   include("solve.jl")
   include("initdt.jl")
-  include("integrators/integrator_utils.jl")
   include("integrators/low_order.jl")
   include("integrators/sri.jl")
   include("integrators/sra.jl")

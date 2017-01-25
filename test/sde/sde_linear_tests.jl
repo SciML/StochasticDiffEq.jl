@@ -8,7 +8,6 @@ sol = solve(prob,EM(),dt=1//2^(4))
 sol = solve(prob,RKMil(),dt=1//2^(4))
 sol = solve(prob,SRI(),dt=1//2^(4))
 sol = solve(prob,SRIW1(),dt=1//2^(4))
-TEST_PLOT && plot(sol)
 NUM_MONTE = 10
 ## Convergence Testing
 println("Convergence Test on Linear")

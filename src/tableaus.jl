@@ -3,18 +3,19 @@ RosslerSRI
 
 Holds the Butcher tableaus for a Rosser SRI method.
 """
-type RosslerSRI <: Tableau
-  c₀
-  c₁
-  A₀
-  A₁
-  B₀
-  B₁
-  α
-  β₁
-  β₂
-  β₃
-  β₄
+immutable RosslerSRI{T,T2} <: Tableau
+  c₀::Vector{T2}
+  c₁::Vector{T2}
+  A₀::Matrix{T}
+  A₁::Matrix{T}
+  B₀::Matrix{T}
+  B₁::Matrix{T}
+  α::Vector{T}
+  β₁::Vector{T}
+  β₂::Vector{T}
+  β₃::Vector{T}
+  β₄::Vector{T}
+  order::Rational{Int}
 end
 
 """
@@ -22,14 +23,15 @@ RosslerSRA
 
 Holds the Butcher tableaus for a Rosser SRA method.
 """
-type RosslerSRA <: Tableau
-  c₀
-  c₁
-  A₀
-  B₀
-  α
-  β₁
-  β₂
+immutable RosslerSRA{T,T2} <: Tableau
+  c₀::Vector{T2}
+  c₁::Vector{T2}
+  A₀::Matrix{T}
+  B₀::Matrix{T}
+  α::Vector{T}
+  β₁::Vector{T}
+  β₂::Vector{T}
+  order::Rational{Int}
 end
 
 """
@@ -37,33 +39,37 @@ constructSRIW1()
 
 Constructs the tableau type for the SRIW1 method.
 """
-function constructSRIW1()
-  c₀ = [0;3/4;0;0]
-  c₁ = [0;1/4;1;1/4]
+function constructSRIW1(T=Float64,T2=Float64)
+  c₀ = [0;3//4;0;0]
+  c₁ = [0;1//4;1;1//4]
   A₀ = [0 0 0 0
-      3/4 0 0 0
+      3//4 0 0 0
       0 0 0 0
       0 0 0 0]
   A₁ = [0 0 0 0
-      1/4 0 0 0
+      1//4 0 0 0
       1 0 0 0
-      0 0 1/4 0]
+      0 0 1//4 0]
   B₀ = [0 0 0 0
-      3/2 0 0 0
+      3//2 0 0 0
       0 0 0 0
       0 0 0 0]
   B₁ = [0 0 0 0
-      1/2 0 0 0
+      1//2 0 0 0
       -1 0 0 0
-      -5 3 1/2 0]
+      -5 3 1//2 0]
 
-  α = [1/3;2/3;0;0]
+  α = [1//3;2//3;0;0]
 
-  β₁ = [-1;4/3;2/3;0]
-  β₂ = -[1;-4/3;1/3;0]
-  β₃ = [2;-4/3;-2/3;0]
-  β₄ = [-2;5/3;-2/3;1]
-  RosslerSRI(c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄)
+  β₁ = [-1;4//3;2//3;0]
+  β₂ = -[1;-4//3;1//3;0]
+  β₃ = [2;-4//3;-2//3;0]
+  β₄ = [-2;5//3;-2//3;1]
+  RosslerSRI(map(T2,c₀),map(T2,c₁),
+             map(T,A₀),map(T,A₁),
+             map(T,B₀),map(T,B₁),
+             map(T,α),map(T,β₁),map(T,β₂),
+             map(T,β₃),map(T,β₄),3//2)
 end
 
 """
@@ -71,17 +77,19 @@ constructSRA1()
 
 Constructs the taleau type for the SRA1 method.
 """
-function constructSRA1()
-  α  = [1/3;2/3]
+function constructSRA1(T=Float64,T2=Float64)
+  α  = [1//3;2//3]
   β₁ = [1;0]
-  β₂ = [-1;1]
+  β₂ = [-1.0;1]
   A₀ = [0 0
-       3/4 0]
+       3//4 0]
   B₀ = [0 0
-       3/2 0]
-  c₀ = [0;3/4]
+       3//2 0]
+  c₀ = [0;3//4]
   c₁ = [1;0]
-  RosslerSRA(c₀,c₁,A₀,B₀,α,β₁,β₂)
+  RosslerSRA(map(T2,c₀),map(T2,c₁),
+             map(T,A₀),map(T,B₀),
+             map(T,α),map(T,β₁),map(T,β₂),4//2)
 end
 
 """
@@ -140,6 +148,3 @@ function checkSRAOrder(SRA;tol=1e-6)
   conditions[8] = abs(dot(β₂,c₁)+1)<tol
   return(conditions)
 end
-
-const SDE_DEFAULT_TABLEAU = constructSRIW1()
-const SDE_ADDITIVE_DEFAULT_TABLEAU = constructSRA1()
