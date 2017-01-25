@@ -1,4 +1,4 @@
-function sde_solve{algType<:SRA1,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,F4,F5,OType})
+function sde_solve{algType<:SRA1,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType})
   @sde_preamble
   @sde_adaptiveprelim
   @inbounds while integrator.t < integrator.T
@@ -13,7 +13,7 @@ function sde_solve{algType<:SRA1,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,
 
     if integrator.opts.adaptive
       u = uprev + k₁/3 + 2k₂/3 + E₂ + ΔW*gpdt
-      EEst = abs((integrator.opts.delta*E₁+E₂)./(integrator.opts.abstol + max(abs(uprev),abs(u))*integrator.opts.reltol))
+      integrator.EEst = abs((integrator.opts.delta*E₁+E₂)./(integrator.opts.abstol + max(abs(uprev),abs(u))*integrator.opts.reltol))
     else
       u = uprev + k₁/3 + 2k₂/3 + E₂ + ΔW*gpdt
     end
@@ -23,7 +23,7 @@ function sde_solve{algType<:SRA1,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,
   @sde_postamble
 end
 
-function sde_solve{algType<:SRA1,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,F4,F5,OType})
+function sde_solve{algType<:SRA1,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType})
   @sde_preamble
   @sde_adaptiveprelim
   @inbounds while integrator.t < integrator.T
@@ -52,7 +52,7 @@ function sde_solve{algType<:SRA1,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeN
       for i in eachindex(u)
         EEsttmp[i] = (integrator.opts.delta*E₁[i]+E₂[i])/(integrator.opts.abstol + max(abs(uprev[i]),abs(u[i]))*integrator.opts.reltol)
       end
-      EEst = integrator.opts.internalnorm(EEsttmp)
+      integrator.EEst = integrator.opts.internalnorm(EEsttmp)
     else
       for i in eachindex(u)
         u[i] = uprev[i] + k₁[i]/3 + 2k₂[i]/3 + E₂[i] + ΔW[i]*gpdt[i]
@@ -64,7 +64,7 @@ function sde_solve{algType<:SRA1,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeN
   @sde_postamble
 end
 
-function sde_solve{algType<:SRA,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,F4,F5,OType})
+function sde_solve{algType<:SRA,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType})
   @sde_preamble
   @sde_adaptiveprelim
   @inbounds while integrator.t < integrator.T
@@ -119,7 +119,7 @@ function sde_solve{algType<:SRA,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNo
       for i in eachindex(u)
         EEsttmp[i] = (integrator.opts.delta*E₁[i]+E₂[i])/(integrator.opts.abstol + max(abs(uprev[i]),abs(u[i]))*integrator.opts.reltol)
       end
-      EEst = integrator.opts.internalnorm(EEsttmp)
+      integrator.EEst = integrator.opts.internalnorm(EEsttmp)
     else
       for i in eachindex(u)
         u[i] = uprev[i] + dt*atemp[i] + btemp[i] + E₂[i]
@@ -131,7 +131,7 @@ function sde_solve{algType<:SRA,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNo
   @sde_postamble
 end
 
-function sde_solve{algType<:SRA,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,F4,F5,OType})
+function sde_solve{algType<:SRA,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType})
   @sde_preamble
   @sde_adaptiveprelim
   @inbounds while integrator.t < integrator.T
@@ -166,7 +166,7 @@ function sde_solve{algType<:SRA,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,u
     if integrator.opts.adaptive
       E₁ = dt*E₁temp
       u = uprev + dt*atemp + btemp + E₂
-      EEst = abs((integrator.opts.delta*E₁+E₂)./(integrator.opts.abstol + max(abs(uprev),abs(u))*integrator.opts.reltol))
+      integrator.EEst = abs((integrator.opts.delta*E₁+E₂)./(integrator.opts.abstol + max(abs(uprev),abs(u))*integrator.opts.reltol))
     else
       u = uprev + dt*atemp + btemp + E₂
     end

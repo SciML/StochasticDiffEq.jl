@@ -31,17 +31,16 @@ end
 
 @def sde_loopfooter begin
   if integrator.opts.adaptive
-    integrator.q11 = EEst^integrator.opts.beta1
+    integrator.q11 = integrator.EEst^integrator.opts.beta1
     q = integrator.q11/(integrator.qold^integrator.opts.beta2)
     q = max(inv(integrator.opts.qmax),min(inv(integrator.opts.qmin),q/integrator.opts.gamma))
     dtnew = integrator.dt/q
     ttmp = integrator.t + integrator.dt
     #integrator.isout = integrator.opts.isoutofdomain(ttmp,integrator.u)
     #integrator.accept_step = (!integrator.isout && integrator.EEst <= 1.0)
-    if EEst <= 1 # Accepted
-      acceptedIters += 1
+    if integrator.EEst <= 1 # Accepted
       integrator.t = ttmp
-      integrator.qold = max(EEst,integrator.opts.qoldinit)
+      integrator.qold = max(integrator.EEst,integrator.opts.qoldinit)
       #if integrator.tdir > 0
         dtpropose = min(integrator.opts.dtmax,dtnew)
       #else
@@ -71,13 +70,13 @@ end
         integrator.uprev = integrator.u
       end
       if adaptive_alg(integrator.alg.rswm)==:RSwM3
-        ResettableStacks.reset!(S₂) #Empty S₂
+        ResettableStacks.reset!(integrator.S₂) #Empty integrator.S₂
       end
       savevalues!(integrator)
       # Setup next step
       if adaptive_alg(integrator.alg.rswm)==:RSwM1
-        if !isempty(S₁)
-          integrator.dt,integrator.ΔW,integrator.ΔZ = pop!(S₁)
+        if !isempty(integrator.S₁)
+          integrator.dt,integrator.ΔW,integrator.ΔZ = pop!(integrator.S₁)
           integrator.sqdt = sqrt(integrator.dt)
         else # Stack is empty
           c = min(integrator.opts.dtmax,dtnew)
@@ -96,15 +95,15 @@ end
         else
           dttmp = 0.0; integrator.ΔW = zeros(size(integrator.u)...); integrator.ΔZ = zeros(size(integrator.u)...)
         end
-        while !isempty(S₁)
-          L₁,L₂,L₃ = pop!(S₁)
+        while !isempty(integrator.S₁)
+          L₁,L₂,L₃ = pop!(integrator.S₁)
           qtmp = (integrator.dt-dttmp)/L₁
           if qtmp>1
             dttmp+=L₁
             integrator.ΔW+=L₂
             integrator.ΔZ+=L₃
             if adaptive_alg(integrator.alg.rswm)==:RSwM3
-              push!(S₂,(L₁,L₂,L₃))
+              push!(integrator.S₂,(L₁,L₂,L₃))
             end
           else #Popped too far
             ΔWtilde = qtmp*L₂ + sqrt((1-qtmp)*qtmp*L₁)*next(rands)
@@ -112,9 +111,9 @@ end
             integrator.ΔW += ΔWtilde
             integrator.ΔZ += ΔZtilde
             if (1-qtmp)*L₁ > integrator.alg.rswm.discard_length
-              push!(S₁,((1-qtmp)*L₁,L₂-ΔWtilde,L₃-ΔZtilde))
+              push!(integrator.S₁,((1-qtmp)*L₁,L₂-ΔWtilde,L₃-ΔZtilde))
               if adaptive_alg(integrator.alg.rswm)==:RSwM3 && qtmp*L₁ > integrator.alg.rswm.discard_length
-                push!(S₂,(qtmp*L₁,ΔWtilde,ΔZtilde))
+                push!(integrator.S₂,(qtmp*L₁,ΔWtilde,ΔZtilde))
               end
             end
             break
@@ -127,7 +126,7 @@ end
           integrator.ΔW += ΔWtilde
           integrator.ΔZ += ΔZtilde
           if adaptive_alg(integrator.alg.rswm)==:RSwM3
-            push!(S₂,(dtleft,ΔWtilde,ΔZtilde))
+            push!(integrator.S₂,(dtleft,ΔWtilde,ΔZtilde))
           end
         end
       end # End RSwM2 and RSwM3
@@ -139,10 +138,10 @@ end
         ΔZtmp = q*integrator.ΔZ + sqrt((1-q)*dtnew)*next(rands)
         cutLength = integrator.dt-dtnew
         if cutLength > integrator.alg.rswm.discard_length
-          push!(S₁,(cutLength,integrator.ΔW-ΔWtmp,integrator.ΔZ-ΔZtmp))
+          push!(integrator.S₁,(cutLength,integrator.ΔW-ΔWtmp,integrator.ΔZ-ΔZtmp))
         end
-        if length(S₁) > integrator.sol.maxstacksize
-            integrator.sol.maxstacksize = length(S₁)
+        if length(integrator.S₁) > integrator.sol.maxstacksize
+            integrator.sol.maxstacksize = length(integrator.S₁)
         end
         integrator.ΔW = ΔWtmp
         integrator.ΔZ = ΔZtmp
@@ -153,18 +152,18 @@ end
         else
           dttmp = 0.0; ΔWtmp = zeros(size(integrator.u)...); ΔZtmp = zeros(size(integrator.u)...)
         end
-        if length(S₂) > integrator.sol.maxstacksize2
-          integrator.sol.maxstacksize2= length(S₂)
+        if length(integrator.S₂) > integrator.sol.maxstacksize2
+          integrator.sol.maxstacksize2= length(integrator.S₂)
         end
-        while !isempty(S₂)
-          L₁,L₂,L₃ = pop!(S₂)
+        while !isempty(integrator.S₂)
+          L₁,L₂,L₃ = pop!(integrator.S₂)
           if dttmp + L₁ < (1-q)*integrator.dt #while the backwards movement is less than chop off
             dttmp += L₁
             ΔWtmp += L₂
             ΔZtmp += L₃
-            push!(S₁,(L₁,L₂,L₃))
+            push!(integrator.S₁,(L₁,L₂,L₃))
           else
-            push!(S₂,(L₁,L₂,L₃))
+            push!(integrator.S₂,(L₁,L₂,L₃))
             break
           end
         end # end while
@@ -176,10 +175,10 @@ end
         ΔZtilde = qK*K₃ + sqrt((1-qK)*qK*dtK)*next(rands)
         cutLength = (1-qK)*dtK
         if cutLength > integrator.alg.rswm.discard_length
-          push!(S₁,(cutLength,K₂-ΔWtilde,K₃-ΔZtilde))
+          push!(integrator.S₁,(cutLength,K₂-ΔWtilde,K₃-ΔZtilde))
         end
-        if length(S₁) > integrator.sol.maxstacksize
-            integrator.sol.maxstacksize = length(S₁)
+        if length(integrator.S₁) > integrator.sol.maxstacksize
+            integrator.sol.maxstacksize = length(integrator.S₁)
         end
         integrator.dt = dtnew
         integrator.ΔW = ΔWtilde
@@ -224,13 +223,6 @@ end
 end
 
 @def sde_adaptiveprelim begin
-  if integrator.opts.adaptive
-    S₁ = DataStructures.Stack{}(Tuple{typeof(integrator.t),typeof(integrator.W),typeof(integrator.Z)})
-    acceptedIters = 0
-    if adaptive_alg(integrator.alg.rswm)==:RSwM3
-      S₂ = ResettableStacks.ResettableStack{}(Tuple{typeof(integrator.t),typeof(integrator.W),typeof(integrator.Z)})
-    end
-  end
 end
 
 @def sde_postamble begin
