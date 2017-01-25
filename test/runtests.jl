@@ -12,6 +12,8 @@ const LONGER_TESTS = false
 @time @testset "Convergence Tests" begin include("sde/sde_convergence_tests.jl") end
 LONGER_TESTS && @time @testset "Weak Convergence Tests" begin include("weak_convergence.jl") end
 @time @testset "Number Type Tests" begin include("sde/sde_numbertype_tests.jl") end
+@time @testset "tdir Tests" begin include("tdir_tests.jl") end
+@time @testset "tstops Tests" begin include("tstops_tests.jl") end
 @time @testset "Oval2" begin include("oval2_test.jl") end
 
 #Adaptive SDE

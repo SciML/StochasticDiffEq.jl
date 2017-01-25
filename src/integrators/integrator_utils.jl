@@ -11,7 +11,6 @@ function loopheader!(integrator::SDEIntegrator)
   end
 
   integrator.iter += 1
-  modify_dt_for_tstops!(integrator)
   choose_algorithm!(integrator,integrator.cache)
 end
 
@@ -30,23 +29,30 @@ end
       integrator.dt = integrator.tdir*min(abs(integrator.dtcache),abs(top(tstops)-integrator.t)) # step! to the end
     end
   end
+  integrator.sqdt = sqrt(abs(integrator.dt))
 end
 
 @inline choose_algorithm!(integrator,cache::StochasticDiffEqCache) = nothing
 
 @def sde_exit_condtions begin
   if integrator.iter > integrator.opts.maxiters
-    warn("Max Iters Reached. Aborting")
+    if integrator.opts.verbose
+      warn("Max Iters Reached. Aborting")
+    end
     postamble!(integrator)
     return nothing
   end
   if integrator.dt == 0
-    warn("dt == 0. Aborting")
+    if integrator.opts.verbose
+      warn("dt == 0. Aborting")
+    end
     postamble!(integrator)
     return nothing
   end
   if integrator.opts.unstable_check(integrator.dt,integrator.t,integrator.u)
-    warn("Instability detected. Aborting")
+    if integrator.opts.verbose
+      warn("Instability detected. Aborting")
+    end
     postamble!(integrator)
     return nothing
   end
@@ -95,12 +101,12 @@ end
   if integrator.tdir > 0
     integrator.dtpropose = min(integrator.opts.dtmax,integrator.dtnew)
   else
-    integrator.integrator.dtpropose = max(integrator.opts.dtmax,integrator.dtnew)
+    integrator.dtpropose = max(integrator.opts.dtmax,integrator.dtnew)
   end
   if integrator.tdir > 0
     integrator.dtpropose = max(integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
   else
-    integrator.integrator.dtpropose = min(integrator.integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
+    integrator.dtpropose = min(integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
   end
 end
 
@@ -174,19 +180,16 @@ function apply_step!(integrator)
     if adaptive_alg(integrator.alg.rswm)==:RSwM1
       if !isempty(integrator.S₁)
         integrator.dt,integrator.ΔW,integrator.ΔZ = pop!(integrator.S₁)
-        integrator.sqdt = sqrt(integrator.dt)
+        integrator.sqdt = sqrt(abs(integrator.dt))
       else # Stack is empty
-        c = min(integrator.opts.dtmax,integrator.dtnew)
-        integrator.dt = max(min(c,abs(integrator.T-integrator.t)),integrator.opts.dtmin)#abs to fix complex sqrt issue at end
-        #integrator.dt = min(c,abs(integrator.T-integrator.t))
-        integrator.sqdt = sqrt(integrator.dt)
+        integrator.dt = integrator.dtpropose
+        modify_dt_for_tstops!(integrator)
         integrator.ΔW = integrator.sqdt*next(integrator.rands)
         integrator.ΔZ = integrator.sqdt*next(integrator.rands)
       end
     elseif adaptive_alg(integrator.alg.rswm)==:RSwM2 || adaptive_alg(integrator.alg.rswm)==:RSwM3
-      c = min(integrator.opts.dtmax,integrator.dtnew)
-      integrator.dt = max(min(c,abs(integrator.T-integrator.t)),integrator.opts.dtmin) #abs to fix complex sqrt issue at end
-      integrator.sqdt = sqrt(integrator.dt)
+      integrator.dt = integrator.dtpropose
+      modify_dt_for_tstops!(integrator)
       if !(typeof(integrator.u) <: AbstractArray)
         dttmp = 0.0; integrator.ΔW = 0.0; integrator.ΔZ = 0.0
       else
@@ -203,8 +206,8 @@ function apply_step!(integrator)
             push!(integrator.S₂,(L₁,L₂,L₃))
           end
         else #Popped too far
-          ΔWtilde = qtmp*L₂ + sqrt((1-qtmp)*qtmp*L₁)*next(integrator.rands)
-          ΔZtilde = qtmp*L₃ + sqrt((1-qtmp)*qtmp*L₁)*next(integrator.rands)
+          ΔWtilde = qtmp*L₂ + sqrt(abs((1-qtmp)*qtmp*L₁))*next(integrator.rands)
+          ΔZtilde = qtmp*L₃ + sqrt(abs((1-qtmp)*qtmp*L₁))*next(integrator.rands)
           integrator.ΔW += ΔWtilde
           integrator.ΔZ += ΔZtilde
           if (1-qtmp)*L₁ > integrator.alg.rswm.discard_length
@@ -218,8 +221,8 @@ function apply_step!(integrator)
       end #end while empty
       dtleft = integrator.dt - dttmp
       if dtleft != 0 #Stack emptied
-        ΔWtilde = sqrt(dtleft)*next(integrator.rands)
-        ΔZtilde = sqrt(dtleft)*next(integrator.rands)
+        ΔWtilde = sqrt(abs(dtleft))*next(integrator.rands)
+        ΔZtilde = sqrt(abs(dtleft))*next(integrator.rands)
         integrator.ΔW += ΔWtilde
         integrator.ΔZ += ΔZtilde
         if adaptive_alg(integrator.alg.rswm)==:RSwM3
@@ -228,6 +231,7 @@ function apply_step!(integrator)
       end
     end # End RSwM2 and RSwM3
   else # Not adaptive
+    modify_dt_for_tstops!(integrator)
     integrator.ΔW = integrator.sqdt*next(integrator.rands)
     if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
       integrator.ΔZ = integrator.sqdt*next(integrator.rands)
@@ -264,8 +268,8 @@ function perform_rswm_rejection!(integrator)
   end
   integrator.q = integrator.dtnew/integrator.dt
   if adaptive_alg(integrator.alg.rswm)==:RSwM1 || adaptive_alg(integrator.alg.rswm)==:RSwM2
-    ΔWtmp = integrator.q*integrator.ΔW + sqrt((1-integrator.q)*integrator.dtnew)*next(integrator.rands)
-    ΔZtmp = integrator.q*integrator.ΔZ + sqrt((1-integrator.q)*integrator.dtnew)*next(integrator.rands)
+    ΔWtmp = integrator.q*integrator.ΔW + sqrt(abs((1-integrator.q)*integrator.dtnew))*next(integrator.rands)
+    ΔZtmp = integrator.q*integrator.ΔZ + sqrt(abs((1-integrator.q)*integrator.dtnew))*next(integrator.rands)
     cutLength = integrator.dt-integrator.dtnew
     if cutLength > integrator.alg.rswm.discard_length
       push!(integrator.S₁,(cutLength,integrator.ΔW-ΔWtmp,integrator.ΔZ-ΔZtmp))
@@ -301,8 +305,8 @@ function perform_rswm_rejection!(integrator)
     K₂ = integrator.ΔW - ΔWtmp
     K₃ = integrator.ΔZ - ΔZtmp
     qK = integrator.q*integrator.dt/dtK
-    ΔWtilde = qK*K₂ + sqrt((1-qK)*qK*dtK)*next(integrator.rands)
-    ΔZtilde = qK*K₃ + sqrt((1-qK)*qK*dtK)*next(integrator.rands)
+    ΔWtilde = qK*K₂ + sqrt(abs((1-qK)*qK*dtK))*next(integrator.rands)
+    ΔZtilde = qK*K₃ + sqrt(abs((1-qK)*qK*dtK))*next(integrator.rands)
     cutLength = (1-qK)*dtK
     if cutLength > integrator.alg.rswm.discard_length
       push!(integrator.S₁,(cutLength,K₂-ΔWtilde,K₃-ΔZtilde))

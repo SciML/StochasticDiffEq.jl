@@ -1,7 +1,7 @@
 function sde_determine_initdt(u0,t,tdir,dtmax,abstol,reltol,internalnorm,prob,order)
   f = prob.f
   g = prob.g
-  d₀ = norm(u0./(abstol+abs.(u0)*reltol),2)
+  d₀ = internalnorm(u0./(abstol+abs.(u0)*reltol))
   if typeof(u0) <: Number
     f₀ = f(t,u0)
     g₀ = 3g(t,u0)
@@ -12,7 +12,7 @@ function sde_determine_initdt(u0,t,tdir,dtmax,abstol,reltol,internalnorm,prob,or
     g(t,u0,g₀); g₀.*=3
   end
 
-  d₁ = norm(max(abs.(f₀.+g₀),abs.(f₀-g₀))./(abstol+abs.(u0)*reltol),2)
+  d₁ = internalnorm(max(abs.(f₀.+g₀),abs.(f₀-g₀))./(abstol+abs.(u0)*reltol))
   if d₀ < 1e-5 || d₁ < 1e-5
     dt₀ = 1e-6
   else
@@ -30,7 +30,7 @@ function sde_determine_initdt(u0,t,tdir,dtmax,abstol,reltol,internalnorm,prob,or
     g(t,u0,g₁); g₁.*=3
   end
   ΔgMax = max(abs.(g₀-g₁),abs.(g₀+g₁))
-  d₂ = norm(max(abs.(f₁.-f₀.+ΔgMax),abs.(f₁.-f₀.-ΔgMax))./(abstol+abs.(u0)*reltol),2)/dt₀
+  d₂ = internalnorm(max(abs.(f₁.-f₀.+ΔgMax),abs.(f₁.-f₀.-ΔgMax))./(abstol+abs.(u0)*reltol))/dt₀
   if max(d₁,d₂)<=1e-15
     dt₁ = max(1e-6,dt₀*1e-3)
   else

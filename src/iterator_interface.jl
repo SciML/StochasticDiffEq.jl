@@ -13,14 +13,25 @@ done(integrator::SDEIntegrator) = done(integrator,integrator.iter)
 
 function done(integrator::SDEIntegrator,state)
   if integrator.iter > integrator.opts.maxiters
-    warn("Interrupted. Larger maxiters is needed.")
+    if integrator.opts.verbose
+      warn("Interrupted. Larger maxiters is needed.")
+    end
     postamble!(integrator)
     return true
   end
-  if any(isnan,integrator.uprev)
-    warn("NaNs detected. Aborting")
+  if integrator.opts.unstable_check(integrator.dt,integrator.t,integrator.u)
+    if integrator.opts.verbose
+      warn("Instability detected. Aborting")
+    end
     postamble!(integrator)
-    return true
+    return nothing
+  end
+  if integrator.dt == 0
+    if integrator.opts.verbose
+      warn("dt == 0. Aborting")
+    end
+    postamble!(integrator)
+    return nothing
   end
   if isempty(integrator.opts.tstops)
     postamble!(integrator)
@@ -56,5 +67,3 @@ function step!(integrator::SDEIntegrator)
 end
 
 eltype(integrator::SDEIntegrator) = typeof(integrator)
-
-tuple(integrator::SDEIntegrator) = IntegratorTuples(integrator)

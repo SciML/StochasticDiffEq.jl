@@ -34,6 +34,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
               internalnorm=ODE_DEFAULT_NORM,
               unstable_check = ODE_DEFAULT_UNSTABLE_CHECK,
               isoutofdomain = ODE_DEFAULT_ISOUTOFDOMAIN,
+              verbose = true,
               advance_to_tstop = false,stop_at_next_tstop=false,
               progress_steps=1000,
               progress=false, progress_message = ODE_DEFAULT_PROG_MESSAGE,
@@ -47,10 +48,6 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
 
   T = tType(tspan[2])
   t = tType(tspan[1])
-
-  if tspan[2]-tspan[1]<0 || length(tspan)>2
-    error("tspan must be two numbers and final time must be greater than starting time. Aborting.")
-  end
 
   if !(typeof(alg) <: StochasticDiffEqAdaptiveAlgorithm) && dt == 0 && isempty(tstops)
       error("Fixed timestep methods require a choice of dt or choosing the tstops")
@@ -156,7 +153,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
     timeseries_errors,dense_errors,
     tTypeNoUnits(beta1),tTypeNoUnits(beta2),uEltypeNoUnits(delta),tTypeNoUnits(qoldinit),
     dense,save_noise,
-    callbacks_internal,isoutofdomain,unstable_check,calck,advance_to_tstop,stop_at_next_tstop)
+    callbacks_internal,isoutofdomain,unstable_check,verbose,calck,advance_to_tstop,stop_at_next_tstop)
 
   progress ? (prog = Juno.ProgressBar(name=progress_name)) : prog = nothing
 
@@ -192,8 +189,35 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
     push!(Ws,copy(W))
   end
 
+  S₁ = DataStructures.Stack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
+  S₂ = ResettableStacks.ResettableStack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
+  EEst = tTypeNoUnits(1)
+  q = tTypeNoUnits(1)
+  just_hit_tstop = false
+  isout = false
+  accept_step = false
+  dtcache = tType(dt)
+  dtchangeable = true
+  u_modified = false
 
-  sqdt = sqrt(dt)
+  ## Modify the first dt for tstops
+  if !isempty(tstops_internal)
+    if adaptive
+      if tdir > 0
+        dt = min(abs(dt),abs(top(tstops_internal)-t)) # step! to the end
+      else
+        dt = -min(abs(dt),abs(top(tstops_internal)-t))
+      end
+    elseif dt == zero(t) && dtchangeable # Use integrator.opts.tstops
+      dt = tdir*abs(top(tstops_internal)-t)
+    elseif dtchangeable # always try to step! with dtcache, but lower if a tstops
+      dt = tdir*min(abs(dtcache),abs(top(tstops_internal)-t)) # step! to the end
+    end
+  end
+  ### Needs to be done before first rand
+
+
+  sqdt = tdir*sqrt(abs(dt))
   iter = 0
   #EEst = 0
   q11 = tTypeNoUnits(1)
@@ -206,17 +230,6 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
 
   sol = build_solution(prob,alg,ts,timeseries,W=Ws,
                 calculate_error = false)
-
-  S₁ = DataStructures.Stack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
-  S₂ = ResettableStacks.ResettableStack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
-  EEst = tTypeNoUnits(1)
-  q = tTypeNoUnits(1)
-  just_hit_tstop = false
-  isout = false
-  accept_step = false
-  dtcache = tType(dt)
-  dtchangeable = false
-  u_modified = false
 
   integrator =    SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,
                   tType,tTypeNoUnits,
