@@ -49,10 +49,6 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
   T = tType(tspan[2])
   t = tType(tspan[1])
 
-  if tspan[2]-tspan[1]<0 || length(tspan)>2
-    error("tspan must be two numbers and final time must be greater than starting time. Aborting.")
-  end
-
   if !(typeof(alg) <: StochasticDiffEqAdaptiveAlgorithm) && dt == 0 && isempty(tstops)
       error("Fixed timestep methods require a choice of dt or choosing the tstops")
   end
@@ -221,7 +217,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
   ### Needs to be done before first rand
 
 
-  sqdt = sqrt(dt)
+  sqdt = tdir*sqrt(abs(dt))
   iter = 0
   #EEst = 0
   q11 = tTypeNoUnits(1)

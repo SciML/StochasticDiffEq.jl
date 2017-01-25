@@ -29,7 +29,7 @@ end
       integrator.dt = integrator.tdir*min(abs(integrator.dtcache),abs(top(tstops)-integrator.t)) # step! to the end
     end
   end
-  integrator.sqdt = sqrt(integrator.dt)
+  integrator.sqdt = sqrt(abs(integrator.dt))
 end
 
 @inline choose_algorithm!(integrator,cache::StochasticDiffEqCache) = nothing
@@ -180,7 +180,7 @@ function apply_step!(integrator)
     if adaptive_alg(integrator.alg.rswm)==:RSwM1
       if !isempty(integrator.S₁)
         integrator.dt,integrator.ΔW,integrator.ΔZ = pop!(integrator.S₁)
-        integrator.sqdt = sqrt(integrator.dt)
+        integrator.sqdt = sqrt(abs(integrator.dt))
       else # Stack is empty
         integrator.dt = integrator.dtpropose
         modify_dt_for_tstops!(integrator)
@@ -206,8 +206,8 @@ function apply_step!(integrator)
             push!(integrator.S₂,(L₁,L₂,L₃))
           end
         else #Popped too far
-          ΔWtilde = qtmp*L₂ + sqrt((1-qtmp)*qtmp*L₁)*next(integrator.rands)
-          ΔZtilde = qtmp*L₃ + sqrt((1-qtmp)*qtmp*L₁)*next(integrator.rands)
+          ΔWtilde = qtmp*L₂ + sqrt(abs((1-qtmp)*qtmp*L₁))*next(integrator.rands)
+          ΔZtilde = qtmp*L₃ + sqrt(abs((1-qtmp)*qtmp*L₁))*next(integrator.rands)
           integrator.ΔW += ΔWtilde
           integrator.ΔZ += ΔZtilde
           if (1-qtmp)*L₁ > integrator.alg.rswm.discard_length
@@ -221,8 +221,8 @@ function apply_step!(integrator)
       end #end while empty
       dtleft = integrator.dt - dttmp
       if dtleft != 0 #Stack emptied
-        ΔWtilde = sqrt(dtleft)*next(integrator.rands)
-        ΔZtilde = sqrt(dtleft)*next(integrator.rands)
+        ΔWtilde = sqrt(abs(dtleft))*next(integrator.rands)
+        ΔZtilde = sqrt(abs(dtleft))*next(integrator.rands)
         integrator.ΔW += ΔWtilde
         integrator.ΔZ += ΔZtilde
         if adaptive_alg(integrator.alg.rswm)==:RSwM3
@@ -268,8 +268,8 @@ function perform_rswm_rejection!(integrator)
   end
   integrator.q = integrator.dtnew/integrator.dt
   if adaptive_alg(integrator.alg.rswm)==:RSwM1 || adaptive_alg(integrator.alg.rswm)==:RSwM2
-    ΔWtmp = integrator.q*integrator.ΔW + sqrt((1-integrator.q)*integrator.dtnew)*next(integrator.rands)
-    ΔZtmp = integrator.q*integrator.ΔZ + sqrt((1-integrator.q)*integrator.dtnew)*next(integrator.rands)
+    ΔWtmp = integrator.q*integrator.ΔW + sqrt(abs((1-integrator.q)*integrator.dtnew))*next(integrator.rands)
+    ΔZtmp = integrator.q*integrator.ΔZ + sqrt(abs((1-integrator.q)*integrator.dtnew))*next(integrator.rands)
     cutLength = integrator.dt-integrator.dtnew
     if cutLength > integrator.alg.rswm.discard_length
       push!(integrator.S₁,(cutLength,integrator.ΔW-ΔWtmp,integrator.ΔZ-ΔZtmp))
@@ -305,8 +305,8 @@ function perform_rswm_rejection!(integrator)
     K₂ = integrator.ΔW - ΔWtmp
     K₃ = integrator.ΔZ - ΔZtmp
     qK = integrator.q*integrator.dt/dtK
-    ΔWtilde = qK*K₂ + sqrt((1-qK)*qK*dtK)*next(integrator.rands)
-    ΔZtilde = qK*K₃ + sqrt((1-qK)*qK*dtK)*next(integrator.rands)
+    ΔWtilde = qK*K₂ + sqrt(abs((1-qK)*qK*dtK))*next(integrator.rands)
+    ΔZtilde = qK*K₃ + sqrt(abs((1-qK)*qK*dtK))*next(integrator.rands)
     cutLength = (1-qK)*dtK
     if cutLength > integrator.alg.rswm.discard_length
       push!(integrator.S₁,(cutLength,K₂-ΔWtilde,K₃-ΔZtilde))
