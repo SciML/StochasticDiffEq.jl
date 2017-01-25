@@ -5,7 +5,7 @@ function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits
     @unpack t,dt,uprev,u,ΔW = integrator
     u = uprev + dt.*integrator.f(t,uprev) + integrator.g(t,uprev).*ΔW
     @pack integrator = t,dt,u
-    @sde_loopfooter
+    loopfooter!(integrator)
   end
   @sde_postamble
 end
@@ -22,7 +22,7 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltype
       u[i] = uprev[i] + dt*utmp1[i] + utmp2[i]*ΔW[i]
     end
     @pack integrator = t,dt,u
-    @sde_loopfooter
+    loopfooter!(integrator)
   end
   @sde_postamble
 end
@@ -44,7 +44,7 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltype
       u[i] = K[i]+L[i]*ΔW[i]+(du2[i]-L[i])./(2integrator.sqdt).*(ΔW[i].^2 - dt)
     end
     @pack integrator = t,dt,u
-    @sde_loopfooter
+    loopfooter!(integrator)
   end
   @sde_postamble
 end
@@ -59,7 +59,7 @@ function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits
     utilde = K + L*integrator.sqdt
     u = K+L*ΔW+(integrator.g(t,utilde)-integrator.g(t,uprev))/(2integrator.sqdt)*(ΔW^2 - dt)
     @pack integrator = t,dt,u
-    @sde_loopfooter
+    loopfooter!(integrator)
   end
   @sde_postamble
 end

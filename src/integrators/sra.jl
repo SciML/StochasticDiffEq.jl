@@ -17,7 +17,7 @@ function sde_solve{algType<:SRA1,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,
       u = uprev + k₁/3 + 2k₂/3 + E₂ + ΔW*gpdt
     end
     @pack integrator = t,dt,u
-    @sde_loopfooter
+    loopfooter!(integrator)
   end
   @sde_postamble
 end
@@ -57,7 +57,7 @@ function sde_solve{algType<:SRA1,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeN
       end
     end
     @pack integrator = t,dt,u
-    @sde_loopfooter
+    loopfooter!(integrator)
   end
   @sde_postamble
 end
@@ -123,7 +123,7 @@ function sde_solve{algType<:SRA,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNo
       end
     end
     @pack integrator = t,dt,u
-    @sde_loopfooter
+    loopfooter!(integrator)
   end
   @sde_postamble
 end
@@ -167,7 +167,7 @@ function sde_solve{algType<:SRA,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,u
       u = uprev + dt*atemp + btemp + E₂
     end
     @pack integrator = t,dt,u
-    @sde_loopfooter
+    loopfooter!(integrator)
   end
   @sde_postamble
 end

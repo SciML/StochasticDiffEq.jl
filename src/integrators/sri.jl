@@ -69,7 +69,7 @@ function sde_solve{algType<:SRI,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNo
       end
     end
     @pack integrator = t,dt,u
-    @sde_loopfooter
+    loopfooter!(integrator)
   end
   @sde_postamble
 end
@@ -131,7 +131,7 @@ function sde_solve{algType<:SRIW1,uType<:AbstractArray,uEltype,Nm1,N,tType,tType
       end
     end
     @pack integrator = t,dt,u
-    @sde_loopfooter
+    loopfooter!(integrator)
   end
   @sde_postamble
 end
@@ -176,7 +176,7 @@ function sde_solve{algType<:SRIW1,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits
       u = uprev + (fH01 + 2fH02)/3 + ΔW.*(mg₁ + Fg₂o3 + Tg₃o3) + chi1.*(mg₁ + Fg₂o3 - g₃o3) + E₂
     end
     @pack integrator = t,dt,u
-    @sde_loopfooter
+    loopfooter!(integrator)
   end
   @sde_postamble
 end
@@ -230,7 +230,7 @@ function sde_solve{algType<:SRI,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,u
       u = uprev + dt*atemp + btemp + E₂
     end
     @pack integrator = t,dt,u
-    @sde_loopfooter
+    loopfooter!(integrator)
   end
   @sde_postamble
 end

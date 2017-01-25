@@ -1,6 +1,6 @@
 @def sde_preamble begin
   local T::tType
-  @unpack T,rands,cache = integrator
+  @unpack T,cache = integrator
 end
 
 @def sde_loopheader begin
@@ -29,7 +29,7 @@ function savevalues!(integrator::SDEIntegrator)
   end
 end
 
-@def sde_loopfooter begin
+function loopfooter!(integrator::SDEIntegrator)
   if integrator.opts.adaptive
     integrator.q11 = integrator.EEst^integrator.opts.beta1
     integrator.q = integrator.q11/(integrator.qold^integrator.opts.beta2)
