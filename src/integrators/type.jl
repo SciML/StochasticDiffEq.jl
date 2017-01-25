@@ -7,6 +7,7 @@ type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,rand
   dt::tType
   dtpropose::tType
   T::tType
+  tdir::Int
   just_hit_tstop::Bool
   isout::Bool
   accept_step::Bool

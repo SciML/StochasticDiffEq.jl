@@ -41,39 +41,28 @@ end
     if integrator.accept_step # Accepted
       integrator.t = ttmp
       integrator.qold = max(integrator.EEst,integrator.opts.qoldinit)
-      #if integrator.tdir > 0
+      if integrator.tdir > 0
         integrator.dtpropose = min(integrator.opts.dtmax,dtnew)
-      #else
-      #  integrator.integrator.dtpropose = max(integrator.opts.dtmax,dtnew)
-      #end
-      #if integrator.tdir > 0
-        integrator.dtpropose = max(integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
-      #else
-      #  integrator.integrator.dtpropose = min(integrator.integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
-      #end
-
-
-      if integrator.opts.save_noise
-        if uType <: AbstractArray
-          for i in eachindex(integrator.u)
-            integrator.W[i] = integrator.W[i] + integrator.ΔW[i]
-            integrator.Z[i] = integrator.Z[i] + integrator.ΔZ[i]
-          end
-        else
-          integrator.W = integrator.W + integrator.ΔW
-          integrator.Z = integrator.Z + integrator.ΔZ
-        end
+      else
+        integrator.integrator.dtpropose = max(integrator.opts.dtmax,dtnew)
       end
+      if integrator.tdir > 0
+        integrator.dtpropose = max(integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
+      else
+        integrator.integrator.dtpropose = min(integrator.integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
+      end
+
+      update_running_noise!(integrator)
       if uType <: AbstractArray
         recursivecopy!(integrator.uprev,integrator.u)
       else
         integrator.uprev = integrator.u
       end
+      savevalues!(integrator)
+      # Setup next step
       if adaptive_alg(integrator.alg.rswm)==:RSwM3
         ResettableStacks.reset!(integrator.S₂) #Empty integrator.S₂
       end
-      savevalues!(integrator)
-      # Setup next step
       if adaptive_alg(integrator.alg.rswm)==:RSwM1
         if !isempty(integrator.S₁)
           integrator.dt,integrator.ΔW,integrator.ΔZ = pop!(integrator.S₁)
@@ -187,33 +176,19 @@ end
     end
   else # Non adaptive
     integrator.t = integrator.t + integrator.dt
+    integrator.accept_step = true
+    integrator.dtpropose = integrator.dt
 
     if typeof(integrator.u) <: AbstractArray
       recursivecopy!(integrator.uprev,integrator.u)
     else
       integrator.uprev = integrator.u
     end
-
-    if integrator.opts.save_noise
-      if uType <: AbstractArray
-        for i in eachindex(integrator.u)
-          integrator.W[i] = integrator.W[i] + integrator.ΔW[i]
-        end
-      else
-        integrator.W = integrator.W + integrator.ΔW
-      end
-      if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
-        if uType <: AbstractArray
-          for i in eachindex(integrator.u)
-            integrator.Z[i] = integrator.Z[i] + integrator.ΔZ[i]
-          end
-        else
-          integrator.Z = integrator.Z + integrator.ΔZ
-        end
-        integrator.ΔZ = integrator.sqdt*next(rands)
-      end
+    update_running_noise!(integrator)
+    integrator.ΔW = integrator.sqdt*next(integrator.rands)
+    if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+      integrator.ΔZ = integrator.sqdt*next(integrator.rands)
     end
-    integrator.ΔW = integrator.sqdt*next(rands)
     savevalues!(integrator)
   end
   if integrator.opts.progress && integrator.iter%integrator.opts.progress_steps==0
@@ -232,4 +207,25 @@ end
   end
   integrator.opts.progress && Juno.done(integrator.prog)
   return nothing
+end
+
+function update_running_noise!(integrator)
+  if integrator.opts.save_noise
+    if typeof(integrator.u) <: AbstractArray
+      for i in eachindex(integrator.u)
+        integrator.W[i] = integrator.W[i] + integrator.ΔW[i]
+      end
+    else
+      integrator.W = integrator.W + integrator.ΔW
+    end
+    if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+      if typeof(integrator.u) <: AbstractArray
+        for i in eachindex(integrator.u)
+          integrator.Z[i] = integrator.Z[i] + integrator.ΔZ[i]
+        end
+      else
+        integrator.Z = integrator.Z + integrator.ΔZ
+      end
+    end
+  end
 end

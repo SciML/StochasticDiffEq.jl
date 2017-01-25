@@ -24,7 +24,7 @@ sim = test_convergence(dts,prob,EM(),numMonte=100)
 
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
 
-sim2 = test_convergence(dts,prob,RKMil(),numMonte=10)
+sim2 = test_convergence(dts,prob,RKMil(),numMonte=100)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.1
 
 sim3 = test_convergence(dts,prob,SRI(),numMonte=10)
