@@ -14,6 +14,7 @@ type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,rand
   isout::Bool
   accept_step::Bool
   dtchangeable::Bool
+  u_modified::Bool
   alg::T1
   sol::solType
   cache::cacheType

@@ -104,15 +104,18 @@ end
   end
 end
 
+@inline function solution_endpoint_match_cur_integrator!(integrator)
+  if integrator.sol.t[end] != integrator.t
+    push!(integrator.sol.t,integrator.t)
+    push!(integrator.sol.u,integrator.u)
+    if integrator.opts.save_noise
+      push!(integrator.sol.W,integrator.W)
+    end
+  end
+end
 function postamble!(integrator)
   if !integrator.opts.save_timeseries
-    if integrator.sol.t[end] != integrator.t
-      push!(integrator.sol.t,integrator.t)
-      push!(integrator.sol.u,integrator.u)
-      if integrator.opts.save_noise
-        push!(integrator.sol.W,integrator.W)
-      end
-    end
+    solution_endpoint_match_cur_integrator!(integrator)
   end
   #resize!(integrator.sol.t,integrator.saveiter)
   #resize!(integrator.sol.u,integrator.saveiter)
@@ -123,6 +126,38 @@ function postamble!(integrator)
   end
   !(typeof(integrator.prog)<:Void) && Juno.done(integrator.prog)
   return nothing
+end
+
+@inline function handle_callbacks!(integrator)
+  discrete_callbacks = integrator.opts.callback.discrete_callbacks
+  continuous_callbacks = integrator.opts.callback.continuous_callbacks
+  atleast_one_callback = false
+
+  continuous_modified = false
+  discrete_modified = false
+  if !(typeof(continuous_callbacks)<:Tuple{})
+    time,upcrossing,idx,counter = find_first_continuous_callback(integrator,continuous_callbacks...)
+    if time != zero(typeof(integrator.t)) && upcrossing != 0 # if not, then no events
+      atleast_one_callback = true
+      continuous_modified = apply_callback!(integrator,continuous_callbacks[idx],time,upcrossing)
+    end
+  end
+  if !(typeof(discrete_callbacks)<:Tuple{})
+    atleast_one_callback = true
+    discrete_modified = apply_discrete_callback!(integrator,discrete_callbacks...)
+  end
+  if !atleast_one_callback
+    savevalues!(integrator)
+  end
+
+  integrator.u_modified = continuous_modified || discrete_modified
+  if integrator.u_modified
+    handle_callback_modifiers!(integrator)
+  end
+end
+
+@inline function handle_callback_modifiers!(integrator::SDEIntegrator)
+  #integrator.reeval_fsal = true
 end
 
 function apply_step!(integrator)
