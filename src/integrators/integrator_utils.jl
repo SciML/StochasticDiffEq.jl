@@ -1,8 +1,3 @@
-@def sde_preamble begin
-  local T::tType
-  @unpack T,cache = integrator
-end
-
 @def sde_loopheader begin
   integrator.iter += 1
   if integrator.iter > integrator.opts.maxiters

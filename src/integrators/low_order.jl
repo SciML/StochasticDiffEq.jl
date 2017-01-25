@@ -1,5 +1,4 @@
 function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType}(integrator::SDEIntegrator{EM,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType})
-  @sde_preamble
   @inbounds while integrator.t < integrator.T
     @sde_loopheader
     @unpack t,dt,uprev,u,ΔW = integrator
@@ -11,10 +10,9 @@ function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits
 end
 
 function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType}(integrator::SDEIntegrator{EM,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType})
-  @sde_preamble
   @inbounds while integrator.t < integrator.T
     @sde_loopheader
-    @unpack utmp1,utmp2 = cache
+    @unpack utmp1,utmp2 = integrator.cache
     @unpack t,dt,uprev,u,ΔW = integrator
     integrator.f(t,uprev,utmp1)
     integrator.g(t,uprev,utmp2)
@@ -28,10 +26,9 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltype
 end
 
 function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType}(integrator::SDEIntegrator{RKMil,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType})
-  @sde_preamble
   @inbounds while integrator.t < integrator.T
     @sde_loopheader
-    @unpack du1,du2,K,utilde,L = cache
+    @unpack du1,du2,K,utilde,L = integrator.cache
     @unpack t,dt,uprev,u,ΔW = integrator
     integrator.f(t,uprev,du1)
     integrator.g(t,uprev,L)
@@ -50,7 +47,6 @@ function sde_solve{uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltype
 end
 
 function sde_solve{uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType}(integrator::SDEIntegrator{RKMil,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType})
-  @sde_preamble
   @inbounds while integrator.t < integrator.T
     @sde_loopheader
     @unpack t,dt,uprev,u,ΔW = integrator
