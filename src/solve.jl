@@ -215,7 +215,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
   isout = false
   accept_step = false
   dtcache = tType(dt)
-  dtchangeable = true
+  dtchangeable = false
 
   integrator =    SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,
                   tType,tTypeNoUnits,
@@ -230,14 +230,19 @@ end
 
 function solve!(integrator::SDEIntegrator)
 
-  @inbounds while integrator.t < integrator.T
-    @sde_exit_condtions
-    loopheader!(integrator)
-    perform_step!(integrator,integrator.cache)
-    loopfooter!(integrator)
+  while !isempty(integrator.opts.tstops)
+    while integrator.tdir*integrator.t < integrator.tdir*top(integrator.opts.tstops)
+      loopheader!(integrator)
+      @sde_exit_condtions
+      perform_step!(integrator,integrator.cache)
+      loopfooter!(integrator)
+      if isempty(integrator.opts.tstops)
+        break
+      end
+    end
+    handle_tstop!(integrator)
   end
   postamble!(integrator)
-
   if typeof(integrator.sol.prob) <: AbstractSDETestProblem
     calculate_solution_errors!(integrator.sol;timeseries_errors=integrator.opts.timeseries_errors,dense_errors=integrator.opts.dense_errors)
   end

@@ -73,17 +73,7 @@ function loopfooter!(integrator::SDEIntegrator)
     integrator.accept_step = (!integrator.isout && integrator.EEst <= 1.0)
     if integrator.accept_step # Accepted
       integrator.t = ttmp
-      integrator.qold = max(integrator.EEst,integrator.opts.qoldinit)
-      if integrator.tdir > 0
-        integrator.dtpropose = min(integrator.opts.dtmax,integrator.dtnew)
-      else
-        integrator.integrator.dtpropose = max(integrator.opts.dtmax,integrator.dtnew)
-      end
-      if integrator.tdir > 0
-        integrator.dtpropose = max(integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
-      else
-        integrator.integrator.dtpropose = min(integrator.integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
-      end
+      calc_dt_propose!(integrator)
       update_running_noise!(integrator)
       savevalues!(integrator)
     end
@@ -97,6 +87,20 @@ function loopfooter!(integrator::SDEIntegrator)
   if integrator.opts.progress && integrator.iter%integrator.opts.progress_steps==0
     Juno.msg(integrator.prog,integrator.opts.progress_message(integrator.dt,integrator.t,integrator.u))
     Juno.progress(integrator.prog,integrator.t/integrator.T)
+  end
+end
+
+@inline function calc_dt_propose!(integrator)
+  integrator.qold = max(integrator.EEst,integrator.opts.qoldinit)
+  if integrator.tdir > 0
+    integrator.dtpropose = min(integrator.opts.dtmax,integrator.dtnew)
+  else
+    integrator.integrator.dtpropose = max(integrator.opts.dtmax,integrator.dtnew)
+  end
+  if integrator.tdir > 0
+    integrator.dtpropose = max(integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
+  else
+    integrator.integrator.dtpropose = min(integrator.integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
   end
 end
 
@@ -274,5 +278,24 @@ function perform_rswm_rejection!(integrator)
     integrator.dt = integrator.dtnew
     integrator.ΔW = ΔWtilde
     integrator.ΔZ = ΔZtilde
+  end
+end
+
+@inline function handle_tstop!(integrator)
+  tstops = integrator.opts.tstops
+  if !isempty(tstops)
+    t = integrator.t
+    ts_top = top(tstops)
+    if t == ts_top
+      pop!(tstops)
+      integrator.just_hit_tstop = true
+    elseif t > ts_top
+      if !integrator.dtchangeable
+        change_t_via_interpolation!(integrator, pop!(tstops), Val{true})
+        integrator.just_hit_tstop = true
+      else
+        error("Something went wrong. Integrator stepped past tstops but the algorithm was dtchangeable. Please report this error.")
+      end
+    end
   end
 end
