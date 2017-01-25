@@ -200,13 +200,14 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
   S₁ = DataStructures.Stack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
   S₂ = ResettableStacks.ResettableStack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
   EEst = tTypeNoUnits(1)
+  q = tTypeNoUnits(1)
 
   integrator =    SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,
                   tType,tTypeNoUnits,
                   uEltypeNoUnits,randType,typeof(ΔW),rateType,typeof(sol),typeof(cache),
                   typeof(prog),typeof(S₁),typeof(S₂),
                   F,F2,typeof(opts)}(f,g,uprev,t,u,tType(dt),T,alg,sol,cache,
-                  rands,sqdt,W,Z,ΔW,ΔZ,opts,iter,prog,S₁,S₂,EEst,
+                  rands,sqdt,W,Z,ΔW,ΔZ,opts,iter,prog,S₁,S₂,EEst,q,
                   tTypeNoUnits(qoldinit),q11)
 
   sde_solve(integrator)

@@ -1,6 +1,5 @@
 function sde_solve{algType<:SRI,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType})
   @sde_preamble
-  @sde_adaptiveprelim
   @inbounds while integrator.t < integrator.T
     @sde_loopheader
     @unpack c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄,stages = cache.tab
@@ -77,7 +76,6 @@ end
 
 function sde_solve{algType<:SRIW1,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType})
   @sde_preamble
-  @sde_adaptiveprelim
   @inbounds while integrator.t < integrator.T
     @sde_loopheader
     @unpack t,dt,uprev,u,ΔW,ΔZ = integrator
@@ -140,7 +138,6 @@ end
 
 function sde_solve{algType<:SRIW1,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType})
   @sde_preamble
-  @sde_adaptiveprelim
   @inbounds while integrator.t < integrator.T
     @sde_loopheader
     @unpack t,dt,uprev,u,ΔW,ΔZ = integrator
@@ -186,7 +183,6 @@ end
 
 function sde_solve{algType<:SRI,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType})
   @sde_preamble
-  @sde_adaptiveprelim
   @inbounds while integrator.t < integrator.T
     @sde_loopheader
     @unpack t,dt,uprev,u,ΔW,ΔZ = integrator

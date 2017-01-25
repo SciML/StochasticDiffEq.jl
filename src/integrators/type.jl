@@ -21,6 +21,7 @@ type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,rand
   S₁::Stack1Type
   S₂::Stack2Type
   EEst::tTypeNoUnits
+  q::tTypeNoUnits
   qold::tTypeNoUnits
   q11::tTypeNoUnits
 end

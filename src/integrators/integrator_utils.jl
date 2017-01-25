@@ -32,9 +32,9 @@ end
 @def sde_loopfooter begin
   if integrator.opts.adaptive
     integrator.q11 = integrator.EEst^integrator.opts.beta1
-    q = integrator.q11/(integrator.qold^integrator.opts.beta2)
-    q = max(inv(integrator.opts.qmax),min(inv(integrator.opts.qmin),q/integrator.opts.gamma))
-    dtnew = integrator.dt/q
+    integrator.q = integrator.q11/(integrator.qold^integrator.opts.beta2)
+    integrator.q = max(inv(integrator.opts.qmax),min(inv(integrator.opts.qmin),integrator.q/integrator.opts.gamma))
+    dtnew = integrator.dt/integrator.q
     ttmp = integrator.t + integrator.dt
     #integrator.isout = integrator.opts.isoutofdomain(ttmp,integrator.u)
     #integrator.accept_step = (!integrator.isout && integrator.EEst <= 1.0)
@@ -132,10 +132,10 @@ end
       end # End RSwM2 and RSwM3
     else #Rejection
       dtnew = integrator.dt/min(inv(integrator.opts.qmin),integrator.q11/integrator.opts.gamma)
-      q = dtnew/integrator.dt
+      integrator.q = dtnew/integrator.dt
       if adaptive_alg(integrator.alg.rswm)==:RSwM1 || adaptive_alg(integrator.alg.rswm)==:RSwM2
-        ΔWtmp = q*integrator.ΔW + sqrt((1-q)*dtnew)*next(rands)
-        ΔZtmp = q*integrator.ΔZ + sqrt((1-q)*dtnew)*next(rands)
+        ΔWtmp = integrator.q*integrator.ΔW + sqrt((1-integrator.q)*dtnew)*next(rands)
+        ΔZtmp = integrator.q*integrator.ΔZ + sqrt((1-integrator.q)*dtnew)*next(rands)
         cutLength = integrator.dt-dtnew
         if cutLength > integrator.alg.rswm.discard_length
           push!(integrator.S₁,(cutLength,integrator.ΔW-ΔWtmp,integrator.ΔZ-ΔZtmp))
@@ -157,7 +157,7 @@ end
         end
         while !isempty(integrator.S₂)
           L₁,L₂,L₃ = pop!(integrator.S₂)
-          if dttmp + L₁ < (1-q)*integrator.dt #while the backwards movement is less than chop off
+          if dttmp + L₁ < (1-integrator.q)*integrator.dt #while the backwards movement is less than chop off
             dttmp += L₁
             ΔWtmp += L₂
             ΔZtmp += L₃
@@ -170,7 +170,7 @@ end
         dtK = integrator.dt - dttmp
         K₂ = integrator.ΔW - ΔWtmp
         K₃ = integrator.ΔZ - ΔZtmp
-        qK = q*integrator.dt/dtK
+        qK = integrator.q*integrator.dt/dtK
         ΔWtilde = qK*K₂ + sqrt((1-qK)*qK*dtK)*next(rands)
         ΔZtilde = qK*K₃ + sqrt((1-qK)*qK*dtK)*next(rands)
         cutLength = (1-qK)*dtK
@@ -220,9 +220,6 @@ end
     Juno.msg(integrator.prog,integrator.opts.progress_message(integrator.dt,integrator.t,integrator.u))
     Juno.progress(integrator.prog,integrator.t/T)
   end
-end
-
-@def sde_adaptiveprelim begin
 end
 
 @def sde_postamble begin
