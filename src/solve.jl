@@ -214,13 +214,15 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
   just_hit_tstop = false
   isout = false
   accept_step = false
+  dtcache = tType(dt)
+  dtchangeable = true
 
   integrator =    SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,
                   tType,tTypeNoUnits,
                   uEltypeNoUnits,randType,typeof(ΔW),rateType,typeof(sol),typeof(cache),
                   typeof(prog),typeof(S₁),typeof(S₂),
-                  F,F2,typeof(opts)}(f,g,uprev,t,u,tType(dt),tType(dt),tType(dt),T,tdir,
-                  just_hit_tstop,isout,accept_step,
+                  F,F2,typeof(opts)}(f,g,uprev,t,u,tType(dt),tType(dt),tType(dt),dtcache,T,tdir,
+                  just_hit_tstop,isout,accept_step,dtchangeable,
                   alg,sol,
                   cache,rands,sqdt,W,Z,ΔW,ΔZ,opts,iter,prog,S₁,S₂,EEst,q,
                   tTypeNoUnits(qoldinit),q11)
@@ -230,6 +232,7 @@ function solve!(integrator::SDEIntegrator)
 
   @inbounds while integrator.t < integrator.T
     @sde_exit_condtions
+    loopheader!(integrator)
     perform_step!(integrator,integrator.cache)
     loopfooter!(integrator)
   end

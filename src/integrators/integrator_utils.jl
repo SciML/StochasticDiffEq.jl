@@ -1,5 +1,40 @@
-@def sde_exit_condtions begin
+function loopheader!(integrator::SDEIntegrator)
+  # Apply right after iterators / callbacks
+
+  # Accept or reject the step
+  if integrator.iter > 0
+    if (integrator.opts.adaptive && integrator.accept_step) || !integrator.opts.adaptive
+      apply_step!(integrator)
+    elseif integrator.opts.adaptive && !integrator.accept_step
+      perform_rswm_rejection!(integrator)
+    end
+  end
+
   integrator.iter += 1
+  modify_dt_for_tstops!(integrator)
+  choose_algorithm!(integrator,integrator.cache)
+end
+
+@inline function modify_dt_for_tstops!(integrator)
+  tstops = integrator.opts.tstops
+  if !isempty(tstops)
+    if integrator.opts.adaptive
+      if integrator.tdir > 0
+        integrator.dt = min(abs(integrator.dt),abs(top(tstops)-integrator.t)) # step! to the end
+      else
+        integrator.dt = -min(abs(integrator.dt),abs(top(tstops)-integrator.t))
+      end
+    elseif integrator.dtcache == zero(integrator.t) && integrator.dtchangeable # Use integrator.opts.tstops
+      integrator.dt = integrator.tdir*abs(top(tstops)-integrator.t)
+    elseif integrator.dtchangeable # always try to step! with dtcache, but lower if a tstops
+      integrator.dt = integrator.tdir*min(abs(integrator.dtcache),abs(top(tstops)-integrator.t)) # step! to the end
+    end
+  end
+end
+
+@inline choose_algorithm!(integrator,cache::StochasticDiffEqCache) = nothing
+
+@def sde_exit_condtions begin
   if integrator.iter > integrator.opts.maxiters
     warn("Max Iters Reached. Aborting")
     postamble!(integrator)
@@ -51,9 +86,6 @@ function loopfooter!(integrator::SDEIntegrator)
       end
       update_running_noise!(integrator)
       savevalues!(integrator)
-      apply_step!(integrator)
-    else #Rejection
-      perform_rswm_rejection!(integrator)
     end
   else # Non adaptive
     integrator.t = integrator.t + integrator.dt
@@ -61,7 +93,6 @@ function loopfooter!(integrator::SDEIntegrator)
     integrator.dtpropose = integrator.dt
     update_running_noise!(integrator)
     savevalues!(integrator)
-    apply_step!(integrator)
   end
   if integrator.opts.progress && integrator.iter%integrator.opts.progress_steps==0
     Juno.msg(integrator.prog,integrator.opts.progress_message(integrator.dt,integrator.t,integrator.u))
@@ -187,7 +218,11 @@ function update_running_noise!(integrator)
 end
 
 function perform_rswm_rejection!(integrator)
-  integrator.dtnew = integrator.dt/min(inv(integrator.opts.qmin),integrator.q11/integrator.opts.gamma)
+  if integrator.isout
+    integrator.dtnew = integrator.dt*integrator.opts.qmin
+  else
+    integrator.dtnew = integrator.dt/min(inv(integrator.opts.qmin),integrator.q11/integrator.opts.gamma)
+  end
   integrator.q = integrator.dtnew/integrator.dt
   if adaptive_alg(integrator.alg.rswm)==:RSwM1 || adaptive_alg(integrator.alg.rswm)==:RSwM2
     ΔWtmp = integrator.q*integrator.ΔW + sqrt((1-integrator.q)*integrator.dtnew)*next(integrator.rands)
