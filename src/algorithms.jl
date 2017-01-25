@@ -1,5 +1,6 @@
 abstract StochasticDiffEqAlgorithm <: AbstractSDEAlgorithm
 abstract StochasticDiffEqAdaptiveAlgorithm <: StochasticDiffEqAlgorithm
+abstract StochasticDiffEqCompositeAlgorithm <: StochasticDiffEqAlgorithm
 
 immutable EM <: StochasticDiffEqAlgorithm end
 immutable RKMil <: StochasticDiffEqAlgorithm end
@@ -16,6 +17,11 @@ end
 end
 @with_kw immutable SRA1{RSType} <: StochasticDiffEqAdaptiveAlgorithm
   rswm::RSType = RSWM()
+end
+
+immutable StochasticCompositeAlgorithm{T,F} <: StochasticDiffEqCompositeAlgorithm
+  algs::T
+  choice_function::F
 end
 
 isadaptive(alg::StochasticDiffEqAlgorithm) = false

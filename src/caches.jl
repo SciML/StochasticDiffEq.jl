@@ -2,6 +2,17 @@ abstract StochasticDiffEqCache <: DECache
 abstract StochasticDiffEqConstantCache <: StochasticDiffEqCache
 abstract StochasticDiffEqMutableCache <: StochasticDiffEqCache
 
+type StochasticCompositeCache{T,F} <: StochasticDiffEqCache
+  caches::T
+  choice_function::F
+  current::Int
+end
+
+function alg_cache{T}(alg::StochasticCompositeAlgorithm,u,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{T}})
+  caches = map((x)->alg_cache(x,u,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,Val{T}),alg.algs)
+  StochasticCompositeCache(caches,alg.choice_function,1)
+end
+
 immutable EMConstantCache <: StochasticDiffEqConstantCache end
 immutable EMCache{uType} <: StochasticDiffEqMutableCache
   utmp1::uType
