@@ -8,7 +8,7 @@ module StochasticDiffEq
 
   using DiffEqBase, Parameters, ChunkedArrays, RecursiveArrayTools, Juno,
         DataStructures, ResettableStacks, Roots
-        
+
   import DiffEqBase: solve, solve!, init, step!, build_solution
 
   import DiffEqBase: resize!,deleteat!,full_cache,u_cache,du_cache,terminate!,get_du,
@@ -39,7 +39,7 @@ module StochasticDiffEq
           SRA1
 
    #General Functions
-   export solve
+   export solve, init, solve!, step!
 
    #Misc Tools
    export checkSRIOrder, checkSRAOrder,  constructSRIW1, constructSRA1

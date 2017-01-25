@@ -67,5 +67,3 @@ function step!(integrator::SDEIntegrator)
 end
 
 eltype(integrator::SDEIntegrator) = typeof(integrator)
-
-tuple(integrator::SDEIntegrator) = IntegratorTuples(integrator)

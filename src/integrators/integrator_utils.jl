@@ -11,7 +11,6 @@ function loopheader!(integrator::SDEIntegrator)
   end
 
   integrator.iter += 1
-  modify_dt_for_tstops!(integrator)
   choose_algorithm!(integrator,integrator.cache)
 end
 
@@ -30,6 +29,7 @@ end
       integrator.dt = integrator.tdir*min(abs(integrator.dtcache),abs(top(tstops)-integrator.t)) # step! to the end
     end
   end
+  integrator.sqdt = sqrt(integrator.dt)
 end
 
 @inline choose_algorithm!(integrator,cache::StochasticDiffEqCache) = nothing
@@ -101,12 +101,12 @@ end
   if integrator.tdir > 0
     integrator.dtpropose = min(integrator.opts.dtmax,integrator.dtnew)
   else
-    integrator.integrator.dtpropose = max(integrator.opts.dtmax,integrator.dtnew)
+    integrator.dtpropose = max(integrator.opts.dtmax,integrator.dtnew)
   end
   if integrator.tdir > 0
     integrator.dtpropose = max(integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
   else
-    integrator.integrator.dtpropose = min(integrator.integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
+    integrator.dtpropose = min(integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
   end
 end
 
@@ -182,17 +182,14 @@ function apply_step!(integrator)
         integrator.dt,integrator.ΔW,integrator.ΔZ = pop!(integrator.S₁)
         integrator.sqdt = sqrt(integrator.dt)
       else # Stack is empty
-        c = min(integrator.opts.dtmax,integrator.dtnew)
-        integrator.dt = max(min(c,abs(integrator.T-integrator.t)),integrator.opts.dtmin)#abs to fix complex sqrt issue at end
-        #integrator.dt = min(c,abs(integrator.T-integrator.t))
-        integrator.sqdt = sqrt(integrator.dt)
+        integrator.dt = integrator.dtpropose
+        modify_dt_for_tstops!(integrator)
         integrator.ΔW = integrator.sqdt*next(integrator.rands)
         integrator.ΔZ = integrator.sqdt*next(integrator.rands)
       end
     elseif adaptive_alg(integrator.alg.rswm)==:RSwM2 || adaptive_alg(integrator.alg.rswm)==:RSwM3
-      c = min(integrator.opts.dtmax,integrator.dtnew)
-      integrator.dt = max(min(c,abs(integrator.T-integrator.t)),integrator.opts.dtmin) #abs to fix complex sqrt issue at end
-      integrator.sqdt = sqrt(integrator.dt)
+      integrator.dt = integrator.dtpropose
+      modify_dt_for_tstops!(integrator)
       if !(typeof(integrator.u) <: AbstractArray)
         dttmp = 0.0; integrator.ΔW = 0.0; integrator.ΔZ = 0.0
       else
@@ -234,6 +231,7 @@ function apply_step!(integrator)
       end
     end # End RSwM2 and RSwM3
   else # Not adaptive
+    modify_dt_for_tstops!(integrator)
     integrator.ΔW = integrator.sqdt*next(integrator.rands)
     if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
       integrator.ΔZ = integrator.sqdt*next(integrator.rands)

@@ -193,6 +193,33 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
     push!(Ws,copy(W))
   end
 
+  S₁ = DataStructures.Stack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
+  S₂ = ResettableStacks.ResettableStack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
+  EEst = tTypeNoUnits(1)
+  q = tTypeNoUnits(1)
+  just_hit_tstop = false
+  isout = false
+  accept_step = false
+  dtcache = tType(dt)
+  dtchangeable = true
+  u_modified = false
+
+  ## Modify the first dt for tstops
+  if !isempty(tstops_internal)
+    if adaptive
+      if tdir > 0
+        dt = min(abs(dt),abs(top(tstops_internal)-t)) # step! to the end
+      else
+        dt = -min(abs(dt),abs(top(tstops_internal)-t))
+      end
+    elseif dt == zero(t) && dtchangeable # Use integrator.opts.tstops
+      dt = tdir*abs(top(tstops_internal)-t)
+    elseif dtchangeable # always try to step! with dtcache, but lower if a tstops
+      dt = tdir*min(abs(dtcache),abs(top(tstops_internal)-t)) # step! to the end
+    end
+  end
+  ### Needs to be done before first rand
+
 
   sqdt = sqrt(dt)
   iter = 0
@@ -207,17 +234,6 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
 
   sol = build_solution(prob,alg,ts,timeseries,W=Ws,
                 calculate_error = false)
-
-  S₁ = DataStructures.Stack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
-  S₂ = ResettableStacks.ResettableStack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
-  EEst = tTypeNoUnits(1)
-  q = tTypeNoUnits(1)
-  just_hit_tstop = false
-  isout = false
-  accept_step = false
-  dtcache = tType(dt)
-  dtchangeable = false
-  u_modified = false
 
   integrator =    SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,
                   tType,tTypeNoUnits,
