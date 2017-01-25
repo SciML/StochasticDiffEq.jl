@@ -55,59 +55,7 @@ end
       savevalues!(integrator)
       apply_step!(integrator)
     else #Rejection
-      integrator.dtnew = integrator.dt/min(inv(integrator.opts.qmin),integrator.q11/integrator.opts.gamma)
-      integrator.q = integrator.dtnew/integrator.dt
-      if adaptive_alg(integrator.alg.rswm)==:RSwM1 || adaptive_alg(integrator.alg.rswm)==:RSwM2
-        ΔWtmp = integrator.q*integrator.ΔW + sqrt((1-integrator.q)*integrator.dtnew)*next(rands)
-        ΔZtmp = integrator.q*integrator.ΔZ + sqrt((1-integrator.q)*integrator.dtnew)*next(rands)
-        cutLength = integrator.dt-integrator.dtnew
-        if cutLength > integrator.alg.rswm.discard_length
-          push!(integrator.S₁,(cutLength,integrator.ΔW-ΔWtmp,integrator.ΔZ-ΔZtmp))
-        end
-        if length(integrator.S₁) > integrator.sol.maxstacksize
-            integrator.sol.maxstacksize = length(integrator.S₁)
-        end
-        integrator.ΔW = ΔWtmp
-        integrator.ΔZ = ΔZtmp
-        integrator.dt = integrator.dtnew
-      else # RSwM3
-        if !(typeof(integrator.u) <: AbstractArray)
-          dttmp = 0.0; ΔWtmp = 0.0; ΔZtmp = 0.0
-        else
-          dttmp = 0.0; ΔWtmp = zeros(size(integrator.u)...); ΔZtmp = zeros(size(integrator.u)...)
-        end
-        if length(integrator.S₂) > integrator.sol.maxstacksize2
-          integrator.sol.maxstacksize2= length(integrator.S₂)
-        end
-        while !isempty(integrator.S₂)
-          L₁,L₂,L₃ = pop!(integrator.S₂)
-          if dttmp + L₁ < (1-integrator.q)*integrator.dt #while the backwards movement is less than chop off
-            dttmp += L₁
-            ΔWtmp += L₂
-            ΔZtmp += L₃
-            push!(integrator.S₁,(L₁,L₂,L₃))
-          else
-            push!(integrator.S₂,(L₁,L₂,L₃))
-            break
-          end
-        end # end while
-        dtK = integrator.dt - dttmp
-        K₂ = integrator.ΔW - ΔWtmp
-        K₃ = integrator.ΔZ - ΔZtmp
-        qK = integrator.q*integrator.dt/dtK
-        ΔWtilde = qK*K₂ + sqrt((1-qK)*qK*dtK)*next(rands)
-        ΔZtilde = qK*K₃ + sqrt((1-qK)*qK*dtK)*next(rands)
-        cutLength = (1-qK)*dtK
-        if cutLength > integrator.alg.rswm.discard_length
-          push!(integrator.S₁,(cutLength,K₂-ΔWtilde,K₃-ΔZtilde))
-        end
-        if length(integrator.S₁) > integrator.sol.maxstacksize
-            integrator.sol.maxstacksize = length(integrator.S₁)
-        end
-        integrator.dt = integrator.dtnew
-        integrator.ΔW = ΔWtilde
-        integrator.ΔZ = ΔZtilde
-      end
+      perform_rswm_rejection!(integrator)
     end
   else # Non adaptive
     integrator.t = integrator.t + integrator.dt
@@ -228,5 +176,61 @@ function update_running_noise!(integrator)
         integrator.Z = integrator.Z + integrator.ΔZ
       end
     end
+  end
+end
+
+function perform_rswm_rejection!(integrator)
+  integrator.dtnew = integrator.dt/min(inv(integrator.opts.qmin),integrator.q11/integrator.opts.gamma)
+  integrator.q = integrator.dtnew/integrator.dt
+  if adaptive_alg(integrator.alg.rswm)==:RSwM1 || adaptive_alg(integrator.alg.rswm)==:RSwM2
+    ΔWtmp = integrator.q*integrator.ΔW + sqrt((1-integrator.q)*integrator.dtnew)*next(integrator.rands)
+    ΔZtmp = integrator.q*integrator.ΔZ + sqrt((1-integrator.q)*integrator.dtnew)*next(integrator.rands)
+    cutLength = integrator.dt-integrator.dtnew
+    if cutLength > integrator.alg.rswm.discard_length
+      push!(integrator.S₁,(cutLength,integrator.ΔW-ΔWtmp,integrator.ΔZ-ΔZtmp))
+    end
+    if length(integrator.S₁) > integrator.sol.maxstacksize
+        integrator.sol.maxstacksize = length(integrator.S₁)
+    end
+    integrator.ΔW = ΔWtmp
+    integrator.ΔZ = ΔZtmp
+    integrator.dt = integrator.dtnew
+  else # RSwM3
+    if !(typeof(integrator.u) <: AbstractArray)
+      dttmp = 0.0; ΔWtmp = 0.0; ΔZtmp = 0.0
+    else
+      dttmp = 0.0; ΔWtmp = zeros(size(integrator.u)...); ΔZtmp = zeros(size(integrator.u)...)
+    end
+    if length(integrator.S₂) > integrator.sol.maxstacksize2
+      integrator.sol.maxstacksize2= length(integrator.S₂)
+    end
+    while !isempty(integrator.S₂)
+      L₁,L₂,L₃ = pop!(integrator.S₂)
+      if dttmp + L₁ < (1-integrator.q)*integrator.dt #while the backwards movement is less than chop off
+        dttmp += L₁
+        ΔWtmp += L₂
+        ΔZtmp += L₃
+        push!(integrator.S₁,(L₁,L₂,L₃))
+      else
+        push!(integrator.S₂,(L₁,L₂,L₃))
+        break
+      end
+    end # end while
+    dtK = integrator.dt - dttmp
+    K₂ = integrator.ΔW - ΔWtmp
+    K₃ = integrator.ΔZ - ΔZtmp
+    qK = integrator.q*integrator.dt/dtK
+    ΔWtilde = qK*K₂ + sqrt((1-qK)*qK*dtK)*next(integrator.rands)
+    ΔZtilde = qK*K₃ + sqrt((1-qK)*qK*dtK)*next(integrator.rands)
+    cutLength = (1-qK)*dtK
+    if cutLength > integrator.alg.rswm.discard_length
+      push!(integrator.S₁,(cutLength,K₂-ΔWtilde,K₃-ΔZtilde))
+    end
+    if length(integrator.S₁) > integrator.sol.maxstacksize
+        integrator.sol.maxstacksize = length(integrator.S₁)
+    end
+    integrator.dt = integrator.dtnew
+    integrator.ΔW = ΔWtilde
+    integrator.ΔZ = ΔZtilde
   end
 end
