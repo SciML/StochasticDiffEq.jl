@@ -209,7 +209,7 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
                   tType,tTypeNoUnits,
                   uEltypeNoUnits,randType,typeof(ΔW),rateType,typeof(sol),typeof(cache),
                   typeof(prog),typeof(S₁),typeof(S₂),
-                  F,F2,typeof(opts)}(f,g,uprev,t,u,tType(dt),tType(dt),T,tdir,
+                  F,F2,typeof(opts)}(f,g,uprev,t,u,tType(dt),tType(dt),tType(dt),T,tdir,
                   just_hit_tstop,isout,accept_step,
                   alg,sol,
                   cache,rands,sqdt,W,Z,ΔW,ΔZ,opts,iter,prog,S₁,S₂,EEst,q,

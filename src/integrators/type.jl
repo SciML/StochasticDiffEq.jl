@@ -5,6 +5,7 @@ type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,rand
   t::tType
   u::uType
   dt::tType
+  dtnew::tType
   dtpropose::tType
   T::tType
   tdir::Int
