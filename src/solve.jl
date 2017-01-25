@@ -3,6 +3,16 @@
 @inline ODE_DEFAULT_UNSTABLE_CHECK(dt,t,u) = any(isnan,u)
 
 function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgorithm,recompile_flag}(
+  prob::AbstractSDEProblem{uType,tType,isinplace,NoiseClass,F,F2,F3},
+  alg::algType,timeseries=[],ts=[],ks=[],recompile::Type{Val{recompile_flag}}=Val{true};
+  kwargs...)
+
+  integrator = init(prob,alg,timeseries,ts,ks,recompile;kwargs...)
+  solve!(integrator)
+  integrator.sol
+end
+
+function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgorithm,recompile_flag}(
               prob::AbstractSDEProblem{uType,tType,isinplace,NoiseClass,F,F2,F3},
               alg::algType,timeseries_init=uType[],ts_init=tType[],ks_init=[],
               recompile::Type{Val{recompile_flag}}=Val{true};
@@ -214,11 +224,12 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
                   alg,sol,
                   cache,rands,sqdt,W,Z,ΔW,ΔZ,opts,iter,prog,S₁,S₂,EEst,q,
                   tTypeNoUnits(qoldinit),q11)
+end
 
-  sde_solve(integrator)
-
-  if typeof(integrator.sol.prob) <: AbstractSDETestProblem
-    calculate_solution_errors!(sol;timeseries_errors=integrator.opts.timeseries_errors,dense_errors=integrator.opts.dense_errors)
-  end
-  sol
+function solve!(integrator::SDEIntegrator)
+    sde_solve(integrator)
+    if typeof(integrator.sol.prob) <: AbstractSDETestProblem
+      calculate_solution_errors!(integrator.sol;timeseries_errors=integrator.opts.timeseries_errors,dense_errors=integrator.opts.dense_errors)
+    end
+    integrator.sol
 end
