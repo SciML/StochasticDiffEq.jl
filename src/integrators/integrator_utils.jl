@@ -27,11 +27,13 @@ end
   end
 end
 
-@def sde_savevalues begin
+function savevalues!(integrator::SDEIntegrator)
   if integrator.opts.save_timeseries && integrator.iter%integrator.opts.timeseries_steps==0
     push!(integrator.sol.u,copy(integrator.u))
     push!(integrator.sol.t,integrator.t)
-    push!(integrator.sol.W,copy(integrator.W))
+    if integrator.opts.save_noise
+      push!(integrator.sol.W,copy(integrator.W))
+    end
   end
 end
 
@@ -79,7 +81,7 @@ end
       if adaptive_alg(integrator.alg.rswm)==:RSwM3
         ResettableStacks.reset!(S₂) #Empty S₂
       end
-      @sde_savevalues
+      savevalues!(integrator)
       # Setup next step
       if adaptive_alg(integrator.alg.rswm)==:RSwM1
         if !isempty(S₁)
@@ -221,7 +223,7 @@ end
       end
     end
     ΔW = integrator.sqdt*next(rands)
-    @sde_savevalues
+    savevalues!(integrator)
   end
   if integrator.opts.progress && integrator.iter%integrator.opts.progress_steps==0
     Juno.msg(integrator.prog,integrator.opts.progress_message(integrator.dt,integrator.t,integrator.u))
@@ -243,7 +245,9 @@ end
   if integrator.sol.t[end] != integrator.t
     push!(integrator.sol.t,integrator.t)
     push!(integrator.sol.u,integrator.u)
-    push!(integrator.sol.W,integrator.W)
+    if integrator.opts.save_noise
+      push!(integrator.sol.W,integrator.W)
+    end
   end
   integrator.opts.progress && Juno.done(integrator.prog)
   return nothing

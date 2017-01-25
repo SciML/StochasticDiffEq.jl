@@ -193,13 +193,8 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
 
   cache = alg_cache(alg,u,rate_prototype,ΔW,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,Val{isinplace})
 
-  if save_noise
-    sol = build_solution(prob,alg,ts,timeseries,W=Ws,
-                  calculate_error = false)
-  else
-    sol = build_solution(prob,alg,ts,timeseries,
-                  calculate_error = false)
-  end
+  sol = build_solution(prob,alg,ts,timeseries,W=Ws,
+                calculate_error = false)
 
   integrator =    SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,
                   tType,tTypeNoUnits,
