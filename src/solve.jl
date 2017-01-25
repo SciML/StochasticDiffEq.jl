@@ -34,6 +34,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
               internalnorm=ODE_DEFAULT_NORM,
               unstable_check = ODE_DEFAULT_UNSTABLE_CHECK,
               isoutofdomain = ODE_DEFAULT_ISOUTOFDOMAIN,
+              verbose = true,
               advance_to_tstop = false,stop_at_next_tstop=false,
               progress_steps=1000,
               progress=false, progress_message = ODE_DEFAULT_PROG_MESSAGE,
@@ -156,7 +157,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
     timeseries_errors,dense_errors,
     tTypeNoUnits(beta1),tTypeNoUnits(beta2),uEltypeNoUnits(delta),tTypeNoUnits(qoldinit),
     dense,save_noise,
-    callbacks_internal,isoutofdomain,unstable_check,calck,advance_to_tstop,stop_at_next_tstop)
+    callbacks_internal,isoutofdomain,unstable_check,verbose,calck,advance_to_tstop,stop_at_next_tstop)
 
   progress ? (prog = Juno.ProgressBar(name=progress_name)) : prog = nothing
 

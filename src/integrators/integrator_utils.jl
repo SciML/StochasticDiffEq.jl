@@ -36,17 +36,23 @@ end
 
 @def sde_exit_condtions begin
   if integrator.iter > integrator.opts.maxiters
-    warn("Max Iters Reached. Aborting")
+    if integrator.opts.verbose
+      warn("Max Iters Reached. Aborting")
+    end
     postamble!(integrator)
     return nothing
   end
   if integrator.dt == 0
-    warn("dt == 0. Aborting")
+    if integrator.opts.verbose
+      warn("dt == 0. Aborting")
+    end
     postamble!(integrator)
     return nothing
   end
   if integrator.opts.unstable_check(integrator.dt,integrator.t,integrator.u)
-    warn("Instability detected. Aborting")
+    if integrator.opts.verbose
+      warn("Instability detected. Aborting")
+    end
     postamble!(integrator)
     return nothing
   end
