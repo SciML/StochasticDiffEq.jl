@@ -16,15 +16,6 @@
   @pack integrator = t,dt,u
 end
 
-function sde_solve{algType<:SRA1,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType})
-  @inbounds while integrator.t < integrator.T
-    @sde_loopheader
-    perform_step!(integrator,integrator.cache)
-    loopfooter!(integrator)
-  end
-  @sde_postamble
-end
-
 @inline function perform_step!(integrator,cache::SRA1Cache,f=integrator.f)
   @unpack chi2,tmp1,E₁,E₂,gt,k₁,k₂,gpdt,EEsttmp = integrator.cache
   @unpack t,dt,uprev,u,ΔW,ΔZ = integrator
@@ -57,15 +48,6 @@ end
     end
   end
   @pack integrator = t,dt,u
-end
-
-function sde_solve{algType<:SRA1,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType})
-  @inbounds while integrator.t < integrator.T
-    @sde_loopheader
-    perform_step!(integrator,integrator.cache)
-    loopfooter!(integrator)
-  end
-  @sde_postamble
 end
 
 @inline function perform_step!(integrator,cache::SRACache,f=integrator.f)
@@ -128,15 +110,6 @@ end
   @pack integrator = t,dt,u
 end
 
-function sde_solve{algType<:SRA,uType<:AbstractArray,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType})
-  @inbounds while integrator.t < integrator.T
-    @sde_loopheader
-    perform_step!(integrator,integrator.cache)
-    loopfooter!(integrator)
-  end
-  @sde_postamble
-end
-
 @inline function perform_step!(integrator,cache::SRAConstantCache,f=integrator.f)
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages,H0 = integrator.cache
   @unpack t,dt,uprev,u,ΔW,ΔZ = integrator
@@ -173,13 +146,4 @@ end
     u = uprev + dt*atemp + btemp + E₂
   end
   @pack integrator = t,dt,u
-end
-
-function sde_solve{algType<:SRA,uType<:Number,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType}(integrator::SDEIntegrator{algType,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType})
-  @inbounds while integrator.t < integrator.T
-    @sde_loopheader
-    perform_step!(integrator,integrator.cache)
-    loopfooter!(integrator)
-  end
-  @sde_postamble
 end

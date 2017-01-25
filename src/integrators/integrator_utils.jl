@@ -1,16 +1,19 @@
-@def sde_loopheader begin
+@def sde_exit_condtions begin
   integrator.iter += 1
   if integrator.iter > integrator.opts.maxiters
     warn("Max Iters Reached. Aborting")
-    @sde_postamble
+    postamble!(integrator)
+    return nothing
   end
   if integrator.dt == 0
     warn("dt == 0. Aborting")
-    @sde_postamble
+    postamble!(integrator)
+    return nothing
   end
   if integrator.opts.unstable_check(integrator.dt,integrator.t,integrator.u)
     warn("Instability detected. Aborting")
-    @sde_postamble
+    postamble!(integrator)
+    return nothing
   end
 end
 
@@ -66,15 +69,24 @@ function loopfooter!(integrator::SDEIntegrator)
   end
 end
 
-@def sde_postamble begin
-  if integrator.sol.t[end] != integrator.t
-    push!(integrator.sol.t,integrator.t)
-    push!(integrator.sol.u,integrator.u)
-    if integrator.opts.save_noise
-      push!(integrator.sol.W,integrator.W)
+function postamble!(integrator)
+  if !integrator.opts.save_timeseries
+    if integrator.sol.t[end] != integrator.t
+      push!(integrator.sol.t,integrator.t)
+      push!(integrator.sol.u,integrator.u)
+      if integrator.opts.save_noise
+        push!(integrator.sol.W,integrator.W)
+      end
     end
   end
-  integrator.opts.progress && Juno.done(integrator.prog)
+  #resize!(integrator.sol.t,integrator.saveiter)
+  #resize!(integrator.sol.u,integrator.saveiter)
+  #resize!(integrator.sol.k,integrator.saveiter_dense)
+
+  if integrator.sol.t[end] !=  integrator.t
+    error("Solution endpoint doesn't match the current time in the postamble. This should never happen.")
+  end
+  !(typeof(integrator.prog)<:Void) && Juno.done(integrator.prog)
   return nothing
 end
 

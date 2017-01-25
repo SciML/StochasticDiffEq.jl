@@ -227,9 +227,16 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
 end
 
 function solve!(integrator::SDEIntegrator)
-    sde_solve(integrator)
-    if typeof(integrator.sol.prob) <: AbstractSDETestProblem
-      calculate_solution_errors!(integrator.sol;timeseries_errors=integrator.opts.timeseries_errors,dense_errors=integrator.opts.dense_errors)
-    end
-    integrator.sol
+
+  @inbounds while integrator.t < integrator.T
+    @sde_exit_condtions
+    perform_step!(integrator,integrator.cache)
+    loopfooter!(integrator)
+  end
+  postamble!(integrator)
+
+  if typeof(integrator.sol.prob) <: AbstractSDETestProblem
+    calculate_solution_errors!(integrator.sol;timeseries_errors=integrator.opts.timeseries_errors,dense_errors=integrator.opts.dense_errors)
+  end
+  integrator.sol
 end
