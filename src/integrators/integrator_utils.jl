@@ -36,20 +36,20 @@ end
     integrator.q = max(inv(integrator.opts.qmax),min(inv(integrator.opts.qmin),integrator.q/integrator.opts.gamma))
     dtnew = integrator.dt/integrator.q
     ttmp = integrator.t + integrator.dt
-    #integrator.isout = integrator.opts.isoutofdomain(ttmp,integrator.u)
-    #integrator.accept_step = (!integrator.isout && integrator.EEst <= 1.0)
-    if integrator.EEst <= 1 # Accepted
+    integrator.isout = integrator.opts.isoutofdomain(ttmp,integrator.u)
+    integrator.accept_step = (!integrator.isout && integrator.EEst <= 1.0)
+    if integrator.accept_step # Accepted
       integrator.t = ttmp
       integrator.qold = max(integrator.EEst,integrator.opts.qoldinit)
       #if integrator.tdir > 0
-        dtpropose = min(integrator.opts.dtmax,dtnew)
+        integrator.dtpropose = min(integrator.opts.dtmax,dtnew)
       #else
-      #  integrator.dtpropose = max(integrator.opts.dtmax,dtnew)
+      #  integrator.integrator.dtpropose = max(integrator.opts.dtmax,dtnew)
       #end
       #if integrator.tdir > 0
-        dtpropose = max(dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
+        integrator.dtpropose = max(integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
       #else
-      #  integrator.dtpropose = min(integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
+      #  integrator.integrator.dtpropose = min(integrator.integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
       #end
 
 

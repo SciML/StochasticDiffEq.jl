@@ -201,13 +201,18 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
   S₂ = ResettableStacks.ResettableStack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
   EEst = tTypeNoUnits(1)
   q = tTypeNoUnits(1)
+  just_hit_tstop = false
+  isout = false
+  accept_step = false
 
   integrator =    SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,
                   tType,tTypeNoUnits,
                   uEltypeNoUnits,randType,typeof(ΔW),rateType,typeof(sol),typeof(cache),
                   typeof(prog),typeof(S₁),typeof(S₂),
-                  F,F2,typeof(opts)}(f,g,uprev,t,u,tType(dt),T,alg,sol,cache,
-                  rands,sqdt,W,Z,ΔW,ΔZ,opts,iter,prog,S₁,S₂,EEst,q,
+                  F,F2,typeof(opts)}(f,g,uprev,t,u,tType(dt),tType(dt),T,
+                  just_hit_tstop,isout,accept_step,
+                  alg,sol,
+                  cache,rands,sqdt,W,Z,ΔW,ΔZ,opts,iter,prog,S₁,S₂,EEst,q,
                   tTypeNoUnits(qoldinit),q11)
 
   sde_solve(integrator)

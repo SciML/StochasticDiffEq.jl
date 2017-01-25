@@ -5,7 +5,11 @@ type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,rand
   t::tType
   u::uType
   dt::tType
+  dtpropose::tType
   T::tType
+  just_hit_tstop::Bool
+  isout::Bool
+  accept_step::Bool
   alg::T1
   sol::solType
   cache::cacheType
