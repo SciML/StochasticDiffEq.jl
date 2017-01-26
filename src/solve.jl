@@ -244,18 +244,18 @@ end
 
 function solve!(integrator::SDEIntegrator)
 
-  while !isempty(integrator.opts.tstops)
-    while integrator.tdir*integrator.t < integrator.tdir*top(integrator.opts.tstops)
+  #while !isempty(integrator.opts.tstops)
+    #while integrator.tdir*integrator.t < integrator.tdir*top(integrator.opts.tstops)
       loopheader!(integrator)
       @sde_exit_condtions
       perform_step!(integrator,integrator.cache)
       loopfooter!(integrator)
-      if isempty(integrator.opts.tstops)
-        break
-      end
-    end
-    handle_tstop!(integrator)
-  end
+      #if isempty(integrator.opts.tstops)
+      #  break
+      #end
+    #end
+    #handle_tstop!(integrator)
+  #end
   postamble!(integrator)
   if typeof(integrator.sol.prob) <: AbstractSDETestProblem
     calculate_solution_errors!(integrator.sol;timeseries_errors=integrator.opts.timeseries_errors,dense_errors=integrator.opts.dense_errors)
