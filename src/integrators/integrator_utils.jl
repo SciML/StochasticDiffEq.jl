@@ -1,4 +1,4 @@
-function loopheader!(integrator::SDEIntegrator)
+@inline function loopheader!(integrator::SDEIntegrator)
   # Apply right after iterators / callbacks
 
   # Accept or reject the step
@@ -58,7 +58,7 @@ end
   end
 end
 
-function savevalues!(integrator::SDEIntegrator)
+@inline function savevalues!(integrator::SDEIntegrator)
   if integrator.opts.save_timeseries && integrator.iter%integrator.opts.timeseries_steps==0
     push!(integrator.sol.u,copy(integrator.u))
     push!(integrator.sol.t,integrator.t)
@@ -68,7 +68,7 @@ function savevalues!(integrator::SDEIntegrator)
   end
 end
 
-function loopfooter!(integrator::SDEIntegrator)
+@inline function loopfooter!(integrator::SDEIntegrator)
   if integrator.opts.adaptive
     integrator.q11 = integrator.EEst^integrator.opts.beta1
     integrator.q = integrator.q11/(integrator.qold^integrator.opts.beta2)
@@ -119,17 +119,12 @@ end
     end
   end
 end
+
 function postamble!(integrator)
-  if !integrator.opts.save_timeseries
-    solution_endpoint_match_cur_integrator!(integrator)
-  end
+  solution_endpoint_match_cur_integrator!(integrator)
   #resize!(integrator.sol.t,integrator.saveiter)
   #resize!(integrator.sol.u,integrator.saveiter)
   #resize!(integrator.sol.k,integrator.saveiter_dense)
-
-  if integrator.sol.t[end] !=  integrator.t
-    error("Solution endpoint doesn't match the current time in the postamble. This should never happen.")
-  end
   !(typeof(integrator.prog)<:Void) && Juno.done(integrator.prog)
   return nothing
 end
@@ -166,7 +161,7 @@ end
   #integrator.reeval_fsal = true
 end
 
-function apply_step!(integrator)
+@inline function apply_step!(integrator)
   if typeof(integrator.u) <: AbstractArray
     recursivecopy!(integrator.uprev,integrator.u)
   else
@@ -239,7 +234,7 @@ function apply_step!(integrator)
   end
 end
 
-function update_running_noise!(integrator)
+@inline function update_running_noise!(integrator)
   if integrator.opts.save_noise
     if typeof(integrator.u) <: AbstractArray
       for i in eachindex(integrator.u)
@@ -260,7 +255,7 @@ function update_running_noise!(integrator)
   end
 end
 
-function perform_rswm_rejection!(integrator)
+@inline function perform_rswm_rejection!(integrator)
   if integrator.isout
     integrator.dtnew = integrator.dt*integrator.opts.qmin
   else
