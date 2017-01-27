@@ -275,6 +275,7 @@ end
     integrator.ΔW = ΔWtmp
     integrator.ΔZ = ΔZtmp
     integrator.dt = integrator.dtnew
+    integrator.sqdt = sqrt(integrator.dt)
   else # RSwM3
     if !(typeof(integrator.u) <: AbstractArray)
       dttmp = 0.0; ΔWtmp = 0.0; ΔZtmp = 0.0
@@ -310,6 +311,7 @@ end
         integrator.sol.maxstacksize = length(integrator.S₁)
     end
     integrator.dt = integrator.dtnew
+    integrator.sqdt = sqrt(integrator.dt)
     integrator.ΔW = ΔWtilde
     integrator.ΔZ = ΔZtilde
   end
