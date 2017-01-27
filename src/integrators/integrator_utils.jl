@@ -120,7 +120,7 @@ end
   end
 end
 
-function postamble!(integrator)
+@inline function postamble!(integrator)
   solution_endpoint_match_cur_integrator!(integrator)
   #resize!(integrator.sol.t,integrator.saveiter)
   #resize!(integrator.sol.u,integrator.saveiter)
