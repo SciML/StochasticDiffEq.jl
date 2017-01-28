@@ -406,9 +406,17 @@ end
     end
   else
     if (typeof(integrator.u) <: AbstractArray)
-      ΔWtilde = add1 .+ scaling.*integrator.noise(size(integrator.u))
+      if add1 != 0
+        ΔWtilde = add1 .+ scaling.*integrator.noise(size(integrator.u))
+      else
+        ΔWtilde = scaling.*integrator.noise(size(integrator.u))
+      end
       if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
-        ΔZtilde = add2 .+ scaling.*integrator.noise(size(integrator.u))
+        if add2 != 0
+          ΔZtilde = add2 .+ scaling.*integrator.noise(size(integrator.u))
+        else
+          ΔZtilde = scaling.*integrator.noise(size(integrator.u))
+        end
       end
     else
       ΔWtilde = add1 + scaling*integrator.noise()
