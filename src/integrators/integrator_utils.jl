@@ -395,17 +395,25 @@ end
     ΔWtilde = similar(integrator.ΔW)
     integrator.noise(ΔWtilde)
     if add1 != 0
-      ΔWtilde .= add1 .+ scaling.*ΔWtilde
+      for i in eachindex(integrator.ΔW)
+        ΔWtilde[i] = add1[i] + scaling*ΔWtilde[i]
+      end
     else
-      ΔWtilde .= scaling.*ΔWtilde
+      for i in eachindex(integrator.ΔW)
+        ΔWtilde[i] = scaling*ΔWtilde[i]
+      end
     end
     if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
       ΔZtilde = similar(integrator.ΔZ)
       integrator.noise(ΔZtilde)
       if add2 != 0
-        ΔZtilde .= add2 .+ scaling.*ΔZtilde
+        for i in eachindex(ΔZtilde)
+          ΔZtilde[i] = add2[i] + scaling*ΔZtilde[i]
+        end
       else
-        ΔZtilde .= scaling.*ΔZtilde
+        for i in eachindex(ΔZtilde)
+          ΔZtilde[i] = scaling*ΔZtilde[i]
+        end
       end
     end
   else
