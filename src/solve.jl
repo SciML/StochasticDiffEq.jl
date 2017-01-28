@@ -245,7 +245,6 @@ function solve!(integrator::SDEIntegrator)
 
   while !isempty(integrator.opts.tstops)
     @inbounds while integrator.tdir*integrator.t < integrator.tdir*top(integrator.opts.tstops)
-    #@inbounds while integrator.t < integrator.sol.prob.tspan[2]
       loopheader!(integrator)
       @sde_exit_condtions
       perform_step!(integrator,integrator.cache)

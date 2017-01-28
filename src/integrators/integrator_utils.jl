@@ -16,7 +16,7 @@ end
 
 @inline function modify_dt_for_tstops!(integrator)
   tstops = integrator.opts.tstops
-  #if !isempty(tstops)
+  if !isempty(tstops)
     if integrator.opts.adaptive
       if integrator.tdir > 0
         integrator.dt = min(abs(integrator.dt),abs(top(tstops)-integrator.t)) # step! to the end
@@ -28,7 +28,7 @@ end
     elseif integrator.dtchangeable # always try to step! with dtcache, but lower if a tstops
       integrator.dt = integrator.tdir*min(abs(integrator.dtcache),abs(top(tstops)-integrator.t)) # step! to the end
     end
-  #end
+  end
   integrator.sqdt = sqrt(abs(integrator.dt))
 end
 
