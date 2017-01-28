@@ -242,7 +242,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
 
   rateType = typeof(u/t) ## Can be different if united
 
-  cache = alg_cache(alg,u,rate_prototype,ΔW,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,Val{isinplace})
+  cache = alg_cache(alg,u,ΔW,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,Val{isinplace})
 
   id = LinearInterpolationData(timeseries,ts)
 
