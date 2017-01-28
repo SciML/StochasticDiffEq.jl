@@ -390,11 +390,19 @@ end
   if isinplace(integrator.noise)
     ΔWtilde = similar(integrator.ΔW)
     integrator.noise(ΔWtilde)
-    ΔWtilde .= add1 .+ scaling.*ΔWtilde
+    if add1 != 0
+      ΔWtilde .= add1 .+ scaling.*ΔWtilde
+    else
+      ΔWtilde .= scaling.*ΔWtilde
+    end
     if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
       ΔZtilde = similar(integrator.ΔZ)
       integrator.noise(ΔZtilde)
-      ΔZtilde .= add2 .+ scaling.*ΔZtilde
+      if add2 != 0
+        ΔZtilde .= add2 .+ scaling.*ΔZtilde
+      else
+        ΔZtilde .= scaling.*ΔZtilde
+      end
     end
   else
     if (typeof(integrator.u) <: AbstractArray)
