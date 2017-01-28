@@ -219,15 +219,22 @@ end
       if !(typeof(integrator.u) <: AbstractArray)
         dttmp = 0.0; integrator.ΔW = 0.0; integrator.ΔZ = 0.0
       else
-        dttmp = 0.0; integrator.ΔW = zeros(size(integrator.u)...); integrator.ΔZ = zeros(size(integrator.u)...)
+        dttmp = 0.0; fill!(integrator.ΔW,zero(eltype(integrator.ΔW))); fill!(integrator.ΔZ,zero(eltype(integrator.ΔZ)))
       end
       while !isempty(integrator.S₁)
         L₁,L₂,L₃ = pop!(integrator.S₁)
         qtmp = (integrator.dt-dttmp)/L₁
         if qtmp>1
           dttmp+=L₁
-          integrator.ΔW+=L₂
-          integrator.ΔZ+=L₃
+          if typeof(integrator.u) <: AbstractArray
+            for i in eachindex(integrator.u)
+              integrator.ΔW[i]+=L₂[i]
+              integrator.ΔZ[i]+=L₃[i]
+            end
+          else
+            integrator.ΔW+=L₂
+            integrator.ΔZ+=L₃
+          end
           if adaptive_alg(integrator.alg.rswm)==:RSwM3
             push!(integrator.S₂,(L₁,L₂,L₃))
           end
