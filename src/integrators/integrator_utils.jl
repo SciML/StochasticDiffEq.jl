@@ -364,16 +364,20 @@ end
 @inline function update_noise!(integrator,scaling_factor=integrator.sqdt)
   if isinplace(integrator.noise)
     integrator.noise(integrator.ΔW)
-    integrator.ΔW .*= scaling_factor
+    for i in eachindex(integrator.ΔW)
+      integrator.ΔW[i] *= scaling_factor
+    end
     if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
       integrator.noise(integrator.ΔZ)
-      integrator.ΔZ .*= scaling_factor
+      for i in eachindex(integrator.ΔW)
+        integrator.ΔZ[i] .*= scaling_factor
+      end
     end
   else
     if (typeof(integrator.u) <: AbstractArray)
-      integrator.ΔW = scaling_factor*integrator.noise(size(integrator.u))
+      integrator.ΔW .= scaling_factor.*integrator.noise(size(integrator.u))
       if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
-        integrator.ΔZ = scaling_factor*integrator.noise(size(integrator.u))
+        integrator.ΔZ .= scaling_factor.*integrator.noise(size(integrator.u))
       end
     else
       integrator.ΔW = scaling_factor*integrator.noise()
