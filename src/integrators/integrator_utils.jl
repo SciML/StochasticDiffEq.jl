@@ -219,15 +219,22 @@ end
       if !(typeof(integrator.u) <: AbstractArray)
         dttmp = 0.0; integrator.ΔW = 0.0; integrator.ΔZ = 0.0
       else
-        dttmp = 0.0; integrator.ΔW = zeros(size(integrator.u)...); integrator.ΔZ = zeros(size(integrator.u)...)
+        dttmp = 0.0; fill!(integrator.ΔW,zero(eltype(integrator.ΔW))); fill!(integrator.ΔZ,zero(eltype(integrator.ΔZ)))
       end
       while !isempty(integrator.S₁)
         L₁,L₂,L₃ = pop!(integrator.S₁)
         qtmp = (integrator.dt-dttmp)/L₁
         if qtmp>1
           dttmp+=L₁
-          integrator.ΔW+=L₂
-          integrator.ΔZ+=L₃
+          if typeof(integrator.u) <: AbstractArray
+            for i in eachindex(integrator.u)
+              integrator.ΔW[i]+=L₂[i]
+              integrator.ΔZ[i]+=L₃[i]
+            end
+          else
+            integrator.ΔW+=L₂
+            integrator.ΔZ+=L₃
+          end
           if adaptive_alg(integrator.alg.rswm)==:RSwM3
             push!(integrator.S₂,(L₁,L₂,L₃))
           end
@@ -305,7 +312,7 @@ end
     if !(typeof(integrator.u) <: AbstractArray)
       dttmp = 0.0; ΔWtmp = 0.0; ΔZtmp = 0.0
     else
-      dttmp = 0.0; ΔWtmp = zeros(size(integrator.u)...); ΔZtmp = zeros(size(integrator.u)...)
+      dttmp = 0.0; fill!(integrator.ΔWtmp,zero(eltype(integrator.ΔWtmp))); fill!(integrator.ΔZtmp,zero(eltype(integrator.ΔZtmp)))
     end
     if length(integrator.S₂) > integrator.sol.maxstacksize2
       integrator.sol.maxstacksize2= length(integrator.S₂)
@@ -314,8 +321,15 @@ end
       L₁,L₂,L₃ = pop!(integrator.S₂)
       if dttmp + L₁ < (1-integrator.q)*integrator.dt #while the backwards movement is less than chop off
         dttmp += L₁
-        ΔWtmp += L₂
-        ΔZtmp += L₃
+        if typeof(integrator.u) <: AbstractArray
+          for i in eachindex(integrator.u)
+            integrator.ΔWtmp[i] += L₂[i]
+            integrator.ΔZtmp[i] += L₃[i]
+          end
+        else
+          integrator.ΔWtmp += L₂
+          integrator.ΔZtmp += L₃
+        end
         push!(integrator.S₁,(L₁,L₂,L₃))
       else
         push!(integrator.S₂,(L₁,L₂,L₃))
@@ -323,9 +337,9 @@ end
       end
     end # end while
     dtK = integrator.dt - dttmp
-    K₂ = integrator.ΔW - ΔWtmp
-    K₃ = integrator.ΔZ - ΔZtmp
     qK = integrator.q*integrator.dt/dtK
+    K₂ = integrator.ΔW - integrator.ΔWtmp
+    K₃ = integrator.ΔZ - integrator.ΔZtmp
     ΔWtilde,ΔZtilde = generate_tildes(integrator,qK*K₂,qK*K₃,sqrt(abs((1-qK)*qK*dtK)))
     cutLength = (1-qK)*dtK
     if cutLength > integrator.alg.rswm.discard_length
