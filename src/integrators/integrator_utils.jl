@@ -211,8 +211,7 @@ end
       else # Stack is empty
         integrator.dt = integrator.dtpropose
         modify_dt_for_tstops!(integrator)
-        integrator.ΔW = integrator.sqdt*next(integrator.rands)
-        integrator.ΔZ = integrator.sqdt*next(integrator.rands)
+        update_noise!(integrator)
       end
     elseif adaptive_alg(integrator.alg.rswm)==:RSwM2 || adaptive_alg(integrator.alg.rswm)==:RSwM3
       integrator.dt = integrator.dtpropose
@@ -233,8 +232,7 @@ end
             push!(integrator.S₂,(L₁,L₂,L₃))
           end
         else #Popped too far
-          ΔWtilde = qtmp*L₂ + sqrt(abs((1-qtmp)*qtmp*L₁))*next(integrator.rands)
-          ΔZtilde = qtmp*L₃ + sqrt(abs((1-qtmp)*qtmp*L₁))*next(integrator.rands)
+          ΔWtilde,ΔZtilde = generate_tildes(integrator,qtmp*L₂,qtmp*L₃,sqrt(abs((1-qtmp)*qtmp*L₁)))
           integrator.ΔW += ΔWtilde
           integrator.ΔZ += ΔZtilde
           if (1-qtmp)*L₁ > integrator.alg.rswm.discard_length
@@ -248,8 +246,7 @@ end
       end #end while empty
       dtleft = integrator.dt - dttmp
       if dtleft != 0 #Stack emptied
-        ΔWtilde = sqrt(abs(dtleft))*next(integrator.rands)
-        ΔZtilde = sqrt(abs(dtleft))*next(integrator.rands)
+        ΔWtilde,ΔZtilde = generate_tildes(integrator,0,0,sqrt(abs(dtleft)))
         integrator.ΔW += ΔWtilde
         integrator.ΔZ += ΔZtilde
         if adaptive_alg(integrator.alg.rswm)==:RSwM3
@@ -259,10 +256,7 @@ end
     end # End RSwM2 and RSwM3
   else # Not adaptive
     modify_dt_for_tstops!(integrator)
-    integrator.ΔW = integrator.sqdt*next(integrator.rands)
-    if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
-      integrator.ΔZ = integrator.sqdt*next(integrator.rands)
-    end
+    update_noise!(integrator)
   end
 end
 
@@ -295,8 +289,7 @@ end
   end
   integrator.q = integrator.dtnew/integrator.dt
   if adaptive_alg(integrator.alg.rswm)==:RSwM1 || adaptive_alg(integrator.alg.rswm)==:RSwM2
-    ΔWtmp = integrator.q*integrator.ΔW + sqrt(abs((1-integrator.q)*integrator.dtnew))*next(integrator.rands)
-    ΔZtmp = integrator.q*integrator.ΔZ + sqrt(abs((1-integrator.q)*integrator.dtnew))*next(integrator.rands)
+    ΔWtmp,ΔZtmp = generate_tildes(integrator,integrator.q*integrator.ΔW,integrator.q*integrator.ΔZ,sqrt(abs((1-integrator.q)*integrator.dtnew)))
     cutLength = integrator.dt-integrator.dtnew
     if cutLength > integrator.alg.rswm.discard_length
       push!(integrator.S₁,(cutLength,integrator.ΔW-ΔWtmp,integrator.ΔZ-ΔZtmp))
@@ -333,8 +326,7 @@ end
     K₂ = integrator.ΔW - ΔWtmp
     K₃ = integrator.ΔZ - ΔZtmp
     qK = integrator.q*integrator.dt/dtK
-    ΔWtilde = qK*K₂ + sqrt(abs((1-qK)*qK*dtK))*next(integrator.rands)
-    ΔZtilde = qK*K₃ + sqrt(abs((1-qK)*qK*dtK))*next(integrator.rands)
+    ΔWtilde,ΔZtilde = generate_tildes(integrator,qK*K₂,qK*K₃,sqrt(abs((1-qK)*qK*dtK)))
     cutLength = (1-qK)*dtK
     if cutLength > integrator.alg.rswm.discard_length
       push!(integrator.S₁,(cutLength,K₂-ΔWtilde,K₃-ΔZtilde))
@@ -367,4 +359,71 @@ end
       end
     end
   end
+end
+
+@inline function update_noise!(integrator,scaling_factor=integrator.sqdt)
+  if isinplace(integrator.noise)
+    integrator.noise(integrator.ΔW)
+    integrator.ΔW .*= scaling_factor
+    if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+      integrator.noise(integrator.ΔZ)
+      integrator.ΔZ .*= scaling_factor
+    end
+  else
+    if (typeof(integrator.u) <: AbstractArray)
+      integrator.ΔW = scaling_factor*integrator.noise(size(integrator.u))
+      if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+        integrator.ΔZ = scaling_factor*integrator.noise(size(integrator.u))
+      end
+    else
+      integrator.ΔW = scaling_factor*integrator.noise()
+      if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+        integrator.ΔZ = scaling_factor*integrator.noise()
+      end
+    end
+  end
+end
+
+@inline function generate_tildes(integrator,add1,add2,scaling)
+  local ΔWtilde::typeof(integrator.ΔW)
+  local ΔZtilde::typeof(integrator.ΔZ)
+  if isinplace(integrator.noise)
+    ΔWtilde = similar(integrator.ΔW)
+    integrator.noise(ΔWtilde)
+    if add1 != 0
+      ΔWtilde .= add1 .+ scaling.*ΔWtilde
+    else
+      ΔWtilde .= scaling.*ΔWtilde
+    end
+    if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+      ΔZtilde = similar(integrator.ΔZ)
+      integrator.noise(ΔZtilde)
+      if add2 != 0
+        ΔZtilde .= add2 .+ scaling.*ΔZtilde
+      else
+        ΔZtilde .= scaling.*ΔZtilde
+      end
+    end
+  else
+    if (typeof(integrator.u) <: AbstractArray)
+      if add1 != 0
+        ΔWtilde = add1 .+ scaling.*integrator.noise(size(integrator.u))
+      else
+        ΔWtilde = scaling.*integrator.noise(size(integrator.u))
+      end
+      if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+        if add2 != 0
+          ΔZtilde = add2 .+ scaling.*integrator.noise(size(integrator.u))
+        else
+          ΔZtilde = scaling.*integrator.noise(size(integrator.u))
+        end
+      end
+    else
+      ΔWtilde = add1 + scaling*integrator.noise()
+      if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+        ΔZtilde = add2 + scaling*integrator.noise()
+      end
+    end
+  end
+  ΔWtilde,ΔZtilde
 end
