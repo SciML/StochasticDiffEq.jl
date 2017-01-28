@@ -6,7 +6,6 @@ prob = prob_sde_2Dlinear
 println("Solve and Plot")
 sol = solve(prob,EM(),dt=1/2^(3))
 sol = solve(prob,RKMil(),dt=1/2^(3))
-srand(100)
 sol = solve(prob,SRI(),dt=1/2^(3))
 sol = solve(prob,SRIW1(),dt=1/2^(3))
 
