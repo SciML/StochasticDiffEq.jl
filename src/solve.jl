@@ -43,6 +43,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
               timeseries_errors = true, dense_errors=false,
               kwargs...)
 
+  noise = prob.noise
   tspan = prob.tspan
   tdir = sign(tspan[end]-tspan[1])
 
@@ -167,37 +168,8 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
     uprev = deepcopy(u)
   end
 
-  if !(uType <: AbstractArray)
-    rands = ChunkedArray(prob.noise.noise_func,ChunkedArrays.BUFFER_SIZE_DEFAULT,typeof(u/u))
-    randType = typeof(u/u) # Strip units and type info
-  else
-    rand_prototype = similar(map((x)->x/x,u),indices(u))
-    rands = ChunkedArray(prob.noise.noise_func,rand_prototype) # Strip units
-    randType = typeof(rand_prototype) # Strip units and type info
-  end
-
-
-  Ws = Vector{randType}(0)
-  if !(uType <: AbstractArray)
-    W = 0.0
-    Z = 0.0
-    push!(Ws,W)
-  else
-    W = zeros(rand_prototype)
-    Z = zeros(rand_prototype)
-    push!(Ws,copy(W))
-  end
-
-  S₁ = DataStructures.Stack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
-  S₂ = ResettableStacks.ResettableStack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
-  EEst = tTypeNoUnits(1)
-  q = tTypeNoUnits(1)
-  just_hit_tstop = false
-  isout = false
-  accept_step = false
   dtcache = tType(dt)
   dtchangeable = true
-  u_modified = false
 
   ## Modify the first dt for tstops
   if !isempty(tstops_internal)
@@ -217,11 +189,56 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
 
 
   sqdt = tdir*sqrt(abs(dt))
+
+
+  if !(uType <: AbstractArray)
+    randType = typeof(u/u) # Strip units and type info
+  else
+    rand_prototype = similar(map((x)->x/x,u),indices(u))
+    randType = typeof(rand_prototype) # Strip units and type info
+  end
+
+
+  Ws = Vector{randType}(0)
+  if !(uType <: AbstractArray)
+    W = 0.0
+    Z = 0.0
+    ΔW = sqdt*noise()
+    ΔZ = sqdt*noise()
+    if save_noise
+      push!(Ws,W)
+    end
+  else
+    W = zeros(rand_prototype)
+    Z = zeros(rand_prototype)
+    if DiffEqBase.isinplace(prob.noise)
+      ΔW = similar(rand_prototype)
+      ΔZ = similar(rand_prototype)
+      noise(ΔW)
+      noise(ΔZ)
+      ΔW .*= sqdt
+      ΔZ .*= sqdt
+    else
+      ΔW = sqdt.*noise(size(rand_prototype))
+      ΔZ = sqdt.*noise(size(rand_prototype))
+    end
+    if save_noise
+      push!(Ws,copy(W))
+    end
+  end
+
+  S₁ = DataStructures.Stack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
+  S₂ = ResettableStacks.ResettableStack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
+  EEst = tTypeNoUnits(1)
+  q = tTypeNoUnits(1)
+  just_hit_tstop = false
+  isout = false
+  accept_step = false
+  u_modified = false
+
   saveiter = 1
   iter = 0
   q11 = tTypeNoUnits(1)
-  ΔW = sqdt*next(rands) # Take one first
-  ΔZ = sqdt*next(rands) # Take one first
 
   rateType = typeof(u/t) ## Can be different if united
 
@@ -233,15 +250,14 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
                 calculate_error = false,
                 interp = id, dense = dense)
 
-  integrator =    SDEIntegrator{typeof(alg),uType,uEltype,typeof(rands),
-                  tType,tTypeNoUnits,
+  integrator =    SDEIntegrator{typeof(alg),uType,uEltype,tType,tTypeNoUnits,
                   uEltypeNoUnits,randType,typeof(ΔW),rateType,typeof(sol),typeof(cache),
-                  typeof(prog),typeof(S₁),typeof(S₂),
-                  F,F2,typeof(opts)}(f,g,uprev,t,u,tType(dt),tType(dt),tType(dt),dtcache,T,tdir,
+                  typeof(prog),typeof(S₁),typeof(S₂),F,F2,typeof(opts),typeof(noise)}(
+                  f,g,noise,uprev,t,u,tType(dt),tType(dt),tType(dt),dtcache,T,tdir,
                   just_hit_tstop,isout,accept_step,dtchangeable,u_modified,
                   saveiter,
                   alg,sol,
-                  cache,rands,sqdt,W,Z,ΔW,ΔZ,opts,iter,prog,S₁,S₂,EEst,q,
+                  cache,sqdt,W,Z,ΔW,ΔZ,copy(ΔW),copy(ΔZ),opts,iter,prog,S₁,S₂,EEst,q,
                   tTypeNoUnits(qoldinit),q11)
 end
 
