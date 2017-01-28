@@ -349,10 +349,9 @@ end
         integrator.sol.maxstacksize = length(integrator.S₁)
     end
     integrator.dt = integrator.dtnew
-    integrator.sqdt = sqrt(integrator.dt)
+    integrator.sqdt = sqrt(abs(integrator.dt))
     integrator.ΔW = ΔWtilde
     integrator.ΔZ = ΔZtilde
-    integrator.sqdt = sqrt(abs(integrator.dt))
   end
 end
 
