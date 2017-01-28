@@ -331,14 +331,12 @@ end
     end # end while
     dtK = integrator.dt - dttmp
     qK = integrator.q*integrator.dt/dtK
-    for i in eachindex(integrator.u)
-      integrator.ΔWtmp[i] = qK*(integrator.ΔW[i] - integrator.ΔWtmp[i])
-      integrator.ΔZtmp[i] = qK*(integrator.ΔZ[i] - integrator.ΔZtmp[i])
-    end
-    ΔWtilde,ΔZtilde = generate_tildes(integrator,integrator.ΔWtmp,integrator.ΔZtmp,sqrt(abs((1-qK)*qK*dtK)))
+    K₂ = integrator.ΔW - integrator.ΔWtmp
+    K₃ = integrator.ΔZ - integrator.ΔZtmp
+    ΔWtilde,ΔZtilde = generate_tildes(integrator,qK*K₂,qK*K₃,sqrt(abs((1-qK)*qK*dtK)))
     cutLength = (1-qK)*dtK
     if cutLength > integrator.alg.rswm.discard_length
-      push!(integrator.S₁,(cutLength,integrator.ΔWtmp-ΔWtilde,integrator.ΔZtmp-ΔZtilde))
+      push!(integrator.S₁,(cutLength,K₂-ΔWtilde,K₃-ΔZtilde))
     end
     if length(integrator.S₁) > integrator.sol.maxstacksize
         integrator.sol.maxstacksize = length(integrator.S₁)
