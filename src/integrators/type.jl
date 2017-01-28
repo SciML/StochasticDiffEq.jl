@@ -1,4 +1,4 @@
-type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType} <: AbstractSDEIntegrator
+type SDEIntegrator{T1,uType,uEltype,ChunkType,tType,tTypeNoUnits,uEltypeNoUnits,randType,randElType,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType} <: AbstractSDEIntegrator
   f::F4
   g::F5
   uprev::uType
@@ -18,7 +18,7 @@ type SDEIntegrator{T1,uType,uEltype,Nm1,N,tType,tTypeNoUnits,uEltypeNoUnits,rand
   alg::T1
   sol::solType
   cache::cacheType
-  rands::ChunkedArray{uEltypeNoUnits,Nm1,N}
+  rands::ChunkType
   sqdt::tType
   W::randType
   Z::randType
