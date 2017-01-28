@@ -59,16 +59,6 @@ end
 end
 
 @inline function savevalues!(integrator::SDEIntegrator)
-  if integrator.opts.save_timeseries && integrator.iter%integrator.opts.timeseries_steps==0
-    push!(integrator.sol.u,copy(integrator.u))
-    push!(integrator.sol.t,integrator.t)
-    if integrator.opts.save_noise
-      push!(integrator.sol.W,copy(integrator.W))
-    end
-  end
-end
-
-@inline function savevalues!(integrator::SDEIntegrator)
   while !isempty(integrator.opts.saveat) && integrator.tdir*top(integrator.opts.saveat) <= integrator.tdir*integrator.t # Perform saveat
     integrator.saveiter += 1
     curt = pop!(integrator.opts.saveat)
@@ -167,7 +157,6 @@ function postamble!(integrator)
   if integrator.opts.save_noise
     resize!(integrator.sol.W,integrator.saveiter)
   end
-  #resize!(integrator.sol.k,integrator.saveiter_dense)
   !(typeof(integrator.prog)<:Void) && Juno.done(integrator.prog)
   return nothing
 end

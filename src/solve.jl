@@ -227,8 +227,11 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
 
   cache = alg_cache(alg,u,rate_prototype,ΔW,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,Val{isinplace})
 
+  id = LinearInterpolationData(timeseries,ts)
+
   sol = build_solution(prob,alg,ts,timeseries,W=Ws,
-                calculate_error = false)
+                calculate_error = false,
+                interp = id, dense = dense)
 
   integrator =    SDEIntegrator{typeof(alg),uType,uEltype,typeof(rands),
                   tType,tTypeNoUnits,

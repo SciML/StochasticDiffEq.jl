@@ -19,6 +19,7 @@ module StochasticDiffEq
   include("rswm.jl")
   include("algorithms.jl")
   include("options_type.jl")
+  include("interp_func.jl")
   include("constants.jl")
   include("caches.jl")
   include("integrators/type.jl")
