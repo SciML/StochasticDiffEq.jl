@@ -230,7 +230,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
   sol = build_solution(prob,alg,ts,timeseries,W=Ws,
                 calculate_error = false)
 
-  integrator =    SDEIntegrator{typeof(alg),uType,uEltype,ndims(u),ndims(u)+1,
+  integrator =    SDEIntegrator{typeof(alg),uType,uEltype,typeof(rands),
                   tType,tTypeNoUnits,
                   uEltypeNoUnits,randType,typeof(ΔW),rateType,typeof(sol),typeof(cache),
                   typeof(prog),typeof(S₁),typeof(S₂),
