@@ -257,7 +257,8 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
                   just_hit_tstop,isout,accept_step,dtchangeable,u_modified,
                   saveiter,
                   alg,sol,
-                  cache,sqdt,W,Z,ΔW,ΔZ,copy(ΔW),copy(ΔZ),opts,iter,prog,S₁,S₂,EEst,q,
+                  cache,sqdt,W,Z,ΔW,ΔZ,copy(ΔW),copy(ΔZ),copy(ΔW),copy(ΔZ),
+                  opts,iter,prog,S₁,S₂,EEst,q,
                   tTypeNoUnits(qoldinit),q11)
 end
 

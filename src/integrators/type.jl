@@ -27,6 +27,8 @@ type SDEIntegrator{T1,uType,uEltype,tType,tTypeNoUnits,uEltypeNoUnits,randType,r
   ΔZ::randElType
   ΔWtmp::randElType
   ΔZtmp::randElType
+  ΔWtilde::randElType
+  ΔZtilde::randElType
   opts::OType
   iter::Int
   prog::progType

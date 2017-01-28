@@ -239,13 +239,13 @@ end
             push!(integrator.S₂,(L₁,L₂,L₃))
           end
         else #Popped too far
-          ΔWtilde,ΔZtilde = generate_tildes(integrator,qtmp*L₂,qtmp*L₃,sqrt(abs((1-qtmp)*qtmp*L₁)))
-          integrator.ΔW += ΔWtilde
-          integrator.ΔZ += ΔZtilde
+          integrator.ΔWtilde,integrator.ΔZtilde = generate_tildes(integrator,qtmp*L₂,qtmp*L₃,sqrt(abs((1-qtmp)*qtmp*L₁)))
+          integrator.ΔW += integrator.ΔWtilde
+          integrator.ΔZ += integrator.ΔZtilde
           if (1-qtmp)*L₁ > integrator.alg.rswm.discard_length
-            push!(integrator.S₁,((1-qtmp)*L₁,L₂-ΔWtilde,L₃-ΔZtilde))
+            push!(integrator.S₁,((1-qtmp)*L₁,L₂-integrator.ΔWtilde,L₃-integrator.ΔZtilde))
             if adaptive_alg(integrator.alg.rswm)==:RSwM3 && qtmp*L₁ > integrator.alg.rswm.discard_length
-              push!(integrator.S₂,(qtmp*L₁,ΔWtilde,ΔZtilde))
+              push!(integrator.S₂,(qtmp*L₁,integrator.ΔWtilde,integrator.ΔZtilde))
             end
           end
           break
@@ -253,11 +253,11 @@ end
       end #end while empty
       dtleft = integrator.dt - dttmp
       if dtleft != 0 #Stack emptied
-        ΔWtilde,ΔZtilde = generate_tildes(integrator,0,0,sqrt(abs(dtleft)))
-        integrator.ΔW += ΔWtilde
-        integrator.ΔZ += ΔZtilde
+        integrator.ΔWtilde,integrator.ΔZtilde = generate_tildes(integrator,0,0,sqrt(abs(dtleft)))
+        integrator.ΔW += integrator.ΔWtilde
+        integrator.ΔZ += integrator.ΔZtilde
         if adaptive_alg(integrator.alg.rswm)==:RSwM3
-          push!(integrator.S₂,(dtleft,ΔWtilde,ΔZtilde))
+          push!(integrator.S₂,(dtleft,integrator.ΔWtilde,integrator.ΔZtilde))
         end
       end
     end # End RSwM2 and RSwM3
@@ -340,18 +340,18 @@ end
     qK = integrator.q*integrator.dt/dtK
     K₂ = integrator.ΔW - integrator.ΔWtmp
     K₃ = integrator.ΔZ - integrator.ΔZtmp
-    ΔWtilde,ΔZtilde = generate_tildes(integrator,qK*K₂,qK*K₃,sqrt(abs((1-qK)*qK*dtK)))
+    integrator.ΔWtilde,integrator.ΔZtilde = generate_tildes(integrator,qK*K₂,qK*K₃,sqrt(abs((1-qK)*qK*dtK)))
     cutLength = (1-qK)*dtK
     if cutLength > integrator.alg.rswm.discard_length
-      push!(integrator.S₁,(cutLength,K₂-ΔWtilde,K₃-ΔZtilde))
+      push!(integrator.S₁,(cutLength,K₂-integrator.ΔWtilde,K₃-integrator.ΔZtilde))
     end
     if length(integrator.S₁) > integrator.sol.maxstacksize
         integrator.sol.maxstacksize = length(integrator.S₁)
     end
     integrator.dt = integrator.dtnew
     integrator.sqdt = sqrt(abs(integrator.dt))
-    integrator.ΔW = ΔWtilde
-    integrator.ΔZ = ΔZtilde
+    integrator.ΔW = integrator.ΔWtilde
+    integrator.ΔZ = integrator.ΔZtilde
   end
 end
 
@@ -402,53 +402,51 @@ end
 end
 
 @inline function generate_tildes(integrator,add1,add2,scaling)
-  local ΔWtilde::typeof(integrator.ΔW)
-  local ΔZtilde::typeof(integrator.ΔZ)
   if isinplace(integrator.noise)
-    ΔWtilde = similar(integrator.ΔW)
-    integrator.noise(ΔWtilde)
+    integrator.ΔWtilde = similar(integrator.ΔW)
+    integrator.noise(integrator.ΔWtilde)
     if add1 != 0
       for i in eachindex(integrator.ΔW)
-        ΔWtilde[i] = add1[i] + scaling*ΔWtilde[i]
+        integrator.ΔWtilde[i] = add1[i] + scaling*integrator.ΔWtilde[i]
       end
     else
       for i in eachindex(integrator.ΔW)
-        ΔWtilde[i] = scaling*ΔWtilde[i]
+        integrator.ΔWtilde[i] = scaling*integrator.ΔWtilde[i]
       end
     end
     if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
-      ΔZtilde = similar(integrator.ΔZ)
-      integrator.noise(ΔZtilde)
+      integrator.ΔZtilde = similar(integrator.ΔZ)
+      integrator.noise(integrator.ΔZtilde)
       if add2 != 0
-        for i in eachindex(ΔZtilde)
-          ΔZtilde[i] = add2[i] + scaling*ΔZtilde[i]
+        for i in eachindex(integrator.ΔZtilde)
+          integrator.ΔZtilde[i] = add2[i] + scaling*integrator.ΔZtilde[i]
         end
       else
-        for i in eachindex(ΔZtilde)
-          ΔZtilde[i] = scaling*ΔZtilde[i]
+        for i in eachindex(integrator.ΔZtilde)
+          integrator.ΔZtilde[i] = scaling*integrator.ΔZtilde[i]
         end
       end
     end
   else
     if (typeof(integrator.u) <: AbstractArray)
       if add1 != 0
-        ΔWtilde = add1 .+ scaling.*integrator.noise(size(integrator.u))
+        integrator.ΔWtilde = add1 .+ scaling.*integrator.noise(size(integrator.u))
       else
-        ΔWtilde = scaling.*integrator.noise(size(integrator.u))
+        integrator.ΔWtilde = scaling.*integrator.noise(size(integrator.u))
       end
       if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
         if add2 != 0
-          ΔZtilde = add2 .+ scaling.*integrator.noise(size(integrator.u))
+          integrator.ΔZtilde = add2 .+ scaling.*integrator.noise(size(integrator.u))
         else
-          ΔZtilde = scaling.*integrator.noise(size(integrator.u))
+          integrator.ΔZtilde = scaling.*integrator.noise(size(integrator.u))
         end
       end
     else
-      ΔWtilde = add1 + scaling*integrator.noise()
+      integrator.ΔWtilde = add1 + scaling*integrator.noise()
       if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
-        ΔZtilde = add2 + scaling*integrator.noise()
+        integrator.ΔZtilde = add2 + scaling*integrator.noise()
       end
     end
   end
-  ΔWtilde,ΔZtilde
+  integrator.ΔWtilde,integrator.ΔZtilde
 end
