@@ -120,7 +120,7 @@ end
   end
 end
 
-function postamble!(integrator)
+@inline function postamble!(integrator)
   solution_endpoint_match_cur_integrator!(integrator)
   #resize!(integrator.sol.t,integrator.saveiter)
   #resize!(integrator.sol.u,integrator.saveiter)
@@ -314,6 +314,7 @@ end
     integrator.sqdt = sqrt(integrator.dt)
     integrator.ΔW = ΔWtilde
     integrator.ΔZ = ΔZtilde
+    integrator.sqdt = sqrt(abs(integrator.dt))
   end
 end
 

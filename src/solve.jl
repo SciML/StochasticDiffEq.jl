@@ -167,7 +167,6 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
     uprev = deepcopy(u)
   end
 
-
   if !(uType <: AbstractArray)
     rands = ChunkedArray(prob.noise.noise_func,ChunkedArrays.BUFFER_SIZE_DEFAULT,typeof(u/u))
     randType = typeof(u/u) # Strip units and type info
@@ -245,7 +244,7 @@ end
 function solve!(integrator::SDEIntegrator)
 
   while !isempty(integrator.opts.tstops)
-    while integrator.tdir*integrator.t < integrator.tdir*top(integrator.opts.tstops)
+    @inbounds while integrator.tdir*integrator.t < integrator.tdir*top(integrator.opts.tstops)
       loopheader!(integrator)
       @sde_exit_condtions
       perform_step!(integrator,integrator.cache)
