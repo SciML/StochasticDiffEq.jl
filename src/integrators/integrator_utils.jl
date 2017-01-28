@@ -385,6 +385,8 @@ end
 end
 
 @inline function generate_tildes(integrator,add1,add2,scaling)
+  local ΔWtilde::typeof(integrator.ΔW)
+  local ΔZtilde::typeof(integrator.ΔZ)
   if isinplace(integrator.noise)
     ΔWtilde = similar(integrator.ΔW)
     integrator.noise(ΔWtilde)
