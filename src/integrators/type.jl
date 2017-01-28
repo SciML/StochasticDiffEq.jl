@@ -15,6 +15,7 @@ type SDEIntegrator{T1,uType,uEltype,ChunkType,tType,tTypeNoUnits,uEltypeNoUnits,
   accept_step::Bool
   dtchangeable::Bool
   u_modified::Bool
+  saveiter::Int
   alg::T1
   sol::solType
   cache::cacheType

@@ -68,7 +68,46 @@ end
   end
 end
 
-@inline function loopfooter!(integrator::SDEIntegrator)
+@inline function savevalues!(integrator::SDEIntegrator)
+  while !isempty(integrator.opts.saveat) && integrator.tdir*top(integrator.opts.saveat) <= integrator.tdir*integrator.t # Perform saveat
+    integrator.saveiter += 1
+    curt = pop!(integrator.opts.saveat)
+    if integrator.opts.saveat!=integrator.t # If <t, interpolate
+      Θ = (curt - integrator.tprev)/integrator.dt
+      val = sde_interpolant(Θ,integrator)
+      copyat_or_push!(integrator.sol.t,integrator.saveiter,curt)
+      copyat_or_push!(integrator.sol.u,integrator.saveiter,val)
+      if typeof(integrator.alg) <: StochasticEqCompositeAlgorithm
+        copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
+      end
+      if integrator.opts.save_noise
+        copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W)
+      end
+    else # ==t, just save
+      copyat_or_push!(integrator.sol.t,integrator.saveiter,integrator.t)
+      copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u)
+      if typeof(alg) <: StochasticDiffEqCompositeAlgorithm
+        copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
+      end
+      if integrator.opts.save_noise
+        copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W)
+      end
+    end
+  end
+  if integrator.opts.save_timeseries && integrator.iter%integrator.opts.timeseries_steps==0
+    integrator.saveiter += 1
+    copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u)
+    copyat_or_push!(integrator.sol.t,integrator.saveiter,integrator.t)
+    if typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm
+      copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
+    end
+    if integrator.opts.save_noise
+      copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W)
+    end
+  end
+end
+
+function loopfooter!(integrator::SDEIntegrator)
   if integrator.opts.adaptive
     integrator.q11 = integrator.EEst^integrator.opts.beta1
     integrator.q = integrator.q11/(integrator.qold^integrator.opts.beta2)
@@ -111,19 +150,23 @@ end
 end
 
 @inline function solution_endpoint_match_cur_integrator!(integrator)
-  if integrator.sol.t[end] != integrator.t
-    push!(integrator.sol.t,integrator.t)
-    push!(integrator.sol.u,integrator.u)
+  if integrator.sol.t[integrator.saveiter] != integrator.t
+    integrator.saveiter += 1
+    copyat_or_push!(integrator.sol.t,integrator.saveiter,integrator.t)
+    copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u)
     if integrator.opts.save_noise
-      push!(integrator.sol.W,integrator.W)
+      copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W)
     end
   end
 end
 
-@inline function postamble!(integrator)
+function postamble!(integrator)
   solution_endpoint_match_cur_integrator!(integrator)
-  #resize!(integrator.sol.t,integrator.saveiter)
-  #resize!(integrator.sol.u,integrator.saveiter)
+  resize!(integrator.sol.t,integrator.saveiter)
+  resize!(integrator.sol.u,integrator.saveiter)
+  if integrator.opts.save_noise
+    resize!(integrator.sol.W,integrator.saveiter)
+  end
   #resize!(integrator.sol.k,integrator.saveiter_dense)
   !(typeof(integrator.prog)<:Void) && Juno.done(integrator.prog)
   return nothing

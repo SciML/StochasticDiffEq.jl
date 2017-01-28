@@ -134,12 +134,12 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
   # Have to convert incase passed in wrong.
   timeseries = convert(Vector{uType},timeseries_init)
   ts = convert(Vector{tType},ts_init)
-  ks = convert(Vector{ksEltype},ks_init)
+  #ks = convert(Vector{ksEltype},ks_init)
   alg_choice = Int[]
 
   copyat_or_push!(ts,1,t)
   copyat_or_push!(timeseries,1,u)
-  copyat_or_push!(ks,1,[rate_prototype])
+  #copyat_or_push!(ks,1,[rate_prototype])
 
   uEltype = eltype(u)
 
@@ -217,8 +217,8 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
 
 
   sqdt = tdir*sqrt(abs(dt))
+  saveiter = 1
   iter = 0
-  #EEst = 0
   q11 = tTypeNoUnits(1)
   ΔW = sqdt*next(rands) # Take one first
   ΔZ = sqdt*next(rands) # Take one first
@@ -236,6 +236,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
                   typeof(prog),typeof(S₁),typeof(S₂),
                   F,F2,typeof(opts)}(f,g,uprev,t,u,tType(dt),tType(dt),tType(dt),dtcache,T,tdir,
                   just_hit_tstop,isout,accept_step,dtchangeable,u_modified,
+                  saveiter,
                   alg,sol,
                   cache,rands,sqdt,W,Z,ΔW,ΔZ,opts,iter,prog,S₁,S₂,EEst,q,
                   tTypeNoUnits(qoldinit),q11)
