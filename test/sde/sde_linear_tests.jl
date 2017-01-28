@@ -8,7 +8,7 @@ sol = solve(prob,EM(),dt=1//2^(4))
 sol = solve(prob,RKMil(),dt=1//2^(4))
 sol = solve(prob,SRI(),dt=1//2^(4))
 sol = solve(prob,SRIW1(),dt=1//2^(4))
-NUM_MONTE = 10
+NUM_MONTE = 100
 ## Convergence Testing
 println("Convergence Test on Linear")
 dts = 1.//2.^(9:-1:4) #14->7 good plot with higher num Monte
