@@ -26,5 +26,14 @@ u0 = [50.0,0.0]
 tspan = (0.0,15.0)
 prob = SDEProblem(f,g,u0,tspan)
 
+sol = solve(prob,SRIW1(),callback=callback,adaptive=false,dt=3/4)
 
-sol = solve(prob,SRIW1(),callback=callback,adaptive=false,dt=1/4)
+@test sol[6,1] < 1e-14
+
+g = function (t,u,du)
+  du[2] = .125*u[2]
+end
+
+prob = SDEProblem(f,g,u0,tspan)
+
+sol = solve(prob,SRIW1(),callback=callback)
