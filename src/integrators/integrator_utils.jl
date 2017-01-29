@@ -88,9 +88,9 @@ end
     integrator.saveiter += 1
     copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u)
     copyat_or_push!(integrator.sol.t,integrator.saveiter,integrator.t)
-    if typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm
-      copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
-    end
+    #if typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm
+    #  copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
+    #end
     if integrator.opts.save_noise
       copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W)
     end
@@ -478,3 +478,5 @@ end
     end
   end
 end
+
+@inline initialize!(integrator,cache::StochasticDiffEqCache,f=integrator.f) = nothing

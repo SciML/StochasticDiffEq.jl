@@ -17,7 +17,7 @@
 end
 
 @inline function perform_step!(integrator,cache::SRA1Cache,f=integrator.f)
-  @unpack chi2,tmp1,E₁,E₂,gt,k₁,k₂,gpdt,EEsttmp = integrator.cache
+  @unpack chi2,tmp1,E₁,E₂,gt,k₁,k₂,gpdt,EEsttmp = cache
   @unpack t,dt,uprev,u,ΔW,ΔZ = integrator
   integrator.g(t,uprev,gt)
   integrator.g(t+dt,uprev,gpdt)
@@ -52,8 +52,8 @@ end
 
 @inline function perform_step!(integrator,cache::SRACache,f=integrator.f)
   @unpack t,dt,uprev,u,ΔW,ΔZ = integrator
-  @unpack H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂,EEsttmp = integrator.cache
-  @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages = integrator.cache.tab
+  @unpack H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂,EEsttmp = cache
+  @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages = cache.tab
   for i in eachindex(u)
     chi2[i] = .5*(ΔW[i] + ΔZ[i]/sqrt(3)) #I_(1,0)/h
   end
@@ -111,7 +111,7 @@ end
 end
 
 @inline function perform_step!(integrator,cache::SRAConstantCache,f=integrator.f)
-  @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages,H0 = integrator.cache
+  @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages,H0 = cache
   @unpack t,dt,uprev,u,ΔW,ΔZ = integrator
   chi2 = .5*(ΔW + ΔZ/sqrt(3)) #I_(1,0)/h
   H0[:]=zeros(stages)

@@ -41,6 +41,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
               progress_name="SDE",
               userdata=nothing,callback=nothing,
               timeseries_errors = true, dense_errors=false,
+              initialize_integrator=true,
               kwargs...)
 
   noise = prob.noise
@@ -50,7 +51,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
   T = tType(tspan[2])
   t = tType(tspan[1])
 
-  if !(typeof(alg) <: StochasticDiffEqAdaptiveAlgorithm) && dt == 0 && isempty(tstops)
+  if (!(typeof(alg) <: StochasticDiffEqAdaptiveAlgorithm) && !(typeof(alg) <: StochasticDiffEqCompositeAlgorithm)) && dt == tType(0) && isempty(tstops)
       error("Fixed timestep methods require a choice of dt or choosing the tstops")
   end
 
@@ -86,7 +87,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
     order = alg.tableau.order
   end
 
-  if dt == 0.0
+  if dt == zero(dt) && adaptive
     dt = sde_determine_initdt(u0,float(tspan[1]),tdir,dtmax,abstol,reltol,internalnorm,prob,order)
   end
 
@@ -260,6 +261,10 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
                   cache,sqdt,W,Z,ΔW,ΔZ,copy(ΔW),copy(ΔZ),copy(ΔW),copy(ΔZ),
                   opts,iter,prog,S₁,S₂,EEst,q,
                   tTypeNoUnits(qoldinit),q11)
+  if initialize_integrator
+    initialize!(integrator,integrator.cache)
+  end
+  integrator
 end
 
 function solve!(integrator::SDEIntegrator)

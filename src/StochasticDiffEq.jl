@@ -34,10 +34,11 @@ module StochasticDiffEq
   include("integrators/low_order.jl")
   include("integrators/sri.jl")
   include("integrators/sra.jl")
+  include("integrators/composite_integrator.jl")
   include("tableaus.jl")
 
    export StochasticDiffEqAlgorithm, EM, RKMil, SRA, SRI, SRIW1,
-          SRA1
+          SRA1, StochasticCompositeAlgorithm
 
    #General Functions
    export solve, init, solve!, step!

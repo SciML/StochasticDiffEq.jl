@@ -8,8 +8,8 @@ type StochasticCompositeCache{T,F} <: StochasticDiffEqCache
   current::Int
 end
 
-function alg_cache{T}(alg::StochasticCompositeAlgorithm,u,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{T}})
-  caches = map((x)->alg_cache(x,u,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,Val{T}),alg.algs)
+function alg_cache{T,algType<:StochasticCompositeAlgorithm}(alg::algType,u,ΔW,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{T}})
+  caches = map((x)->alg_cache(x,u,ΔW,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,Val{T}),alg.algs)
   StochasticCompositeCache(caches,alg.choice_function,1)
 end
 

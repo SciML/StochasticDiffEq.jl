@@ -19,10 +19,13 @@ end
   rswm::RSType = RSWM()
 end
 
-immutable StochasticCompositeAlgorithm{T,F} <: StochasticDiffEqCompositeAlgorithm
+immutable StochasticCompositeAlgorithm{T,F,RSType} <: StochasticDiffEqCompositeAlgorithm
   algs::T
   choice_function::F
+  rswm::RSType
 end
 
+Base.@pure StochasticCompositeAlgorithm(algs,choice_function;rswm=RSWM()) = StochasticCompositeAlgorithm(algs,choice_function,rswm)
 isadaptive(alg::StochasticDiffEqAlgorithm) = false
 isadaptive(alg::StochasticDiffEqAdaptiveAlgorithm) = true
+isadaptive(alg::StochasticDiffEqCompositeAlgorithm) = isadaptive(alg.algs[1])

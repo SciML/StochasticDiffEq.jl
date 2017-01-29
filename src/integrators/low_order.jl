@@ -5,7 +5,7 @@
 end
 
 @inline function perform_step!(integrator,cache::EMCache,f=integrator.f)
-  @unpack utmp1,utmp2 = integrator.cache
+  @unpack utmp1,utmp2 = cache
   @unpack t,dt,uprev,u,ΔW = integrator
   integrator.f(t,uprev,utmp1)
   integrator.g(t,uprev,utmp2)
@@ -16,7 +16,7 @@ end
 end
 
 @inline function perform_step!(integrator,cache::RKMilCache,f=integrator.f)
-  @unpack du1,du2,K,utilde,L = integrator.cache
+  @unpack du1,du2,K,utilde,L = cache
   @unpack t,dt,uprev,u,ΔW = integrator
   integrator.f(t,uprev,du1)
   integrator.g(t,uprev,L)
