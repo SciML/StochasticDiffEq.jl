@@ -236,7 +236,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
   isout = false
   accept_step = false
   u_modified = false
-
+  tprev = t
   saveiter = 1
   iter = 0
   q11 = tTypeNoUnits(1)
@@ -254,7 +254,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
   integrator =    SDEIntegrator{typeof(alg),uType,uEltype,tType,tTypeNoUnits,
                   uEltypeNoUnits,randType,typeof(ΔW),rateType,typeof(sol),typeof(cache),
                   typeof(prog),typeof(S₁),typeof(S₂),F,F2,typeof(opts),typeof(noise)}(
-                  f,g,noise,uprev,t,u,tType(dt),tType(dt),tType(dt),dtcache,T,tdir,
+                  f,g,noise,uprev,tprev,t,u,tType(dt),tType(dt),tType(dt),dtcache,T,tdir,
                   just_hit_tstop,isout,accept_step,dtchangeable,u_modified,
                   saveiter,
                   alg,sol,
