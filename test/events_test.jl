@@ -37,3 +37,5 @@ end
 prob = SDEProblem(f,g,u0,tspan)
 
 sol = solve(prob,SRIW1(),callback=callback)
+
+sol = solve(prob,EM(),callback=callback,dt=1/4)
