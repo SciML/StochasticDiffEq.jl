@@ -239,13 +239,15 @@ end
             push!(integrator.S₂,(L₁,L₂,L₃))
           end
         else #Popped too far
-          integrator.ΔWtilde,integrator.ΔZtilde = generate_tildes(integrator,qtmp*L₂,qtmp*L₃,sqrt(abs((1-qtmp)*qtmp*L₁)))
-          integrator.ΔW += integrator.ΔWtilde
-          integrator.ΔZ += integrator.ΔZtilde
+          generate_tildes(integrator,qtmp*L₂,qtmp*L₃,sqrt(abs((1-qtmp)*qtmp*L₁)))
+          for i in eachindex(integrator.u)
+            integrator.ΔW[i] += integrator.ΔWtilde[i]
+            integrator.ΔZ[i] += integrator.ΔZtilde[i]
+          end
           if (1-qtmp)*L₁ > integrator.alg.rswm.discard_length
             push!(integrator.S₁,((1-qtmp)*L₁,L₂-integrator.ΔWtilde,L₃-integrator.ΔZtilde))
             if adaptive_alg(integrator.alg.rswm)==:RSwM3 && qtmp*L₁ > integrator.alg.rswm.discard_length
-              push!(integrator.S₂,(qtmp*L₁,integrator.ΔWtilde,integrator.ΔZtilde))
+              push!(integrator.S₂,(qtmp*L₁,copy(integrator.ΔWtilde),copy(integrator.ΔZtilde)))
             end
           end
           break
@@ -253,11 +255,13 @@ end
       end #end while empty
       dtleft = integrator.dt - dttmp
       if dtleft != 0 #Stack emptied
-        integrator.ΔWtilde,integrator.ΔZtilde = generate_tildes(integrator,0,0,sqrt(abs(dtleft)))
-        integrator.ΔW += integrator.ΔWtilde
-        integrator.ΔZ += integrator.ΔZtilde
+        generate_tildes(integrator,0,0,sqrt(abs(dtleft)))
+        for i in eachindex(integrator.u)
+          integrator.ΔW[i] += integrator.ΔWtilde[i]
+          integrator.ΔZ[i] += integrator.ΔZtilde[i]
+        end
         if adaptive_alg(integrator.alg.rswm)==:RSwM3
-          push!(integrator.S₂,(dtleft,integrator.ΔWtilde,integrator.ΔZtilde))
+          push!(integrator.S₂,(dtleft,copy(integrator.ΔWtilde),copy(integrator.ΔZtilde)))
         end
       end
     end # End RSwM2 and RSwM3
@@ -340,7 +344,7 @@ end
     qK = integrator.q*integrator.dt/dtK
     K₂ = integrator.ΔW - integrator.ΔWtmp
     K₃ = integrator.ΔZ - integrator.ΔZtmp
-    integrator.ΔWtilde,integrator.ΔZtilde = generate_tildes(integrator,qK*K₂,qK*K₃,sqrt(abs((1-qK)*qK*dtK)))
+    generate_tildes(integrator,qK*K₂,qK*K₃,sqrt(abs((1-qK)*qK*dtK)))
     cutLength = (1-qK)*dtK
     if cutLength > integrator.alg.rswm.discard_length
       push!(integrator.S₁,(cutLength,K₂-integrator.ΔWtilde,K₃-integrator.ΔZtilde))
@@ -350,8 +354,8 @@ end
     end
     integrator.dt = integrator.dtnew
     integrator.sqdt = sqrt(abs(integrator.dt))
-    integrator.ΔW = integrator.ΔWtilde
-    integrator.ΔZ = integrator.ΔZtilde
+    copy!(integrator.ΔW,integrator.ΔWtilde)
+    copy!(integrator.ΔZ,integrator.ΔZtilde)
   end
 end
 
@@ -403,7 +407,6 @@ end
 
 @inline function generate_tildes(integrator,add1,add2,scaling)
   if isinplace(integrator.noise)
-    integrator.ΔWtilde = similar(integrator.ΔW)
     integrator.noise(integrator.ΔWtilde)
     if add1 != 0
       for i in eachindex(integrator.ΔW)
@@ -415,7 +418,6 @@ end
       end
     end
     if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
-      integrator.ΔZtilde = similar(integrator.ΔZ)
       integrator.noise(integrator.ΔZtilde)
       if add2 != 0
         for i in eachindex(integrator.ΔZtilde)
