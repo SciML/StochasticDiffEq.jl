@@ -300,16 +300,16 @@ end
   end
   integrator.q = integrator.dtnew/integrator.dt
   if adaptive_alg(integrator.alg.rswm)==:RSwM1 || adaptive_alg(integrator.alg.rswm)==:RSwM2
-    ΔWtmp,ΔZtmp = generate_tildes(integrator,integrator.q*integrator.ΔW,integrator.q*integrator.ΔZ,sqrt(abs((1-integrator.q)*integrator.dtnew)))
+    generate_tildes(integrator,integrator.q*integrator.ΔW,integrator.q*integrator.ΔZ,sqrt(abs((1-integrator.q)*integrator.dtnew)))
     cutLength = integrator.dt-integrator.dtnew
     if cutLength > integrator.alg.rswm.discard_length
-      push!(integrator.S₁,(cutLength,integrator.ΔW-ΔWtmp,integrator.ΔZ-ΔZtmp))
+      push!(integrator.S₁,(cutLength,integrator.ΔW-integrator.ΔWtilde,integrator.ΔZ-ΔZtmp))
     end
     if length(integrator.S₁) > integrator.sol.maxstacksize
         integrator.sol.maxstacksize = length(integrator.S₁)
     end
-    integrator.ΔW = ΔWtmp
-    integrator.ΔZ = ΔZtmp
+    copy!(integrator.ΔW,integrator.ΔWtilde)
+    copy!(integrator.ΔZ,integrator.ΔWtilde)
     integrator.dt = integrator.dtnew
     integrator.sqdt = sqrt(integrator.dt)
   else # RSwM3
