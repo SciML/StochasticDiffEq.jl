@@ -200,67 +200,46 @@ end
     integrator.uprev = integrator.u
   end
   # Setup next step
-  if integrator.opts.adaptive
-    if adaptive_alg(integrator.alg.rswm)==:RSwM3
-      ResettableStacks.reset!(integrator.S₂) #Empty integrator.S₂
-    end
-    if adaptive_alg(integrator.alg.rswm)==:RSwM1
-      if !isempty(integrator.S₁)
-        integrator.dt,integrator.ΔW,integrator.ΔZ = pop!(integrator.S₁)
-        integrator.sqdt = sqrt(abs(integrator.dt))
-      else # Stack is empty
-        integrator.dt = integrator.dtpropose
-        modify_dt_for_tstops!(integrator)
-        update_noise!(integrator)
-      end
-    elseif adaptive_alg(integrator.alg.rswm)==:RSwM2 || adaptive_alg(integrator.alg.rswm)==:RSwM3
+  if adaptive_alg(integrator.alg.rswm)==:RSwM3
+    ResettableStacks.reset!(integrator.S₂) #Empty integrator.S₂
+  end
+  if adaptive_alg(integrator.alg.rswm)==:RSwM1
+    if !isempty(integrator.S₁)
+      integrator.dt,integrator.ΔW,integrator.ΔZ = pop!(integrator.S₁)
+      integrator.sqdt = sqrt(abs(integrator.dt))
+    else # Stack is empty
       integrator.dt = integrator.dtpropose
       modify_dt_for_tstops!(integrator)
-      if !(typeof(integrator.u) <: AbstractArray)
-        dttmp = 0.0; integrator.ΔW = 0.0; integrator.ΔZ = 0.0
-      else
-        dttmp = 0.0; fill!(integrator.ΔW,zero(eltype(integrator.ΔW))); fill!(integrator.ΔZ,zero(eltype(integrator.ΔZ)))
-      end
-      while !isempty(integrator.S₁)
-        L₁,L₂,L₃ = pop!(integrator.S₁)
-        qtmp = (integrator.dt-dttmp)/L₁
-        if qtmp>1
-          dttmp+=L₁
-          if typeof(integrator.u) <: AbstractArray
-            for i in eachindex(integrator.u)
-              integrator.ΔW[i]+=L₂[i]
-              integrator.ΔZ[i]+=L₃[i]
-            end
-          else
-            integrator.ΔW+=L₂
-            integrator.ΔZ+=L₃
+      integrator.sqdt = sqrt(abs(integrator.dt))
+      update_noise!(integrator)
+    end
+  elseif adaptive_alg(integrator.alg.rswm)==:RSwM2 || adaptive_alg(integrator.alg.rswm)==:RSwM3
+    integrator.dt = integrator.dtpropose
+    modify_dt_for_tstops!(integrator)
+    if !(typeof(integrator.u) <: AbstractArray)
+      dttmp = 0.0; integrator.ΔW = 0.0; integrator.ΔZ = 0.0
+    else
+      dttmp = 0.0; fill!(integrator.ΔW,zero(eltype(integrator.ΔW))); fill!(integrator.ΔZ,zero(eltype(integrator.ΔZ)))
+    end
+    while !isempty(integrator.S₁)
+      L₁,L₂,L₃ = pop!(integrator.S₁)
+      qtmp = (integrator.dt-dttmp)/L₁
+      if qtmp>1
+        dttmp+=L₁
+        if typeof(integrator.u) <: AbstractArray
+          for i in eachindex(integrator.u)
+            integrator.ΔW[i]+=L₂[i]
+            integrator.ΔZ[i]+=L₃[i]
           end
-          if adaptive_alg(integrator.alg.rswm)==:RSwM3
-            push!(integrator.S₂,(L₁,L₂,L₃))
-          end
-        else #Popped too far
-          generate_tildes(integrator,qtmp*L₂,qtmp*L₃,sqrt(abs((1-qtmp)*qtmp*L₁)))
-          if typeof(integrator.ΔW) <: AbstractArray
-            for i in eachindex(integrator.u)
-              integrator.ΔW[i] += integrator.ΔWtilde[i]
-              integrator.ΔZ[i] += integrator.ΔZtilde[i]
-            end
-          else
-            integrator.ΔW += integrator.ΔWtilde
-            integrator.ΔZ += integrator.ΔZtilde
-          end
-          if (1-qtmp)*L₁ > integrator.alg.rswm.discard_length
-            push!(integrator.S₁,((1-qtmp)*L₁,L₂-integrator.ΔWtilde,L₃-integrator.ΔZtilde))
-            if adaptive_alg(integrator.alg.rswm)==:RSwM3 && qtmp*L₁ > integrator.alg.rswm.discard_length
-              push!(integrator.S₂,(qtmp*L₁,copy(integrator.ΔWtilde),copy(integrator.ΔZtilde)))
-            end
-          end
-          break
+        else
+          integrator.ΔW+=L₂
+          integrator.ΔZ+=L₃
         end
-      end #end while empty
-      dtleft = integrator.dt - dttmp
-      if dtleft != 0 #Stack emptied
-        generate_tildes(integrator,0,0,sqrt(abs(dtleft)))
+        if adaptive_alg(integrator.alg.rswm)==:RSwM3
+          push!(integrator.S₂,(L₁,L₂,L₃))
+        end
+      else #Popped too far
+        generate_tildes(integrator,qtmp*L₂,qtmp*L₃,sqrt(abs((1-qtmp)*qtmp*L₁)))
         if typeof(integrator.ΔW) <: AbstractArray
           for i in eachindex(integrator.u)
             integrator.ΔW[i] += integrator.ΔWtilde[i]
@@ -270,15 +249,32 @@ end
           integrator.ΔW += integrator.ΔWtilde
           integrator.ΔZ += integrator.ΔZtilde
         end
-        if adaptive_alg(integrator.alg.rswm)==:RSwM3
-          push!(integrator.S₂,(dtleft,copy(integrator.ΔWtilde),copy(integrator.ΔZtilde)))
+        if (1-qtmp)*L₁ > integrator.alg.rswm.discard_length
+          push!(integrator.S₁,((1-qtmp)*L₁,L₂-integrator.ΔWtilde,L₃-integrator.ΔZtilde))
+          if adaptive_alg(integrator.alg.rswm)==:RSwM3 && qtmp*L₁ > integrator.alg.rswm.discard_length
+            push!(integrator.S₂,(qtmp*L₁,copy(integrator.ΔWtilde),copy(integrator.ΔZtilde)))
+          end
         end
+        break
       end
-    end # End RSwM2 and RSwM3
-  else # Not adaptive
-    modify_dt_for_tstops!(integrator)
-    update_noise!(integrator)
-  end
+    end #end while empty
+    dtleft = integrator.dt - dttmp
+    if dtleft != 0 #Stack emptied
+      generate_tildes(integrator,0,0,sqrt(abs(dtleft)))
+      if typeof(integrator.ΔW) <: AbstractArray
+        for i in eachindex(integrator.u)
+          integrator.ΔW[i] += integrator.ΔWtilde[i]
+          integrator.ΔZ[i] += integrator.ΔZtilde[i]
+        end
+      else
+        integrator.ΔW += integrator.ΔWtilde
+        integrator.ΔZ += integrator.ΔZtilde
+      end
+      if adaptive_alg(integrator.alg.rswm)==:RSwM3
+        push!(integrator.S₂,(dtleft,copy(integrator.ΔWtilde),copy(integrator.ΔZtilde)))
+      end
+    end
+  end # End RSwM2 and RSwM3
 end
 
 @inline function update_running_noise!(integrator)

@@ -2,8 +2,12 @@ abstract StochasticDiffEqAlgorithm <: AbstractSDEAlgorithm
 abstract StochasticDiffEqAdaptiveAlgorithm <: StochasticDiffEqAlgorithm
 abstract StochasticDiffEqCompositeAlgorithm <: StochasticDiffEqAlgorithm
 
-immutable EM <: StochasticDiffEqAlgorithm end
-immutable RKMil <: StochasticDiffEqAlgorithm end
+@with_kw immutable EM{RSType} <: StochasticDiffEqAlgorithm
+  rswm::RSType = RSWM(adaptivealg=:RSwM1)
+end
+@with_kw immutable RKMil{RSType} <: StochasticDiffEqAlgorithm
+  rswm::RSType = RSWM(adaptivealg=:RSwM1)
+end
 @with_kw immutable SRA{TabType,RSType} <: StochasticDiffEqAdaptiveAlgorithm
   tableau::TabType = constructSRA1()
   rswm::RSType = RSWM()
