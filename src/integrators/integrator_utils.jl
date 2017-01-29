@@ -240,9 +240,14 @@ end
           end
         else #Popped too far
           generate_tildes(integrator,qtmp*L₂,qtmp*L₃,sqrt(abs((1-qtmp)*qtmp*L₁)))
-          for i in eachindex(integrator.u)
-            integrator.ΔW[i] += integrator.ΔWtilde[i]
-            integrator.ΔZ[i] += integrator.ΔZtilde[i]
+          if typeof(integrator.ΔW) <: AbstractArray
+            for i in eachindex(integrator.u)
+              integrator.ΔW[i] += integrator.ΔWtilde[i]
+              integrator.ΔZ[i] += integrator.ΔZtilde[i]
+            end
+          else
+            integrator.ΔW += integrator.ΔWtilde
+            integrator.ΔZ += integrator.ΔZtilde
           end
           if (1-qtmp)*L₁ > integrator.alg.rswm.discard_length
             push!(integrator.S₁,((1-qtmp)*L₁,L₂-integrator.ΔWtilde,L₃-integrator.ΔZtilde))
@@ -256,9 +261,14 @@ end
       dtleft = integrator.dt - dttmp
       if dtleft != 0 #Stack emptied
         generate_tildes(integrator,0,0,sqrt(abs(dtleft)))
-        for i in eachindex(integrator.u)
-          integrator.ΔW[i] += integrator.ΔWtilde[i]
-          integrator.ΔZ[i] += integrator.ΔZtilde[i]
+        if typeof(integrator.ΔW) <: AbstractArray
+          for i in eachindex(integrator.u)
+            integrator.ΔW[i] += integrator.ΔWtilde[i]
+            integrator.ΔZ[i] += integrator.ΔZtilde[i]
+          end
+        else
+          integrator.ΔW += integrator.ΔWtilde
+          integrator.ΔZ += integrator.ΔZtilde
         end
         if adaptive_alg(integrator.alg.rswm)==:RSwM3
           push!(integrator.S₂,(dtleft,copy(integrator.ΔWtilde),copy(integrator.ΔZtilde)))
@@ -303,13 +313,18 @@ end
     generate_tildes(integrator,integrator.q*integrator.ΔW,integrator.q*integrator.ΔZ,sqrt(abs((1-integrator.q)*integrator.dtnew)))
     cutLength = integrator.dt-integrator.dtnew
     if cutLength > integrator.alg.rswm.discard_length
-      push!(integrator.S₁,(cutLength,integrator.ΔW-integrator.ΔWtilde,integrator.ΔZ-ΔZtmp))
+      push!(integrator.S₁,(cutLength,integrator.ΔW-integrator.ΔWtilde,integrator.ΔZ-integrator.ΔZtilde))
     end
     if length(integrator.S₁) > integrator.sol.maxstacksize
         integrator.sol.maxstacksize = length(integrator.S₁)
     end
-    copy!(integrator.ΔW,integrator.ΔWtilde)
-    copy!(integrator.ΔZ,integrator.ΔWtilde)
+    if typeof(integrator.ΔW) <: AbstractArray
+      copy!(integrator.ΔW,integrator.ΔWtilde)
+      copy!(integrator.ΔZ,integrator.ΔZtilde)
+    else
+      integrator.ΔW = integrator.ΔWtilde
+      integrator.ΔZ = integrator.ΔZtilde
+    end
     integrator.dt = integrator.dtnew
     integrator.sqdt = sqrt(integrator.dt)
   else # RSwM3
@@ -354,8 +369,13 @@ end
     end
     integrator.dt = integrator.dtnew
     integrator.sqdt = sqrt(abs(integrator.dt))
-    copy!(integrator.ΔW,integrator.ΔWtilde)
-    copy!(integrator.ΔZ,integrator.ΔZtilde)
+    if typeof(integrator.ΔW) <: AbstractArray
+      copy!(integrator.ΔW,integrator.ΔWtilde)
+      copy!(integrator.ΔZ,integrator.ΔZtilde)
+    else
+      integrator.ΔW = integrator.ΔWtilde
+      integrator.ΔZ = integrator.ΔZtilde
+    end
   end
 end
 
@@ -420,11 +440,11 @@ end
     if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
       integrator.noise(integrator.ΔZtilde)
       if add2 != 0
-        for i in eachindex(integrator.ΔZtilde)
+        for i in eachindex(integrator.ΔW)
           integrator.ΔZtilde[i] = add2[i] + scaling*integrator.ΔZtilde[i]
         end
       else
-        for i in eachindex(integrator.ΔZtilde)
+        for i in eachindex(integrator.ΔW)
           integrator.ΔZtilde[i] = scaling*integrator.ΔZtilde[i]
         end
       end
