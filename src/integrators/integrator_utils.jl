@@ -6,6 +6,11 @@
     if (integrator.opts.adaptive && integrator.accept_step) || !integrator.opts.adaptive
       apply_step!(integrator)
     elseif integrator.opts.adaptive && !integrator.accept_step
+      if integrator.isout
+        integrator.dtnew = integrator.dt*integrator.opts.qmin
+      else
+        integrator.dtnew = integrator.dt/min(inv(integrator.opts.qmin),integrator.q11/integrator.opts.gamma)
+      end
       perform_rswm_rejection!(integrator)
     end
   end
@@ -299,11 +304,6 @@ end
 end
 
 @inline function perform_rswm_rejection!(integrator)
-  if integrator.isout
-    integrator.dtnew = integrator.dt*integrator.opts.qmin
-  else
-    integrator.dtnew = integrator.dt/min(inv(integrator.opts.qmin),integrator.q11/integrator.opts.gamma)
-  end
   integrator.q = integrator.dtnew/integrator.dt
   if adaptive_alg(integrator.alg.rswm)==:RSwM1 || adaptive_alg(integrator.alg.rswm)==:RSwM2
     generate_tildes(integrator,integrator.q*integrator.ΔW,integrator.q*integrator.ΔZ,sqrt(abs((1-integrator.q)*integrator.dtnew)))
