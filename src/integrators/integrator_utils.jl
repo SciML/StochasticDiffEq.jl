@@ -102,7 +102,7 @@ end
   end
 end
 
-function loopfooter!(integrator::SDEIntegrator)
+@inline function loopfooter!(integrator::SDEIntegrator)
   if integrator.opts.adaptive
     integrator.q11 = integrator.EEst^integrator.opts.beta1
     integrator.q = integrator.q11/(integrator.qold^integrator.opts.beta2)
@@ -153,7 +153,7 @@ end
   end
 end
 
-function postamble!(integrator)
+@inline function postamble!(integrator)
   solution_endpoint_match_cur_integrator!(integrator)
   resize!(integrator.sol.t,integrator.saveiter)
   resize!(integrator.sol.u,integrator.saveiter)
