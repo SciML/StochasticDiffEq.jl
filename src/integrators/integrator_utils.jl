@@ -450,5 +450,4 @@ end
       end
     end
   end
-  integrator.ΔWtilde,integrator.ΔZtilde
 end
