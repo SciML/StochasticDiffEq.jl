@@ -357,12 +357,19 @@ end
     end # end while
     dtK = integrator.dt - dttmp
     qK = integrator.q*integrator.dt/dtK
-    K₂ = integrator.ΔW - integrator.ΔWtmp
-    K₃ = integrator.ΔZ - integrator.ΔZtmp
-    generate_tildes(integrator,qK*K₂,qK*K₃,sqrt(abs((1-qK)*qK*dtK)))
+    if typeof(integrator.ΔW) <: AbstractArray
+      for i in eachindex(integrator.u)
+        integrator.ΔWtmp[i] = integrator.ΔW[i] - integrator.ΔWtmp[i]
+        integrator.ΔZtmp[i] = integrator.ΔZ[i] - integrator.ΔZtmp[i]
+      end
+    else
+      integrator.ΔWtmp = integrator.ΔW - integrator.ΔWtmp
+      integrator.ΔZtmp = integrator.ΔZ - integrator.ΔZtmp
+    end
+    generate_tildes(integrator,qK*integrator.ΔWtmp,qK*integrator.ΔZtmp,sqrt(abs((1-qK)*qK*dtK)))
     cutLength = (1-qK)*dtK
     if cutLength > integrator.alg.rswm.discard_length
-      push!(integrator.S₁,(cutLength,K₂-integrator.ΔWtilde,K₃-integrator.ΔZtilde))
+      push!(integrator.S₁,(cutLength,integrator.ΔWtmp-integrator.ΔWtilde,integrator.ΔZtmp-integrator.ΔZtilde))
     end
     if length(integrator.S₁) > integrator.sol.maxstacksize
         integrator.sol.maxstacksize = length(integrator.S₁)
