@@ -3,6 +3,7 @@ type SDEIntegrator{T1,uType,uEltype,tType,tTypeNoUnits,uEltypeNoUnits,randType,r
   g::F5
   noise::noiseType
   uprev::uType
+  tprev::tType
   t::tType
   u::uType
   dt::tType

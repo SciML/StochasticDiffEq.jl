@@ -114,15 +114,13 @@ function loopfooter!(integrator::SDEIntegrator)
     if integrator.accept_step # Accepted
       integrator.t = ttmp
       calc_dt_propose!(integrator)
-      update_running_noise!(integrator)
-      savevalues!(integrator)
+      handle_callbacks!(integrator)
     end
   else # Non adaptive
     integrator.t = integrator.t + integrator.dt
     integrator.accept_step = true
     integrator.dtpropose = integrator.dt
-    update_running_noise!(integrator)
-    savevalues!(integrator)
+    handle_callbacks!(integrator)
   end
   if integrator.opts.progress && integrator.iter%integrator.opts.progress_steps==0
     Juno.msg(integrator.prog,integrator.opts.progress_message(integrator.dt,integrator.t,integrator.u))
@@ -185,6 +183,7 @@ end
     discrete_modified = apply_discrete_callback!(integrator,discrete_callbacks...)
   end
   if !atleast_one_callback
+    update_running_noise!(integrator)
     savevalues!(integrator)
   end
 
@@ -280,6 +279,7 @@ end
       end
     end
   end # End RSwM2 and RSwM3
+  integrator.tprev = integrator.t
 end
 
 @inline function update_running_noise!(integrator)
