@@ -37,29 +37,27 @@ end
   integrator.sqdt = sqrt(abs(integrator.dt))
 end
 
-@inline choose_algorithm!(integrator,cache::StochasticDiffEqCache) = nothing
-
 @def sde_exit_condtions begin
   if integrator.iter > integrator.opts.maxiters
     if integrator.opts.verbose
       warn("Max Iters Reached. Aborting")
     end
     postamble!(integrator)
-    return nothing
+    return integrator.sol
   end
   if integrator.dt == 0
     if integrator.opts.verbose
       warn("dt == 0. Aborting")
     end
     postamble!(integrator)
-    return nothing
+    return integrator.sol
   end
   if integrator.opts.unstable_check(integrator.dt,integrator.t,integrator.u)
     if integrator.opts.verbose
       warn("Instability detected. Aborting")
     end
     postamble!(integrator)
-    return nothing
+    return integrator.sol
   end
 end
 
@@ -424,6 +422,26 @@ end
       if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
         integrator.ΔZ = scaling_factor*integrator.noise()
       end
+    end
+  end
+end
+
+@inline function resize_noise_caches!(integrator,c,scaling_factor,idxs)
+  if isinplace(integrator.noise)
+    integrator.noise(@view c[2][idxs])
+    for i in idxs
+      c[2][i] *= scaling_factor
+    end
+    if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+      integrator.noise(@view c[3][idxs])
+      for i in idxs
+        c[3][i] .*= scaling_factor
+      end
+    end
+  else
+    c[2][idxs] .= scaling_factor.*integrator.noise(length(idxs))
+    if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+      c[3][idxs] .= scaling_factor.*integrator.noise(length(idxs))
     end
   end
 end

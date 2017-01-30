@@ -41,7 +41,7 @@
       btemp[j] += (β₁[i]*ΔW[j] + β₂[i]*chi1[j])*gtemp[j]
       E₂[j]    += (β₃[i]*chi2[j] + β₄[i]*chi3[j])*gtemp[j]
     end
-    if i<3 #1 or 2
+    if i <= 4
       for j in eachindex(u)
         E₁temp[j] += ftemp[j]
       end
@@ -195,7 +195,7 @@ end
     atemp += α[i]*ftemp
     btemp += (β₁[i]*ΔW + β₂[i]*chi1).*integrator.g(t+c₁[i]*dt,H1[i])
     E₂    += (β₃[i]*chi2 + β₄[i]*chi3).*integrator.g(t+c₁[i]*dt,H1[i])
-    if i<3 #1 or 2
+    if i <= 4 #1 or 2
       E₁temp += ftemp
     end
   end

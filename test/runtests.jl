@@ -16,6 +16,8 @@ LONGER_TESTS && @time @testset "Weak Convergence Tests" begin include("weak_conv
 @time @testset "tstops Tests" begin include("tstops_tests.jl") end
 @time @testset "Oval2" begin include("oval2_test.jl") end
 @time @testset "Composite Tests" begin include("composite_algorithm_test.jl") end
+@time @testset "Events Tests" begin include("events_test.jl") end
+@time @testset "Cache Tests" begin include("cache_test.jl") end
 
 #Adaptive SDE
 @time @testset "Adaptive SDE Linear Tests" begin include("adaptive/sde_linearadaptive_tests.jl") end
