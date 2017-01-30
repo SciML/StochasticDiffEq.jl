@@ -37,8 +37,6 @@ end
   integrator.sqdt = sqrt(abs(integrator.dt))
 end
 
-@inline choose_algorithm!(integrator,cache::StochasticDiffEqCache) = nothing
-
 @def sde_exit_condtions begin
   if integrator.iter > integrator.opts.maxiters
     if integrator.opts.verbose
