@@ -1,5 +1,6 @@
 @inline function perform_step!(integrator,cache::SRICache,f=integrator.f)
   @unpack c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄,stages = cache.tab
+  error_terms = integrator.alg.error_terms
   @unpack H0,H1,A0temp,A1temp,B0temp,B1temp,A0temp2,A1temp2,B0temp2,B1temp2,atemp,btemp,E₁,E₂,E₁temp,ftemp,gtemp,chi1,chi2,chi3,EEsttmp = cache
   @unpack t,dt,uprev,u,ΔW,ΔZ = integrator
   for i in eachindex(u)
@@ -41,7 +42,7 @@
       btemp[j] += (β₁[i]*ΔW[j] + β₂[i]*chi1[j])*gtemp[j]
       E₂[j]    += (β₃[i]*chi2[j] + β₄[i]*chi3[j])*gtemp[j]
     end
-    if i <= 4
+    if i <= error_terms
       for j in eachindex(u)
         E₁temp[j] += ftemp[j]
       end
@@ -165,6 +166,7 @@ end
 
 @inline function perform_step!(integrator,cache::SRIConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,ΔW,ΔZ = integrator
+  error_terms = integrator.alg.error_terms
   @unpack c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄,stages,H0,H1 = cache
   chi1 = .5*(ΔW.^2 - dt)/integrator.sqdt #I_(1,1)/sqrt(h)
   chi2 = .5*(ΔW + ΔZ/sqrt(3)) #I_(1,0)/h
@@ -195,7 +197,7 @@ end
     atemp += α[i]*ftemp
     btemp += (β₁[i]*ΔW + β₂[i]*chi1).*integrator.g(t+c₁[i]*dt,H1[i])
     E₂    += (β₃[i]*chi2 + β₄[i]*chi3).*integrator.g(t+c₁[i]*dt,H1[i])
-    if i <= 4 #1 or 2
+    if i <= error_terms #1 or 2
       E₁temp += ftemp
     end
   end
