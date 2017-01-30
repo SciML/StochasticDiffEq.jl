@@ -23,3 +23,7 @@
 end
 
 (integrator::SDEIntegrator)(t) = current_interpolant(t,integrator)
+
+u_cache(integrator::SDEIntegrator) = u_cache(integrator.cache)
+du_cache(integrator::SDEIntegrator)= du_cache(integrator.cache)
+full_cache(integrator::SDEIntegrator) = chain(u_cache(integrator),du_cache(integrator.cache))

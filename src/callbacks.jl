@@ -141,8 +141,35 @@ end
 
 resize!(integrator::SDEIntegrator,i::Int) = resize!(integrator,integrator.cache,i)
 function resize!(integrator::SDEIntegrator,cache,i)
+  prev_len = length(integrator.u)
   for c in full_cache(integrator)
     resize!(c,i)
+  end
+  for c in integrator.S₁
+    resize!(c[2],i)
+    resize!(c[3],i)
+    if i > prev_len # fill in rands
+      resize_noise_caches!(integrator,c,c[1],prev_len:i)
+    end
+  end
+  for c in integrator.S₂
+    resize!(c[2],i)
+    resize!(c[3],i)
+    if i > prev_len # fill in rands
+      resize_noise_caches!(integrator,c,c[1],prev_len:i)
+    end
+  end
+  resize!(integrator.ΔW,i)
+  resize!(integrator.ΔZ,i)
+  resize!(integrator.ΔWtilde,i)
+  resize!(integrator.ΔZtilde,i)
+  resize!(integrator.ΔWtmp,i)
+  resize!(integrator.ΔZtmp,i)
+  resize!(integrator.W,i)
+  resize!(integrator.Z,i)
+  if i > prev_len # fill in rands
+    fill!(@view(integrator.W[prev_len:i]),zero(eltype(integrator.u)))
+    fill!(@view(integrator.Z[prev_len:i]),zero(eltype(integrator.u)))
   end
 end
 
