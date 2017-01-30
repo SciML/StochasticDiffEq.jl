@@ -7,7 +7,7 @@ module StochasticDiffEq
   import Base: start, next, done, eltype
 
   using DiffEqBase, Parameters, RecursiveArrayTools, Juno,
-        DataStructures, ResettableStacks, Iterators
+        DataStructures, ResettableStacks, Iterators, Roots
 
   import DiffEqBase: solve, solve!, init, step!, build_solution
 
