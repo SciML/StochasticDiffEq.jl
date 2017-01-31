@@ -17,10 +17,7 @@ affect_neg! = function (integrator)
   integrator.u[2] = -integrator.u[2]
 end
 
-interp_points = 10
-rootfind = true
-save_positions = (true,true)
-callback = ContinuousCallback(condtion,affect!,affect_neg!,rootfind,save_positions)
+callback = ContinuousCallback(condtion,affect!,affect_neg!)
 
 u0 = [50.0,0.0]
 tspan = (0.0,15.0)
