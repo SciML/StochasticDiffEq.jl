@@ -95,16 +95,8 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
     error("dt has the wrong sign. Exiting")
   end
 
-  if tdir > 0
-    dt = min(dtmax,dt)
-  else
-    dt = max(dtmax,dt)
-  end
-  if tdir > 0
-    dt = max(dt,dtmin) #abs to fix complex sqrt issue at end
-  else
-    dt = min(dt,dtmin) #abs to fix complex sqrt issue at end
-  end
+  dt = tdir*min(abs(dtmax),abs(dt))
+  dt = tdir*max(abs(dt),abs(dtmin))
 
   if typeof(u) <: AbstractArray
     rate_prototype = similar(u/zero(t),indices(u)) # rate doesn't need type info
@@ -280,20 +272,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
 end
 
 function solve!(integrator::SDEIntegrator)
-
-  while !isempty(integrator.opts.tstops)
-    @inbounds while integrator.tdir*integrator.t < integrator.tdir*top(integrator.opts.tstops)
-      loopheader!(integrator)
-      @sde_exit_condtions
-      perform_step!(integrator,integrator.cache)
-      loopfooter!(integrator)
-      if isempty(integrator.opts.tstops)
-        break
-      end
-    end
-    handle_tstop!(integrator)
-  end
-  postamble!(integrator)
+  for i in integrator end
   if typeof(integrator.sol.prob) <: AbstractSDETestProblem
     calculate_solution_errors!(integrator.sol;timeseries_errors=integrator.opts.timeseries_errors,dense_errors=integrator.opts.dense_errors)
   end
