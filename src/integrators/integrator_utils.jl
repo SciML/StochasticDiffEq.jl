@@ -11,12 +11,26 @@
       else
         integrator.dtnew = integrator.dt/min(inv(integrator.opts.qmin),integrator.q11/integrator.opts.gamma)
       end
+      fix_dtnew_at_bounds!(integrator)
       perform_rswm_rejection!(integrator)
     end
   end
 
   integrator.iter += 1
   choose_algorithm!(integrator,integrator.cache)
+end
+
+@inline function fix_dtnew_at_bounds!(integrator)
+  if integrator.tdir > 0
+    integrator.dtnew = min(integrator.opts.dtmax,integrator.dtnew)
+  else
+    integrator.dtnew = max(integrator.opts.dtmax,integrator.dtnew)
+  end
+  if integrator.tdir > 0
+    integrator.dtnew = max(integrator.dtnew,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
+  else
+    integrator.dtnew = min(integrator.dtnew,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
+  end
 end
 
 @inline function modify_dt_for_tstops!(integrator)
@@ -45,9 +59,9 @@ end
     postamble!(integrator)
     return integrator.sol
   end
-  if integrator.dt == 0
+  if !integrator.opts.force_dtmin && integrator.dt == integrator.opts.dtmin
     if integrator.opts.verbose
-      warn("dt == 0. Aborting")
+      warn("dt == dtmin. Aborting. If you would like to force continuation with dt=dtmin, set force_dtmin=true")
     end
     postamble!(integrator)
     return integrator.sol
@@ -108,7 +122,7 @@ end
     integrator.dtnew = integrator.dt/integrator.q
     ttmp = integrator.t + integrator.dt
     integrator.isout = integrator.opts.isoutofdomain(ttmp,integrator.u)
-    integrator.accept_step = (!integrator.isout && integrator.EEst <= 1.0)
+    integrator.accept_step = (!integrator.isout && integrator.EEst <= 1.0) || (integrator.opts.force_dtmin && integrator.dt <= integrator.opts.dtmin)
     if integrator.accept_step # Accepted
       integrator.t = ttmp
       calc_dt_propose!(integrator)
