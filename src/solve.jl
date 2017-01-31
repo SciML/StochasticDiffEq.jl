@@ -34,7 +34,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
               internalnorm=ODE_DEFAULT_NORM,
               unstable_check = ODE_DEFAULT_UNSTABLE_CHECK,
               isoutofdomain = ODE_DEFAULT_ISOUTOFDOMAIN,
-              verbose = true,
+              verbose = true,force_dtmin = false,
               advance_to_tstop = false,stop_at_next_tstop=false,
               progress_steps=1000,
               progress=false, progress_message = ODE_DEFAULT_PROG_MESSAGE,
@@ -94,6 +94,9 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
   if sign(dt)!=tdir && dt!=tType(0)
     error("dt has the wrong sign. Exiting")
   end
+
+  dt = tdir*min(abs(dtmax),abs(dt))
+  dt = tdir*max(abs(dt),abs(dtmin))
 
   if typeof(u) <: AbstractArray
     rate_prototype = similar(u/zero(t),indices(u)) # rate doesn't need type info
@@ -155,7 +158,8 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
     timeseries_errors,dense_errors,
     tTypeNoUnits(beta1),tTypeNoUnits(beta2),uEltypeNoUnits(delta),tTypeNoUnits(qoldinit),
     dense,save_noise,
-    callbacks_internal,isoutofdomain,unstable_check,verbose,calck,advance_to_tstop,stop_at_next_tstop)
+    callbacks_internal,isoutofdomain,unstable_check,verbose,calck,force_dtmin,
+    advance_to_tstop,stop_at_next_tstop)
 
   progress ? (prog = Juno.ProgressBar(name=progress_name)) : prog = nothing
 
@@ -268,20 +272,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
 end
 
 function solve!(integrator::SDEIntegrator)
-
-  while !isempty(integrator.opts.tstops)
-    @inbounds while integrator.tdir*integrator.t < integrator.tdir*top(integrator.opts.tstops)
-      loopheader!(integrator)
-      @sde_exit_condtions
-      perform_step!(integrator,integrator.cache)
-      loopfooter!(integrator)
-      if isempty(integrator.opts.tstops)
-        break
-      end
-    end
-    handle_tstop!(integrator)
-  end
-  postamble!(integrator)
+  for i in integrator end
   if typeof(integrator.sol.prob) <: AbstractSDETestProblem
     calculate_solution_errors!(integrator.sol;timeseries_errors=integrator.opts.timeseries_errors,dense_errors=integrator.opts.dense_errors)
   end

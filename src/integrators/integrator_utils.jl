@@ -11,12 +11,18 @@
       else
         integrator.dtnew = integrator.dt/min(inv(integrator.opts.qmin),integrator.q11/integrator.opts.gamma)
       end
+      fix_dtnew_at_bounds!(integrator)
       perform_rswm_rejection!(integrator)
     end
   end
 
   integrator.iter += 1
   choose_algorithm!(integrator,integrator.cache)
+end
+
+@inline function fix_dtnew_at_bounds!(integrator)
+  integrator.dtnew = integrator.tdir*min(abs(integrator.opts.dtmax),abs(integrator.dtnew))
+  integrator.dtnew = integrator.tdir*max(abs(integrator.dtnew),abs(integrator.opts.dtmin))
 end
 
 @inline function modify_dt_for_tstops!(integrator)
@@ -35,30 +41,6 @@ end
     end
   end
   integrator.sqdt = sqrt(abs(integrator.dt))
-end
-
-@def sde_exit_condtions begin
-  if integrator.iter > integrator.opts.maxiters
-    if integrator.opts.verbose
-      warn("Max Iters Reached. Aborting")
-    end
-    postamble!(integrator)
-    return integrator.sol
-  end
-  if integrator.dt == 0
-    if integrator.opts.verbose
-      warn("dt == 0. Aborting")
-    end
-    postamble!(integrator)
-    return integrator.sol
-  end
-  if integrator.opts.unstable_check(integrator.dt,integrator.t,integrator.u)
-    if integrator.opts.verbose
-      warn("Instability detected. Aborting")
-    end
-    postamble!(integrator)
-    return integrator.sol
-  end
 end
 
 @inline function savevalues!(integrator::SDEIntegrator)
@@ -108,7 +90,7 @@ end
     integrator.dtnew = integrator.dt/integrator.q
     ttmp = integrator.t + integrator.dt
     integrator.isout = integrator.opts.isoutofdomain(ttmp,integrator.u)
-    integrator.accept_step = (!integrator.isout && integrator.EEst <= 1.0)
+    integrator.accept_step = (!integrator.isout && integrator.EEst <= 1.0) || (integrator.opts.force_dtmin && integrator.dt <= integrator.opts.dtmin)
     if integrator.accept_step # Accepted
       integrator.t = ttmp
       calc_dt_propose!(integrator)
@@ -388,7 +370,7 @@ end
     if t == ts_top
       pop!(tstops)
       integrator.just_hit_tstop = true
-    elseif t > ts_top
+    elseif integrator.tdir*t > integrator.tdir*ts_top
       if !integrator.dtchangeable
         change_t_via_interpolation!(integrator, pop!(tstops), Val{true})
         integrator.just_hit_tstop = true

@@ -156,18 +156,19 @@ immutable SRIConstantCache{VType1,VType2,MType,uType} <: StochasticDiffEqConstan
   stages::Int
   H0::Vector{uType}
   H1::Vector{uType}
+  error_terms::Int
 end
 
-function SRIConstantCache(tableau,rate_prototype)
+function SRIConstantCache(tableau,rate_prototype,error_terms)
   @unpack c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄ = tableau
   stages = length(α)
   H0 = Array{typeof(rate_prototype)}(stages)
   H1 = Array{typeof(rate_prototype)}(stages)
-  SRIConstantCache(c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄,stages,H0,H1)
+  SRIConstantCache(c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄,stages,H0,H1,error_terms)
 end
 
 function alg_cache(alg::SRI,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  SRIConstantCache(alg.tableau,rate_prototype)
+  SRIConstantCache(alg.tableau,rate_prototype,alg.error_terms)
 end
 
 immutable SRICache{randType,uType,tabType} <: StochasticDiffEqMutableCache
@@ -207,7 +208,7 @@ du_cache(c::SRICache) = (c.A0temp,c.A1temp,c.B0temp,c.B1temp,c.A0temp2,c.A1temp2
 function alg_cache(alg::SRI,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   H0 = Vector{typeof(u)}(0)
   H1 = Vector{typeof(u)}(0)
-  tab = SRIConstantCache(alg.tableau,rate_prototype)
+  tab = SRIConstantCache(alg.tableau,rate_prototype,alg.error_terms)
   for i = 1:tab.stages
     push!(H0,zeros(u))
     push!(H1,zeros(u))

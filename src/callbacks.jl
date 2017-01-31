@@ -26,6 +26,8 @@ end
 
 @inline function determine_event_occurance(integrator,callback)
   event_occurred = false
+  Θs = linspace(typeof(integrator.t)(0),typeof(integrator.t)(1),callback.interp_points)
+  interp_index = 0
   # Check if the event occured
   previous_condition = callback.condition(integrator.tprev,integrator.uprev,integrator)
   if isapprox(previous_condition,0,rtol=callback.reltol,atol=callback.abstol)
@@ -33,19 +35,38 @@ end
   else
     prev_sign = sign(previous_condition)
   end
+  prev_sign_index = 1
   if ((prev_sign<0 && !(typeof(callback.affect!)<:Void)) || (prev_sign>0 && !(typeof(callback.affect_neg!)<:Void))) && prev_sign*sign(callback.condition(integrator.tprev+integrator.dt,integrator.u,integrator))<0
     event_occurred = true
+    interp_index = callback.interp_points
+  elseif callback.interp_points!=0 # Use the interpolants for safety checking
+    for i in 2:length(Θs)-1
+      new_sign = callback.condition(integrator.tprev+integrator.dt*Θs[i],sde_interpolant(Θs[i],integrator),integrator)
+      if prev_sign == 0
+        prev_sign = new_sign
+        prev_sign_index = i
+      end
+      if ((prev_sign<0 && !(typeof(callback.affect!)<:Void)) || (prev_sign>0 && !(typeof(callback.affect_neg!)<:Void))) && prev_sign*new_sign<0
+        event_occurred = true
+        interp_index = i
+        break
+      end
+    end
   end
-  event_occurred,prev_sign
+  event_occurred,interp_index,Θs,prev_sign,prev_sign_index
 end
 
 function find_callback_time(integrator,callback)
-  event_occurred,prev_sign = determine_event_occurance(integrator,callback)
+  event_occurred,interp_index,Θs,prev_sign,prev_sign_index = determine_event_occurance(integrator,callback)
   if event_occurred
     if typeof(callback.condition) <: Void
       new_t = zero(typeof(integrator.t))
     else
-      top_Θ = typeof(integrator.t)(1)
+      if callback.interp_points!=0
+        top_Θ = Θs[interp_index] # Top at the smallest
+      else
+        top_Θ = typeof(integrator.t)(1)
+      end
       if callback.rootfind
         find_zero = (Θ) -> begin
           callback.condition(integrator.tprev+Θ*integrator.dt,sde_interpolant(Θ,integrator),integrator)

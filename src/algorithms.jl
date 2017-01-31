@@ -15,6 +15,7 @@ end
 @with_kw immutable SRI{TabType,RSType} <: StochasticDiffEqAdaptiveAlgorithm
   tableau::TabType = constructSRIW1()
   rswm::RSType = RSWM()
+  error_terms = 4
 end
 @with_kw immutable SRIW1{RSType} <: StochasticDiffEqAdaptiveAlgorithm
   rswm::RSType = RSWM()
