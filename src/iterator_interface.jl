@@ -2,7 +2,7 @@ function start(integrator::SDEIntegrator)
   0
 end
 
-function next(integrator::SDEIntegrator,state)
+@inline function next(integrator::SDEIntegrator,state)
   state += 1
   step!(integrator) # Iter updated in the step! header
   # Next is callbacks -> iterator  -> top
@@ -11,7 +11,7 @@ end
 
 done(integrator::SDEIntegrator) = done(integrator,integrator.iter)
 
-function done(integrator::SDEIntegrator,state)
+@inline function done(integrator::SDEIntegrator,state)
   if integrator.iter > integrator.opts.maxiters
     if integrator.opts.verbose
       warn("Interrupted. Larger maxiters is needed.")
@@ -26,7 +26,7 @@ function done(integrator::SDEIntegrator,state)
     postamble!(integrator)
     return true
   end
-  if !integrator.opts.force_dtmin && integrator.dt <= integrator.opts.dtmin
+  if !integrator.opts.force_dtmin && integrator.opts.adaptive && abs(integrator.dt) <= abs(integrator.opts.dtmin)
     if integrator.opts.verbose
       warn("dt <= dtmin. Aborting. If you would like to force continuation with dt=dtmin, set force_dtmin=true")
     end
@@ -46,24 +46,24 @@ function done(integrator::SDEIntegrator,state)
   false
 end
 
-function step!(integrator::SDEIntegrator)
+@inline function step!(integrator::SDEIntegrator)
   if integrator.opts.advance_to_tstop
-    while integrator.tdir*integrator.t < integrator.tdir*top(integrator.opts.tstops)
+    @inbounds while integrator.tdir*integrator.t < integrator.tdir*top(integrator.opts.tstops)
       loopheader!(integrator)
       perform_step!(integrator,integrator.cache)
       loopfooter!(integrator)
     end
   else
-    loopheader!(integrator)
-    perform_step!(integrator,integrator.cache)
-    loopfooter!(integrator)
-    while !integrator.accept_step
+    @inbounds loopheader!(integrator)
+    @inbounds perform_step!(integrator,integrator.cache)
+    @inbounds loopfooter!(integrator)
+    @inbounds while !integrator.accept_step
       loopheader!(integrator)
       perform_step!(integrator,integrator.cache)
       loopfooter!(integrator)
     end
   end
-  handle_tstop!(integrator)
+  @inbounds handle_tstop!(integrator)
 end
 
 eltype(integrator::SDEIntegrator) = typeof(integrator)
