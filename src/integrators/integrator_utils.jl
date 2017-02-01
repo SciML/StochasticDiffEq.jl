@@ -74,9 +74,9 @@ end
     curt = pop!(integrator.opts.saveat)
     if integrator.opts.saveat!=integrator.t # If <t, interpolate
       Θ = (curt - integrator.tprev)/integrator.dt
-      val = sde_interpolant(Θ,integrator)
+      val = sde_interpolant(Θ,integrator,indices(integrator.uprev),Val{0}) # out of place, but force copy later
       copyat_or_push!(integrator.sol.t,integrator.saveiter,curt)
-      copyat_or_push!(integrator.sol.u,integrator.saveiter,val)
+      copyat_or_push!(integrator.sol.u,integrator.saveiter,val,Val{false})
       if typeof(integrator.alg) <: StochasticEqCompositeAlgorithm
         copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
       end

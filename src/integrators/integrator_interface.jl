@@ -5,15 +5,13 @@
   if t < integrator.tprev
     error("Current interpolant only works between tprev and t")
   elseif t != integrator.t
-    new_u = integrator(t)
-    integrator.dtnew = integrator.t - t
-    perform_rswm_rejection!(integrator)
-
     if typeof(integrator.u) <: AbstractArray
-      recursivecopy!(integrator.u,new_u)
+      integrator(integrator.u,t)
     else
-      integrator.u = new_u
+      integrator.u = integrator(t)
     end
+    integrator.dtnew = integrator.t - t
+    perform_rswm_rejection!(integrator) #this only changes dt and noise, so no interpolation problems
     integrator.t = t
     # reeval_internals_due_to_modification!(integrator) # Not necessary for linear interp
     if T
