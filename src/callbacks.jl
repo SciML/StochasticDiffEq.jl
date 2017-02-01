@@ -29,19 +29,46 @@ end
   Θs = linspace(typeof(integrator.t)(0),typeof(integrator.t)(1),callback.interp_points)
   interp_index = 0
   # Check if the event occured
-  previous_condition = callback.condition(integrator.tprev,integrator.uprev,integrator)
+  if typeof(callback.idxs) <: Void
+    previous_condition = callback.condition(integrator.tprev,integrator.uprev,integrator)
+  else
+    previous_condition = callback.condition(integrator.tprev,integrator.uprev[callback.idxs],integrator)
+  end
   if isapprox(previous_condition,0,rtol=callback.reltol,atol=callback.abstol)
     prev_sign = 0.0
   else
     prev_sign = sign(previous_condition)
   end
   prev_sign_index = 1
-  if ((prev_sign<0 && !(typeof(callback.affect!)<:Void)) || (prev_sign>0 && !(typeof(callback.affect_neg!)<:Void))) && prev_sign*sign(callback.condition(integrator.tprev+integrator.dt,integrator.u,integrator))<0
+  if typeof(callback.idxs) <: Void
+    next_sign = sign(callback.condition(integrator.tprev+integrator.dt,integrator.u,integrator))
+  else
+    next_sign = sign(callback.condition(integrator.tprev+integrator.dt,integrator.u[callback.idxs],integrator))
+  end
+  if ((prev_sign<0 && !(typeof(callback.affect!)<:Void)) || (prev_sign>0 && !(typeof(callback.affect_neg!)<:Void))) && prev_sign*next_sign<0
     event_occurred = true
     interp_index = callback.interp_points
   elseif callback.interp_points!=0 # Use the interpolants for safety checking
+    if typeof(integrator.cache) <: StochasticDiffEqMutableCache
+      if typeof(callback.idxs) <: Void
+        idxs_internal = eachindex(integrator.cache.tmp)
+        tmp = integrator.cache.tmp
+      elseif typeof(callback.idxs) <: Number
+        idxs_internal = callback.idxs
+      else
+        idxs_internal = callback.idxs
+        tmp = @view integrator.cache.tmp[callback.idxs]
+      end
+    else
+      idxs_internal = callback.idxs
+    end
     for i in 2:length(Θs)-1
-      new_sign = callback.condition(integrator.tprev+integrator.dt*Θs[i],sde_interpolant(Θs[i],integrator),integrator)
+      if typeof(integrator.cache) <: StochasticDiffEqMutableCache && !(typeof(callback.idxs) <: Number)
+        sde_interpolant!(tmp,Θs[i],integrator,idxs_internal,Val{0})
+      else
+        tmp = sde_interpolant(Θs[i],integrator,idxs_internal,Val{0})
+      end
+      new_sign = callback.condition(integrator.tprev+integrator.dt*Θs[i],tmp,integrator)
       if prev_sign == 0
         prev_sign = new_sign
         prev_sign_index = i
@@ -68,10 +95,28 @@ function find_callback_time(integrator,callback)
         top_Θ = typeof(integrator.t)(1)
       end
       if callback.rootfind
-        find_zero = (Θ) -> begin
-          callback.condition(integrator.tprev+Θ*integrator.dt,sde_interpolant(Θ,integrator),integrator)
+        if typeof(integrator.cache) <: StochasticDiffEqMutableCache
+          if typeof(callback.idxs) <: Void
+            idxs_internal = eachindex(integrator.cache.tmp)
+            tmp = integrator.cache.tmp
+          elseif typeof(callback.idxs) <: Number
+            idxs_internal = callback.idxs
+          else
+            idxs_internal = callback.idxs
+            tmp = @view integrator.cache.tmp[callback.idxs]
+          end
+        else
+          idxs_internal = callback.idxs
         end
-        Θ = prevfloat(prevfloat(fzero(find_zero,typeof(integrator.t)(0),top_Θ)))
+        find_zero = (Θ) -> begin
+          if typeof(integrator.cache) <: StochasticDiffEqMutableCache && !(typeof(callback.idxs) <: Number)
+            sde_interpolant!(tmp,Θ,integrator,idxs_internal,Val{0})
+          else
+            tmp = sde_interpolant(Θ,integrator,idxs_internal,Val{0})
+          end
+          callback.condition(integrator.tprev+Θ*integrator.dt,tmp,integrator)
+        end
+        Θ = prevfloat(prevfloat(fzero(find_zero,Θs[prev_sign_index],top_Θ)))
         # 2 prevfloat guerentees that the new time is either 1 or 2 floating point
         # numbers just before the event, but not after. If there's a barrier
         # which is never supposed to be crossed, then this will ensure that
@@ -79,6 +124,8 @@ function find_callback_time(integrator,callback)
         # a float which is slightly after, making it out of the domain, causing
         # havoc.
         new_t = integrator.dt*Θ
+      elseif interp_index != callback.interp_points
+        new_t = integrator.dt*Θs[interp_index]
       else
         # If no solve and no interpolants, just use endpoint
         new_t = integrator.dt

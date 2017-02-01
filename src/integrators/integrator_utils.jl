@@ -43,6 +43,31 @@ end
   integrator.sqdt = sqrt(abs(integrator.dt))
 end
 
+@def sde_exit_condtions begin
+  if integrator.iter > integrator.opts.maxiters
+    if integrator.opts.verbose
+      warn("Max Iters Reached. Aborting")
+    end
+    postamble!(integrator)
+    return integrator.sol
+  end
+  if !integrator.opts.force_dtmin && integrator.opts.adaptive && abs(integrator.dt) <= abs(integrator.opts.dtmin)
+    if integrator.opts.verbose
+      warn("dt <= dtmin. Aborting. If you would like to force continuation with dt=dtmin, set force_dtmin=true")
+    end
+    postamble!(integrator)
+    return integrator.sol
+  end
+  if integrator.opts.unstable_check(integrator.dt,integrator.t,integrator.u)
+    if integrator.opts.verbose
+      warn("Instability detected. Aborting")
+    end
+    postamble!(integrator)
+    return integrator.sol
+  end
+end
+
+
 @inline function savevalues!(integrator::SDEIntegrator)
   while !isempty(integrator.opts.saveat) && integrator.tdir*top(integrator.opts.saveat) <= integrator.tdir*integrator.t # Perform saveat
     integrator.saveiter += 1
@@ -92,11 +117,13 @@ end
     integrator.isout = integrator.opts.isoutofdomain(ttmp,integrator.u)
     integrator.accept_step = (!integrator.isout && integrator.EEst <= 1.0) || (integrator.opts.force_dtmin && integrator.dt <= integrator.opts.dtmin)
     if integrator.accept_step # Accepted
+      integrator.tprev = integrator.t
       integrator.t = ttmp
       calc_dt_propose!(integrator)
       handle_callbacks!(integrator)
     end
   else # Non adaptive
+    integrator.tprev = integrator.t
     integrator.t = integrator.t + integrator.dt
     integrator.accept_step = true
     integrator.dtpropose = integrator.dt
@@ -259,7 +286,6 @@ end
       end
     end
   end # End RSwM2 and RSwM3
-  integrator.tprev = integrator.t
 end
 
 @inline function update_running_noise!(integrator)

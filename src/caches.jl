@@ -17,18 +17,18 @@ immutable EMConstantCache <: StochasticDiffEqConstantCache end
 immutable EMCache{uType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
-  utmp1::uType
+  tmp::uType
   utmp2::uType
 end
 
 u_cache(c::EMCache) = (c.u,c.uprev)
-du_cache(c::EMCache) = (c.utmp1,c.utmp2)
+du_cache(c::EMCache) = (c.tmp,c.utmp2)
 
 alg_cache(alg::EM,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = EMConstantCache()
 
 function alg_cache(alg::EM,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
-  utmp1 = similar(u); utmp2 = similar(u)
-  EMCache(u,uprev,utmp1,utmp2)
+  tmp = similar(u); utmp2 = similar(u)
+  EMCache(u,uprev,tmp,utmp2)
 end
 
 immutable RKMilConstantCache <: StochasticDiffEqConstantCache end
@@ -38,19 +38,19 @@ immutable RKMilCache{uType} <: StochasticDiffEqMutableCache
   du1::uType
   du2::uType
   K::uType
-  utilde::uType
+  tmp::uType
   L::uType
 end
 
 u_cache(c::RKMilCache) = (c.u,c.uprev)
-du_cache(c::RKMilCache) = (c.du1,c.du2,c.K,c.utilde,c.L)
+du_cache(c::RKMilCache) = (c.du1,c.du2,c.K,c.tmp,c.L)
 
 alg_cache(alg::RKMil,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = RKMilConstantCache()
 
 function alg_cache(alg::RKMil,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   du1 = similar(u); du2 = similar(u)
-  K = similar(u); utilde = similar(u); L = similar(u)
-  RKMilCache(u,uprev,du1,du2,K,utilde,L)
+  K = similar(u); tmp = similar(u); L = similar(u)
+  RKMilCache(u,uprev,du1,du2,K,tmp,L)
 end
 
 immutable SRA1ConstantCache <: StochasticDiffEqConstantCache end
@@ -67,19 +67,19 @@ immutable SRA1Cache{randType,uType} <: StochasticDiffEqMutableCache
   k₁::uType
   k₂::uType
   gpdt::uType
-  EEsttmp::uType
+  tmp::uType
 end
 
-u_cache(c::SRA1Cache) = (c.u,c.uprev,c.EEsttmp)
-du_cache(c::SRA1Cache) = (c.chi2,c.tmp1,c.E₁,c.E₂,c.gt,c.k₁,c.k₂,c.gpdt,c.EEsttmp)
+u_cache(c::SRA1Cache) = (c.u,c.uprev,c.tmp)
+du_cache(c::SRA1Cache) = (c.chi2,c.tmp1,c.E₁,c.E₂,c.gt,c.k₁,c.k₂,c.gpdt)
 
 function alg_cache(alg::SRA1,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   chi2 = similar(ΔW)
   tmp1 = zeros(u)
   E₁ = zeros(u); gt = zeros(u); gpdt = zeros(u)
   E₂ = zeros(u); k₁ = zeros(u); k₂ = zeros(u)
-  EEsttmp = zeros(u)
-  SRA1Cache(u,uprev,chi2,tmp1,E₁,E₂,gt,k₁,k₂,gpdt,EEsttmp)
+  tmp = zeros(u)
+  SRA1Cache(u,uprev,chi2,tmp1,E₁,E₂,gt,k₁,k₂,gpdt,tmp)
 end
 
 immutable SRAConstantCache{VType1,VType2,MType,uType} <: StochasticDiffEqConstantCache
@@ -119,13 +119,13 @@ immutable SRACache{uType,tabType} <: StochasticDiffEqMutableCache
   E₁::uType
   E₁temp::uType
   E₂::uType
-  EEsttmp::uType
+  tmp::uType
   tab::tabType
 end
 
 u_cache(c::SRACache) = (c.u,c.uprev)
 du_cache(c::SRACache) = (c.A0temp,c.B0temp,c.ftmp,c.gtmp,c.chi2,c.chi2,c.atemp,
-                          c.btemp,c.E₁,c.E₁temp,c.E₂,c.EEsttmp,c.H0...)
+                          c.btemp,c.E₁,c.E₁temp,c.E₂,c.tmp,c.H0...)
 
 function alg_cache(alg::SRA,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   H0 = Vector{typeof(u)}(0)
@@ -137,8 +137,8 @@ function alg_cache(alg::SRA,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits
   ftmp = zeros(u); gtmp = zeros(u); chi2 = zeros(u)
   atemp = zeros(u); btemp = zeros(u); E₂ = zeros(u); E₁temp = zeros(u)
   E₁ = zeros(u)
-  EEsttmp = zeros(u)
-  SRACache(u,uprev,H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂,EEsttmp,tab)
+  tmp = zeros(u)
+  SRACache(u,uprev,H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂,tmp,tab)
 end
 
 immutable SRIConstantCache{VType1,VType2,MType,uType} <: StochasticDiffEqConstantCache
@@ -194,14 +194,14 @@ immutable SRICache{randType,uType,tabType} <: StochasticDiffEqMutableCache
   chi1::randType
   chi2::randType
   chi3::randType
-  EEsttmp::uType
+  tmp::uType
   tab::tabType
 end
 
 u_cache(c::SRICache) = (c.u,c.uprev)
 du_cache(c::SRICache) = (c.A0temp,c.A1temp,c.B0temp,c.B1temp,c.A0temp2,c.A1temp2,
                           c.B0temp2,c.B1temp2,c.atemp,c.btemp,c.E₁,c.E₂,c.E₁temp,
-                          c.ftemp,c.gtemp,c.chi1,c.chi2,c.chi3,c.EEsttmp,
+                          c.ftemp,c.gtemp,c.chi1,c.chi2,c.chi3,c.tmp,
                           c.H0...,c.H1...)
 
 
@@ -222,9 +222,9 @@ function alg_cache(alg::SRI,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits
   E₁ = zeros(u); E₂ = zeros(u); E₁temp = zeros(u)
   ftemp = zeros(u); gtemp = zeros(u)
   chi1 = similar(ΔW); chi2 = similar(ΔW); chi3 = similar(ΔW)
-  EEsttmp = zeros(u)
+  tmp = zeros(u)
   SRICache(u,uprev,H0,H1,A0temp,A1temp,B0temp,B1temp,A0temp2,A1temp2,B0temp2,B1temp2,
-    atemp,btemp,E₁,E₂,E₁temp,ftemp,gtemp,chi1,chi2,chi3,EEsttmp,tab)
+    atemp,btemp,E₁,E₂,E₁temp,ftemp,gtemp,chi1,chi2,chi3,tmp,tab)
 end
 
 immutable SRIW1ConstantCache <: StochasticDiffEqConstantCache end
@@ -255,13 +255,13 @@ immutable SRIW1Cache{randType,uType} <: StochasticDiffEqMutableCache
   g₂::uType
   g₃::uType
   g₄::uType
-  EEsttmp::uType
+  tmp::uType
 end
 
 u_cache(c::SRIW1Cache) = (c.u,c.uprev)
 du_cache(c::SRIW1Cache) = (c.chi1,c.chi2,c.chi3,c.fH01o4,c.g₁o2,c.H0,c.H11,
                           c.H12,c.H13,c.g₂o3,c.Fg₂o3,c.g₃o3,c.Tg₃o3,c.mg₁,
-                          c.E₁,c.E₂,c.fH01,c.fH02,c.g₁,c.g₂,c.g₃,c.g₄,c.EEsttmp)
+                          c.E₁,c.E₂,c.fH01,c.fH02,c.g₁,c.g₂,c.g₃,c.g₄,c.tmp)
 
 
 function alg_cache(alg::SRIW1,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
@@ -283,6 +283,6 @@ function alg_cache(alg::SRIW1,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUni
   E₂ = zeros(u)
   fH01 = zeros(u); fH02 = zeros(u)
   g₁ = zeros(u); g₂ = zeros(u); g₃ = zeros(u); g₄ = zeros(u)
-  EEsttmp = zeros(u)
-  SRIW1Cache(u,uprev,chi1,chi2,chi3,fH01o4,g₁o2,H0,H11,H12,H13,g₂o3,Fg₂o3,g₃o3,Tg₃o3,mg₁,E₁,E₂,fH01,fH02,g₁,g₂,g₃,g₄,EEsttmp)
+  tmp = zeros(u)
+  SRIW1Cache(u,uprev,chi1,chi2,chi3,fH01o4,g₁o2,H0,H11,H12,H13,g₂o3,Fg₂o3,g₃o3,Tg₃o3,mg₁,E₁,E₂,fH01,fH02,g₁,g₂,g₃,g₄,tmp)
 end
