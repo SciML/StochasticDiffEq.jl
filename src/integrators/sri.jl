@@ -82,14 +82,14 @@ end
   for i in eachindex(u)
     fH01o4[i] = fH01[i]/4
     g₁o2[i] = g₁[i]/2
-    H0[i] =  uprev[i] + 3*(fH01o4[i]  + chi2[i]*g₁o2[i])
-    H11[i] = uprev[i] + fH01o4[i]   + integrator.sqdt*g₁o2[i]
-    H12[i] = uprev[i] + fH01[i]     - integrator.sqdt*g₁[i]
+    H0[i] =  @muladd uprev[i] + 3*(fH01o4[i]  + chi2[i]*g₁o2[i])
+    H11[i] = @muladd uprev[i] + fH01o4[i]   + integrator.sqdt*g₁o2[i]
+    H12[i] = @muladd uprev[i] + fH01[i]     - integrator.sqdt*g₁[i]
   end
   integrator.g(t+dto4,H11,g₂)
   integrator.g(t+dt,H12,g₃)
   for i in eachindex(u)
-    H13[i] = uprev[i] + fH01o4[i] + integrator.sqdt*(-5g₁[i] + 3g₂[i] + g₃[i]/2)
+    H13[i] = @muladd uprev[i] + fH01o4[i] + integrator.sqdt*(-5g₁[i] + 3g₂[i] + g₃[i]/2)
   end
 
   integrator.g(t+dto4,H13,g₄)
@@ -102,21 +102,18 @@ end
     Tg₃o3[i] = 2g₃o3[i]
     mg₁[i] = -g₁[i]
     E₁[i] = fH01[i]+fH02[i]
-    E₂[i] = chi2[i]*(2g₁[i] - Fg₂o3[i] - Tg₃o3[i]) + chi3[i]*(2mg₁[i] + 5g₂o3[i] - Tg₃o3[i] + g₄[i])
+    E₂[i] = @muladd chi2[i]*(2g₁[i] - Fg₂o3[i] - Tg₃o3[i]) + chi3[i]*(2mg₁[i] + 5g₂o3[i] - Tg₃o3[i] + g₄[i])
+  end
+
+  for i in eachindex(u)
+    u[i] = @muladd uprev[i] +  (fH01[i] + 2fH02[i])/3 + ΔW[i]*(mg₁[i] + Fg₂o3[i] + Tg₃o3[i]) + chi1[i]*(mg₁[i] + Fg₂o3[i] - g₃o3[i]) + E₂[i]
   end
 
   if integrator.opts.adaptive
     for i in eachindex(u)
-      u[i] = uprev[i] +  (fH01[i] + 2fH02[i])/3 + ΔW[i]*(mg₁[i] + Fg₂o3[i] + Tg₃o3[i]) + chi1[i]*(mg₁[i] + Fg₂o3[i] - g₃o3[i]) + E₂[i]
-    end
-    for i in eachindex(u)
-      tmp[i] = (integrator.opts.delta*E₁[i]+E₂[i])/(integrator.opts.abstol + max(abs(uprev[i]),abs(u[i]))*integrator.opts.reltol)
+      tmp[i] = @muladd(integrator.opts.delta*E₁[i]+E₂[i])/@muladd(integrator.opts.abstol + max(abs(uprev[i]),abs(u[i]))*integrator.opts.reltol)
     end
     integrator.EEst = integrator.opts.internalnorm(tmp)
-  else
-    for i in eachindex(u)
-      u[i] = uprev[i] +  (fH01[i] + 2fH02[i])/3 + ΔW[i]*(mg₁[i] + Fg₂o3[i] + Tg₃o3[i]) + chi1[i]*(mg₁[i] + Fg₂o3[i] - g₃o3[i]) + E₂[i]
-    end
   end
   @pack integrator = t,dt,u
 end
@@ -132,12 +129,12 @@ end
   fH01o4 = fH01/4
   dto4 = dt/4
   g₁o2 = g₁/2
-  H0 =  uprev + 3*(fH01o4  + chi2.*g₁o2)
-  H11 = uprev + fH01o4   + integrator.sqdt*g₁o2
-  H12 = uprev + fH01     - integrator.sqdt*g₁
+  H0 =  @muladd uprev + 3*(fH01o4  + chi2.*g₁o2)
+  H11 = @muladd uprev + fH01o4   + integrator.sqdt*g₁o2
+  H12 = @muladd uprev + fH01     - integrator.sqdt*g₁
   g₂ = integrator.g(t+dto4,H11)
   g₃ = integrator.g(t+dt,H12)
-  H13 = uprev + fH01o4 + integrator.sqdt*(-5g₁ + 3g₂ + g₃/2)
+  H13 = @muladd uprev + fH01o4 + integrator.sqdt*(-5g₁ + 3g₂ + g₃/2)
 
 
   g₄ = integrator.g(t+dto4,H13)
@@ -149,13 +146,11 @@ end
   Tg₃o3 = 2g₃o3
   mg₁ = -g₁
   E₁ = fH01+fH02
-  E₂ = chi2.*(2g₁ - Fg₂o3 - Tg₃o3) + chi3.*(2mg₁ + 5g₂o3 - Tg₃o3 + g₄)
+  E₂ = @muladd chi2.*(2g₁ - Fg₂o3 - Tg₃o3) + chi3.*(2mg₁ + 5g₂o3 - Tg₃o3 + g₄)
 
+  u = uprev + (fH01 + 2fH02)/3 + ΔW.*(mg₁ + Fg₂o3 + Tg₃o3) + chi1.*(mg₁ + Fg₂o3 - g₃o3) + E₂
   if integrator.opts.adaptive
-    u = uprev + (fH01 + 2fH02)/3 + ΔW.*(mg₁ + Fg₂o3 + Tg₃o3) + chi1.*(mg₁ + Fg₂o3 - g₃o3) + E₂
-    integrator.EEst = abs((integrator.opts.delta*E₁+E₂)/(integrator.opts.abstol + max(abs(uprev),abs(u))*integrator.opts.reltol))
-  else
-    u = uprev + (fH01 + 2fH02)/3 + ΔW.*(mg₁ + Fg₂o3 + Tg₃o3) + chi1.*(mg₁ + Fg₂o3 - g₃o3) + E₂
+    integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)/(@muladd(integrator.opts.abstol + max(abs(uprev),abs(u))*integrator.opts.reltol)))
   end
   @pack integrator = t,dt,u
 end
@@ -168,21 +163,21 @@ end
   chi2 = .5*(ΔW + ΔZ/sqrt(3)) #I_(1,0)/h
   chi3 = 1/6 * (ΔW.^3 - 3*ΔW*dt)/dt #I_(1,1,1)/h
 
-  H0[:]=zero(typeof(u))
-  H1[:]=zero(typeof(u))
+  fill!(H0,zero(typeof(u)))
+  fill!(H1,zero(typeof(u)))
   for i = 1:stages
     A0temp = zero(u)
     B0temp = zero(u)
     A1temp = zero(u)
     B1temp = zero(u)
     for j = 1:i-1
-      A0temp += A₀[i,j]*integrator.f(t + c₀[j]*dt,H0[j])
-      B0temp += B₀[i,j]*integrator.g(t + c₁[j]*dt,H1[j])
-      A1temp += A₁[i,j]*integrator.f(t + c₀[j]*dt,H0[j])
-      B1temp += B₁[i,j]*integrator.g(t + c₁[j]*dt,H1[j])
+      A0temp = @muladd A0temp + A₀[i,j]*integrator.f(t + c₀[j]*dt,H0[j])
+      B0temp = @muladd B0temp + B₀[i,j]*integrator.g(t + c₁[j]*dt,H1[j])
+      A1temp = @muladd A1temp + A₁[i,j]*integrator.f(t + c₀[j]*dt,H0[j])
+      B1temp = @muladd B1temp + B₁[i,j]*integrator.g(t + c₁[j]*dt,H1[j])
     end
-    H0[i] = uprev + A0temp*dt + B0temp.*chi2
-    H1[i] = uprev + A1temp*dt + B1temp*integrator.sqdt
+    H0[i] = @muladd uprev + A0temp*dt + B0temp.*chi2
+    H1[i] = @muladd uprev + A1temp*dt + B1temp*integrator.sqdt
   end
   atemp = zero(u)
   btemp = zero(u)
@@ -190,21 +185,19 @@ end
   E₁temp= zero(u)
   for i = 1:stages
     ftemp = integrator.f(t+c₀[i]*dt,H0[i])
-    atemp += α[i]*ftemp
-    btemp += (β₁[i]*ΔW + β₂[i]*chi1).*integrator.g(t+c₁[i]*dt,H1[i])
-    E₂    += (β₃[i]*chi2 + β₄[i]*chi3).*integrator.g(t+c₁[i]*dt,H1[i])
+    atemp = @muladd atemp + α[i]*ftemp
+    btemp = @muladd btemp + (β₁[i]*ΔW + β₂[i]*chi1).*integrator.g(t+c₁[i]*dt,H1[i])
+    E₂    = @muladd E₂    + (β₃[i]*chi2 + β₄[i]*chi3).*integrator.g(t+c₁[i]*dt,H1[i])
     if i <= error_terms #1 or 2
       E₁temp += ftemp
     end
   end
   E₁ = dt*E₁temp
 
+  u = @muladd(uprev + dt*atemp) + btemp + E₂
 
   if integrator.opts.adaptive
-    u = uprev + dt*atemp + btemp + E₂
-    integrator.EEst = abs((integrator.opts.delta*E₁+E₂)./(integrator.opts.abstol + max(abs(uprev),abs(u))*integrator.opts.reltol))
-  else
-    u = uprev + dt*atemp + btemp + E₂
+    integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max(abs(uprev),abs(u))*integrator.opts.reltol))
   end
   @pack integrator = t,dt,u
 end
