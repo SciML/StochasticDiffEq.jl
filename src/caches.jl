@@ -98,7 +98,7 @@ function SRAConstantCache(tableau,rate_prototype)
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂ = tableau
   stages = length(α)
   H0 = Vector{typeof(rate_prototype)}(stages)
-  SRAConstantCache(c₀,c₁,A₀,B₀,α,β₁,β₂,stages,H0)
+  SRAConstantCache(c₀,c₁,A₀',B₀',α,β₁,β₂,stages,H0)
 end
 
 function alg_cache(alg::SRA,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
@@ -164,7 +164,7 @@ function SRIConstantCache(tableau,rate_prototype,error_terms)
   stages = length(α)
   H0 = Array{typeof(rate_prototype)}(stages)
   H1 = Array{typeof(rate_prototype)}(stages)
-  SRIConstantCache(c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄,stages,H0,H1,error_terms)
+  SRIConstantCache(c₀,c₁,A₀',A₁',B₀',B₁',α,β₁,β₂,β₃,β₄,stages,H0,H1,error_terms)
 end
 
 function alg_cache(alg::SRI,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})

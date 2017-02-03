@@ -64,8 +64,8 @@ end
       integrator.f(@muladd(t + c₀[j]*dt),H0[j],ftmp)
       integrator.g(@muladd(t + c₁[j]*dt),H0[j],gtmp)
       for k in eachindex(u)
-        A0temp[k] = @muladd A0temp[k] + A₀[i,j]*ftmp[k]
-        B0temp[k] = @muladd B0temp[k] + B₀[i,j]*gtmp[k]
+        A0temp[k] = @muladd A0temp[k] + A₀[j,i]*ftmp[k]
+        B0temp[k] = @muladd B0temp[k] + B₀[j,i]*gtmp[k]
       end
     end
     for j in eachindex(u)
@@ -113,8 +113,8 @@ end
     A0temp = zero(u)
     B0temp = zero(u)
     for j = 1:i-1
-      A0temp = @muladd A0temp + A₀[i,j]*integrator.f(@muladd(t + c₀[j]*dt),H0[j])
-      B0temp = @muladd B0temp + B₀[i,j]*integrator.g(@muladd(t + c₁[j]*dt),H0[j]) #H0[..,i] argument ignored
+      A0temp = @muladd A0temp + A₀[j,i]*integrator.f(@muladd(t + c₀[j]*dt),H0[j])
+      B0temp = @muladd B0temp + B₀[j,i]*integrator.g(@muladd(t + c₁[j]*dt),H0[j]) #H0[..,i] argument ignored
     end
     H0[i] = uprev + A0temp*dt + B0temp.*chi2
   end

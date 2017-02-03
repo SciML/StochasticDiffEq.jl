@@ -20,10 +20,10 @@
       integrator.f(@muladd(t + c₀[j]*dt),H0[j],ftemp)
       integrator.g(@muladd(t + c₁[j]*dt),H1[j],gtemp)
       for k in eachindex(u)
-        A0temp[k] = @muladd A0temp[k] + A₀[i,j]*ftemp[k]
-        B0temp[k] = @muladd B0temp[k] + B₀[i,j]*gtemp[k]
-        A1temp[k] = @muladd A1temp[k] + A₁[i,j]*ftemp[k]
-        B1temp[k] = @muladd B1temp[k] + B₁[i,j]*gtemp[k]
+        A0temp[k] = @muladd A0temp[k] + A₀[j,i]*ftemp[k]
+        B0temp[k] = @muladd B0temp[k] + B₀[j,i]*gtemp[k]
+        A1temp[k] = @muladd A1temp[k] + A₁[j,i]*ftemp[k]
+        B1temp[k] = @muladd B1temp[k] + B₁[j,i]*gtemp[k]
       end
     end
     H0[i] = uprev + A0temp*dt + B0temp.*chi2
@@ -171,10 +171,10 @@ end
     A1temp = zero(u)
     B1temp = zero(u)
     for j = 1:i-1
-      A0temp = @muladd A0temp + A₀[i,j]*integrator.f(t + c₀[j]*dt,H0[j])
-      B0temp = @muladd B0temp + B₀[i,j]*integrator.g(t + c₁[j]*dt,H1[j])
-      A1temp = @muladd A1temp + A₁[i,j]*integrator.f(t + c₀[j]*dt,H0[j])
-      B1temp = @muladd B1temp + B₁[i,j]*integrator.g(t + c₁[j]*dt,H1[j])
+      A0temp = @muladd A0temp + A₀[j,i]*integrator.f(t + c₀[j]*dt,H0[j])
+      B0temp = @muladd B0temp + B₀[j,i]*integrator.g(t + c₁[j]*dt,H1[j])
+      A1temp = @muladd A1temp + A₁[j,i]*integrator.f(t + c₀[j]*dt,H0[j])
+      B1temp = @muladd B1temp + B₁[j,i]*integrator.g(t + c₁[j]*dt,H1[j])
     end
     H0[i] = @muladd uprev + A0temp*dt + B0temp.*chi2
     H1[i] = @muladd uprev + A1temp*dt + B1temp*integrator.sqdt
