@@ -8,38 +8,38 @@
     chi3[i] = 1/6 * (ΔW[i].^3 - 3*ΔW[i]*dt)/dt #I_(1,1,1)/h
   end
   for i=1:stages
-    H0[i][:]=zero(eltype(integrator.u))
-    H1[i][:]=zero(eltype(integrator.u))
+    fill!(H0[i],zero(eltype(integrator.u)))
+    fill!(H1[i],zero(eltype(integrator.u)))
   end
   for i = 1:stages
-    A0temp[:]=zero(eltype(integrator.u))
-    B0temp[:]=zero(eltype(integrator.u))
-    A1temp[:]=zero(eltype(integrator.u))
-    B1temp[:]=zero(eltype(integrator.u))
+    fill!(A0temp,zero(eltype(integrator.u)))
+    fill!(B0temp,zero(eltype(integrator.u)))
+    fill!(A1temp,zero(eltype(integrator.u)))
+    fill!(B1temp,zero(eltype(integrator.u)))
     for j = 1:i-1
-      integrator.f(t + c₀[j]*dt,H0[j],ftemp)
-      integrator.g(t + c₁[j]*dt,H1[j],gtemp)
+      integrator.f(@muladd(t + c₀[j]*dt),H0[j],ftemp)
+      integrator.g(@muladd(t + c₁[j]*dt),H1[j],gtemp)
       for k in eachindex(u)
-        A0temp[k] += A₀[i,j]*ftemp[k]
-        B0temp[k] += B₀[i,j]*gtemp[k]
-        A1temp[k] += A₁[i,j]*ftemp[k]
-        B1temp[k] += B₁[i,j]*gtemp[k]
+        A0temp[k] = @muladd A0temp[k] + A₀[i,j]*ftemp[k]
+        B0temp[k] = @muladd B0temp[k] + B₀[i,j]*gtemp[k]
+        A1temp[k] = @muladd A1temp[k] + A₁[i,j]*ftemp[k]
+        B1temp[k] = @muladd B1temp[k] + B₁[i,j]*gtemp[k]
       end
     end
     H0[i] = uprev + A0temp*dt + B0temp.*chi2
     H1[i] = uprev + A1temp*dt + B1temp*integrator.sqdt
   end
-  atemp[:]=zero(eltype(integrator.u))
-  btemp[:]=zero(eltype(integrator.u))
-  E₂[:]=zero(eltype(integrator.u))
-  E₁temp[:]=zero(eltype(integrator.u))
+  fill!(atemp,zero(eltype(integrator.u)))
+  fill!(btemp,zero(eltype(integrator.u)))
+  fill!(E₂,zero(eltype(integrator.u)))
+  fill!(E₁temp,zero(eltype(integrator.u)))
   for i = 1:stages
-    integrator.f(t+c₀[i]*dt,H0[i],ftemp)
-    integrator.g(t+c₁[i]*dt,H1[i],gtemp)
+    integrator.f(@muladd(t+c₀[i]*dt),H0[i],ftemp)
+    integrator.g(@muladd(t+c₁[i]*dt),H1[i],gtemp)
     for j in eachindex(u)
-      atemp[j] += α[i]*ftemp[j]
-      btemp[j] += (β₁[i]*ΔW[j] + β₂[i]*chi1[j])*gtemp[j]
-      E₂[j]    += (β₃[i]*chi2[j] + β₄[i]*chi3[j])*gtemp[j]
+      atemp[j] = @muladd atemp[j] + α[i]*ftemp[j]
+      btemp[j] = @muladd btemp[j] + (β₁[i]*ΔW[j] + β₂[i]*chi1[j])*gtemp[j]
+      E₂[j]    = @muladd E₂[j]    + (β₃[i]*chi2[j] + β₄[i]*chi3[j])*gtemp[j]
     end
     if i <= error_terms
       for j in eachindex(u)
@@ -52,18 +52,15 @@
     E₁[i] = dt*E₁temp[i]
   end
 
+  for i in eachindex(u)
+    u[i] = uprev[i] + @muladd(dt*atemp[i] + btemp[i]) + E₂[i]
+  end
+
   if integrator.opts.adaptive
     for i in eachindex(u)
-      u[i] = uprev[i] + dt*atemp[i] + btemp[i] + E₂[i]
-    end
-    for i in eachindex(u)
-      tmp[i] = (integrator.opts.delta*E₁[i]+E₂[i])/(integrator.opts.abstol + max(abs(uprev[i]),abs(u[i]))*integrator.opts.reltol)
+      tmp[i] = @muladd(integrator.opts.delta*E₁[i]+E₂[i])/@muladd(integrator.opts.abstol + max(abs(uprev[i]),abs(u[i]))*integrator.opts.reltol)
     end
     integrator.EEst = integrator.opts.internalnorm(tmp)
-  else
-    for i in eachindex(u)
-      u[i] = uprev[i] + dt*atemp[i] + btemp[i] + E₂[i]
-    end
   end
   @pack integrator = t,dt,u
 end
