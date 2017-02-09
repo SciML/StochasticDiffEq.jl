@@ -26,7 +26,8 @@ end
 
 (integrator::SDEIntegrator)(val::AbstractArray,t::Union{Number,AbstractArray},deriv::Type=Val{0};idxs=eachindex(integrator.uprev)) = current_interpolant!(val,t,integrator,idxs,deriv)
 
-user_cache(integrator::SDEIntegrator) = (integrator.cache.u,integrator.cache.uprev,integrator.cache.tmp) 
+user_cache(integrator::SDEIntegrator) = (integrator.cache.u,integrator.cache.uprev,integrator.cache.tmp)
 u_cache(integrator::SDEIntegrator) = u_cache(integrator.cache)
 du_cache(integrator::SDEIntegrator)= du_cache(integrator.cache)
 full_cache(integrator::SDEIntegrator) = chain(u_cache(integrator),du_cache(integrator.cache))
+@inline add_tstop!(integrator::SDEIntegrator,t) = push!(integrator.opts.tstops,t)
