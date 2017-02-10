@@ -230,59 +230,58 @@ end
 immutable SRIW1ConstantCache <: StochasticDiffEqConstantCache end
 alg_cache(alg::SRIW1,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = SRIW1ConstantCache()
 
-immutable SRIW1Cache{randType,uType} <: StochasticDiffEqMutableCache
+immutable SRIW1Cache{randType,uType,rateType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   chi1::randType
   chi2::randType
   chi3::randType
-  fH01o4::uType
-  g₁o2::uType
+  fH01o4::rateType
+  g₁o2::rateType
   H0::uType
   H11::uType
   H12::uType
   H13::uType
-  g₂o3::uType
-  Fg₂o3::uType
-  g₃o3::uType
-  Tg₃o3::uType
-  mg₁::uType
-  E₁::uType
-  E₂::uType
-  fH01::uType
-  fH02::uType
-  g₁::uType
-  g₂::uType
-  g₃::uType
-  g₄::uType
+  g₂o3::rateType
+  Fg₂o3::rateType
+  g₃o3::rateType
+  Tg₃o3::rateType
+  mg₁::rateType
+  E₁::rateType
+  E₂::rateType
+  fH01::rateType
+  fH02::rateType
+  g₁::rateType
+  g₂::rateType
+  g₃::rateType
+  g₄::rateType
   tmp::uType
 end
 
 u_cache(c::SRIW1Cache) = ()
-du_cache(c::SRIW1Cache) = (c.chi1,c.chi2,c.chi3,c.fH01o4,c.g₁o2,c.H0,c.H11,
-                          c.H12,c.H13,c.g₂o3,c.Fg₂o3,c.g₃o3,c.Tg₃o3,c.mg₁,
+du_cache(c::SRIW1Cache) = (c.chi1,c.chi2,c.chi3,c.fH01o4,c.g₁o2,c.g₂o3,c.Fg₂o3,c.g₃o3,c.Tg₃o3,c.mg₁,
                           c.E₁,c.E₂,c.fH01,c.fH02,c.g₁,c.g₂,c.g₃,c.g₄)
-
+user_cache(c::SRIW1Cache) = (c.u,c.uprev,c.tmp,c.H0,c.H11,c.H12,c.H13)
 
 function alg_cache(alg::SRIW1,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   chi1 = similar(ΔW)
   chi2 = similar(ΔW)
   chi3 = similar(ΔW)
-  fH01o4 = zeros(uprev)
-  g₁o2 = zeros(u)
+  fH01o4 = zeros(rate_prototype)
+  g₁o2 = zeros(rate_prototype)
   H0 = zeros(u)
   H11 = zeros(u)
   H12 = zeros(u)
   H13 = zeros(u)
-  g₂o3 = zeros(u)
-  Fg₂o3 = zeros(u)
-  g₃o3 = zeros(u)
-  Tg₃o3 = zeros(u)
-  mg₁ = zeros(u)
-  E₁ = zeros(u)
-  E₂ = zeros(u)
-  fH01 = zeros(u); fH02 = zeros(u)
-  g₁ = zeros(u); g₂ = zeros(u); g₃ = zeros(u); g₄ = zeros(u)
+  g₂o3 = zeros(rate_prototype)
+  Fg₂o3 = zeros(rate_prototype)
+  g₃o3 = zeros(rate_prototype)
+  Tg₃o3 = zeros(rate_prototype)
+  mg₁ = zeros(rate_prototype)
+  E₁ = zeros(rate_prototype)
+  E₂ = zeros(rate_prototype)
+  fH01 = zeros(rate_prototype); fH02 = zeros(rate_prototype)
+  g₁ = zeros(rate_prototype); g₂ = zeros(rate_prototype); g₃ = zeros(rate_prototype); g₄ = zeros(rate_prototype)
   tmp = zeros(u)
   SRIW1Cache(u,uprev,chi1,chi2,chi3,fH01o4,g₁o2,H0,H11,H12,H13,g₂o3,Fg₂o3,g₃o3,Tg₃o3,mg₁,E₁,E₂,fH01,fH02,g₁,g₂,g₃,g₄,tmp)
 end

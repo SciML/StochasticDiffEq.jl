@@ -26,9 +26,11 @@ end
 
 (integrator::SDEIntegrator)(val::AbstractArray,t::Union{Number,AbstractArray},deriv::Type=Val{0};idxs=eachindex(integrator.uprev)) = current_interpolant!(val,t,integrator,idxs,deriv)
 
-user_cache(integrator::SDEIntegrator) = (integrator.cache.u,integrator.cache.uprev,integrator.cache.tmp)
+
+user_cache(integrator::SDEIntegrator) = user_cache(integrator.cache)
 u_cache(integrator::SDEIntegrator) = u_cache(integrator.cache)
 du_cache(integrator::SDEIntegrator)= du_cache(integrator.cache)
+user_cache(c::StochasticDiffEqCache) = (c.u,c.uprev,c.tmp)
 full_cache(integrator::SDEIntegrator) = chain(user_cache(integrator),u_cache(integrator),du_cache(integrator.cache))
 default_non_user_cache(integrator::SDEIntegrator) = chain(u_cache(integrator),du_cache(integrator.cache))
 @inline add_tstop!(integrator::SDEIntegrator,t) = push!(integrator.opts.tstops,t)
@@ -37,10 +39,13 @@ resize_non_user_cache!(integrator::SDEIntegrator,i::Int) = resize_non_user_cache
 resize!(integrator::SDEIntegrator,i::Int) = resize!(integrator,integrator.cache,i)
 
 function resize!(integrator::SDEIntegrator,cache,i)
-  prev_len = length(integrator.u)
+  resize_non_user_cache!(integrator,cache,i)
   for c in user_cache(integrator)
     resize!(c,i)
   end
+end
+
+function resize_noise!(integrator,cache,prev_len,i)
   for c in integrator.S₁
     resize!(c[2],i)
     resize!(c[3],i)
@@ -67,10 +72,11 @@ function resize!(integrator::SDEIntegrator,cache,i)
     fill!(@view(integrator.W[prev_len:i]),zero(eltype(integrator.u)))
     fill!(@view(integrator.Z[prev_len:i]),zero(eltype(integrator.u)))
   end
-  resize_non_user_cache!(integrator,cache,i)
 end
 
 function resize_non_user_cache!(integrator::SDEIntegrator,cache,i)
+  prev_len = length(integrator.u)
+  resize_noise!(integrator,cache,prev_len,i)
   for c in default_non_user_cache(integrator)
     resize!(c,i)
   end
