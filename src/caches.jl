@@ -21,8 +21,8 @@ immutable EMCache{uType} <: StochasticDiffEqMutableCache
   utmp2::uType
 end
 
-u_cache(c::EMCache) = (c.u,c.uprev)
-du_cache(c::EMCache) = (c.tmp,c.utmp2)
+u_cache(c::EMCache) = ()
+du_cache(c::EMCache) = (c.utmp2,)
 
 alg_cache(alg::EM,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = EMConstantCache()
 
@@ -42,8 +42,8 @@ immutable RKMilCache{uType} <: StochasticDiffEqMutableCache
   L::uType
 end
 
-u_cache(c::RKMilCache) = (c.u,c.uprev)
-du_cache(c::RKMilCache) = (c.du1,c.du2,c.K,c.tmp,c.L)
+u_cache(c::RKMilCache) = ()
+du_cache(c::RKMilCache) = (c.du1,c.du2,c.K,c.L)
 
 alg_cache(alg::RKMil,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = RKMilConstantCache()
 
@@ -70,7 +70,7 @@ immutable SRA1Cache{randType,uType} <: StochasticDiffEqMutableCache
   tmp::uType
 end
 
-u_cache(c::SRA1Cache) = (c.u,c.uprev,c.tmp)
+u_cache(c::SRA1Cache) = ()
 du_cache(c::SRA1Cache) = (c.chi2,c.tmp1,c.E₁,c.E₂,c.gt,c.k₁,c.k₂,c.gpdt)
 
 function alg_cache(alg::SRA1,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
@@ -123,9 +123,9 @@ immutable SRACache{uType,tabType} <: StochasticDiffEqMutableCache
   tab::tabType
 end
 
-u_cache(c::SRACache) = (c.u,c.uprev)
+u_cache(c::SRACache) = ()
 du_cache(c::SRACache) = (c.A0temp,c.B0temp,c.ftmp,c.gtmp,c.chi2,c.chi2,c.atemp,
-                          c.btemp,c.E₁,c.E₁temp,c.E₂,c.tmp,c.H0...)
+                          c.btemp,c.E₁,c.E₁temp,c.E₂,c.H0...)
 
 function alg_cache(alg::SRA,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   H0 = Vector{typeof(u)}(0)
@@ -198,10 +198,10 @@ immutable SRICache{randType,uType,tabType} <: StochasticDiffEqMutableCache
   tab::tabType
 end
 
-u_cache(c::SRICache) = (c.u,c.uprev)
+u_cache(c::SRICache) = ()
 du_cache(c::SRICache) = (c.A0temp,c.A1temp,c.B0temp,c.B1temp,c.A0temp2,c.A1temp2,
                           c.B0temp2,c.B1temp2,c.atemp,c.btemp,c.E₁,c.E₂,c.E₁temp,
-                          c.ftemp,c.gtemp,c.chi1,c.chi2,c.chi3,c.tmp,
+                          c.ftemp,c.gtemp,c.chi1,c.chi2,c.chi3,
                           c.H0...,c.H1...)
 
 
@@ -258,10 +258,10 @@ immutable SRIW1Cache{randType,uType} <: StochasticDiffEqMutableCache
   tmp::uType
 end
 
-u_cache(c::SRIW1Cache) = (c.u,c.uprev)
+u_cache(c::SRIW1Cache) = ()
 du_cache(c::SRIW1Cache) = (c.chi1,c.chi2,c.chi3,c.fH01o4,c.g₁o2,c.H0,c.H11,
                           c.H12,c.H13,c.g₂o3,c.Fg₂o3,c.g₃o3,c.Tg₃o3,c.mg₁,
-                          c.E₁,c.E₂,c.fH01,c.fH02,c.g₁,c.g₂,c.g₃,c.g₄,c.tmp)
+                          c.E₁,c.E₂,c.fH01,c.fH02,c.g₁,c.g₂,c.g₃,c.g₄)
 
 
 function alg_cache(alg::SRIW1,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})

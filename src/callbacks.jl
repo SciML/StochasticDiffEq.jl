@@ -13,7 +13,7 @@ end
 function find_first_continuous_callback(integrator,tmin::Number,upcrossing::Float64,idx::Int,counter::Int,callback2)
   counter += 1 # counter is idx for callback2.
   tmin2,upcrossing2 = find_callback_time(integrator,callback2)
-  
+
   if (tmin2 < tmin && tmin2 != zero(typeof(tmin))) || tmin == zero(typeof(tmin))
     return tmin2,upcrossing,counter,counter
   else
@@ -206,48 +206,4 @@ end
 function apply_discrete_callback!(integrator::SDEIntegrator,discrete_modified::Bool,callback::DiscreteCallback)
   bool = apply_discrete_callback!(integrator,callback)
   discrete_modified || bool
-end
-
-resize!(integrator::SDEIntegrator,i::Int) = resize!(integrator,integrator.cache,i)
-function resize!(integrator::SDEIntegrator,cache,i)
-  prev_len = length(integrator.u)
-  for c in full_cache(integrator)
-    resize!(c,i)
-  end
-  for c in integrator.S₁
-    resize!(c[2],i)
-    resize!(c[3],i)
-    if i > prev_len # fill in rands
-      resize_noise_caches!(integrator,c,c[1],prev_len:i)
-    end
-  end
-  for c in integrator.S₂
-    resize!(c[2],i)
-    resize!(c[3],i)
-    if i > prev_len # fill in rands
-      resize_noise_caches!(integrator,c,c[1],prev_len:i)
-    end
-  end
-  resize!(integrator.ΔW,i)
-  resize!(integrator.ΔZ,i)
-  resize!(integrator.ΔWtilde,i)
-  resize!(integrator.ΔZtilde,i)
-  resize!(integrator.ΔWtmp,i)
-  resize!(integrator.ΔZtmp,i)
-  resize!(integrator.W,i)
-  resize!(integrator.Z,i)
-  if i > prev_len # fill in rands
-    fill!(@view(integrator.W[prev_len:i]),zero(eltype(integrator.u)))
-    fill!(@view(integrator.Z[prev_len:i]),zero(eltype(integrator.u)))
-  end
-end
-
-function deleteat!(integrator::SDEIntegrator,i::Int)
-  for c in full_cache(integrator)
-    deleteat!(c,i)
-  end
-end
-
-function terminate!(integrator::SDEIntegrator)
-  integrator.opts.tstops.valtree = typeof(integrator.opts.tstops.valtree)()
 end
