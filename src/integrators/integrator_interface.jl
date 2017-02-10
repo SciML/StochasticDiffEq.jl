@@ -36,6 +36,8 @@ default_non_user_cache(integrator::SDEIntegrator) = chain(u_cache(integrator),du
 @inline add_tstop!(integrator::SDEIntegrator,t) = push!(integrator.opts.tstops,t)
 
 resize_non_user_cache!(integrator::SDEIntegrator,i::Int) = resize_non_user_cache!(integrator,integrator.cache,i)
+deleteat_non_user_cache!(integrator::SDEIntegrator,i) = deleteat_non_user_cache!(integrator,integrator.cache,i)
+addat_non_user_cache!(integrator::SDEIntegrator,i) = addat_non_user_cache!(integrator,integrator.cache,i)
 resize!(integrator::SDEIntegrator,i::Int) = resize!(integrator,integrator.cache,i)
 
 function resize!(integrator::SDEIntegrator,cache,i)
@@ -45,19 +47,19 @@ function resize!(integrator::SDEIntegrator,cache,i)
   end
 end
 
-function resize_noise!(integrator,cache,prev_len,i)
+function resize_noise!(integrator,cache,bot_idx,i)
   for c in integrator.S₁
     resize!(c[2],i)
     resize!(c[3],i)
-    if i > prev_len # fill in rands
-      resize_noise_caches!(integrator,c,c[1],prev_len:i)
+    if i > bot_idx # fill in rands
+      fill_new_noise_caches!(integrator,c,sqrt(c[1]),bot_idx:i)
     end
   end
   for c in integrator.S₂
     resize!(c[2],i)
     resize!(c[3],i)
-    if i > prev_len # fill in rands
-      resize_noise_caches!(integrator,c,c[1],prev_len:i)
+    if i > bot_idx # fill in rands
+      fill_new_noise_caches!(integrator,c,sqrt(c[1]),bot_idx:i)
     end
   end
   resize!(integrator.ΔW,i)
@@ -68,25 +70,121 @@ function resize_noise!(integrator,cache,prev_len,i)
   resize!(integrator.ΔZtmp,i)
   resize!(integrator.W,i)
   resize!(integrator.Z,i)
-  if i > prev_len # fill in rands
-    fill!(@view(integrator.W[prev_len:i]),zero(eltype(integrator.u)))
-    fill!(@view(integrator.Z[prev_len:i]),zero(eltype(integrator.u)))
+  if i > bot_idx # fill in rands
+    fill!(@view(integrator.W[bot_idx:i]),zero(eltype(integrator.u)))
+    fill!(@view(integrator.Z[bot_idx:i]),zero(eltype(integrator.u)))
+  end
+end
+
+@inline function fill_new_noise_caches!(integrator,c,scaling_factor,idxs)
+  if isinplace(integrator.noise)
+    integrator.noise(@view c[2][idxs])
+    for i in idxs
+      c[2][i] *= scaling_factor
+    end
+    if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+      integrator.noise(@view c[3][idxs])
+      for i in idxs
+        c[3][i] .*= scaling_factor
+      end
+    end
+  else
+    c[2][idxs] .= scaling_factor.*integrator.noise(length(idxs))
+    if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+      c[3][idxs] .= scaling_factor.*integrator.noise(length(idxs))
+    end
   end
 end
 
 function resize_non_user_cache!(integrator::SDEIntegrator,cache,i)
-  prev_len = length(integrator.u)
-  resize_noise!(integrator,cache,prev_len,i)
+  bot_idx = length(integrator.u)
+  resize_noise!(integrator,cache,bot_idx,i)
   for c in default_non_user_cache(integrator)
     resize!(c,i)
   end
 end
 
-function deleteat!(integrator::SDEIntegrator,i::Int)
-  for c in full_cache(integrator)
-    deleteat!(c,i)
+function deleteat!(integrator::SDEIntegrator,idxs)
+  deleteat_non_user_cache!(integrator,cache,idxs)
+  for c in user_cache(integrator)
+    deleteat!(c,idxs)
   end
 end
+
+function addat!(integrator::SDEIntegrator,idxs)
+  addat_non_user_cache!(integrator,cache,idxs)
+  for c in user_cache(integrator)
+    addat!(c,idxs)
+  end
+end
+
+function deleteat_non_user_cache!(integrator::SDEIntegrator,cache,idxs)
+  deleteat_noise!(integrator,cache,idxs)
+  i = length(integrator.u)
+  # Ordering doesn't matter in these caches
+  # So just resize
+  for c in default_non_user_cache(integrator)
+    resize!(c,i)
+  end
+end
+
+function addat_non_user_cache!(integrator::SDEIntegrator,cache,idxs)
+  addat_noise!(integrator,cache,idxs)
+  i = length(integrator.u)
+  # Ordering doesn't matter in these caches
+  # So just resize
+  for c in default_non_user_cache(integrator)
+    resize!(c,i)
+  end
+end
+
+function deleteat_noise!(integrator,cache,idxs)
+  for c in integrator.S₁
+    deleteat!(c[2],idxs)
+    deleteat!(c[3],idxs)
+  end
+  for c in integrator.S₂
+    deleteat!(c[2],idxs)
+    deleteat!(c[3],idxs)
+  end
+  deleteat!(integrator.ΔW,idxs)
+  deleteat!(integrator.ΔZ,idxs)
+  deleteat!(integrator.ΔWtilde,idxs)
+  deleteat!(integrator.ΔZtilde,idxs)
+  deleteat!(integrator.ΔWtmp,idxs)
+  deleteat!(integrator.ΔZtmp,idxs)
+  deleteat!(integrator.W,idxs)
+  deleteat!(integrator.Z,idxs)
+end
+
+function addat_noise!(integrator,cache,idxs)
+  for c in integrator.S₁
+    addat!(c[2],idxs)
+    addat!(c[3],idxs)
+    fill_new_noise_caches!(integrator,c,sqrt(c[1]),idxs)
+  end
+  for c in integrator.S₂
+    addat!(c[2],idxs)
+    addat!(c[3],idxs)
+    fill_new_noise_caches!(integrator,c,sqrt(c[1]),idxs)
+  end
+
+  addat!(integrator.ΔW,idxs)
+  addat!(integrator.ΔZ,idxs)
+  addat!(integrator.W,idxs)
+  addat!(integrator.Z,idxs)
+
+  i = length(integrator.u)
+  resize!(integrator.ΔWtilde,i)
+  resize!(integrator.ΔZtilde,i)
+  resize!(integrator.ΔWtmp,i)
+  resize!(integrator.ΔZtmp,i)
+
+  # fill in rands
+  fill!(@view(integrator.W[idxs]),zero(eltype(integrator.u)))
+  fill!(@view(integrator.Z[idxs]),zero(eltype(integrator.u)))
+end
+
 
 function terminate!(integrator::SDEIntegrator)
   integrator.opts.tstops.valtree = typeof(integrator.opts.tstops.valtree)()

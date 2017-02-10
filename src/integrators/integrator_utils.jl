@@ -434,26 +434,6 @@ end
   end
 end
 
-@inline function resize_noise_caches!(integrator,c,scaling_factor,idxs)
-  if isinplace(integrator.noise)
-    integrator.noise(@view c[2][idxs])
-    for i in idxs
-      c[2][i] *= scaling_factor
-    end
-    if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
-      integrator.noise(@view c[3][idxs])
-      for i in idxs
-        c[3][i] .*= scaling_factor
-      end
-    end
-  else
-    c[2][idxs] .= scaling_factor.*integrator.noise(length(idxs))
-    if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
-      c[3][idxs] .= scaling_factor.*integrator.noise(length(idxs))
-    end
-  end
-end
-
 @inline function generate_tildes(integrator,add1,add2,scaling)
   if isinplace(integrator.noise)
     integrator.noise(integrator.ΔWtilde)
