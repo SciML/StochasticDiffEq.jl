@@ -26,8 +26,10 @@
         B1temp[k] = @muladd B1temp[k] + B₁[j,i]*gtemp[k]
       end
     end
-    H0[i] = uprev + A0temp*dt + B0temp.*chi2
-    H1[i] = uprev + A1temp*dt + B1temp*integrator.sqdt
+    for k in eachindex(u)
+      H0[i][k] = uprev[k] + A0temp[k]*dt + B0temp[k]*chi2[k]
+      H1[i][k] = uprev[k] + A1temp[k]*dt + B1temp[k]*integrator.sqdt
+    end
   end
   fill!(atemp,zero(eltype(integrator.u)))
   fill!(btemp,zero(eltype(integrator.u)))

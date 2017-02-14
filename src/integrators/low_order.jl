@@ -5,12 +5,12 @@
 end
 
 @inline function perform_step!(integrator,cache::EMCache,f=integrator.f)
-  @unpack tmp,utmp2 = cache
+  @unpack rtmp1,rtmp2 = cache
   @unpack t,dt,uprev,u,ΔW = integrator
-  integrator.f(t,uprev,tmp)
-  integrator.g(t,uprev,utmp2)
+  integrator.f(t,uprev,rtmp1)
+  integrator.g(t,uprev,rtmp2)
   for i in eachindex(u)
-    u[i] = @muladd uprev[i] + dt*tmp[i] + utmp2[i]*ΔW[i]
+    u[i] = @muladd uprev[i] + dt*rtmp1[i] + rtmp2[i]*ΔW[i]
   end
   @pack integrator = t,dt,u
 end
