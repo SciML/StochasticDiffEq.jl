@@ -1,6 +1,6 @@
 julia 0.5
 Parameters 0.5.0
-DiffEqBase 0.8.0
+DiffEqBase 0.11.0
 RecursiveArrayTools 0.2.0
 DataStructures 0.4.6
 ResettableStacks 0.0.1
