@@ -82,11 +82,11 @@ times ts (sorted), with values timeseries and derivatives ks
 @inline function sde_interpolation(tvals,id,idxs,deriv)
   @unpack ts,timeseries = id
   tdir = sign(ts[end]-ts[1])
-  idx = sortperm(tvals)
+  idx = sortperm(tvals,rev=tdir<0)
   i = 2 # Start the search thinking it's between ts[1] and ts[2]
   if idxs == nothing
     if (eltype(timeseries) <: AbstractArray) && !(eltype(timeseries) <: Array)
-      vals = Vector{Vector{eltype(first(timeseries))}}(length(tvals)) 
+      vals = Vector{Vector{eltype(first(timeseries))}}(length(tvals))
     else
       vals = Vector{eltype(timeseries)}(length(tvals))
     end
@@ -190,7 +190,7 @@ end
 @inline function sde_interpolation!(vals,tvals,id,idxs,deriv)
   @unpack ts,timeseries = id
   tdir = sign(ts[end]-ts[1])
-  idx = sortperm(tvals)
+  idx = sortperm(tvals,rev=tdir<0)
   i = 2 # Start the search thinking it's between ts[1] and ts[2]
   @inbounds for j in idx
     t = tvals[j]
