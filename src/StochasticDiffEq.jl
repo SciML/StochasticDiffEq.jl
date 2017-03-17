@@ -9,6 +9,8 @@ module StochasticDiffEq
   using DiffEqBase, Parameters, RecursiveArrayTools, Juno,
         DataStructures, ResettableStacks, Iterators, Roots
 
+  using Compat
+
   import DiffEqBase: solve, solve!, init, step!, build_solution
 
   import DiffEqBase: resize!,deleteat!,addat!,full_cache,user_cache, u_cache,du_cache,
