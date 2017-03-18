@@ -1,6 +1,6 @@
-abstract StochasticDiffEqAlgorithm <: AbstractSDEAlgorithm
-abstract StochasticDiffEqAdaptiveAlgorithm <: StochasticDiffEqAlgorithm
-abstract StochasticDiffEqCompositeAlgorithm <: StochasticDiffEqAlgorithm
+@compat abstract type StochasticDiffEqAlgorithm <: AbstractSDEAlgorithm end
+@compat abstract type StochasticDiffEqAdaptiveAlgorithm <: StochasticDiffEqAlgorithm end
+@compat abstract type StochasticDiffEqCompositeAlgorithm <: StochasticDiffEqAlgorithm end
 
 @with_kw immutable EM{RSType} <: StochasticDiffEqAlgorithm
   rswm::RSType = RSWM(adaptivealg=:RSwM1)

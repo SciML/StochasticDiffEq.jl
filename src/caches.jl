@@ -1,6 +1,6 @@
-abstract StochasticDiffEqCache <: DECache
-abstract StochasticDiffEqConstantCache <: StochasticDiffEqCache
-abstract StochasticDiffEqMutableCache <: StochasticDiffEqCache
+@compat abstract type StochasticDiffEqCache <: DECache end
+@compat abstract type StochasticDiffEqConstantCache <: StochasticDiffEqCache end
+@compat abstract type StochasticDiffEqMutableCache <: StochasticDiffEqCache end
 
 type StochasticCompositeCache{T,F} <: StochasticDiffEqCache
   caches::T
