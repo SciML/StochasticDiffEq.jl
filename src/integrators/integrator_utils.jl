@@ -82,7 +82,7 @@ end
       end
       copyat_or_push!(integrator.sol.t,integrator.saveiter,curt)
       copyat_or_push!(integrator.sol.u,integrator.saveiter,save_val,Val{false})
-      if typeof(integrator.alg) <: StochasticEqCompositeAlgorithm
+      if typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm
         copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
       end
       if integrator.opts.save_noise
