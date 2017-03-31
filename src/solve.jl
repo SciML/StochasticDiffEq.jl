@@ -271,6 +271,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
                   tTypeNoUnits(qoldinit),q11)
   if initialize_integrator
     initialize!(integrator,integrator.cache)
+    initialize!(callbacks_internal,t,u,integrator)
   end
   integrator
 end
@@ -293,5 +294,6 @@ function solve!(integrator::SDEIntegrator)
   if typeof(integrator.sol.prob) <: AbstractSDETestProblem
     calculate_solution_errors!(integrator.sol;timeseries_errors=integrator.opts.timeseries_errors,dense_errors=integrator.opts.dense_errors)
   end
-  integrator.sol
+  integrator.sol.retcode = :Success
+  nothing
 end
