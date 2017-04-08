@@ -84,6 +84,8 @@ times ts (sorted), with values timeseries and derivatives ks
   tdir = sign(ts[end]-ts[1])
   idx = sortperm(tvals,rev=tdir<0)
   tvals[idx[end]] > ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
+  tvals[idx[1]] < ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
+  if idxs == nothing
   i = 2 # Start the search thinking it's between ts[1] and ts[2]
   if idxs == nothing
     if (eltype(timeseries) <: AbstractArray) && !(eltype(timeseries) <: Array)
@@ -134,6 +136,7 @@ times ts (sorted), with values timeseries and derivatives ks
 @inline function sde_interpolation(tval::Number,id,idxs,deriv)
   @unpack ts,timeseries = id
   tval > ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
+  tval < ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
   tdir = sign(ts[end]-ts[1])
   @inbounds i = searchsortedfirst(ts,tval,rev=tdir<0) # It's in the interval ts[i-1] to ts[i]
   @inbounds if ts[i] == tval
@@ -164,6 +167,7 @@ end
 @inline function sde_interpolation!(out,tval::Number,id,idxs,deriv)
   @unpack ts,timeseries = id
   tval > ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
+  tval < ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
   tdir = sign(ts[end]-ts[1])
   @inbounds i = searchsortedfirst(ts,tval,rev=tdir<0) # It's in the interval ts[i-1] to ts[i]
   @inbounds if ts[i] == tval
@@ -195,6 +199,7 @@ end
   tdir = sign(ts[end]-ts[1])
   idx = sortperm(tvals,rev=tdir<0)
   tvals[idx[end]] > ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
+  tvals[idx[1]] < ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
   i = 2 # Start the search thinking it's between ts[1] and ts[2]
   @inbounds for j in idx
     t = tvals[j]
