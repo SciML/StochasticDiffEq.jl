@@ -85,7 +85,6 @@ times ts (sorted), with values timeseries and derivatives ks
   idx = sortperm(tvals,rev=tdir<0)
   tvals[idx[end]] > ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
   tvals[idx[1]] < ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
-  if idxs == nothing
   i = 2 # Start the search thinking it's between ts[1] and ts[2]
   if idxs == nothing
     if (eltype(timeseries) <: AbstractArray) && !(eltype(timeseries) <: Array)
