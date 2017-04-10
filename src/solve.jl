@@ -231,7 +231,12 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
   if !(uType <: AbstractArray)
     randType = typeof(u/u) # Strip units and type info
   else
-    rand_prototype = similar(map((x)->x/x,u),indices(u))
+    randElType = typeof(u[1]/u[1]) # Strip units and type info
+    if ND <: Void # noise_dim isn't set, so it's diagonal
+      rand_prototype = similar(Array{randElType},indices(u))
+    else
+      rand_prototype = similar(Vector{randElType},noise.noise_dim)
+    end
     randType = typeof(rand_prototype) # Strip units and type info
   end
 
