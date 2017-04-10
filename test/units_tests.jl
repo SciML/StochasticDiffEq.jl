@@ -6,8 +6,8 @@
 u0 = 1.5Newton
 prob = SDEProblem(f,σ,u0)
 
-sol =solve(prob::SDEProblem,[0,1],dt=(1/2^4)Second,save_timeseries=true,alg=:EM)
-sol =solve(prob::SDEProblem,[0,1],dt=(1/2^4)Second,save_timeseries=true,alg=:SRIW1)
+sol =solve(prob::SDEProblem,[0,1],dt=(1/2^4)Second,save_everystep=true,alg=:EM)
+sol =solve(prob::SDEProblem,[0,1],dt=(1/2^4)Second,save_everystep=true,alg=:SRIW1)
 
 TEST_PLOT && plot(sol)
 
@@ -16,6 +16,6 @@ u0 = [1.5Newton 2.0Newton
 
 prob = SDEProblem(f,σ,u0)
 
-sol =solve(prob::SDEProblem,[0,1],dt=(1/2^4)Second,save_timeseries=true,alg=:EM)
-sol =solve(prob::SDEProblem,[0,1],dt=(1/2^4)Second,save_timeseries=true,alg=:SRIW1)
+sol =solve(prob::SDEProblem,[0,1],dt=(1/2^4)Second,save_everystep=true,alg=:EM)
+sol =solve(prob::SDEProblem,[0,1],dt=(1/2^4)Second,save_everystep=true,alg=:SRIW1)
 =#

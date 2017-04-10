@@ -16,11 +16,13 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
               prob::AbstractRODEProblem{uType,tType,isinplace,NoiseClass},
               alg::algType,timeseries_init=uType[],ts_init=tType[],ks_init=[],
               recompile::Type{Val{recompile_flag}}=Val{true};
-              dt = tType(0),save_timeseries::Bool = true,
+              dt = tType(0),
               timeseries_steps::Int = 1,
-              dense = false,
               save_noise = true,
               saveat = tType[],tstops = tType[],d_discontinuities= tType[],
+              save_timeseries = nothing,
+              save_everystep = isempty(saveat),
+              dense = save_everystep,
               calck = (!isempty(setdiff(saveat,tstops)) || dense),
               adaptive=isadaptive(alg),gamma=9//10,
               abstol=1e-2,reltol=1e-2,
@@ -43,6 +45,11 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
               timeseries_errors = true, dense_errors=false,
               initialize_integrator=true,
               kwargs...)
+
+  if save_timeseries != nothing
+    warn("save_timeseries is deprecated. Use save_everystep instead")
+    save_everystep = save_timeseries
+  end
 
   noise = prob.noise
   tspan = prob.tspan
@@ -113,7 +120,13 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
   end
   rateType = typeof(rate_prototype) ## Can be different if united
 
-  saveat_vec =  convert(Vector{tType},collect(saveat))
+  if typeof(saveat) <: Number
+    saveat_vec = convert(Vector{tType},saveat:saveat:(tspan[end]-saveat))
+    # Exclude the endpoint because of floating point issues
+  else
+    saveat_vec =  convert(Vector{tType},collect(saveat))
+  end
+
   if !isempty(saveat_vec) && saveat_vec[end] == tspan[2]
     pop!(saveat_vec)
   end
@@ -156,7 +169,7 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
 
   uEltype = eltype(u)
 
-  opts = SDEOptions(Int(maxiters),timeseries_steps,save_timeseries,adaptive,uEltype(uEltype(1)*abstol),
+  opts = SDEOptions(Int(maxiters),timeseries_steps,save_everystep,adaptive,uEltype(uEltype(1)*abstol),
     uEltypeNoUnits(reltol),tTypeNoUnits(gamma),tTypeNoUnits(qmax),tTypeNoUnits(qmin),
     dtmax,dtmin,internalnorm,
     tstops_internal,saveat_internal,d_discontinuities_internal,

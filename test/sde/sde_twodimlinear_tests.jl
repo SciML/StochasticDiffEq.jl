@@ -9,7 +9,7 @@ sol = solve(prob,RKMil(),dt=1/2^(3))
 sol = solve(prob,SRI(),dt=1/2^(3))
 sol = solve(prob,SRIW1(),dt=1/2^(3))
 
-sol = solve(prob,SRIW1(),dt=1/2^(3),save_timeseries=false)
+sol = solve(prob,SRIW1(),dt=1/2^(3),save_everystep=false)
 
 
 sol = solve(prob,SRIW1(),dt=1/2^(3),progress=true,progress_steps=1)

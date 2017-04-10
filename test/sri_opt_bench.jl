@@ -11,7 +11,7 @@ BenchmarkTools.DEFAULT_PARAMETERS.samples = 100
 @benchmark begin
   srand(100)
   sol = solve(quick_prob,SRI(),dt=(1/2)^(18),progress_steps=Int(1e5),
-        qmax=1.125,save_timeseries=false,
+        qmax=1.125,save_everystep=false,
         timeseries_steps=1000,abstol=1e-5,reltol=1e-4)
 end
 
@@ -19,7 +19,7 @@ end
   srand(100)
   sol = solve(quick_prob,SRI(tableau=StochasticDiffEq.constructSRIOpt1()),
         progress_steps=Int(1e5),
-        qmax=1.125,save_timeseries=false,
+        qmax=1.125,save_everystep=false,
         timeseries_steps=1000,abstol=1e-5,reltol=1e-4)
 end
 
