@@ -2,8 +2,8 @@
 @inline ODE_DEFAULT_PROG_MESSAGE(dt,t,u) = "dt="*string(dt)*"\nt="*string(t)*"\nmax u="*string(maximum(abs.(u)))
 @inline ODE_DEFAULT_UNSTABLE_CHECK(dt,t,u) = any(isnan,u)
 
-function solve{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},recompile_flag}(
-  prob::AbstractRODEProblem{uType,tType,isinplace,NoiseClass},
+function solve{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},ND,recompile_flag}(
+  prob::AbstractRODEProblem{uType,tType,isinplace,NoiseClass,ND},
   alg::algType,timeseries=[],ts=[],ks=[],recompile::Type{Val{recompile_flag}}=Val{true};
   kwargs...)
 
@@ -12,8 +12,8 @@ function solve{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgor
   integrator.sol
 end
 
-function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},recompile_flag}(
-              prob::AbstractRODEProblem{uType,tType,isinplace,NoiseClass},
+function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},ND,recompile_flag}(
+              prob::AbstractRODEProblem{uType,tType,isinplace,NoiseClass,ND},
               alg::algType,timeseries_init=uType[],ts_init=tType[],ks_init=[],
               recompile::Type{Val{recompile_flag}}=Val{true};
               dt = tType(0),
@@ -234,7 +234,6 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
     rand_prototype = similar(map((x)->x/x,u),indices(u))
     randType = typeof(rand_prototype) # Strip units and type info
   end
-
 
   Ws = Vector{randType}(0)
   if !(uType <: AbstractArray)
