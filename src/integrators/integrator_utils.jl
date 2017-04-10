@@ -77,7 +77,11 @@ end
     curt = pop!(integrator.opts.saveat)
     if integrator.opts.saveat!=integrator.t # If <t, interpolate
       Θ = (curt - integrator.tprev)/integrator.dt
-      val = sde_interpolant(Θ,integrator,indices(integrator.uprev),Val{0}) # out of place, but force copy later
+      if integrator.opts.save_idxs == nothing
+        val = sde_interpolant(Θ,integrator,indices(integrator.uprev),Val{0}) # out of place, but force copy later
+      else
+        val = sde_interpolant(Θ,integrator,integrator.opts.save_idxs,Val{0}) # out of place, but force copy later
+      end
       if eltype(integrator.sol.u) <: DEDataArray
         save_val = copy_non_array_fields(integrator.uprev,val)
       else
@@ -93,24 +97,40 @@ end
       end
     else # ==t, just save
       copyat_or_push!(integrator.sol.t,integrator.saveiter,integrator.t)
-      copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u)
+      if integrator.opts.save_idxs == nothing
+        copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u)
+      else
+        copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})
+      end
       if typeof(alg) <: StochasticDiffEqCompositeAlgorithm
         copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
       end
       if integrator.opts.save_noise
-        copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W)
+        if integrator.opts.save_idxs == nothing
+          copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W)
+        else
+          copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W[integrator.opts.save_idxs],Val{false})
+        end
       end
     end
   end
   if integrator.opts.save_everystep && integrator.iter%integrator.opts.timeseries_steps==0
     integrator.saveiter += 1
-    copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u)
+    if integrator.opts.save_idxs == nothing
+      copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u)
+    else
+      copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})
+    end
     copyat_or_push!(integrator.sol.t,integrator.saveiter,integrator.t)
     #if typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm
     #  copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
     #end
     if integrator.opts.save_noise
-      copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W)
+      if integrator.opts.save_idxs == nothing
+        copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W)
+      else
+        copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W[integrator.opts.save_idxs],Val{false})
+      end
     end
   end
 end
@@ -161,9 +181,17 @@ end
   if integrator.sol.t[integrator.saveiter] != integrator.t
     integrator.saveiter += 1
     copyat_or_push!(integrator.sol.t,integrator.saveiter,integrator.t)
-    copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u)
+    if integrator.opts.save_idxs == nothing
+      copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u)
+    else
+      copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})
+    end
     if integrator.opts.save_noise
-      copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W)
+      if integrator.opts.save_idxs == nothing
+        copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W)
+      else
+        copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W[integrator.opts.save_idxs],Val{false})
+      end
     end
   end
 end

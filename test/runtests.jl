@@ -16,6 +16,7 @@ LONGER_TESTS && @time @testset "Weak Convergence Tests" begin include("weak_conv
 @time @testset "Number Type Tests" begin include("sde/sde_numbertype_tests.jl") end
 @time @testset "tdir Tests" begin include("tdir_tests.jl") end
 @time @testset "tstops Tests" begin include("tstops_tests.jl") end
+@time @testset "saveat Tests" begin include("saveat_tests.jl") end
 @time @testset "Oval2" begin include("oval2_test.jl") end
 @time @testset "Composite Tests" begin include("composite_algorithm_test.jl") end
 @time @testset "Events Tests" begin include("events_test.jl") end

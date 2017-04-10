@@ -22,6 +22,8 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
               saveat = tType[],tstops = tType[],d_discontinuities= tType[],
               save_timeseries = nothing,
               save_everystep = isempty(saveat),
+              save_idxs = nothing,
+              save_start = true,
               dense = save_everystep,
               calck = (!isempty(setdiff(saveat,tstops)) || dense),
               adaptive=isadaptive(alg),gamma=9//10,
@@ -163,22 +165,31 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
   #ks = convert(Vector{ksEltype},ks_init)
   alg_choice = Int[]
 
-  copyat_or_push!(ts,1,t)
-  copyat_or_push!(timeseries,1,u)
-  #copyat_or_push!(ks,1,[rate_prototype])
+  if save_start
+    saveiter = 1
+    copyat_or_push!(ts,1,t)
+    if save_idxs == nothing
+      copyat_or_push!(timeseries,1,u)
+    else
+      copyat_or_push!(timeseries,1,u[save_idxs],Val{false})
+    end
+    #copyat_or_push!(ks,1,[rate_prototype])
+  else
+    saveiter = 0
+  end
 
   uEltype = eltype(u)
 
   opts = SDEOptions(Int(maxiters),timeseries_steps,save_everystep,adaptive,uEltype(uEltype(1)*abstol),
     uEltypeNoUnits(reltol),tTypeNoUnits(gamma),tTypeNoUnits(qmax),tTypeNoUnits(qmin),
-    dtmax,dtmin,internalnorm,
+    dtmax,dtmin,internalnorm,save_idxs,
     tstops_internal,saveat_internal,d_discontinuities_internal,
     userdata,
     progress,progress_steps,
     progress_name,progress_message,
     timeseries_errors,dense_errors,
     tTypeNoUnits(beta1),tTypeNoUnits(beta2),uEltypeNoUnits(delta),tTypeNoUnits(qoldinit),
-    dense,save_noise,
+    dense,save_start,save_noise,
     callbacks_internal,isoutofdomain,unstable_check,verbose,calck,force_dtmin,
     advance_to_tstop,stop_at_next_tstop)
 
@@ -262,7 +273,6 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
   accept_step = false
   u_modified = false
   tprev = t
-  saveiter = 1
   iter = 0
   q11 = tTypeNoUnits(1)
 

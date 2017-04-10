@@ -12,8 +12,8 @@ end
 
 function sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv::Type{Val{0}})
   Θm1 = (1-Θ)
-  for i in idxs
-    out[i] = Θm1*u0[i] + Θ*u1[i]
+  for (j,i) in enumerate(idxs)
+    out[j] = Θm1*u0[i] + Θ*u1[i]
   end
 end
 

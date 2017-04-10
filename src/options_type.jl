@@ -1,4 +1,4 @@
-type SDEOptions{uEltype,uEltypeNoUnits,tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsType,ECType}
+type SDEOptions{uEltype,uEltypeNoUnits,tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsType,ECType,SType}
   maxiters::Int
   timeseries_steps::Int
   save_everystep::Bool
@@ -11,6 +11,7 @@ type SDEOptions{uEltype,uEltypeNoUnits,tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsT
   dtmax::tType
   dtmin::tType
   internalnorm::F2
+  save_idxs::SType
   tstops::tstopsType
   saveat::tstopsType
   d_discontinuities::tstopsType
@@ -26,6 +27,7 @@ type SDEOptions{uEltype,uEltypeNoUnits,tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsT
   delta::uEltypeNoUnits
   qoldinit::tTypeNoUnits
   dense::Bool
+  save_start::Bool
   save_noise::Bool
   callback::F3
   isoutofdomain::F4
