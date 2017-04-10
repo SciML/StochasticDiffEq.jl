@@ -2,8 +2,8 @@
 @inline ODE_DEFAULT_PROG_MESSAGE(dt,t,u) = "dt="*string(dt)*"\nt="*string(t)*"\nmax u="*string(maximum(abs.(u)))
 @inline ODE_DEFAULT_UNSTABLE_CHECK(dt,t,u) = any(isnan,u)
 
-function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgorithm,recompile_flag}(
-  prob::AbstractSDEProblem{uType,tType,isinplace,NoiseClass,F,F2,F3},
+function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},recompile_flag}(
+  prob::Union{AbstractRODEProblem{uType,tType,isinplace,NoiseClass,F,F2,F3},AbstractSDEProblem{uType,tType,isinplace,NoiseClass,F,F2,F3}},
   alg::algType,timeseries=[],ts=[],ks=[],recompile::Type{Val{recompile_flag}}=Val{true};
   kwargs...)
 
@@ -12,8 +12,8 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgo
   integrator.sol
 end
 
-function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgorithm,recompile_flag}(
-              prob::AbstractSDEProblem{uType,tType,isinplace,NoiseClass,F,F2,F3},
+function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},recompile_flag}(
+              prob::Union{AbstractRODEProblem{uType,tType,isinplace,NoiseClass,F,F2,F3},AbstractSDEProblem{uType,tType,isinplace,NoiseClass,F,F2,F3}},
               alg::algType,timeseries_init=uType[],ts_init=tType[],ks_init=[],
               recompile::Type{Val{recompile_flag}}=Val{true};
               dt = tType(0),save_timeseries::Bool = true,
@@ -39,7 +39,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
               progress_steps=1000,
               progress=false, progress_message = ODE_DEFAULT_PROG_MESSAGE,
               progress_name="SDE",
-              userdata=nothing,callback=nothing,
+              userdata=nothing,callback=CallbackSet(),
               timeseries_errors = true, dense_errors=false,
               initialize_integrator=true,
               kwargs...)
@@ -132,7 +132,7 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:AbstractSDEAlgor
     d_discontinuities_internal = binary_maxheap(d_discontinuities_vec)
   end
 
-  callbacks_internal = CallbackSet(callback)
+  callbacks_internal = CallbackSet(callback,prob.callback)
 
   uEltypeNoUnits = typeof(recursive_one(u))
   tTypeNoUnits   = typeof(recursive_one(t))
@@ -291,7 +291,7 @@ function solve!(integrator::SDEIntegrator)
   end
   postamble!(integrator)
   #for i in integrator end
-  if typeof(integrator.sol.prob) <: AbstractSDETestProblem
+  if has_analytic(integrator.sol.prob.f)
     calculate_solution_errors!(integrator.sol;timeseries_errors=integrator.opts.timeseries_errors,dense_errors=integrator.opts.dense_errors)
   end
   integrator.sol.retcode = :Success

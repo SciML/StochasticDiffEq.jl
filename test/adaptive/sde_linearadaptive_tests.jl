@@ -1,7 +1,7 @@
 using StochasticDiffEq, DiffEqProblemLibrary, DiffEqBase, Base.Test
 
-probs = Vector{SDETestProblem}(2)
-add_probs = Vector{SDETestProblem}(2)
+probs = Vector{SDEProblem}(2)
+add_probs = Vector{SDEProblem}(2)
 probs[1] = prob_sde_2Dlinear
 probs[2] = prob_sde_linear
 add_probs[1] = prob_sde_additive
@@ -9,8 +9,8 @@ add_probs[2] = prob_sde_additivesystem
 
 
 for i in 1:2
-  bigprob = SDETestProblem(probs[i].f,probs[i].g,big(probs[i].u0),probs[i].analytic,(big(probs[i].tspan[1]),big(probs[i].tspan[2])),noise=probs[i].noise)
-  add_bigprob = SDETestProblem(add_probs[i].f,add_probs[i].g,big(add_probs[i].u0),add_probs[i].analytic,(big(add_probs[i].tspan[1]),big(add_probs[i].tspan[2])),noise=add_probs[i].noise)
+  bigprob = SDEProblem(probs[i].f,probs[i].g,big(probs[i].u0),(big(probs[i].tspan[1]),big(probs[i].tspan[2])),noise=probs[i].noise)
+  add_bigprob = SDEProblem(add_probs[i].f,add_probs[i].g,big(add_probs[i].u0),(big(add_probs[i].tspan[1]),big(add_probs[i].tspan[2])),noise=add_probs[i].noise)
   ## SRIW1
 
   srand(100)
