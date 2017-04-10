@@ -40,13 +40,22 @@ module StochasticDiffEq
   include("integrators/composite_integrator.jl")
   include("tableaus.jl")
 
-   export StochasticDiffEqAlgorithm, EM, RKMil, SRA, SRI, SRIW1,
-          SRA1, StochasticCompositeAlgorithm
+   export StochasticDiffEqAlgorithm, StochasticDiffEqAdaptiveAlgorithm,
+          StochasticCompositeAlgorithm
 
-   #General Functions
-   export solve, init, solve!, step!
+  export EM, RKMil, SRA, SRI, SRIW1, SRA1
 
-   #Misc Tools
-   export checkSRIOrder, checkSRAOrder,  constructSRIW1, constructSRA1
+  export EulerHeun
+
+  export StochasticDiffEqRODEAlgorithm, StochasticDiffEqRODEAdaptiveAlgorithm,
+         StochasticDiffEqRODECompositeAlgorithm
+
+  export RandomEM
+
+  #General Functions
+  export solve, init, solve!, step!
+
+  #Misc Tools
+  export checkSRIOrder, checkSRAOrder,  constructSRIW1, constructSRA1
 
 end # module

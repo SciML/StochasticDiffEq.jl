@@ -32,6 +32,46 @@ function alg_cache(alg::EM,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,
   EMCache(u,uprev,tmp,rtmp1,rtmp2)
 end
 
+immutable EulerHeunConstantCache <: StochasticDiffEqConstantCache end
+immutable EulerHeunCache{uType,rateType} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+  tmp::uType
+  rtmp1::rateType
+  rtmp2::rateType
+  rtmp3::rateType
+  rtmp4::rateType
+end
+
+u_cache(c::EulerHeunCache) = ()
+du_cache(c::EulerHeunCache) = (c.rtmp1,c.rtmp2,c.rtmp3,c.rtmp4)
+
+alg_cache(alg::EulerHeun,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = EulerHeunConstantCache()
+
+function alg_cache(alg::EulerHeun,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+  tmp = similar(u); rtmp1 = zeros(rate_prototype); rtmp2 = zeros(rate_prototype)
+  rtmp3 = zeros(rate_prototype); rtmp4 = zeros(rate_prototype)
+  EulerHeunCache(u,uprev,tmp,rtmp1,rtmp2,rtmp3,rtmp4)
+end
+
+immutable RandomEMConstantCache <: StochasticDiffEqConstantCache end
+immutable RandomEMCache{uType,rateType} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+  tmp::uType
+  rtmp::rateType
+end
+
+u_cache(c::RandomEMCache) = ()
+du_cache(c::RandomEMCache) = (c.rtmp1,c.rtmp2)
+
+alg_cache(alg::RandomEM,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = RandomEMConstantCache()
+
+function alg_cache(alg::RandomEM,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+  tmp = similar(u); rtmp = zeros(rate_prototype)
+  RandomEMCache(u,uprev,tmp,rtmp)
+end
+
 immutable RKMilConstantCache <: StochasticDiffEqConstantCache end
 immutable RKMilCache{uType,rateType} <: StochasticDiffEqMutableCache
   u::uType

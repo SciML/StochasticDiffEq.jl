@@ -2,12 +2,24 @@
 @compat abstract type StochasticDiffEqAdaptiveAlgorithm <: StochasticDiffEqAlgorithm end
 @compat abstract type StochasticDiffEqCompositeAlgorithm <: StochasticDiffEqAlgorithm end
 
+@compat abstract type StochasticDiffEqRODEAlgorithm <: AbstractRODEAlgorithm end
+@compat abstract type StochasticDiffEqRODEAdaptiveAlgorithm <: StochasticDiffEqRODEAlgorithm end
+@compat abstract type StochasticDiffEqRODECompositeAlgorithm <: StochasticDiffEqRODEAlgorithm end
+
 @with_kw immutable EM{RSType} <: StochasticDiffEqAlgorithm
   rswm::RSType = RSWM(adaptivealg=:RSwM1)
 end
-@with_kw immutable RKMil{RSType} <: StochasticDiffEqAlgorithm
+@with_kw immutable EulerHeun{RSType} <: StochasticDiffEqAlgorithm
   rswm::RSType = RSWM(adaptivealg=:RSwM1)
 end
+
+immutable RKMil{RSType,interpretation} <: StochasticDiffEqAlgorithm
+  rswm::RSType
+end
+Base.@pure function RKMil(;rswm=RSWM(adaptivealg=:RSwM1),interpretation=:Ito)
+  RKMil{typeof(rswm),interpretation}(rswm)
+end
+
 @with_kw immutable SRA{TabType,RSType} <: StochasticDiffEqAdaptiveAlgorithm
   tableau::TabType = constructSRA1()
   rswm::RSType = RSWM()
@@ -31,6 +43,10 @@ immutable StochasticCompositeAlgorithm{T,F,RSType} <: StochasticDiffEqCompositeA
 end
 
 Base.@pure StochasticCompositeAlgorithm(algs,choice_function;rswm=RSWM()) = StochasticCompositeAlgorithm(algs,choice_function,rswm)
-isadaptive(alg::StochasticDiffEqAlgorithm) = false
-isadaptive(alg::StochasticDiffEqAdaptiveAlgorithm) = true
-isadaptive(alg::StochasticDiffEqCompositeAlgorithm) = isadaptive(alg.algs[1])
+isadaptive(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = false
+isadaptive(alg::Union{StochasticDiffEqAdaptiveAlgorithm,StochasticDiffEqRODEAdaptiveAlgorithm}) = true
+isadaptive(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = isadaptive(alg.algs[1])
+
+@with_kw immutable RandomEM{RSType} <: StochasticDiffEqRODEAlgorithm
+  rswm::RSType = RSWM(adaptivealg=:RSwM1)
+end

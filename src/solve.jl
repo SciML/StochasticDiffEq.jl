@@ -2,8 +2,8 @@
 @inline ODE_DEFAULT_PROG_MESSAGE(dt,t,u) = "dt="*string(dt)*"\nt="*string(t)*"\nmax u="*string(maximum(abs.(u)))
 @inline ODE_DEFAULT_UNSTABLE_CHECK(dt,t,u) = any(isnan,u)
 
-function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},recompile_flag}(
-  prob::Union{AbstractRODEProblem{uType,tType,isinplace,NoiseClass,F,F2,F3},AbstractSDEProblem{uType,tType,isinplace,NoiseClass,F,F2,F3}},
+function solve{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},recompile_flag}(
+  prob::AbstractRODEProblem{uType,tType,isinplace,NoiseClass},
   alg::algType,timeseries=[],ts=[],ks=[],recompile::Type{Val{recompile_flag}}=Val{true};
   kwargs...)
 
@@ -12,8 +12,8 @@ function solve{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:Union{AbstractR
   integrator.sol
 end
 
-function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},recompile_flag}(
-              prob::Union{AbstractRODEProblem{uType,tType,isinplace,NoiseClass,F,F2,F3},AbstractSDEProblem{uType,tType,isinplace,NoiseClass,F,F2,F3}},
+function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},recompile_flag}(
+              prob::AbstractRODEProblem{uType,tType,isinplace,NoiseClass},
               alg::algType,timeseries_init=uType[],ts_init=tType[],ks_init=[],
               recompile::Type{Val{recompile_flag}}=Val{true};
               dt = tType(0),save_timeseries::Bool = true,
@@ -77,7 +77,11 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:Union{AbstractRO
     pop!(tstops_internal)
   end
   f = prob.f
-  g = prob.g
+  if typeof(prob) <: AbstractSDEProblem
+    g = prob.g
+  else
+    g = nothing
+  end
   u0 = prob.u0
   uEltype = eltype(u0)
 
@@ -259,9 +263,21 @@ function init{uType,tType,isinplace,NoiseClass,F,F2,F3,algType<:Union{AbstractRO
                 calculate_error = false,
                 interp = id, dense = dense)
 
+  if recompile_flag == true
+    FType = typeof(f)
+    GType = typeof(g)
+    SolType = typeof(sol)
+    cacheType = typeof(cache)
+  else
+    FType = Function
+    GType = Function
+    SolType = AbstractODESolution
+    cacheType =  OrdinaryDiffEqCache
+  end
+
   integrator =    SDEIntegrator{typeof(alg),uType,uEltype,tType,tTypeNoUnits,
                   uEltypeNoUnits,randType,typeof(ΔW),rateType,typeof(sol),typeof(cache),
-                  typeof(prog),typeof(S₁),typeof(S₂),F,F2,typeof(opts),typeof(noise)}(
+                  typeof(prog),typeof(S₁),typeof(S₂),FType,GType,typeof(opts),typeof(noise)}(
                   f,g,noise,uprev,tprev,t,u,tType(dt),tType(dt),tType(dt),dtcache,T,tdir,
                   just_hit_tstop,isout,accept_step,dtchangeable,u_modified,
                   saveiter,
