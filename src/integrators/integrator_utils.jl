@@ -445,26 +445,26 @@ end
 
 @inline function update_noise!(integrator,scaling_factor=integrator.sqdt)
   if isinplace(integrator.noise)
-    integrator.noise(integrator.ΔW)
+    integrator.noise(integrator.ΔW,integrator)
     for i in eachindex(integrator.ΔW)
       integrator.ΔW[i] *= scaling_factor
     end
     if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
-      integrator.noise(integrator.ΔZ)
+      integrator.noise(integrator.ΔZ,integrator)
       for i in eachindex(integrator.ΔW)
         integrator.ΔZ[i] .*= scaling_factor
       end
     end
   else
     if (typeof(integrator.u) <: AbstractArray)
-      integrator.ΔW .= scaling_factor.*integrator.noise(size(integrator.u))
+      integrator.ΔW .= scaling_factor.*integrator.noise(size(integrator.u),integrator)
       if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
-        integrator.ΔZ .= scaling_factor.*integrator.noise(size(integrator.u))
+        integrator.ΔZ .= scaling_factor.*integrator.noise(size(integrator.u),integrator)
       end
     else
-      integrator.ΔW = scaling_factor*integrator.noise()
+      integrator.ΔW = scaling_factor*integrator.noise(integrator)
       if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
-        integrator.ΔZ = scaling_factor*integrator.noise()
+        integrator.ΔZ = scaling_factor*integrator.noise(integrator)
       end
     end
   end
@@ -472,7 +472,7 @@ end
 
 @inline function generate_tildes(integrator,add1,add2,scaling)
   if isinplace(integrator.noise)
-    integrator.noise(integrator.ΔWtilde)
+    integrator.noise(integrator.ΔWtilde,integrator)
     if add1 != 0
       for i in eachindex(integrator.ΔW)
         integrator.ΔWtilde[i] = add1[i] + scaling*integrator.ΔWtilde[i]
@@ -483,7 +483,7 @@ end
       end
     end
     if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
-      integrator.noise(integrator.ΔZtilde)
+      integrator.noise(integrator.ΔZtilde,integrator)
       if add2 != 0
         for i in eachindex(integrator.ΔW)
           integrator.ΔZtilde[i] = add2[i] + scaling*integrator.ΔZtilde[i]
@@ -497,21 +497,21 @@ end
   else
     if (typeof(integrator.u) <: AbstractArray)
       if add1 != 0
-        integrator.ΔWtilde = add1 .+ scaling.*integrator.noise(size(integrator.u))
+        integrator.ΔWtilde = add1 .+ scaling.*integrator.noise(size(integrator.u),integrator)
       else
-        integrator.ΔWtilde = scaling.*integrator.noise(size(integrator.u))
+        integrator.ΔWtilde = scaling.*integrator.noise(size(integrator.u),integrator)
       end
       if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
         if add2 != 0
-          integrator.ΔZtilde = add2 .+ scaling.*integrator.noise(size(integrator.u))
+          integrator.ΔZtilde = add2 .+ scaling.*integrator.noise(size(integrator.u),integrator)
         else
-          integrator.ΔZtilde = scaling.*integrator.noise(size(integrator.u))
+          integrator.ΔZtilde = scaling.*integrator.noise(size(integrator.u),integrator)
         end
       end
     else
-      integrator.ΔWtilde = add1 + scaling*integrator.noise()
+      integrator.ΔWtilde = add1 + scaling*integrator.noise(integrator)
       if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
-        integrator.ΔZtilde = add2 + scaling*integrator.noise()
+        integrator.ΔZtilde = add2 + scaling*integrator.noise(integrator)
       end
     end
   end

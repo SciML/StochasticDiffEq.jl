@@ -254,30 +254,15 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
 
   Ws = Vector{randType}(0)
   if !(uType <: AbstractArray)
-    W = 0.0
-    Z = 0.0
-    ΔW = sqdt*noise()
-    ΔZ = sqdt*noise()
-    if save_noise
-      push!(Ws,W)
-    end
+    W = zero(randType)
+    Z = zero(randType)
+    ΔW= zero(randType)
+    ΔZ= zero(randType)
   else
     W = zeros(rand_prototype)
     Z = zeros(rand_prototype)
-    if DiffEqBase.isinplace(prob.noise)
-      ΔW = similar(rand_prototype)
-      ΔZ = similar(rand_prototype)
-      noise(ΔW)
-      noise(ΔZ)
-      ΔW .*= sqdt
-      ΔZ .*= sqdt
-    else
-      ΔW = sqdt.*noise(size(rand_prototype))
-      ΔZ = sqdt.*noise(size(rand_prototype))
-    end
-    if save_noise
-      push!(Ws,copy(W))
-    end
+    ΔW = similar(rand_prototype)
+    ΔZ = similar(rand_prototype)
   end
 
   S₁ = DataStructures.Stack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
@@ -324,6 +309,28 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
                   cache,sqdt,W,Z,ΔW,ΔZ,copy(ΔW),copy(ΔZ),copy(ΔW),copy(ΔZ),
                   opts,iter,prog,S₁,S₂,EEst,q,
                   tTypeNoUnits(qoldinit),q11)
+
+  if !(uType <: AbstractArray)
+    ΔW = sqdt*noise(integrator)
+    ΔZ = sqdt*noise(integrator)
+    if save_noise
+      push!(Ws,W)
+    end
+  else
+    if DiffEqBase.isinplace(prob.noise)
+      noise(ΔW,integrator)
+      noise(ΔZ,integrator)
+      ΔW .*= sqdt
+      ΔZ .*= sqdt
+    else
+      ΔW = sqdt.*noise(size(rand_prototype),integrator)
+      ΔZ = sqdt.*noise(size(rand_prototype),integrator)
+    end
+    if save_noise
+      push!(Ws,copy(W))
+    end
+  end
+
   if initialize_integrator
     initialize!(integrator,integrator.cache)
     initialize!(callbacks_internal,t,u,integrator)
