@@ -53,6 +53,10 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
     save_everystep = save_timeseries
   end
 
+  if !alg_compatible(prob,alg)
+    error("The algorithm is not compatible with the chosen noise type. Please see the documentation on the solver methods")
+  end
+
   noise = prob.noise
   tspan = prob.tspan
   tdir = sign(tspan[end]-tspan[1])
@@ -121,6 +125,12 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
     rate_prototype = u/zero(t)
   end
   rateType = typeof(rate_prototype) ## Can be different if united
+
+  if ND <: Void
+    noise_rate_prototype = rate_prototype
+  else
+    noise_rate_prototype = prob.noise_rate_prototype
+  end
 
   if typeof(saveat) <: Number
     saveat_vec = convert(Vector{tType},saveat:saveat:(tspan[end]-saveat))
@@ -234,8 +244,10 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
     randElType = typeof(u[1]/u[1]) # Strip units and type info
     if ND <: Void # noise_dim isn't set, so it's diagonal
       rand_prototype = similar(Array{randElType},indices(u))
+    elseif typeof(prob) <: AbstractSDEProblem
+      rand_prototype = similar(Vector{randElType},size(noise_rate_prototype,2))
     else
-      rand_prototype = similar(Vector{randElType},noise.noise_dim)
+      rand_prototype = prob.rand_prototype
     end
     randType = typeof(rand_prototype) # Strip units and type info
   end
@@ -282,7 +294,7 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
 
   rateType = typeof(u/t) ## Can be different if united
 
-  cache = alg_cache(alg,u,ΔW,ΔZ,rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,Val{isinplace})
+  cache = alg_cache(alg,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,Val{isinplace})
 
   id = LinearInterpolationData(timeseries,ts)
 

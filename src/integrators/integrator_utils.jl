@@ -274,7 +274,7 @@ end
       if qtmp>1
         dttmp+=L₁
         if typeof(integrator.u) <: AbstractArray
-          for i in eachindex(integrator.u)
+          for i in eachindex(integrator.ΔW)
             integrator.ΔW[i]+=L₂[i]
             integrator.ΔZ[i]+=L₃[i]
           end
@@ -288,7 +288,7 @@ end
       else #Popped too far
         generate_tildes(integrator,qtmp*L₂,qtmp*L₃,sqrt(abs((1-qtmp)*qtmp*L₁)))
         if typeof(integrator.ΔW) <: AbstractArray
-          for i in eachindex(integrator.u)
+          for i in eachindex(integrator.ΔW)
             integrator.ΔW[i] += integrator.ΔWtilde[i]
             integrator.ΔZ[i] += integrator.ΔZtilde[i]
           end
@@ -309,7 +309,7 @@ end
     if dtleft != 0 #Stack emptied
       generate_tildes(integrator,0,0,sqrt(abs(dtleft)))
       if typeof(integrator.ΔW) <: AbstractArray
-        for i in eachindex(integrator.u)
+        for i in eachindex(integrator.ΔW)
           integrator.ΔW[i] += integrator.ΔWtilde[i]
           integrator.ΔZ[i] += integrator.ΔZtilde[i]
         end
@@ -327,7 +327,7 @@ end
 @inline function update_running_noise!(integrator)
   if integrator.opts.save_noise
     if typeof(integrator.u) <: AbstractArray
-      for i in eachindex(integrator.u)
+      for i in eachindex(integrator.ΔW)
         integrator.W[i] = integrator.W[i] + integrator.ΔW[i]
       end
     else
@@ -335,7 +335,7 @@ end
     end
     if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
       if typeof(integrator.u) <: AbstractArray
-        for i in eachindex(integrator.u)
+        for i in eachindex(integrator.ΔW)
           integrator.Z[i] = integrator.Z[i] + integrator.ΔZ[i]
         end
       else
@@ -379,7 +379,7 @@ end
       if dttmp + L₁ < (1-integrator.q)*integrator.dt #while the backwards movement is less than chop off
         dttmp += L₁
         if typeof(integrator.u) <: AbstractArray
-          for i in eachindex(integrator.u)
+          for i in eachindex(integrator.ΔW)
             integrator.ΔWtmp[i] += L₂[i]
             integrator.ΔZtmp[i] += L₃[i]
           end
@@ -396,7 +396,7 @@ end
     dtK = integrator.dt - dttmp
     qK = integrator.q*integrator.dt/dtK
     if typeof(integrator.ΔW) <: AbstractArray
-      for i in eachindex(integrator.u)
+      for i in eachindex(integrator.ΔW)
         integrator.ΔWtmp[i] = integrator.ΔW[i] - integrator.ΔWtmp[i]
         integrator.ΔZtmp[i] = integrator.ΔZ[i] - integrator.ΔZtmp[i]
       end

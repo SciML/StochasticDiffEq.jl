@@ -19,3 +19,10 @@ isdtchangeable(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorith
 alg_interpretation(alg::StochasticDiffEqAlgorithm) = :Ito
 alg_interpretation(alg::EulerHeun) = :Stratonovich
 alg_interpretation{RSWM,interpretation}(alg::RKMil{RSWM,interpretation}) = interpretation
+
+alg_compatible(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = true
+
+alg_compatible(prob,alg::SRI) = is_diagonal_noise(prob)
+alg_compatible(prob,alg::SRIW1) = is_diagonal_noise(prob)
+alg_compatible(prob,alg::SRA) = is_diagonal_noise(prob)
+alg_compatible(prob,alg::SRA1) = is_diagonal_noise(prob)

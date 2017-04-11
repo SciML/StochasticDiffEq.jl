@@ -5,12 +5,21 @@
 end
 
 @inline function perform_step!(integrator,cache::EMCache,f=integrator.f)
-  @unpack rtmp1,rtmp2 = cache
+  @unpack rtmp1,rtmp2,rtmp3 = cache
   @unpack t,dt,uprev,u,ΔW = integrator
   integrator.f(t,uprev,rtmp1)
   integrator.g(t,uprev,rtmp2)
+
+  if is_diagonal_noise(integrator.sol.prob)
+    for i in eachindex(u)
+      rtmp2[i]*=ΔW[i] # rtmp2 === rtmp3
+    end
+  else
+    A_mul_B!(rtmp3,rtmp2,ΔW)
+  end
+
   for i in eachindex(u)
-    u[i] = @muladd uprev[i] + dt*rtmp1[i] + rtmp2[i]*ΔW[i]
+    u[i] = @muladd uprev[i] + dt*rtmp1[i] + rtmp3[i]
   end
   @pack integrator = t,dt,u
 end
