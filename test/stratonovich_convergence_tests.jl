@@ -1,4 +1,4 @@
-@everywhere using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Base.Test
+using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Base.Test
 srand(100)
 dts = 1./2.^(10:-1:2) #14->7 good plot
 
@@ -19,3 +19,6 @@ sim  = test_convergence(dts,prob,EulerHeun(),numMonte=Int(5e1))
 sim2 = test_convergence(dts,prob,RKMil(interpretation=:Stratonovich),numMonte=Int(5e2))
 @test abs(sim2.𝒪est[:l∞]-1) < 0.1
 =#
+
+srand(200)
+sol = solve(prob,EulerHeun(),dt=1/4)

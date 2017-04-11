@@ -34,19 +34,41 @@ end
 end
 
 @inline function perform_step!(integrator,cache::EulerHeunCache,f=integrator.f)
-  @unpack rtmp1,rtmp2,rtmp3,rtmp4,tmp = cache
+  @unpack ftmp1,ftmp2,gtmp1,gtmp2,tmp,nrtmp = cache
   @unpack t,dt,uprev,u,ΔW = integrator
-  integrator.f(t,uprev,rtmp1)
-  integrator.g(t,uprev,rtmp2)
-  for i in eachindex(u)
-    tmp[i] = @muladd uprev[i] + rtmp1[i]*dt + rtmp2[i]*ΔW[i]
+  integrator.f(t,uprev,ftmp1)
+  integrator.g(t,uprev,gtmp1)
+
+  if is_diagonal_noise(integrator.sol.prob)
+    for i in eachindex(u)
+      nrtmp[i]=gtmp1[i]*ΔW[i]
+    end
+  else
+    A_mul_B!(nrtmp,gtmp1,ΔW)
   end
-  integrator.f(t,tmp,rtmp3)
-  integrator.g(t,tmp,rtmp4)
+
+  for i in eachindex(u)
+    tmp[i] = @muladd uprev[i] + ftmp1[i]*dt + nrtmp[i]
+  end
+
+  integrator.f(t,tmp,ftmp2)
+  integrator.g(t,tmp,gtmp2)
+
+  if is_diagonal_noise(integrator.sol.prob)
+    for i in eachindex(u)
+      ΔWo2 = (1/2)*ΔW[i]
+      nrtmp[i]=ΔWo2*(gtmp1[i]+gtmp2[i])
+    end
+  else
+    for i in eachindex(gtmp1)
+      gtmp1[i] = (1/2)*(gtmp1[i]+gtmp2[i])
+    end
+    A_mul_B!(nrtmp,gtmp1,ΔW)
+  end
+
   dto2 = dt*(1/2)
   for i in eachindex(u)
-    ΔWo2 = (1/2)*ΔW[i]
-    u[i] = @muladd uprev[i] + dto2*(rtmp1[i]+rtmp3[i]) + ΔWo2*(rtmp2[i]+rtmp4[i])
+    u[i] = @muladd uprev[i] + dto2*(ftmp1[i]+ftmp2[i]) + nrtmp[i]
   end
   @pack integrator = t,dt,u
 end
