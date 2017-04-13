@@ -129,7 +129,11 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
   if ND <: Void
     noise_rate_prototype = rate_prototype
   else
-    noise_rate_prototype = prob.rand_prototype
+    if typeof(prob) <: AbstractSDEProblem
+      noise_rate_prototype = prob.noise_rate_prototype
+    else
+      noise_rate_prototype = prob.rand_prototype
+    end
   end
 
   if typeof(saveat) <: Number
