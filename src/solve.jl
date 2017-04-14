@@ -43,7 +43,7 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
               progress_steps=1000,
               progress=false, progress_message = ODE_DEFAULT_PROG_MESSAGE,
               progress_name="SDE",
-              userdata=nothing,callback=CallbackSet(),
+              userdata=nothing,callback=nothing,
               timeseries_errors = true, dense_errors=false,
               initialize_integrator=true,
               kwargs...)
@@ -51,6 +51,10 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
   if save_timeseries != nothing
     warn("save_timeseries is deprecated. Use save_everystep instead")
     save_everystep = save_timeseries
+  end
+
+  if noise_class(prob.noise) != :White && adaptive
+    error("Adaptivity is currently only compatible with white noise.")
   end
 
   if !alg_compatible(prob,alg)
