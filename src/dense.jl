@@ -22,7 +22,7 @@ function sde_interpolant(Θ,dt,u0::AbstractArray,u1,idxs,deriv::Type)
     out = similar(u0,idxs)
     idxs_internal=eachindex(u0)
   else
-    out = similar(u0,length(idxs))
+    out = similar(u0,indices(idxs))
     idxs_internal=idxs
   end
   sde_interpolant!(out,Θ,dt,u0,u1,idxs_internal,deriv)
