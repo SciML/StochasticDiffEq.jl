@@ -319,8 +319,8 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
                   tTypeNoUnits(qoldinit),q11)
 
   if !(uType <: AbstractArray)
-    ΔW = sqdt*noise(integrator)
-    ΔZ = sqdt*noise(integrator)
+    integrator.ΔW = sqdt*noise(integrator)
+    integrator.ΔZ = sqdt*noise(integrator)
     if save_noise
       push!(Ws,W)
     end
@@ -331,8 +331,8 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
       ΔW .*= sqdt
       ΔZ .*= sqdt
     else
-      ΔW = sqdt.*noise(size(rand_prototype),integrator)
-      ΔZ = sqdt.*noise(size(rand_prototype),integrator)
+      integrator.ΔW = sqdt.*noise(size(rand_prototype),integrator)
+      integrator.ΔZ = sqdt.*noise(size(rand_prototype),integrator)
     end
     if save_noise
       push!(Ws,copy(W))
