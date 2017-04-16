@@ -3,7 +3,7 @@ srand(100)
 dts = 1./2.^(10:-1:2) #14->7 good plot
 
 prob = prob_sde_linear_stratonovich
-sim  = test_convergence(dts,prob,EulerHeun(),numMonte=Int(5e1))
+sim  = test_convergence(dts,prob,EulerHeun(),numMonte=Int(5e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
 #=

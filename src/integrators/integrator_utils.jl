@@ -264,9 +264,15 @@ end
     integrator.dt = integrator.dtpropose
     modify_dt_for_tstops!(integrator)
     if !(typeof(integrator.u) <: AbstractArray)
-      dttmp = 0.0; integrator.ΔW = 0.0; integrator.ΔZ = 0.0
+      dttmp = 0.0; integrator.ΔW = 0.0
+      if alg_needs_extra_process(integrator.alg)
+        integrator.ΔZ = 0.0
+      end
     else
-      dttmp = 0.0; fill!(integrator.ΔW,zero(eltype(integrator.ΔW))); fill!(integrator.ΔZ,zero(eltype(integrator.ΔZ)))
+      dttmp = 0.0; fill!(integrator.ΔW,zero(eltype(integrator.ΔW)))
+      if alg_needs_extra_process(integrator.alg)
+        fill!(integrator.ΔZ,zero(eltype(integrator.ΔZ)))
+      end
     end
     while !isempty(integrator.S₁)
       L₁,L₂,L₃ = pop!(integrator.S₁)
@@ -276,11 +282,15 @@ end
         if typeof(integrator.u) <: AbstractArray
           for i in eachindex(integrator.ΔW)
             integrator.ΔW[i]+=L₂[i]
-            integrator.ΔZ[i]+=L₃[i]
+            if alg_needs_extra_process(integrator.alg)
+              integrator.ΔZ[i]+=L₃[i]
+            end
           end
         else
           integrator.ΔW+=L₂
-          integrator.ΔZ+=L₃
+          if alg_needs_extra_process(integrator.alg)
+            integrator.ΔZ+=L₃
+          end
         end
         if adaptive_alg(integrator.alg.rswm)==:RSwM3
           push!(integrator.S₂,(L₁,L₂,L₃))
@@ -290,11 +300,15 @@ end
         if typeof(integrator.ΔW) <: AbstractArray
           for i in eachindex(integrator.ΔW)
             integrator.ΔW[i] += integrator.ΔWtilde[i]
-            integrator.ΔZ[i] += integrator.ΔZtilde[i]
+            if alg_needs_extra_process(integrator.alg)
+              integrator.ΔZ[i] += integrator.ΔZtilde[i]
+            end
           end
         else
           integrator.ΔW += integrator.ΔWtilde
-          integrator.ΔZ += integrator.ΔZtilde
+          if alg_needs_extra_process(integrator.alg)
+            integrator.ΔZ += integrator.ΔZtilde
+          end
         end
         if (1-qtmp)*L₁ > integrator.alg.rswm.discard_length
           push!(integrator.S₁,((1-qtmp)*L₁,L₂-integrator.ΔWtilde,L₃-integrator.ΔZtilde))
@@ -311,11 +325,15 @@ end
       if typeof(integrator.ΔW) <: AbstractArray
         for i in eachindex(integrator.ΔW)
           integrator.ΔW[i] += integrator.ΔWtilde[i]
-          integrator.ΔZ[i] += integrator.ΔZtilde[i]
+          if alg_needs_extra_process(integrator.alg)
+            integrator.ΔZ[i] += integrator.ΔZtilde[i]
+          end
         end
       else
         integrator.ΔW += integrator.ΔWtilde
-        integrator.ΔZ += integrator.ΔZtilde
+        if alg_needs_extra_process(integrator.alg)
+          integrator.ΔZ += integrator.ΔZtilde
+        end
       end
       if adaptive_alg(integrator.alg.rswm)==:RSwM3
         push!(integrator.S₂,(dtleft,copy(integrator.ΔWtilde),copy(integrator.ΔZtilde)))
@@ -333,7 +351,7 @@ end
     else
       integrator.W = integrator.W + integrator.ΔW
     end
-    if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+    if alg_needs_extra_process(integrator.alg)
       if typeof(integrator.u) <: AbstractArray
         for i in eachindex(integrator.ΔW)
           integrator.Z[i] = integrator.Z[i] + integrator.ΔZ[i]
@@ -358,10 +376,14 @@ end
     end
     if typeof(integrator.ΔW) <: AbstractArray
       copy!(integrator.ΔW,integrator.ΔWtilde)
-      copy!(integrator.ΔZ,integrator.ΔZtilde)
+      if alg_needs_extra_process(integrator.alg)
+        copy!(integrator.ΔZ,integrator.ΔZtilde)
+      end
     else
       integrator.ΔW = integrator.ΔWtilde
-      integrator.ΔZ = integrator.ΔZtilde
+      if alg_needs_extra_process(integrator.alg)
+        integrator.ΔZ = integrator.ΔZtilde
+      end
     end
     integrator.dt = integrator.dtnew
     integrator.sqdt = sqrt(integrator.dt)
@@ -369,7 +391,10 @@ end
     if !(typeof(integrator.u) <: AbstractArray)
       dttmp = 0.0; ΔWtmp = 0.0; ΔZtmp = 0.0
     else
-      dttmp = 0.0; fill!(integrator.ΔWtmp,zero(eltype(integrator.ΔWtmp))); fill!(integrator.ΔZtmp,zero(eltype(integrator.ΔZtmp)))
+      dttmp = 0.0; fill!(integrator.ΔWtmp,zero(eltype(integrator.ΔWtmp)))
+      if alg_needs_extra_process(integrator.alg)
+        fill!(integrator.ΔZtmp,zero(eltype(integrator.ΔZtmp)))
+      end
     end
     if length(integrator.S₂) > integrator.sol.maxstacksize2
       integrator.sol.maxstacksize2= length(integrator.S₂)
@@ -381,11 +406,15 @@ end
         if typeof(integrator.u) <: AbstractArray
           for i in eachindex(integrator.ΔW)
             integrator.ΔWtmp[i] += L₂[i]
-            integrator.ΔZtmp[i] += L₃[i]
+            if alg_needs_extra_process(integrator.alg)
+              integrator.ΔZtmp[i] += L₃[i]
+            end
           end
         else
           integrator.ΔWtmp += L₂
-          integrator.ΔZtmp += L₃
+          if alg_needs_extra_process(integrator.alg)
+            integrator.ΔZtmp += L₃
+          end
         end
         push!(integrator.S₁,(L₁,L₂,L₃))
       else
@@ -398,11 +427,15 @@ end
     if typeof(integrator.ΔW) <: AbstractArray
       for i in eachindex(integrator.ΔW)
         integrator.ΔWtmp[i] = integrator.ΔW[i] - integrator.ΔWtmp[i]
-        integrator.ΔZtmp[i] = integrator.ΔZ[i] - integrator.ΔZtmp[i]
+        if alg_needs_extra_process(integrator.alg)
+          integrator.ΔZtmp[i] = integrator.ΔZ[i] - integrator.ΔZtmp[i]
+        end
       end
     else
       integrator.ΔWtmp = integrator.ΔW - integrator.ΔWtmp
-      integrator.ΔZtmp = integrator.ΔZ - integrator.ΔZtmp
+      if alg_needs_extra_process(integrator.alg)
+        integrator.ΔZtmp = integrator.ΔZ - integrator.ΔZtmp
+      end
     end
     generate_tildes(integrator,qK*integrator.ΔWtmp,qK*integrator.ΔZtmp,sqrt(abs((1-qK)*qK*dtK)))
     cutLength = (1-qK)*dtK
@@ -416,10 +449,14 @@ end
     integrator.sqdt = sqrt(abs(integrator.dt))
     if typeof(integrator.ΔW) <: AbstractArray
       copy!(integrator.ΔW,integrator.ΔWtilde)
-      copy!(integrator.ΔZ,integrator.ΔZtilde)
+      if alg_needs_extra_process(integrator.alg)
+        copy!(integrator.ΔZ,integrator.ΔZtilde)
+      end
     else
       integrator.ΔW = integrator.ΔWtilde
-      integrator.ΔZ = integrator.ΔZtilde
+      if alg_needs_extra_process(integrator.alg)
+        integrator.ΔZ = integrator.ΔZtilde
+      end
     end
   end
 end
@@ -449,7 +486,7 @@ end
     for i in eachindex(integrator.ΔW)
       integrator.ΔW[i] *= scaling_factor
     end
-    if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+    if alg_needs_extra_process(integrator.alg)
       integrator.noise(integrator.ΔZ,integrator)
       for i in eachindex(integrator.ΔW)
         integrator.ΔZ[i] .*= scaling_factor
@@ -458,12 +495,12 @@ end
   else
     if (typeof(integrator.u) <: AbstractArray)
       integrator.ΔW .= scaling_factor.*integrator.noise(size(integrator.u),integrator)
-      if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+      if alg_needs_extra_process(integrator.alg)
         integrator.ΔZ .= scaling_factor.*integrator.noise(size(integrator.u),integrator)
       end
     else
       integrator.ΔW = scaling_factor*integrator.noise(integrator)
-      if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+      if alg_needs_extra_process(integrator.alg)
         integrator.ΔZ = scaling_factor*integrator.noise(integrator)
       end
     end
@@ -482,7 +519,7 @@ end
         integrator.ΔWtilde[i] = scaling*integrator.ΔWtilde[i]
       end
     end
-    if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+    if alg_needs_extra_process(integrator.alg)
       integrator.noise(integrator.ΔZtilde,integrator)
       if add2 != 0
         for i in eachindex(integrator.ΔW)
@@ -501,7 +538,7 @@ end
       else
         integrator.ΔWtilde = scaling.*integrator.noise(size(integrator.u),integrator)
       end
-      if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+      if alg_needs_extra_process(integrator.alg)
         if add2 != 0
           integrator.ΔZtilde = add2 .+ scaling.*integrator.noise(size(integrator.u),integrator)
         else
@@ -510,7 +547,7 @@ end
       end
     else
       integrator.ΔWtilde = add1 + scaling*integrator.noise(integrator)
-      if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+      if alg_needs_extra_process(integrator.alg)
         integrator.ΔZtilde = add2 + scaling*integrator.noise(integrator)
       end
     end

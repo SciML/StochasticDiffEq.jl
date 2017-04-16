@@ -267,14 +267,24 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
   Ws = Vector{randType}(0)
   if !(uType <: AbstractArray)
     W = zero(randType)
-    Z = zero(randType)
     ΔW= zero(randType)
-    ΔZ= zero(randType)
+    if alg_needs_extra_process(alg)
+      Z = zero(randType)
+      ΔZ= zero(randType)
+    else
+      Z = 0
+      ΔZ= 0
+    end
   else
     W = zeros(rand_prototype)
-    Z = zeros(rand_prototype)
     ΔW = similar(rand_prototype)
-    ΔZ = similar(rand_prototype)
+    if alg_needs_extra_process(alg)
+      Z = zeros(rand_prototype)
+      ΔZ = similar(rand_prototype)
+    else
+      ΔZ= 0
+      Z = 0
+    end
   end
 
   S₁ = DataStructures.Stack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
@@ -312,7 +322,7 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
   end
 
   integrator =    SDEIntegrator{typeof(alg),uType,uEltype,tType,tTypeNoUnits,
-                  uEltypeNoUnits,randType,typeof(ΔW),rateType,typeof(sol),typeof(cache),
+                  uEltypeNoUnits,randType,typeof(Z),typeof(ΔW),typeof(ΔZ),rateType,typeof(sol),typeof(cache),
                   typeof(prog),typeof(S₁),typeof(S₂),FType,GType,typeof(opts),typeof(noise)}(
                   f,g,noise,uprev,tprev,t,u,tType(dt),tType(dt),tType(dt),dtcache,T,tdir,
                   just_hit_tstop,isout,accept_step,dtchangeable,u_modified,
@@ -324,19 +334,25 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
 
   if !(uType <: AbstractArray)
     integrator.ΔW = sqdt*noise(integrator)
-    integrator.ΔZ = sqdt*noise(integrator)
+    if alg_needs_extra_process(alg)
+      integrator.ΔZ = sqdt*noise(integrator)
+    end
     if save_noise
       push!(Ws,W)
     end
   else
     if DiffEqBase.isinplace(prob.noise)
       noise(integrator.ΔW,integrator)
-      noise(integrator.ΔZ,integrator)
       integrator.ΔW .*= sqdt
-      integrator.ΔZ .*= sqdt
+      if alg_needs_extra_process(alg)
+        noise(integrator.ΔZ,integrator)
+        integrator.ΔZ .*= sqdt
+      end
     else
       integrator.ΔW = sqdt.*noise(size(rand_prototype),integrator)
-      integrator.ΔZ = sqdt.*noise(size(rand_prototype),integrator)
+      if alg_needs_extra_process(alg)
+        integrator.ΔZ = sqdt.*noise(size(rand_prototype),integrator)
+      end
     end
     if save_noise
       push!(Ws,copy(W))

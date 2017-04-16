@@ -50,29 +50,38 @@ end
 function resize_noise!(integrator,cache,bot_idx,i)
   for c in integrator.S₁
     resize!(c[2],i)
-    resize!(c[3],i)
+    if alg_needs_extra_process(integrator.alg)
+      resize!(c[3],i)
+    end
     if i > bot_idx # fill in rands
       fill_new_noise_caches!(integrator,c,sqrt(c[1]),bot_idx:i)
     end
   end
   for c in integrator.S₂
     resize!(c[2],i)
-    resize!(c[3],i)
+    if alg_needs_extra_process(integrator.alg)
+      resize!(c[3],i)
+    end
     if i > bot_idx # fill in rands
       fill_new_noise_caches!(integrator,c,sqrt(c[1]),bot_idx:i)
     end
   end
   resize!(integrator.ΔW,i)
-  resize!(integrator.ΔZ,i)
   resize!(integrator.ΔWtilde,i)
-  resize!(integrator.ΔZtilde,i)
   resize!(integrator.ΔWtmp,i)
-  resize!(integrator.ΔZtmp,i)
   resize!(integrator.W,i)
-  resize!(integrator.Z,i)
+
+  if alg_needs_extra_process(integrator.alg)
+    resize!(integrator.ΔZ,i)
+    resize!(integrator.ΔZtilde,i)
+    resize!(integrator.ΔZtmp,i)
+    resize!(integrator.Z,i)
+  end
   if i > bot_idx # fill in rands
     fill!(@view(integrator.W[bot_idx:i]),zero(eltype(integrator.u)))
-    fill!(@view(integrator.Z[bot_idx:i]),zero(eltype(integrator.u)))
+    if alg_needs_extra_process(integrator.alg)
+      fill!(@view(integrator.Z[bot_idx:i]),zero(eltype(integrator.u)))
+    end
   end
 end
 
@@ -82,7 +91,7 @@ end
     for i in idxs
       c[2][i] *= scaling_factor
     end
-    if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+    if alg_needs_extra_process(integrator.alg)
       integrator.noise(@view(c[3][idxs]),integrator)
       for i in idxs
         c[3][i] .*= scaling_factor
@@ -90,7 +99,7 @@ end
     end
   else
     c[2][idxs] .= scaling_factor.*integrator.noise(length(idxs),integrator)
-    if !(typeof(integrator.alg) <: EM) || !(typeof(integrator.alg) <: RKMil)
+    if alg_needs_extra_process(integrator.alg)
       c[3][idxs] .= scaling_factor.*integrator.noise(length(idxs),integrator)
     end
   end
@@ -141,48 +150,65 @@ end
 function deleteat_noise!(integrator,cache,idxs)
   for c in integrator.S₁
     deleteat!(c[2],idxs)
-    deleteat!(c[3],idxs)
+    if alg_needs_extra_process(integrator.alg)
+      deleteat!(c[3],idxs)
+    end
   end
   for c in integrator.S₂
     deleteat!(c[2],idxs)
-    deleteat!(c[3],idxs)
+    if alg_needs_extra_process(integrator.alg)
+      deleteat!(c[3],idxs)
+    end
   end
   deleteat!(integrator.ΔW,idxs)
-  deleteat!(integrator.ΔZ,idxs)
   deleteat!(integrator.ΔWtilde,idxs)
-  deleteat!(integrator.ΔZtilde,idxs)
   deleteat!(integrator.ΔWtmp,idxs)
-  deleteat!(integrator.ΔZtmp,idxs)
   deleteat!(integrator.W,idxs)
-  deleteat!(integrator.Z,idxs)
+
+  if alg_needs_extra_process(integrator.alg)
+    deleteat!(integrator.Z,idxs)
+    deleteat!(integrator.ΔZtmp,idxs)
+    deleteat!(integrator.ΔZtilde,idxs)
+    deleteat!(integrator.ΔZ,idxs)
+  end
 end
 
 function addat_noise!(integrator,cache,idxs)
   for c in integrator.S₁
     addat!(c[2],idxs)
-    addat!(c[3],idxs)
+    if alg_needs_extra_process(integrator.alg)
+      addat!(c[3],idxs)
+    end
     fill_new_noise_caches!(integrator,c,sqrt(c[1]),idxs)
   end
   for c in integrator.S₂
     addat!(c[2],idxs)
-    addat!(c[3],idxs)
+    if alg_needs_extra_process(integrator.alg)
+      addat!(c[3],idxs)
+    end
     fill_new_noise_caches!(integrator,c,sqrt(c[1]),idxs)
   end
 
   addat!(integrator.ΔW,idxs)
-  addat!(integrator.ΔZ,idxs)
   addat!(integrator.W,idxs)
-  addat!(integrator.Z,idxs)
+  if alg_needs_extra_process(integrator.alg)
+    addat!(integrator.ΔZ,idxs)
+    addat!(integrator.Z,idxs)
+  end
 
   i = length(integrator.u)
   resize!(integrator.ΔWtilde,i)
-  resize!(integrator.ΔZtilde,i)
   resize!(integrator.ΔWtmp,i)
-  resize!(integrator.ΔZtmp,i)
+  if alg_needs_extra_process(integrator.alg)
+    resize!(integrator.ΔZtmp,i)
+    resize!(integrator.ΔZtilde,i)
+  end
 
   # fill in rands
   fill!(@view(integrator.W[idxs]),zero(eltype(integrator.u)))
-  fill!(@view(integrator.Z[idxs]),zero(eltype(integrator.u)))
+  if alg_needs_extra_process(integrator.alg)
+    fill!(@view(integrator.Z[idxs]),zero(eltype(integrator.u)))
+  end
 end
 
 
