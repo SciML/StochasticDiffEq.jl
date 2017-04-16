@@ -326,10 +326,10 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
     end
   else
     if DiffEqBase.isinplace(prob.noise)
-      noise(ΔW,integrator)
-      noise(ΔZ,integrator)
-      ΔW .*= sqdt
-      ΔZ .*= sqdt
+      noise(integrator.ΔW,integrator)
+      noise(integrator.ΔZ,integrator)
+      integrator.ΔW .*= sqdt
+      integrator.ΔZ .*= sqdt
     else
       integrator.ΔW = sqdt.*noise(size(rand_prototype),integrator)
       integrator.ΔZ = sqdt.*noise(size(rand_prototype),integrator)
