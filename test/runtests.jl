@@ -16,6 +16,7 @@ const LONGER_TESTS = false
 LONGER_TESTS && @time @testset "Weak Convergence Tests" begin include("weak_convergence.jl") end
 @time @testset "Number Type Tests" begin include("sde/sde_numbertype_tests.jl") end
 @time @testset "Noise Type Tests" begin include("noise_type_test.jl") end
+@time @testset "Noise Process Tests" begin include("noise_process_tests.jl") end
 @time @testset "tdir Tests" begin include("tdir_tests.jl") end
 @time @testset "tstops Tests" begin include("tstops_tests.jl") end
 @time @testset "saveat Tests" begin include("saveat_tests.jl") end
