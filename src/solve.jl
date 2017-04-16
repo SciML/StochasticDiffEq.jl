@@ -57,6 +57,10 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
     error("Adaptivity is currently only compatible with white noise.")
   end
 
+  if prob.mass_matrix != I
+    error("This solver is not able to use mass matrices.")
+  end
+
   if !alg_compatible(prob,alg)
     error("The algorithm is not compatible with the chosen noise type. Please see the documentation on the solver methods")
   end

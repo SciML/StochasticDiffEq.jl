@@ -5,7 +5,7 @@ tic()
 const TEST_PLOT = false
 const LONGER_TESTS = false
 #SDE
-@time @testset "First Rand Tests" begin include("sde/first_rand_test.jl") end
+@time @testset "First Rand Tests" begin include("first_rand_test.jl") end
 @time @testset "Linear SDE Tests" begin include("sde/sde_linear_tests.jl") end
 @time @testset "Linear RODE Tests" begin include("rode_linear_tests.jl") end
 @time @testset "Two-dimensional Linear SDE Tests" begin include("sde/sde_twodimlinear_tests.jl") end
