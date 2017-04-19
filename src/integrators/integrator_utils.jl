@@ -389,7 +389,7 @@ end
     integrator.sqdt = sqrt(integrator.dt)
   else # RSwM3
     if !(typeof(integrator.u) <: AbstractArray)
-      dttmp = 0.0; ΔWtmp = 0.0; ΔZtmp = 0.0
+      dttmp = 0.0; integrator.ΔWtmp = 0.0; integrator.ΔZtmp = 0.0
     else
       dttmp = 0.0; fill!(integrator.ΔWtmp,zero(eltype(integrator.ΔWtmp)))
       if alg_needs_extra_process(integrator.alg)
