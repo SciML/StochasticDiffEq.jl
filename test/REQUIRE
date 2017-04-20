@@ -1,6 +1,3 @@
 DiffEqDevTools
 DiffEqProblemLibrary
 ParameterizedFunctions
-StatsBase
-Distributions
-HypothesisTests
