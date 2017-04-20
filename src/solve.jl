@@ -1,6 +1,6 @@
 
-function solve{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},ND,recompile_flag}(
-  prob::AbstractRODEProblem{uType,tType,isinplace,NoiseClass,ND},
+function solve{algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},recompile_flag}(
+  prob::AbstractRODEProblem,
   alg::algType,timeseries=[],ts=[],ks=[],recompile::Type{Val{recompile_flag}}=Val{true};
   kwargs...)
 
@@ -9,8 +9,8 @@ function solve{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgor
   integrator.sol
 end
 
-function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},ND,recompile_flag}(
-              prob::AbstractRODEProblem{uType,tType,isinplace,NoiseClass,ND},
+function init{uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},ND,recompile_flag}(
+              prob::AbstractRODEProblem{uType,tType,isinplace,ND},
               alg::algType,timeseries_init=uType[],ts_init=tType[],ks_init=[],
               recompile::Type{Val{recompile_flag}}=Val{true};
               dt = tType(0),
@@ -48,10 +48,6 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
   if save_timeseries != nothing
     warn("save_timeseries is deprecated. Use save_everystep instead")
     save_everystep = save_timeseries
-  end
-
-  if noise_class(prob.noise) != :White && adaptive
-    error("Adaptivity is currently only compatible with white noise.")
   end
 
   if prob.mass_matrix != I
@@ -248,44 +244,32 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
 
 
   if !(uType <: AbstractArray)
-    randType = typeof(u/u) # Strip units and type info
+    rand_prototype = zero(u/u) # Strip units and type info
+    randType = typeof(rand_prototype)
   else
     randElType = typeof(u[1]/u[1]) # Strip units and type info
     if ND <: Void # noise_dim isn't set, so it's diagonal
       rand_prototype = similar(Array{randElType},indices(u))
+      fill!(rand_prototype,zero(randElType))
     elseif typeof(prob) <: AbstractSDEProblem
       rand_prototype = similar(Vector{randElType},size(noise_rate_prototype,2))
+      fill!(rand_prototype,zero(randElType))
     else
       rand_prototype = prob.rand_prototype
     end
     randType = typeof(rand_prototype) # Strip units and type info
   end
 
-  Ws = Vector{randType}(0)
-  if !(uType <: AbstractArray)
-    W = zero(randType)
-    ΔW= zero(randType)
-    if alg_needs_extra_process(alg)
-      Z = zero(randType)
-      ΔZ= zero(randType)
+  if typeof(prob.noise) <: Void
+    if isinplace
+      W = WienerProcess!(t,rand_prototype)
     else
-      Z = 0
-      ΔZ= 0
+      W = WienerProcess(t,rand_prototype)
     end
   else
-    W = zeros(rand_prototype)
-    ΔW = similar(rand_prototype)
-    if alg_needs_extra_process(alg)
-      Z = zeros(rand_prototype)
-      ΔZ = similar(rand_prototype)
-    else
-      ΔZ= 0
-      Z = 0
-    end
+    W = prob.noise
   end
 
-  S₁ = DataStructures.Stack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
-  S₂ = ResettableStacks.ResettableStack{}(Tuple{typeof(t),typeof(W),typeof(Z)})
   EEst = tTypeNoUnits(1)
   q = tTypeNoUnits(1)
   just_hit_tstop = false
@@ -298,11 +282,11 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
 
   rateType = typeof(u/t) ## Can be different if united
 
-  cache = alg_cache(alg,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,Val{isinplace})
+  cache = alg_cache(alg,prob,u,W.dW,W.dZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,Val{isinplace})
 
   id = LinearInterpolationData(timeseries,ts)
 
-  sol = build_solution(prob,alg,ts,timeseries,W=Ws,
+  sol = build_solution(prob,alg,ts,timeseries,W=W,
                 calculate_error = false,
                 interp = id, dense = dense)
 
@@ -319,42 +303,17 @@ function init{uType,tType,isinplace,NoiseClass,algType<:Union{AbstractRODEAlgori
   end
 
   integrator =    SDEIntegrator{typeof(alg),uType,uEltype,tType,tTypeNoUnits,
-                  uEltypeNoUnits,randType,typeof(Z),typeof(ΔW),typeof(ΔZ),rateType,typeof(sol),typeof(cache),
-                  typeof(prog),typeof(S₁),typeof(S₂),FType,GType,typeof(opts),typeof(noise)}(
+                  uEltypeNoUnits,typeof(W),rateType,typeof(sol),typeof(cache),
+                  typeof(prog),FType,GType,typeof(opts),typeof(noise)}(
                   f,g,noise,uprev,tprev,t,u,tType(dt),tType(dt),tType(dt),dtcache,T,tdir,
                   just_hit_tstop,isout,accept_step,dtchangeable,u_modified,
                   saveiter,
                   alg,sol,
-                  cache,sqdt,W,Z,ΔW,ΔZ,copy(ΔW),copy(ΔZ),copy(ΔW),copy(ΔZ),
-                  opts,iter,prog,S₁,S₂,EEst,q,
+                  cache,sqdt,W,
+                  opts,iter,prog,EEst,q,
                   tTypeNoUnits(qoldinit),q11)
 
-  if !(uType <: AbstractArray)
-    integrator.ΔW = sqdt*noise(integrator)
-    if alg_needs_extra_process(alg)
-      integrator.ΔZ = sqdt*noise(integrator)
-    end
-    if save_noise
-      push!(Ws,W)
-    end
-  else
-    if DiffEqBase.isinplace(prob.noise)
-      noise(integrator.ΔW,integrator)
-      integrator.ΔW .*= sqdt
-      if alg_needs_extra_process(alg)
-        noise(integrator.ΔZ,integrator)
-        integrator.ΔZ .*= sqdt
-      end
-    else
-      integrator.ΔW = sqdt.*noise(size(rand_prototype),integrator)
-      if alg_needs_extra_process(alg)
-        integrator.ΔZ = sqdt.*noise(size(rand_prototype),integrator)
-      end
-    end
-    if save_noise
-      push!(Ws,copy(W))
-    end
-  end
+  calculate_step!(integrator.W,integrator.dt)
 
   if initialize_integrator
     initialize!(integrator,integrator.cache)

@@ -7,7 +7,7 @@ module StochasticDiffEq
   import Base: start, next, done, eltype
 
   using DiffEqBase, Parameters, RecursiveArrayTools, Juno,
-        DataStructures, ResettableStacks, Iterators, Roots
+        DataStructures, ResettableStacks, Iterators, Roots, DiffEqNoiseProcess
 
   using Compat
 
@@ -19,7 +19,6 @@ module StochasticDiffEq
                      u_modified!,savevalues!,add_tstop!,add_saveat!,set_reltol!,
                      set_abstol!
 
-  include("rswm.jl")
   include("algorithms.jl")
   include("options_type.jl")
   include("interp_func.jl")
