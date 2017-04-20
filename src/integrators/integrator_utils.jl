@@ -4,7 +4,6 @@
   # Accept or reject the step
   if integrator.iter > 0
     if (integrator.opts.adaptive && integrator.accept_step) || !integrator.opts.adaptive
-      modify_dt_for_tstops!(integrator)
       apply_step!(integrator)
     elseif integrator.opts.adaptive && !integrator.accept_step
       if integrator.isout
@@ -223,6 +222,8 @@ end
   else
     integrator.uprev = integrator.u
   end
+  integrator.dt = integrator.dtpropose
+  modify_dt_for_tstops!(integrator)
   accept_step!(integrator.W,integrator.dt)
   integrator.dt = integrator.W.dt
   integrator.sqdt = sqrt(integrator.dt) # It can change dt, like in RSwM1
