@@ -54,7 +54,7 @@ function init{uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abstrac
     error("This solver is not able to use mass matrices.")
   end
 
-  if !(typeof(prob.noise)<:Void) && typeof(prob.noise.bridge)<:Void && adaptive
+  if (typeof(prob.noise)<:NoiseProcess) && typeof(prob.noise.bridge)<:Void && adaptive
     error("Bridge function must be given for adaptivity. Either declare this function in noise process or set adaptive=false")
   end
 
@@ -280,6 +280,9 @@ function init{uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abstrac
     end
   else
     W = prob.noise
+    if typeof(W) <: NoiseWrapper && W.t[end] != t
+      error("Starting time in the noise process is not the starting time of the simulation. The noise process should be re-initialized for repeated use")
+    end
   end
 
   EEst = tTypeNoUnits(1)

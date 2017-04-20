@@ -7,7 +7,7 @@ module StochasticDiffEq
   import Base: start, next, done, eltype
 
   using DiffEqBase, Parameters, RecursiveArrayTools, Juno,
-        DataStructures, ResettableStacks, Iterators, Roots, DiffEqNoiseProcess
+        DataStructures, Iterators, Roots, DiffEqNoiseProcess
 
   using Compat
 
