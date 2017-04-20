@@ -11,6 +11,8 @@ sol = solve(prob,EM(),dt=1//2^(4),saveat = 0.33,save_start=false)
 sol.t == [.33,.33+.33,1]
 sol(0.4)
 
+f = (t,u) -> 2u
+prob = SDEProblem(f,prob.f,prob.u0,prob.tspan)
 sol = solve(prob,EM(),dt=1//2^(4),saveat = 0.33,save_start=false,save_everystep=true)
 
 @test 0.33 ∈ sol.t

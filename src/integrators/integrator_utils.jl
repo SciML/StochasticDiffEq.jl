@@ -12,7 +12,9 @@
         integrator.dtnew = integrator.dt/min(inv(integrator.opts.qmin),integrator.q11/integrator.opts.gamma)
       end
       fix_dtnew_at_bounds!(integrator)
-      perform_rswm_rejection!(integrator)
+      reject_step!(integrator.W,integrator.dtnew)
+      integrator.dt = integrator.dtnew
+      integrator.sqdt = sqrt(abs(integrator.dt))
     end
   end
 
@@ -40,7 +42,6 @@ end
       integrator.dt = integrator.tdir*min(abs(integrator.dtcache),abs(top(tstops)-integrator.t)) # step! to the end
     end
   end
-  integrator.sqdt = sqrt(abs(integrator.dt))
 end
 
 @def sde_exit_condtions begin
@@ -92,9 +93,6 @@ end
       if typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm
         copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
       end
-      if integrator.opts.save_noise
-        copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W)
-      end
     else # ==t, just save
       copyat_or_push!(integrator.sol.t,integrator.saveiter,integrator.t)
       if integrator.opts.save_idxs == nothing
@@ -104,13 +102,6 @@ end
       end
       if typeof(alg) <: StochasticDiffEqCompositeAlgorithm
         copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
-      end
-      if integrator.opts.save_noise
-        if integrator.opts.save_idxs == nothing
-          copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W)
-        else
-          copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W[integrator.opts.save_idxs],Val{false})
-        end
       end
     end
   end
@@ -125,13 +116,6 @@ end
     #if typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm
     #  copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
     #end
-    if integrator.opts.save_noise
-      if integrator.opts.save_idxs == nothing
-        copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W)
-      else
-        copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W[integrator.opts.save_idxs],Val{false})
-      end
-    end
   end
 end
 
@@ -186,13 +170,9 @@ end
     else
       copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})
     end
-    if integrator.opts.save_noise
-      if integrator.opts.save_idxs == nothing
-        copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W)
-      else
-        copyat_or_push!(integrator.sol.W,integrator.saveiter,integrator.W[integrator.opts.save_idxs],Val{false})
-      end
-    end
+  end
+  if integrator.W.t[end] != integrator.t
+    accept_step!(integrator.W,integrator.dt,false)
   end
 end
 
@@ -200,9 +180,6 @@ end
   solution_endpoint_match_cur_integrator!(integrator)
   resize!(integrator.sol.t,integrator.saveiter)
   resize!(integrator.sol.u,integrator.saveiter)
-  if integrator.opts.save_noise
-    resize!(integrator.sol.W,integrator.saveiter)
-  end
   !(typeof(integrator.prog)<:Void) && Juno.done(integrator.prog)
   return nothing
 end
@@ -246,121 +223,14 @@ end
   else
     integrator.uprev = integrator.u
   end
-  # Setup next step
-  if adaptive_alg(integrator.alg.rswm)==:RSwM3
-    ResettableStacks.reset!(integrator.S₂) #Empty integrator.S₂
-  end
-  if adaptive_alg(integrator.alg.rswm)==:RSwM1
-    if !isempty(integrator.S₁)
-      integrator.dt,integrator.ΔW,integrator.ΔZ = pop!(integrator.S₁)
-      integrator.sqdt = sqrt(abs(integrator.dt))
-    else # Stack is empty
-      integrator.dt = integrator.dtpropose
-      modify_dt_for_tstops!(integrator)
-      integrator.sqdt = sqrt(abs(integrator.dt))
-      update_noise!(integrator)
-    end
-  elseif adaptive_alg(integrator.alg.rswm)==:RSwM2 || adaptive_alg(integrator.alg.rswm)==:RSwM3
-    integrator.dt = integrator.dtpropose
-    modify_dt_for_tstops!(integrator)
-    if !(typeof(integrator.u) <: AbstractArray)
-      dttmp = 0.0; integrator.ΔW = 0.0
-      if alg_needs_extra_process(integrator.alg)
-        integrator.ΔZ = 0.0
-      end
-    else
-      dttmp = 0.0; fill!(integrator.ΔW,zero(eltype(integrator.ΔW)))
-      if alg_needs_extra_process(integrator.alg)
-        fill!(integrator.ΔZ,zero(eltype(integrator.ΔZ)))
-      end
-    end
-    while !isempty(integrator.S₁)
-      L₁,L₂,L₃ = pop!(integrator.S₁)
-      qtmp = (integrator.dt-dttmp)/L₁
-      if qtmp>1
-        dttmp+=L₁
-        if typeof(integrator.u) <: AbstractArray
-          for i in eachindex(integrator.ΔW)
-            integrator.ΔW[i]+=L₂[i]
-            if alg_needs_extra_process(integrator.alg)
-              integrator.ΔZ[i]+=L₃[i]
-            end
-          end
-        else
-          integrator.ΔW+=L₂
-          if alg_needs_extra_process(integrator.alg)
-            integrator.ΔZ+=L₃
-          end
-        end
-        if adaptive_alg(integrator.alg.rswm)==:RSwM3
-          push!(integrator.S₂,(L₁,L₂,L₃))
-        end
-      else #Popped too far
-        generate_tildes(integrator,qtmp*L₂,qtmp*L₃,sqrt(abs((1-qtmp)*qtmp*L₁)))
-        if typeof(integrator.ΔW) <: AbstractArray
-          for i in eachindex(integrator.ΔW)
-            integrator.ΔW[i] += integrator.ΔWtilde[i]
-            if alg_needs_extra_process(integrator.alg)
-              integrator.ΔZ[i] += integrator.ΔZtilde[i]
-            end
-          end
-        else
-          integrator.ΔW += integrator.ΔWtilde
-          if alg_needs_extra_process(integrator.alg)
-            integrator.ΔZ += integrator.ΔZtilde
-          end
-        end
-        if (1-qtmp)*L₁ > integrator.alg.rswm.discard_length
-          push!(integrator.S₁,((1-qtmp)*L₁,L₂-integrator.ΔWtilde,L₃-integrator.ΔZtilde))
-          if adaptive_alg(integrator.alg.rswm)==:RSwM3 && qtmp*L₁ > integrator.alg.rswm.discard_length
-            push!(integrator.S₂,(qtmp*L₁,copy(integrator.ΔWtilde),copy(integrator.ΔZtilde)))
-          end
-        end
-        break
-      end
-    end #end while empty
-    dtleft = integrator.dt - dttmp
-    if dtleft != 0 #Stack emptied
-      generate_tildes(integrator,0,0,sqrt(abs(dtleft)))
-      if typeof(integrator.ΔW) <: AbstractArray
-        for i in eachindex(integrator.ΔW)
-          integrator.ΔW[i] += integrator.ΔWtilde[i]
-          if alg_needs_extra_process(integrator.alg)
-            integrator.ΔZ[i] += integrator.ΔZtilde[i]
-          end
-        end
-      else
-        integrator.ΔW += integrator.ΔWtilde
-        if alg_needs_extra_process(integrator.alg)
-          integrator.ΔZ += integrator.ΔZtilde
-        end
-      end
-      if adaptive_alg(integrator.alg.rswm)==:RSwM3
-        push!(integrator.S₂,(dtleft,copy(integrator.ΔWtilde),copy(integrator.ΔZtilde)))
-      end
-    end
-  end # End RSwM2 and RSwM3
+  integrator.dt = integrator.dtpropose
+  modify_dt_for_tstops!(integrator)
+  accept_step!(integrator.W,integrator.dt)
+  integrator.dt = integrator.W.dt
+  integrator.sqdt = sqrt(abs(integrator.dt)) # It can change dt, like in RSwM1
 end
 
 @inline function update_running_noise!(integrator)
-  if integrator.opts.save_noise
-    if typeof(integrator.u) <: AbstractArray
-      for i in eachindex(integrator.ΔW)
-        integrator.W[i] = integrator.W[i] + integrator.ΔW[i]
-      end
-    else
-      integrator.W = integrator.W + integrator.ΔW
-    end
-    if alg_needs_extra_process(integrator.alg)
-      if typeof(integrator.u) <: AbstractArray
-        for i in eachindex(integrator.ΔW)
-          integrator.Z[i] = integrator.Z[i] + integrator.ΔZ[i]
-        end
-      else
-        integrator.Z = integrator.Z + integrator.ΔZ
-      end
-    end
-  end
 end
 
 @inline function perform_rswm_rejection!(integrator)
@@ -386,7 +256,7 @@ end
       end
     end
     integrator.dt = integrator.dtnew
-    integrator.sqdt = sqrt(integrator.dt)
+    integrator.sqdt = sqrt(abs(integrator.dt))
   else # RSwM3
     if !(typeof(integrator.u) <: AbstractArray)
       dttmp = 0.0; integrator.ΔWtmp = 0.0; integrator.ΔZtmp = 0.0

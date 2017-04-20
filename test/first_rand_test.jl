@@ -6,8 +6,8 @@ dt = 1//2^(4)
 prob1 = SDEProblem(f1,g1,0.,(0.0,1.0))
 integrator = init(prob1,EM(),dt=dt)
 
-k = integrator.ΔW
-@test integrator.ΔW != 0
+k = integrator.W.dW
+@test integrator.W.dW != 0
 solve!(integrator)
 @test integrator.sol.W[2] == k
 

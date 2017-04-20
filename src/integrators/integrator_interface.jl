@@ -11,7 +11,9 @@
       integrator.u = integrator(t)
     end
     integrator.dtnew = integrator.t - t
-    perform_rswm_rejection!(integrator) #this only changes dt and noise, so no interpolation problems
+    reject_step!(integrator.W,integrator.dtnew) #this only changes dt and noise, so no interpolation problems
+    integrator.dt = integrator.dtnew
+    integrator.sqdt = sqrt(abs(integrator.dt))
     integrator.t = t
     # reeval_internals_due_to_modification!(integrator) # Not necessary for linear interp
     if T
@@ -48,59 +50,53 @@ function resize!(integrator::SDEIntegrator,cache,i)
 end
 
 function resize_noise!(integrator,cache,bot_idx,i)
-  for c in integrator.S₁
+  for c in integrator.W.S₁
     resize!(c[2],i)
     if alg_needs_extra_process(integrator.alg)
       resize!(c[3],i)
     end
     if i > bot_idx # fill in rands
-      fill_new_noise_caches!(integrator,c,sqrt(c[1]),bot_idx:i)
+      fill_new_noise_caches!(integrator,c,c[1],bot_idx:i)
     end
   end
-  for c in integrator.S₂
+  for c in integrator.W.S₂
     resize!(c[2],i)
     if alg_needs_extra_process(integrator.alg)
       resize!(c[3],i)
     end
     if i > bot_idx # fill in rands
-      fill_new_noise_caches!(integrator,c,sqrt(c[1]),bot_idx:i)
+      fill_new_noise_caches!(integrator,c,c[1],bot_idx:i)
     end
   end
-  resize!(integrator.ΔW,i)
-  resize!(integrator.ΔWtilde,i)
-  resize!(integrator.ΔWtmp,i)
-  resize!(integrator.W,i)
+  resize!(integrator.W.dW,i)
+  resize!(integrator.W.dWtilde,i)
+  resize!(integrator.W.dWtmp,i)
+  resize!(integrator.W.curW,i)
 
   if alg_needs_extra_process(integrator.alg)
-    resize!(integrator.ΔZ,i)
-    resize!(integrator.ΔZtilde,i)
-    resize!(integrator.ΔZtmp,i)
-    resize!(integrator.Z,i)
+    resize!(integrator.W.dZ,i)
+    resize!(integrator.W.dZtilde,i)
+    resize!(integrator.W.dZtmp,i)
+    resize!(integrator.W.curZ,i)
   end
   if i > bot_idx # fill in rands
-    fill!(@view(integrator.W[bot_idx:i]),zero(eltype(integrator.u)))
+    fill!(@view(integrator.W.curW[bot_idx:i]),zero(eltype(integrator.u)))
     if alg_needs_extra_process(integrator.alg)
-      fill!(@view(integrator.Z[bot_idx:i]),zero(eltype(integrator.u)))
+      fill!(@view(integrator.W.curZ[bot_idx:i]),zero(eltype(integrator.u)))
     end
   end
 end
 
 @inline function fill_new_noise_caches!(integrator,c,scaling_factor,idxs)
-  if isinplace(integrator.noise)
-    integrator.noise(@view(c[2][idxs]),integrator)
-    for i in idxs
-      c[2][i] *= scaling_factor
-    end
+  if isinplace(integrator.W)
+    integrator.W.dist(@view(c[2][idxs]),integrator.W,scaling_factor)
     if alg_needs_extra_process(integrator.alg)
-      integrator.noise(@view(c[3][idxs]),integrator)
-      for i in idxs
-        c[3][i] .*= scaling_factor
-      end
+      integrator.W.dist(@view(c[3][idxs]),integrator.W,scaling_factor)
     end
   else
-    c[2][idxs] .= scaling_factor.*integrator.noise(length(idxs),integrator)
+    c[2][idxs] .= integrator.noise(length(idxs),integrator,scaling_factor)
     if alg_needs_extra_process(integrator.alg)
-      c[3][idxs] .= scaling_factor.*integrator.noise(length(idxs),integrator)
+      c[3][idxs] .= integrator.noise(length(idxs),integrator,scaling_factor)
     end
   end
 end
@@ -148,66 +144,66 @@ function addat_non_user_cache!(integrator::SDEIntegrator,cache,idxs)
 end
 
 function deleteat_noise!(integrator,cache,idxs)
-  for c in integrator.S₁
+  for c in integrator.W.S₁
     deleteat!(c[2],idxs)
     if alg_needs_extra_process(integrator.alg)
       deleteat!(c[3],idxs)
     end
   end
-  for c in integrator.S₂
+  for c in integrator.W.S₂
     deleteat!(c[2],idxs)
     if alg_needs_extra_process(integrator.alg)
       deleteat!(c[3],idxs)
     end
   end
-  deleteat!(integrator.ΔW,idxs)
-  deleteat!(integrator.ΔWtilde,idxs)
-  deleteat!(integrator.ΔWtmp,idxs)
-  deleteat!(integrator.W,idxs)
+  deleteat!(integrator.W.dW,idxs)
+  deleteat!(integrator.W.dWtilde,idxs)
+  deleteat!(integrator.W.dWtmp,idxs)
+  deleteat!(integrator.W.curW,idxs)
 
   if alg_needs_extra_process(integrator.alg)
-    deleteat!(integrator.Z,idxs)
-    deleteat!(integrator.ΔZtmp,idxs)
-    deleteat!(integrator.ΔZtilde,idxs)
-    deleteat!(integrator.ΔZ,idxs)
+    deleteat!(integrator.W.curZ,idxs)
+    deleteat!(integrator.W.dZtmp,idxs)
+    deleteat!(integrator.W.dZtilde,idxs)
+    deleteat!(integrator.W.dZ,idxs)
   end
 end
 
 function addat_noise!(integrator,cache,idxs)
-  for c in integrator.S₁
+  for c in integrator.W.S₁
     addat!(c[2],idxs)
     if alg_needs_extra_process(integrator.alg)
       addat!(c[3],idxs)
     end
-    fill_new_noise_caches!(integrator,c,sqrt(c[1]),idxs)
+    fill_new_noise_caches!(integrator,c,c[1],idxs)
   end
-  for c in integrator.S₂
+  for c in integrator.W.S₂
     addat!(c[2],idxs)
     if alg_needs_extra_process(integrator.alg)
       addat!(c[3],idxs)
     end
-    fill_new_noise_caches!(integrator,c,sqrt(c[1]),idxs)
+    fill_new_noise_caches!(integrator,c,c[1],idxs)
   end
 
-  addat!(integrator.ΔW,idxs)
-  addat!(integrator.W,idxs)
+  addat!(integrator.W.dW,idxs)
+  addat!(integrator.W.curW,idxs)
   if alg_needs_extra_process(integrator.alg)
-    addat!(integrator.ΔZ,idxs)
-    addat!(integrator.Z,idxs)
+    addat!(integrator.W.dZ,idxs)
+    addat!(integrator.W.curZ,idxs)
   end
 
   i = length(integrator.u)
-  resize!(integrator.ΔWtilde,i)
-  resize!(integrator.ΔWtmp,i)
+  resize!(integrator.W.dWtilde,i)
+  resize!(integrator.W.dWtmp,i)
   if alg_needs_extra_process(integrator.alg)
-    resize!(integrator.ΔZtmp,i)
-    resize!(integrator.ΔZtilde,i)
+    resize!(integrator.W.dZtmp,i)
+    resize!(integrator.W.dZtilde,i)
   end
 
   # fill in rands
-  fill!(@view(integrator.W[idxs]),zero(eltype(integrator.u)))
+  fill!(@view(integrator.W.curW[idxs]),zero(eltype(integrator.u)))
   if alg_needs_extra_process(integrator.alg)
-    fill!(@view(integrator.Z[idxs]),zero(eltype(integrator.u)))
+    fill!(@view(integrator.W.curZ[idxs]),zero(eltype(integrator.u)))
   end
 end
 

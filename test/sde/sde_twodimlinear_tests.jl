@@ -20,7 +20,7 @@ sol = solve(prob,SRIW1(),dt=1/2^(3),progress=true,progress_steps=1)
 println("Convergence Test on 2D Linear")
 dts = 1./2.^(7:-1:4) #14->7 good plot
 
-sim = test_convergence(dts,prob,EM(),numMonte=100)
+sim = test_convergence(dts,prob,EM(),numMonte=1000)
 
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
 

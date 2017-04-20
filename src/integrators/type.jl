@@ -1,4 +1,4 @@
-type SDEIntegrator{T1,uType,uEltype,tType,tTypeNoUnits,uEltypeNoUnits,randType,randType2,randElType,randElType2,rateType,solType,cacheType,progType,Stack1Type,Stack2Type,F4,F5,OType,noiseType} <: AbstractSDEIntegrator
+type SDEIntegrator{T1,uType,uEltype,tType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,cacheType,progType,F4,F5,OType,noiseType} <: AbstractSDEIntegrator
   f::F4
   g::F5
   noise::noiseType
@@ -23,18 +23,9 @@ type SDEIntegrator{T1,uType,uEltype,tType,tTypeNoUnits,uEltypeNoUnits,randType,r
   cache::cacheType
   sqdt::tType
   W::randType
-  Z::randType2
-  ΔW::randElType
-  ΔZ::randElType2
-  ΔWtmp::randElType
-  ΔZtmp::randElType2
-  ΔWtilde::randElType
-  ΔZtilde::randElType2
   opts::OType
   iter::Int
   prog::progType
-  S₁::Stack1Type
-  S₂::Stack2Type
   EEst::tTypeNoUnits
   q::tTypeNoUnits
   qold::tTypeNoUnits
