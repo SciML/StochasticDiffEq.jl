@@ -56,8 +56,8 @@ end
 
   if is_diagonal_noise(integrator.sol.prob)
     for i in eachindex(u)
-      W.dWo2 = (1/2)*W.dW[i]
-      nrtmp[i]=W.dWo2*(gtmp1[i]+gtmp2[i])
+      dWo2 = (1/2)*W.dW[i]
+      nrtmp[i]=dWo2*(gtmp1[i]+gtmp2[i])
     end
   else
     for i in eachindex(gtmp1)
@@ -75,14 +75,14 @@ end
 
 @inline function perform_step!(integrator,cache::RandomEMConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
-  u = @muladd uprev + dt.*integrator.f(t,uprev,W)
+  u = @muladd uprev + dt.*integrator.f(t,uprev,W.dW)
   @pack integrator = t,dt,u
 end
 
 @inline function perform_step!(integrator,cache::RandomEMCache,f=integrator.f)
   @unpack rtmp = cache
   @unpack t,dt,uprev,u,W = integrator
-  integrator.f(t,uprev,W,rtmp)
+  integrator.f(t,uprev,W.dW,rtmp)
   for i in eachindex(u)
     u[i] = @muladd uprev[i] + dt*rtmp[i]
   end

@@ -54,6 +54,10 @@ function init{uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abstrac
     error("This solver is not able to use mass matrices.")
   end
 
+  if !(typeof(prob.noise)<:Void) && typeof(prob.noise.bridge)<:Void && adaptive
+    error("Bridge function must be given for adaptivity. Either declare this function in noise process or set adaptive=false")
+  end
+
   if !alg_compatible(prob,alg)
     error("The algorithm is not compatible with the chosen noise type. Please see the documentation on the solver methods")
   end
@@ -262,9 +266,17 @@ function init{uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abstrac
 
   if typeof(prob.noise) <: Void
     if isinplace
-      W = WienerProcess!(t,rand_prototype)
+      if alg_needs_extra_process(alg)
+        W = WienerProcess!(t,rand_prototype,rand_prototype)
+      else
+        W = WienerProcess!(t,rand_prototype)
+      end
     else
-      W = WienerProcess(t,rand_prototype)
+      if alg_needs_extra_process(alg)
+        W = WienerProcess(t,rand_prototype,rand_prototype)
+      else
+        W = WienerProcess(t,rand_prototype)
+      end
     end
   else
     W = prob.noise

@@ -14,7 +14,7 @@
       fix_dtnew_at_bounds!(integrator)
       reject_step!(integrator.W,integrator.dtnew)
       integrator.dt = integrator.dtnew
-      integrator.sqdt = sqrt(integrator.dt)
+      integrator.sqdt = sqrt(abs(integrator.dt))
     end
   end
 
@@ -227,7 +227,7 @@ end
   modify_dt_for_tstops!(integrator)
   accept_step!(integrator.W,integrator.dt)
   integrator.dt = integrator.W.dt
-  integrator.sqdt = sqrt(integrator.dt) # It can change dt, like in RSwM1
+  integrator.sqdt = sqrt(abs(integrator.dt)) # It can change dt, like in RSwM1
 end
 
 @inline function update_running_noise!(integrator)
@@ -256,7 +256,7 @@ end
       end
     end
     integrator.dt = integrator.dtnew
-    integrator.sqdt = sqrt(integrator.dt)
+    integrator.sqdt = sqrt(abs(integrator.dt))
   else # RSwM3
     if !(typeof(integrator.u) <: AbstractArray)
       dttmp = 0.0; integrator.ΔWtmp = 0.0; integrator.ΔZtmp = 0.0

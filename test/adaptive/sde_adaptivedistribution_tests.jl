@@ -10,7 +10,7 @@ for j = 1:M
   Wends = Vector{Float64}(N)
   for i = 1:N
     sol =solve(prob,SRI(),dt=1/2^(4),abstol=1e-2,reltol=0,adaptivealg=:RSwM1)
-    Wends[i] = sol.W[end]
+    Wends[i] = sol.W.W[end]
   end
   kssol = ApproximateOneSampleKSTest(Wends/sqrt(T), Normal())
   ps[j] = pvalue(kssol) #Should be not significant (most of the time)
@@ -22,7 +22,7 @@ for j = 1:M
   Wends = Vector{Float64}(N)
   for i = 1:N
     sol =solve(prob,SRI(),dt=1/2^(4),abstol=1e-2,reltol=0,adaptivealg=:RSwM2)
-    Wends[i] = sol.W[end]
+    Wends[i] = sol.W.W[end]
   end
   kssol = ApproximateOneSampleKSTest(Wends/sqrt(T), Normal())
   ps[j] = pvalue(kssol) #Should be not significant (most of the time)
@@ -34,7 +34,7 @@ for j = 1:M
   Wends = Vector{Float64}(N)
   for i = 1:N
     sol =solve(prob,SRI(),dt=1/2^(4),abstol=1e-2,reltol=0,adaptivealg=:RSwM3)
-    Wends[i] = sol.W[end]
+    Wends[i] = sol.W.W[end]
   end
   kssol = ApproximateOneSampleKSTest(Wends/sqrt(T), Normal())
   ps[j] = pvalue(kssol) #Should be not significant (most of the time)
