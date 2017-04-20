@@ -13,6 +13,7 @@
       end
       fix_dtnew_at_bounds!(integrator)
       reject_step!(integrator.W,integrator.dtnew)
+      integrator.dt = integrator.dtnew
       integrator.sqdt = sqrt(integrator.dt)
     end
   end
