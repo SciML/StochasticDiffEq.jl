@@ -69,7 +69,7 @@ function init{uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abstrac
   T = tType(tspan[2])
   t = tType(tspan[1])
 
-  if (!(typeof(alg) <: StochasticDiffEqAdaptiveAlgorithm) && !(typeof(alg) <: StochasticDiffEqCompositeAlgorithm)) && dt == tType(0) && isempty(tstops)
+  if !adaptive && dt == tType(0) && isempty(tstops)
       error("Fixed timestep methods require a choice of dt or choosing the tstops")
   end
 

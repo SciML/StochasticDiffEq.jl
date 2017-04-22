@@ -95,9 +95,13 @@ end
   L = integrator.g(t,uprev)
   utilde = K + L*integrator.sqdt
   if alg_interpretation(integrator.alg) == :Ito
-    u = @muladd K+L*W.dW+(integrator.g(t,utilde)-L)/(2integrator.sqdt)*(W.dW^2 - dt)
+    mil_correction = (integrator.g(t,utilde)-L)/(2integrator.sqdt)*(W.dW^2 - dt)
   elseif alg_interpretation(integrator.alg) == :Stratonovich
-    u = K+L*W.dW+((integrator.g(t,utilde)-L)/(2integrator.sqdt))*(W.dW^2)
+    mil_correction = (integrator.g(t,utilde)-L)/(2integrator.sqdt)*(W.dW^2)
+  end
+  u = K+L*W.dW+mil_correction
+  if integrator.opts.adaptive
+    integrator.EEst = integrator.opts.internalnorm(mil_correction/(@muladd(integrator.opts.abstol + max(abs(uprev),abs(u))*integrator.opts.reltol)))
   end
   @pack integrator = t,dt,u
 end
@@ -114,12 +118,21 @@ end
   integrator.g(t,tmp,du2)
   if alg_interpretation(integrator.alg) == :Ito
     for i in eachindex(u)
-      u[i] = @muladd K[i]+L[i]*W.dW[i]+(du2[i]-L[i])/(2integrator.sqdt)*(W.dW[i].^2 - dt)
+      tmp[i] = (du2[i]-L[i])/(2integrator.sqdt)*(W.dW[i].^2 - dt)
     end
   elseif alg_interpretation(integrator.alg) == :Stratonovich
     for i in eachindex(u)
-      u[i] = @muladd K[i]+L[i]*W.dW[i]+(du2[i]-L[i])/(2integrator.sqdt)*(W.dW[i].^2)
+      tmp[i] = (du2[i]-L[i])/(2integrator.sqdt)*(W.dW[i].^2)
     end
+  end
+  for i in eachindex(u)
+    u[i] = K[i]+L[i]*W.dW[i] + tmp[i]
+  end
+  if integrator.opts.adaptive
+    for i in eachindex(u)
+      tmp[i] = @muladd(tmp[i])/@muladd(integrator.opts.abstol + max(abs(uprev[i]),abs(u[i]))*integrator.opts.reltol)
+    end
+    integrator.EEst = integrator.opts.internalnorm(tmp)
   end
   @pack integrator = t,dt,u
 end

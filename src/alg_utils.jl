@@ -1,6 +1,10 @@
 qmax_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = 9//8
 qmin_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = 1//5
 
+isadaptive(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = false
+isadaptive(alg::Union{StochasticDiffEqAdaptiveAlgorithm,StochasticDiffEqRODEAdaptiveAlgorithm}) = true
+isadaptive(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = isadaptive(alg.algs[1])
+
 alg_order(alg::EM) = 1//2
 alg_order(alg::EulerHeun) = 1//2
 alg_order(alg::RandomEM) = 1//2
@@ -18,7 +22,7 @@ isdtchangeable(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorith
 
 alg_interpretation(alg::StochasticDiffEqAlgorithm) = :Ito
 alg_interpretation(alg::EulerHeun) = :Stratonovich
-alg_interpretation{RSWM,interpretation}(alg::RKMil{RSWM,interpretation}) = interpretation
+alg_interpretation{interpretation}(alg::RKMil{interpretation}) = interpretation
 
 alg_compatible(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = true
 
