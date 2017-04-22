@@ -39,6 +39,32 @@ function alg_cache(alg::EM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uE
   EMCache(u,uprev,tmp,rtmp1,rtmp2,rtmp3)
 end
 
+immutable SplitEMConstantCache <: StochasticDiffEqConstantCache end
+immutable SplitEMCache{uType,rateType,rateNoiseType,rateNoiseCollectionType} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+  tmp::uType
+  rtmp1::rateType
+  rtmp2::rateNoiseType
+  rtmp3::rateNoiseCollectionType
+end
+
+u_cache(c::SplitEMCache) = ()
+du_cache(c::SplitEMCache) = (c.rtmp1,c.rtmp2)
+
+alg_cache(alg::SplitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = SplitEMConstantCache()
+
+function alg_cache(alg::SplitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+  tmp = similar(u); rtmp1 = zeros(rate_prototype);
+  rtmp2 = zeros(noise_rate_prototype)
+  if is_diagonal_noise(prob)
+    rtmp3 = rtmp2
+  else
+    rtmp3 = zeros(rate_prototype)
+  end
+  SplitEMCache(u,uprev,tmp,rtmp1,rtmp2,rtmp3)
+end
+
 immutable EulerHeunConstantCache <: StochasticDiffEqConstantCache end
 immutable EulerHeunCache{uType,rateType,rateNoiseType,rateNoiseCollectionType} <: StochasticDiffEqMutableCache
   u::uType

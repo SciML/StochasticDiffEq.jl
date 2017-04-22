@@ -36,6 +36,7 @@ module StochasticDiffEq
   include("integrators/low_order.jl")
   include("integrators/sri.jl")
   include("integrators/sra.jl")
+  include("integrators/split.jl")
   include("integrators/composite_integrator.jl")
   include("tableaus.jl")
 
@@ -45,6 +46,8 @@ module StochasticDiffEq
   export EM, RKMil, SRA, SRI, SRIW1, SRA1
 
   export EulerHeun
+
+  export SplitEM
 
   export StochasticDiffEqRODEAlgorithm, StochasticDiffEqRODEAdaptiveAlgorithm,
          StochasticDiffEqRODECompositeAlgorithm

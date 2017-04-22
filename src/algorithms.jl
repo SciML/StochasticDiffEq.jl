@@ -7,6 +7,7 @@
 @compat abstract type StochasticDiffEqRODECompositeAlgorithm <: StochasticDiffEqRODEAlgorithm end
 
 immutable EM <: StochasticDiffEqAlgorithm end
+immutable SplitEM <: StochasticDiffEqAlgorithm end
 immutable EulerHeun <: StochasticDiffEqAlgorithm end
 immutable RKMil{interpretation} <: StochasticDiffEqAlgorithm end
 Base.@pure RKMil(;interpretation=:Ito) = RKMil{interpretation}()

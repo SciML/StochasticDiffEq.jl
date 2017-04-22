@@ -12,6 +12,7 @@ const LONGER_TESTS = false
 @time @testset "Additive SDE Tests" begin include("sde/sde_additive_tests.jl") end
 @time @testset "Rossler Order Tests" begin include("sde/sde_rosslerorder_tests.jl") end
 @time @testset "Convergence Tests" begin include("sde/sde_convergence_tests.jl") end
+@time @testset "Split Tests" begin include("split_tests.jl") end
 @time @testset "Stratonovich Convergence Tests" begin include("stratonovich_convergence_tests.jl") end
 LONGER_TESTS && @time @testset "Weak Convergence Tests" begin include("weak_convergence.jl") end
 @time @testset "Number Type Tests" begin include("sde/sde_numbertype_tests.jl") end
