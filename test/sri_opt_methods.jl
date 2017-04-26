@@ -29,3 +29,10 @@ sim = test_convergence(dts,prob_sde_cubic,SRI(tableau=StochasticDiffEq.construct
 @test abs(sim.𝒪est[:final]-1.5) < 0.3
 sim = test_convergence(dts,prob_sde_additive,SRI(tableau=StochasticDiffEq.constructSRIOpt4()),numMonte=Int(1e3))
 @test abs(sim.𝒪est[:final]-2.0) < 0.3
+
+sim = test_convergence(dts,prob_sde_wave,SRI(tableau=StochasticDiffEq.constructSRIOpt7()),numMonte=Int(1e3))
+@test abs(sim.𝒪est[:final]-1.5) < 0.3
+sim = test_convergence(dts,prob_sde_cubic,SRI(tableau=StochasticDiffEq.constructSRIOpt7()),numMonte=Int(1e3))
+@test abs(sim.𝒪est[:final]-1.5) < 0.3
+sim = test_convergence(dts,prob_sde_additive,SRI(tableau=StochasticDiffEq.constructSRIOpt7()),numMonte=Int(1e3))
+@test abs(sim.𝒪est[:final]-2.0) < 0.3
