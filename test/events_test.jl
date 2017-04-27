@@ -25,7 +25,7 @@ prob = SDEProblem(f,g,u0,tspan)
 
 sol = solve(prob,SRIW1(),callback=callback,adaptive=false,dt=3/4)
 
-@test sol[6,1] < 1e-14
+@test sol[1,6] < 1e-14
 
 g = function (t,u,du)
   du[2] = .125*u[2]
