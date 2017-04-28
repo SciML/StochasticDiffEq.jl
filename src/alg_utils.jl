@@ -7,6 +7,8 @@ isadaptive(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECom
 
 alg_order(alg::EM) = 1//2
 alg_order(alg::SplitEM) = 1//2
+alg_order(alg::IIF1M) = 1//2
+alg_order(alg::IIF1Mil) = 1//1
 alg_order(alg::EulerHeun) = 1//2
 alg_order(alg::RandomEM) = 1//2
 alg_order(alg::RKMil) = 1//1

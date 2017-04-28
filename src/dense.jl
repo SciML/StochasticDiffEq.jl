@@ -1,3 +1,13 @@
+## Extrapolations are currently just constant
+
+function sde_extrapolant!(out,Θ,integrator::DEIntegrator,idxs,deriv::Type)
+  out .= integrator.u
+end
+
+function sde_extrapolant(Θ,integrator::DEIntegrator,idxs,deriv::Type)
+  integrator.u
+end
+
 function sde_interpolant!(out,Θ,integrator::DEIntegrator,idxs,deriv::Type)
   sde_interpolant!(out,Θ,integrator.dt,integrator.uprev,integrator.u,idxs,deriv)
 end

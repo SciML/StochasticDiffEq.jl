@@ -65,6 +65,92 @@ function alg_cache(alg::SplitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototy
   SplitEMCache(u,uprev,tmp,rtmp1,rtmp2,rtmp3)
 end
 
+immutable IIF1MConstantCache{vecuType,rhsType,nl_rhsType} <: StochasticDiffEqConstantCache
+  uhold::vecuType
+  rhs::rhsType
+  nl_rhs::nl_rhsType
+end
+
+immutable IIF1MCache{uType,vecuType,DiffCacheType,rhsType,nl_rhsType,rateType,rateNoiseType,rateNoiseCollectionType} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+  uhold::vecuType
+  dual_cache::DiffCacheType
+  tmp::uType
+  rhs::rhsType
+  nl_rhs::nl_rhsType
+  rtmp1::rateType
+  rtmp2::rateNoiseType
+  rtmp3::rateNoiseCollectionType
+end
+
+u_cache(c::IIF1MCache)    = (c.uprev2,c.u_old)
+du_cache(c::IIF1MCache)   = (c.rtmp1,c.rtmp2,c.rtmp3)
+vecu_cache(c::IIF1MCache) = (c.uhold,)
+dual_cache(c::IIF1MCache) = (c.dual_cache,)
+
+function alg_cache(alg::IIF1M,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
+  uhold = Vector{typeof(u)}(1)
+  tmp = zero(rate_prototype)
+  rhs = RHS_IIF1M_Scalar(f,tmp,t,t)
+  nl_rhs = alg.nlsolve(Val{:init},rhs,uhold)
+  IIF1MConstantCache(uhold,rhs,nl_rhs)
+end
+
+function alg_cache(alg::IIF1M,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+
+  tmp = similar(u,indices(u)); rtmp1 = zeros(rate_prototype)
+  dual_cache = DiffCache(u,Val{determine_chunksize(u,get_chunksize(alg.nlsolve))})
+  uhold = vec(u) # this makes uhold the same values as integrator.u
+  nl_rhs = alg.nlsolve(Val{:init},rhs,uhold)
+  rhs = RHS_IE(f,tmp,t,t,dual_cache,size(u),eachindex(u))
+
+  rtmp2 = zeros(noise_rate_prototype)
+  if is_diagonal_noise(prob)
+    rtmp3 = rtmp2
+  else
+    rtmp3 = zeros(rate_prototype)
+  end
+  IIF1MCache(u,uprev,uhold,dual_cache,tmp,rhs,nl_rhs,rtmp1,rtmp2,rtmp3)
+end
+
+immutable IIF1MilConstantCache{vecuType,rhsType,nl_rhsType} <: StochasticDiffEqConstantCache
+  uhold::vecuType
+  rhs::rhsType
+  nl_rhs::nl_rhsType
+end
+immutable IIF1MilCache{uType,rateType,rateNoiseType,rateNoiseCollectionType} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+  tmp::uType
+  rtmp1::rateType
+  rtmp2::rateNoiseType
+  rtmp3::rateNoiseCollectionType
+end
+
+u_cache(c::IIF1MilCache) = ()
+du_cache(c::IIF1MilCache) = (c.rtmp1,c.rtmp2)
+
+function alg_cache(alg::IIF1Mil,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
+  uhold = Vector{typeof(u)}(1)
+  C = zero(rate_prototype)
+  rhs = RHS_IIF1M_Scalar(f,C,t,t)
+  nl_rhs = alg.nlsolve(Val{:init},rhs,uhold)
+  IIF1MilConstantCache(uhold,rhs,nl_rhs)
+end
+
+function alg_cache(alg::IIF1Mil,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+  tmp = similar(u); rtmp1 = zeros(rate_prototype);
+  rtmp2 = zeros(noise_rate_prototype)
+  if is_diagonal_noise(prob)
+    rtmp3 = rtmp2
+  else
+    rtmp3 = zeros(rate_prototype)
+  end
+  IIF1MilCache(u,uprev,tmp,rtmp1,rtmp2,rtmp3)
+end
+
+
 immutable EulerHeunConstantCache <: StochasticDiffEqConstantCache end
 immutable EulerHeunCache{uType,rateType,rateNoiseType,rateNoiseCollectionType} <: StochasticDiffEqMutableCache
   u::uType
