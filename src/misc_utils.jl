@@ -1,3 +1,22 @@
+immutable DiffCache{T, S}
+    du::Vector{T}
+    dual_du::Vector{S}
+end
+
+Base.@pure function DiffCache{chunk_size}(T, length, ::Type{Val{chunk_size}})
+    DiffCache(zeros(T, length), zeros(Dual{chunk_size, T}, length))
+end
+
+Base.@pure DiffCache(u::AbstractArray) = DiffCache(eltype(u),length(u),Val{ForwardDiff.pickchunksize(length(u))})
+Base.@pure DiffCache(u::AbstractArray,nlsolve) = DiffCache(eltype(u),length(u),Val{get_chunksize(nlsolve)})
+Base.@pure DiffCache{CS}(u::AbstractArray,T::Type{Val{CS}}) = DiffCache(eltype(u),length(u),T)
+
+get_du{T<:Dual}(dc::DiffCache, ::Type{T}) = dc.dual_du
+get_du(dc::DiffCache, T) = dc.du
+
+realtype{T}(::Type{T}) = T
+realtype{T}(::Type{Complex{T}}) = T
+
 # Default nlsolve behavior, should move to DiffEqDiffTools.jl
 
 Base.@pure determine_chunksize(u,alg::DEAlgorithm) = determine_chunksize(u,get_chunksize(alg))

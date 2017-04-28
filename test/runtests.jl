@@ -14,6 +14,7 @@ const LONGER_TESTS = false
 @time @testset "Convergence Tests" begin include("sde/sde_convergence_tests.jl") end
 @time @testset "Split Tests" begin include("split_tests.jl") end
 @time @testset "Stratonovich Convergence Tests" begin include("stratonovich_convergence_tests.jl") end
+@time @testset "IIF Convergence Tests" begin include("iif_methods.jl") end
 LONGER_TESTS && @time @testset "Weak Convergence Tests" begin include("weak_convergence.jl") end
 @time @testset "Number Type Tests" begin include("sde/sde_numbertype_tests.jl") end
 @time @testset "Noise Type Tests" begin include("noise_type_test.jl") end

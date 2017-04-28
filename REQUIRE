@@ -9,3 +9,4 @@ Iterators
 Compat 0.17.0
 DiffEqNoiseProcess
 NLsolve
+ForwardDiff

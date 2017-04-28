@@ -8,9 +8,11 @@ module StochasticDiffEq
 
   using DiffEqBase, Parameters, RecursiveArrayTools, Juno,
         DataStructures, Iterators, Roots, DiffEqNoiseProcess,
-        NLsolve
+        NLsolve, ForwardDiff
 
   using Compat
+
+  import ForwardDiff.Dual
 
   import DiffEqBase: solve, solve!, init, step!, build_solution, initialize!
 

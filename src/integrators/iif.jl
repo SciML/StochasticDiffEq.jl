@@ -46,24 +46,38 @@ type RHS_IIF1{F,uType,tType,DiffCacheType,SizeType,uidxType} <: Function
   uidx::uidxType
 end
 function (p::RHS_IIF1)(u,resid)
-  du = get_du(p.dual_cache, eltype(uprev))
-  p.f(p.t+p.dt,reshape(uprev,p.sizeu),du)
+  du = get_du(p.dual_cache, eltype(u))
+  p.f[2](p.t+p.dt,reshape(u,p.sizeu),du)
   for i in p.uidx
     resid[i] = u[i] - p.tmp[i] - p.dt*du[i]
   end
 end
 
-@inline function perform_step!(integrator,cache::IIF1MCache,f=integrator.f)
-  @unpack rtmp1,rtmp2,rtmp3 = cache
+@inline function perform_step!(integrator,cache::Union{IIF1MCache,IIF1MilCache},f=integrator.f)
+  @unpack rtmp1,rtmp2,rtmp3,tmp,noise_tmp = cache
+  @unpack uhold,rhs,nl_rhs = cache
   @unpack t,dt,uprev,u,W = integrator
 
   integrator.g(t,uprev,rtmp2)
-  if is_diagonal_noise(integrator.sol.prob)
-    for i in eachindex(u)
-      rtmp2[i]*=W.dW[i] # rtmp2 === rtmp3
+  if typeof(cache) <: IIF1MCache
+    if is_diagonal_noise(integrator.sol.prob)
+      for i in eachindex(u)
+        rtmp2[i]*=W.dW[i] # rtmp2 === rtmp3
+      end
+    else
+      A_mul_B!(rtmp3,rtmp2,W.dW)
     end
-  else
-    A_mul_B!(rtmp3,rtmp2,W.dW)
+  else #Milstein correction
+    for i in eachindex(u)
+      noise_tmp[i] = W.dW[i] + (0.87)*(W.dW[i]^2 - dt)/2
+    end
+    if is_diagonal_noise(integrator.sol.prob)
+      for i in eachindex(u)
+        rtmp2[i]*= noise_tmp[i] # rtmp2 === rtmp3
+      end
+    else
+      A_mul_B!(rtmp3,rtmp2,noise_tmp)
+    end
   end
 
   for i in eachindex(u)
@@ -77,6 +91,8 @@ end
   rhs.t = t
   rhs.dt = dt
   rhs.tmp = tmp
+  rhs.uidx = eachindex(u)
+  rhs.sizeu = size(u)
   nlres = integrator.alg.nlsolve(nl_rhs,uhold)
 
   copy!(uhold,nlres)
