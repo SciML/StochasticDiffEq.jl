@@ -97,7 +97,7 @@ end
   if alg_interpretation(integrator.alg) == :Ito
     mil_correction = (integrator.g(t,utilde)-L)/(2integrator.sqdt)*(W.dW^2 - dt)
   elseif alg_interpretation(integrator.alg) == :Stratonovich
-    mil_correction = (integrator.g(t,utilde)-L)/(2integrator.sqdt)*(W.dW^2)
+    mil_correction = W.dW*(integrator.g(t,utilde)+L)/2
   end
   u = K+L*W.dW+mil_correction
   if integrator.opts.adaptive

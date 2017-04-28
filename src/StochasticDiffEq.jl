@@ -7,9 +7,12 @@ module StochasticDiffEq
   import Base: start, next, done, eltype
 
   using DiffEqBase, Parameters, RecursiveArrayTools, Juno,
-        DataStructures, Iterators, Roots, DiffEqNoiseProcess
+        DataStructures, Iterators, Roots, DiffEqNoiseProcess,
+        NLsolve, ForwardDiff
 
   using Compat
+
+  import ForwardDiff.Dual
 
   import DiffEqBase: solve, solve!, init, step!, build_solution, initialize!
 
@@ -19,6 +22,7 @@ module StochasticDiffEq
                      u_modified!,savevalues!,add_tstop!,add_saveat!,set_reltol!,
                      set_abstol!
 
+  include("misc_utils.jl")
   include("algorithms.jl")
   include("options_type.jl")
   include("interp_func.jl")
@@ -34,6 +38,7 @@ module StochasticDiffEq
   include("solve.jl")
   include("initdt.jl")
   include("integrators/low_order.jl")
+  include("integrators/iif.jl")
   include("integrators/sri.jl")
   include("integrators/sra.jl")
   include("integrators/split.jl")
@@ -47,7 +52,7 @@ module StochasticDiffEq
 
   export EulerHeun
 
-  export SplitEM
+  export SplitEM, IIF1M, IIF1Mil
 
   export StochasticDiffEqRODEAlgorithm, StochasticDiffEqRODEAdaptiveAlgorithm,
          StochasticDiffEqRODECompositeAlgorithm

@@ -352,7 +352,14 @@ function solve!(integrator::SDEIntegrator)
   end
   postamble!(integrator)
   #for i in integrator end
-  if has_analytic(integrator.sol.prob.f)
+
+  if typeof(integrator.sol.prob.f) <: Tuple
+    f = integrator.sol.prob.f[1]
+  else
+    f = integrator.sol.prob.f
+  end
+
+  if has_analytic(f)
     calculate_solution_errors!(integrator.sol;timeseries_errors=integrator.opts.timeseries_errors,dense_errors=integrator.opts.dense_errors)
   end
   integrator.sol.retcode = :Success

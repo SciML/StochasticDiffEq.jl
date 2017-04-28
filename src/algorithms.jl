@@ -8,6 +8,17 @@
 
 immutable EM <: StochasticDiffEqAlgorithm end
 immutable SplitEM <: StochasticDiffEqAlgorithm end
+
+immutable IIF1M{F} <: StochasticDiffEqAlgorithm
+  nlsolve::F
+end
+Base.@pure IIF1M(;nlsolve=NLSOLVEJL_SETUP()) = IIF1M{typeof(nlsolve)}(nlsolve)
+
+immutable IIF1Mil{F} <: StochasticDiffEqAlgorithm
+  nlsolve::F
+end
+Base.@pure IIF1Mil(;nlsolve=NLSOLVEJL_SETUP()) = IIF1Mil{typeof(nlsolve)}(nlsolve)
+
 immutable EulerHeun <: StochasticDiffEqAlgorithm end
 immutable RKMil{interpretation} <: StochasticDiffEqAlgorithm end
 Base.@pure RKMil(;interpretation=:Ito) = RKMil{interpretation}()
