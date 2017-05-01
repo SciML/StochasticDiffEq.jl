@@ -10,6 +10,8 @@ module StochasticDiffEq
         DataStructures, Iterators, Roots, DiffEqNoiseProcess,
         NLsolve, ForwardDiff
 
+  import DiffEqBase: ODE_DEFAULT_NORM, ODE_DEFAULT_ISOUTOFDOMAIN, ODE_DEFAULT_PROG_MESSAGE, ODE_DEFAULT_UNSTABLE_CHECK
+
   using Compat
 
   import ForwardDiff.Dual
@@ -26,7 +28,6 @@ module StochasticDiffEq
   include("algorithms.jl")
   include("options_type.jl")
   include("interp_func.jl")
-  include("constants.jl")
   include("caches.jl")
   include("integrators/type.jl")
   include("dense.jl")
