@@ -101,7 +101,7 @@ end
   end
   u = K+L*W.dW+mil_correction
   if integrator.opts.adaptive
-    integrator.EEst = integrator.opts.internalnorm(mil_correction/(@muladd(integrator.opts.abstol + max(abs(uprev),abs(u))*integrator.opts.reltol)))
+    integrator.EEst = integrator.opts.internalnorm(mil_correction/(@muladd(integrator.opts.abstol + max.(abs.(uprev),abs.(u))*integrator.opts.reltol)))
   end
   @pack integrator = t,dt,u
 end

@@ -9,7 +9,7 @@
 
   if integrator.opts.adaptive
     u = uprev + k₁/3 + 2k₂/3 + E₂ + W.dW*gpdt
-    integrator.EEst = abs(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max(abs(uprev),abs(u))*integrator.opts.reltol))
+    integrator.EEst = abs(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(abs.(uprev),abs.(u))*integrator.opts.reltol))
   else
     u = uprev + k₁/3 + 2k₂/3 + E₂ + W.dW*gpdt
   end
@@ -136,7 +136,7 @@ end
 
   if integrator.opts.adaptive
     E₁ = dt*E₁temp
-    integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max(abs(uprev),abs(u))*integrator.opts.reltol))
+    integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(abs.(uprev),abs.(u))*integrator.opts.reltol))
   end
   @pack integrator = t,dt,u
 end
