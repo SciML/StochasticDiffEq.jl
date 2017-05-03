@@ -9,8 +9,8 @@ add_probs[2] = prob_sde_additivesystem
 
 
 for i in 1:2
-  bigprob = SDEProblem(probs[i].f,probs[i].g,big(probs[i].u0),(big(probs[i].tspan[1]),big(probs[i].tspan[2])),noise=probs[i].noise)
-  add_bigprob = SDEProblem(add_probs[i].f,add_probs[i].g,big(add_probs[i].u0),(big(add_probs[i].tspan[1]),big(add_probs[i].tspan[2])),noise=add_probs[i].noise)
+  bigprob = SDEProblem(probs[i].f,probs[i].g,big.(probs[i].u0),(big.(probs[i].tspan[1]),big.(probs[i].tspan[2])),noise=probs[i].noise)
+  add_bigprob = SDEProblem(add_probs[i].f,add_probs[i].g,big.(add_probs[i].u0),(big.(add_probs[i].tspan[1]),big.(add_probs[i].tspan[2])),noise=add_probs[i].noise)
   ## SRIW1
 
   srand(100)
