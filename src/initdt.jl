@@ -1,4 +1,4 @@
-function sde_determine_initdt(u0,t,tdir,dtmax,abstol,reltol,internalnorm,prob,order)
+function sde_determine_initdt{tType,uType}(u0::uType,t::tType,tdir,dtmax,abstol,reltol,internalnorm,prob,order)
   f = prob.f
   g = prob.g
   d₀ = internalnorm(u0./(abstol+abs.(u0)*reltol))
@@ -13,10 +13,13 @@ function sde_determine_initdt(u0,t,tdir,dtmax,abstol,reltol,internalnorm,prob,or
   end
 
   d₁ = internalnorm(max.(abs.(f₀.+g₀),abs.(f₀.-g₀))./(abstol.+abs.(u0).*reltol))
-  if d₀ < 1e-5 || d₁ < 1e-5
-    dt₀ = 1e-6
+  T0 = typeof(d₀)
+  T1 = typeof(d₁)
+  @show d₀,d₁
+  if d₀ < T0(1//10^(5)) || d₁ < T1(1//10^(5))
+    dt₀ = tType(1e-6)
   else
-    dt₀ = 0.01*(d₀/d₁)
+    dt₀ = tType(0.01*(d₀/d₁))
   end
   dt₀ = min(dt₀,tdir*dtmax)
   u₁ = u0 .+ tdir.*dt₀.*f₀
@@ -31,10 +34,10 @@ function sde_determine_initdt(u0,t,tdir,dtmax,abstol,reltol,internalnorm,prob,or
   end
   ΔgMax = max.(abs.(g₀.-g₁),abs.(g₀.+g₁))
   d₂ = internalnorm(max.(abs.(f₁.-f₀.+ΔgMax),abs.(f₁.-f₀.-ΔgMax))./(abstol.+abs.(u0).*reltol))./dt₀
-  if max(d₁,d₂)<=1e-15
-    dt₁ = max(1e-6,dt₀*1e-3)
+  if max(d₁,d₂)<=T1(1e-15)
+    dt₁ = max(tType(1//10^(6)),dt₀*1//10^(3))
   else
-    dt₁ = 10.0^(-(2+log10(max(d₁,d₂)))/(order+.5))
+    dt₁ = tType(10.0^(-(2+log10(max(d₁,d₂)))/(order+.5)))
   end
   dt = tdir*min(100dt₀,dt₁)
 end
