@@ -46,7 +46,7 @@ type RHS_IIF1{F,uType,tType,DiffCacheType,SizeType,uidxType} <: Function
   uidx::uidxType
 end
 function (p::RHS_IIF1)(u,resid)
-  du = get_du(p.dual_cache, eltype(u))
+  du = DiffEqDiffTools.get_du(p.dual_cache, eltype(u))
   p.f[2](p.t+p.dt,reshape(u,p.sizeu),du)
   for i in p.uidx
     resid[i] = u[i] - p.tmp[i] - p.dt*du[i]

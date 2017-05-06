@@ -101,7 +101,7 @@ end
 function alg_cache(alg::IIF1M,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
 
   tmp = similar(u,indices(u)); rtmp1 = zeros(rate_prototype)
-  dual_cache = DiffCache(u,Val{determine_chunksize(u,get_chunksize(alg.nlsolve))})
+  dual_cache = DiffCache(u,Val{DiffEqDiffTools.determine_chunksize(u,DiffEqDiffTools.get_chunksize(alg.nlsolve))})
   uhold = vec(u) # this makes uhold the same values as integrator.u
   rhs = RHS_IIF1(f,tmp,t,t,dual_cache,size(u),eachindex(u))
   nl_rhs = alg.nlsolve(Val{:init},rhs,uhold)
@@ -150,7 +150,7 @@ end
 
 function alg_cache(alg::IIF1Mil,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   tmp = similar(u,indices(u)); rtmp1 = zeros(rate_prototype)
-  dual_cache = DiffCache(u,Val{determine_chunksize(u,get_chunksize(alg.nlsolve))})
+  dual_cache = DiffCache(u,Val{DiffEqDiffTools.determine_chunksize(u,DiffEqDiffTools.get_chunksize(alg.nlsolve))})
   uhold = vec(u) # this makes uhold the same values as integrator.u
   rhs = RHS_IIF1(f,tmp,t,t,dual_cache,size(u),eachindex(u))
   nl_rhs = alg.nlsolve(Val{:init},rhs,uhold)
