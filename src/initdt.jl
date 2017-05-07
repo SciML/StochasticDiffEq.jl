@@ -15,7 +15,6 @@ function sde_determine_initdt{tType,uType}(u0::uType,t::tType,tdir,dtmax,abstol,
   d₁ = internalnorm(max.(abs.(f₀.+g₀),abs.(f₀.-g₀))./(abstol.+abs.(u0).*reltol))
   T0 = typeof(d₀)
   T1 = typeof(d₁)
-  @show d₀,d₁
   if d₀ < T0(1//10^(5)) || d₁ < T1(1//10^(5))
     dt₀ = tType(1e-6)
   else
