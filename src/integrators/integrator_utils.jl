@@ -83,11 +83,7 @@ end
       else
         val = sde_interpolant(Θ,integrator,integrator.opts.save_idxs,Val{0}) # out of place, but force copy later
       end
-      if eltype(integrator.sol.u) <: DEDataArray
-        save_val = copy_non_array_fields(integrator.uprev,val)
-      else
-        save_val = val
-      end
+      save_val = val
       copyat_or_push!(integrator.sol.t,integrator.saveiter,curt)
       copyat_or_push!(integrator.sol.u,integrator.saveiter,save_val,Val{false})
       if typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm
