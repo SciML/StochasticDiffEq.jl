@@ -53,7 +53,7 @@ module StochasticDiffEq
 
   export EulerHeun
 
-  export SplitEM, IIF1M, IIF1Mil
+  export SplitEM, IIF1M, IIF2M, IIF1Mil
 
   export StochasticDiffEqRODEAlgorithm, StochasticDiffEqRODEAdaptiveAlgorithm,
          StochasticDiffEqRODECompositeAlgorithm

@@ -14,6 +14,11 @@ immutable IIF1M{F} <: StochasticDiffEqAlgorithm
 end
 Base.@pure IIF1M(;nlsolve=NLSOLVEJL_SETUP()) = IIF1M{typeof(nlsolve)}(nlsolve)
 
+immutable IIF2M{F} <: StochasticDiffEqAlgorithm
+  nlsolve::F
+end
+Base.@pure IIF2M(;nlsolve=NLSOLVEJL_SETUP()) = IIF2M{typeof(nlsolve)}(nlsolve)
+
 immutable IIF1Mil{F} <: StochasticDiffEqAlgorithm
   nlsolve::F
 end

@@ -7,8 +7,12 @@ f1 = (t,u) -> μ
 (p::typeof(f1))(::Type{Val{:analytic}},t,u0,W) = u0.*exp.((2μ-(σ_const^2)/2)t+σ_const*W)
 f2 = (t,u) -> μ * u
 σ = (t,u) -> σ_const*u
+no_noise = (t,u) -> 0.0
+f1_no_noise = (t,u) -> μ
+(p::typeof(f1_no_noise))(::Type{Val{:analytic}},t,u0,W) = u0.*exp.(2μ*t)
 
 prob = SplitSDEProblem((f1,f2),σ,1/2,(0.0,1.0))
+no_noise_prob = SplitSDEProblem((f1_no_noise,f2),no_noise,1/2,(0.0,1.0))
 
 sol = solve(prob,IIF1M(),dt=1/10)
 
@@ -21,11 +25,21 @@ dts = 1./2.^(7:-1:4) #14->7 good plot
 
 sim  = test_convergence(dts,prob,IIF1M(),numMonte=Int(2e1))
 @test abs(sim.𝒪est[:l2]-1) < 0.2 # closer to 1 at this part
+sim  = test_convergence(dts,no_noise_prob,IIF1M(),numMonte=Int(2e1))
+@test abs(sim.𝒪est[:l2]-1) < 0.2 # closer to 1 at this part
 
+dts = 1./2.^(14:-1:7) #14->7 good plot
+
+sim  = test_convergence(dts,prob,IIF2M(),numMonte=Int(2e1))
+@test abs(sim.𝒪est[:l2]-0.5) < 0.2 # closer to 1 at this part
+sim  = test_convergence(dts,no_noise_prob,IIF2M(),numMonte=Int(2e1))
+@test abs(sim.𝒪est[:l2]-2) < 0.2 # closer to 1 at this part
+
+#=
 srand(200)
 sim  = test_convergence(dts,prob,IIF1Mil(),numMonte=Int(2e1))
 @test abs(sim.𝒪est[:l2]-1) < 0.3
-
+=#
 
 
 u0 = rand(2)
@@ -56,15 +70,32 @@ f2 = (t,u,du) -> du .= μ .* u
 
 prob = SplitSDEProblem((f1,f2),σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
 
+f1_no_noise = (t,u,du) -> A
+f2 = (t,u,du) -> du .= μ .* u
+σ = function (t,u,du)
+  du .= 0
+end
+function (p::typeof(f1_no_noise))(::Type{Val{:analytic}},t,u0,W)
+ tmp = (A+1.01I)*t
+ expm(tmp)*u0
+end
+prob_no_noise = SplitSDEProblem((f1_no_noise,f2),σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
+
+
 sol = solve(prob,IIF1M(),dt=1/10)
 
-dts = 1./2.^(7:-1:4) #14->7 good plot
+dts = 1./2.^(8:-1:4) #14->7 good plot
 
 srand(250)
-sim  = test_convergence(dts,prob,IIF1M(),numMonte=Int(2e1))
+sim  = test_convergence(dts,prob,IIF1M(),numMonte=Int(5e1))
 @test abs(sim.𝒪est[:l2]-0.5) < 0.2
 
-#=
-sim  = test_convergence(dts,prob,IIF1Mil(),numMonte=Int(5e1))
-@test abs(sim.𝒪est[:l2]-1) < 0.1
-=#
+sim  = test_convergence(dts,prob,IIF2M(),numMonte=Int(5e1))
+@test abs(sim.𝒪est[:l2]-0.5) < 0.2
+
+
+sim  = test_convergence(dts,prob_no_noise,IIF1M(),numMonte=Int(1e1))
+@test abs(sim.𝒪est[:l2]-1) < 0.2
+
+sim  = test_convergence(dts,prob_no_noise,IIF2M(),numMonte=Int(1e1))
+@test abs(sim.𝒪est[:l2]-2) < 0.1
