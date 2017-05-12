@@ -29,7 +29,7 @@ end
   ftmp = integrator.f(t,uprev)
   gtmp = integrator.g(t,uprev)
   tmp = @muladd uprev + ftmp.*dt + gtmp.*W.dW
-  u = @muladd uprev + (1/2)*dt.*(ftmp+integrator.f(t,tmp)) + (1/2)*(gtmp+integrator.g(t,tmp)).*W.dW
+  u = @muladd uprev + (1/2)*dt.*(ftmp+integrator.f(t+dt,tmp)) + (1/2)*(gtmp+integrator.g(t+dt,tmp)).*W.dW
   @pack integrator = t,dt,u
 end
 
@@ -51,8 +51,8 @@ end
     tmp[i] = @muladd uprev[i] + ftmp1[i]*dt + nrtmp[i]
   end
 
-  integrator.f(t,tmp,ftmp2)
-  integrator.g(t,tmp,gtmp2)
+  integrator.f(t+dt,tmp,ftmp2)
+  integrator.g(t+dt,tmp,gtmp2)
 
   if is_diagonal_noise(integrator.sol.prob)
     for i in eachindex(u)
