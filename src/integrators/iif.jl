@@ -116,6 +116,10 @@ end
   M = expm(A*dt)
   A_mul_B!(tmp,M,rtmp3)
 
+  if integrator.iter > 1 && !integrator.u_modified
+    current_extrapolant!(uhold,t+dt,integrator)
+  end # else uhold is previous value.
+
   rhs.t = t
   rhs.dt = dt
   rhs.tmp = tmp

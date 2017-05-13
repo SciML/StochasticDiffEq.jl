@@ -22,17 +22,18 @@ sol2 = solve(prob2,EM(),dt=1/10)
 
 srand(100)
 dts = 1./2.^(7:-1:4) #14->7 good plot
-
+println("IIF scalar")
 sim  = test_convergence(dts,prob,IIF1M(),numMonte=Int(2e1))
 @test abs(sim.𝒪est[:l2]-1) < 0.2 # closer to 1 at this part
 sim  = test_convergence(dts,no_noise_prob,IIF1M(),numMonte=Int(2e1))
 @test abs(sim.𝒪est[:l2]-1) < 0.2 # closer to 1 at this part
 
-dts = 1./2.^(14:-1:7) #14->7 good plot
-
+dts = 1./2.^(7:-1:4) #14->7 good plot
+println("IIF no noise scalar")
+srand(100)
 sim  = test_convergence(dts,prob,IIF2M(),numMonte=Int(2e1))
-@test abs(sim.𝒪est[:l2]-0.5) < 0.2 # closer to 1 at this part
-sim  = test_convergence(dts,no_noise_prob,IIF2M(),numMonte=Int(2e1))
+@test abs(sim.𝒪est[:l2]-1) < 0.2 # closer to 1 at this part
+sim  = test_convergence(dts,no_noise_prob,IIF2M(),numMonte=Int(1e1))
 @test abs(sim.𝒪est[:l2]-2) < 0.2 # closer to 1 at this part
 
 #=
@@ -87,13 +88,14 @@ sol = solve(prob,IIF1M(),dt=1/10)
 dts = 1./2.^(8:-1:4) #14->7 good plot
 
 srand(250)
+println("IIF")
 sim  = test_convergence(dts,prob,IIF1M(),numMonte=Int(5e1))
 @test abs(sim.𝒪est[:l2]-0.5) < 0.2
 
 sim  = test_convergence(dts,prob,IIF2M(),numMonte=Int(5e1))
 @test abs(sim.𝒪est[:l2]-0.5) < 0.2
 
-
+println("IIF no noise")
 sim  = test_convergence(dts,prob_no_noise,IIF1M(),numMonte=Int(1e1))
 @test abs(sim.𝒪est[:l2]-1) < 0.2
 
