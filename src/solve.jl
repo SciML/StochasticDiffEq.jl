@@ -101,9 +101,17 @@ function init{uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abstrac
     g = nothing
   end
   u0 = prob.u0
-  uEltype = eltype(u0)
+  uEltype = recursive_eltype(u0)
 
-  (uType<:Array || uType <: Number) ? u = copy(u0) : u = deepcopy(u0)
+  if typeof(prob.u0) <: Array
+    u = recursivecopy(prob.u0)
+  elseif typeof(prob.u0) <: Number
+    u = prob.u0
+  elseif typeof(prob.u0) <: Tuple
+    u = ArrayPartition(prob.u0,Val{true})
+  else
+    u = deepcopy(prob.u0)
+  end
 
   ks = Vector{uType}(0)
 
@@ -197,7 +205,7 @@ function init{uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abstrac
     saveiter = 0
   end
 
-  uEltype = eltype(u)
+  uEltype = recursive_eltype(u)
 
   opts = SDEOptions(Int(maxiters),timeseries_steps,save_everystep,adaptive,uEltype(uEltype(1)*abstol),
     uEltypeNoUnits(reltol),tTypeNoUnits(gamma),tTypeNoUnits(qmax),tTypeNoUnits(qmin),
@@ -328,7 +336,8 @@ function init{uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abstrac
                   opts,iter,prog,EEst,q,
                   tTypeNoUnits(qoldinit),q11)
 
-  calculate_step!(integrator.W,integrator.dt)
+  integrator.W.dt = integrator.dt
+  DiffEqNoiseProcess.setup_next_step!(integrator.W)
 
   if initialize_integrator
     initialize!(integrator,integrator.cache)

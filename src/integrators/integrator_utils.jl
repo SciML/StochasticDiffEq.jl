@@ -214,7 +214,7 @@ end
 end
 
 @inline function apply_step!(integrator)
-  if typeof(integrator.u) <: AbstractArray
+  if isinplace(integrator.sol.prob)
     recursivecopy!(integrator.uprev,integrator.u)
   else
     integrator.uprev = integrator.u
@@ -240,7 +240,7 @@ end
     if length(integrator.S₁) > integrator.sol.maxstacksize
         integrator.sol.maxstacksize = length(integrator.S₁)
     end
-    if typeof(integrator.ΔW) <: AbstractArray
+    if isinplace(integrator.sol.prob)
       copy!(integrator.ΔW,integrator.ΔWtilde)
       if alg_needs_extra_process(integrator.alg)
         copy!(integrator.ΔZ,integrator.ΔZtilde)
@@ -254,10 +254,13 @@ end
     integrator.dt = integrator.dtnew
     integrator.sqdt = sqrt(abs(integrator.dt))
   else # RSwM3
-    if !(typeof(integrator.u) <: AbstractArray)
-      dttmp = 0.0; integrator.ΔWtmp = 0.0; integrator.ΔZtmp = 0.0
+    if !(isinplace(integrator.sol.prob))
+      dttmp = zero(integrator.t); integrator.ΔWtmp = zero(integrator.ΔWtmp)
+      if alg_needs_extra_process(integrator.alg)
+        integrator.ΔZtmp = zero(integrator.ΔZtmp)
+      end
     else
-      dttmp = 0.0; fill!(integrator.ΔWtmp,zero(eltype(integrator.ΔWtmp)))
+      dttmp = zero(integrator.t); fill!(integrator.ΔWtmp,zero(eltype(integrator.ΔWtmp)))
       if alg_needs_extra_process(integrator.alg)
         fill!(integrator.ΔZtmp,zero(eltype(integrator.ΔZtmp)))
       end
@@ -269,7 +272,7 @@ end
       L₁,L₂,L₃ = pop!(integrator.S₂)
       if dttmp + L₁ < (1-integrator.q)*integrator.dt #while the backwards movement is less than chop off
         dttmp += L₁
-        if typeof(integrator.u) <: AbstractArray
+        if isinplace(integrator.sol.prob)
           for i in eachindex(integrator.ΔW)
             integrator.ΔWtmp[i] += L₂[i]
             if alg_needs_extra_process(integrator.alg)
@@ -290,7 +293,7 @@ end
     end # end while
     dtK = integrator.dt - dttmp
     qK = integrator.q*integrator.dt/dtK
-    if typeof(integrator.ΔW) <: AbstractArray
+    if isinplace(integrator.sol.prob)
       for i in eachindex(integrator.ΔW)
         integrator.ΔWtmp[i] = integrator.ΔW[i] - integrator.ΔWtmp[i]
         if alg_needs_extra_process(integrator.alg)
@@ -313,7 +316,7 @@ end
     end
     integrator.dt = integrator.dtnew
     integrator.sqdt = sqrt(abs(integrator.dt))
-    if typeof(integrator.ΔW) <: AbstractArray
+    if isinplace(integrator.sol.prob)
       copy!(integrator.ΔW,integrator.ΔWtilde)
       if alg_needs_extra_process(integrator.alg)
         copy!(integrator.ΔZ,integrator.ΔZtilde)
@@ -359,7 +362,7 @@ end
       end
     end
   else
-    if (typeof(integrator.u) <: AbstractArray)
+    if typeof(integrator.u) <: AbstractArray
       integrator.ΔW .= scaling_factor.*integrator.noise(size(integrator.u),integrator)
       if alg_needs_extra_process(integrator.alg)
         integrator.ΔZ .= scaling_factor.*integrator.noise(size(integrator.u),integrator)
@@ -398,7 +401,7 @@ end
       end
     end
   else
-    if (typeof(integrator.u) <: AbstractArray)
+    if typeof(integrator.u) <: AbstractArray
       if add1 != 0
         integrator.ΔWtilde = add1 .+ scaling.*integrator.noise(size(integrator.u),integrator)
       else

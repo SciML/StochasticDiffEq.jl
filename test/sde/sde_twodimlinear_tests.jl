@@ -14,8 +14,6 @@ sol = solve(prob,SRIW1(),dt=1/2^(3),save_everystep=false)
 
 sol = solve(prob,SRIW1(),dt=1/2^(3),progress=true,progress_steps=1)
 
-#TEST_PLOT && plot(sol,plot_analytic=true)
-
 ## Convergence Testing
 println("Convergence Test on 2D Linear")
 dts = 1./2.^(7:-1:4) #14->7 good plot

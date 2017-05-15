@@ -2,3 +2,4 @@ DiffEqDevTools
 DiffEqProblemLibrary
 ParameterizedFunctions
 SpecialMatrices
+StaticArrays
