@@ -259,7 +259,7 @@ function init{uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abstrac
     rand_prototype = zero(u/u) # Strip units and type info
     randType = typeof(rand_prototype)
   else
-    randElType = typeof(u[1]/u[1]) # Strip units and type info
+    randElType = typeof(recursive_one(u)) # Strip units and type info
     if ND <: Void # noise_dim isn't set, so it's diagonal
       rand_prototype = similar(Array{randElType},indices(u))
       fill!(rand_prototype,zero(randElType))
