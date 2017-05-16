@@ -97,7 +97,7 @@ times ts (sorted), with values timeseries and derivatives ks
   tvals[idx[1]] < ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
   i = 2 # Start the search thinking it's between ts[1] and ts[2]
   if idxs == nothing
-    if (eltype(timeseries) <: AbstractArray) && !(eltype(timeseries) <: Array)
+    if (eltype(timeseries) <: AbstractArray) && !(eltype(timeseries) <: Union{StaticArray,Array})
       vals = Vector{Vector{eltype(first(timeseries))}}(length(tvals))
     else
       vals = Vector{eltype(timeseries)}(length(tvals))

@@ -8,7 +8,7 @@ module StochasticDiffEq
 
   using DiffEqBase, Parameters, RecursiveArrayTools, Juno,
         DataStructures, Iterators, Roots, DiffEqNoiseProcess,
-        NLsolve, ForwardDiff
+        NLsolve, ForwardDiff, StaticArrays
 
   import DiffEqBase: ODE_DEFAULT_NORM, ODE_DEFAULT_ISOUTOFDOMAIN, ODE_DEFAULT_PROG_MESSAGE, ODE_DEFAULT_UNSTABLE_CHECK
 
