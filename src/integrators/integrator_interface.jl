@@ -35,8 +35,10 @@ du_cache(integrator::SDEIntegrator)= du_cache(integrator.cache)
 user_cache(c::StochasticDiffEqCache) = (c.u,c.uprev,c.tmp)
 full_cache(integrator::SDEIntegrator) = chain(user_cache(integrator),u_cache(integrator),du_cache(integrator.cache))
 default_non_user_cache(integrator::SDEIntegrator) = chain(u_cache(integrator),du_cache(integrator.cache))
-@inline add_tstop!(integrator::SDEIntegrator,t) = push!(integrator.opts.tstops,t)
-
+@inline function add_tstop!(integrator::SDEIntegrator,t)
+  t < integrator.t && error("Tried to add a tstop that is behind the current time. This is strictly forbidden")
+  push!(integrator.opts.tstops,t)
+end
 resize_non_user_cache!(integrator::SDEIntegrator,i::Int) = resize_non_user_cache!(integrator,integrator.cache,i)
 deleteat_non_user_cache!(integrator::SDEIntegrator,i) = deleteat_non_user_cache!(integrator,integrator.cache,i)
 addat_non_user_cache!(integrator::SDEIntegrator,i) = addat_non_user_cache!(integrator,integrator.cache,i)
