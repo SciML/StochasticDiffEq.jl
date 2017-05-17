@@ -16,14 +16,24 @@ function sde_interpolant(Θ,integrator::DEIntegrator,idxs,deriv::Type)
   sde_interpolant(Θ,integrator.dt,integrator.uprev,integrator.u,idxs,deriv)
 end
 
-function sde_interpolant(Θ,dt,u0::Number,u1,idxs,deriv::Type)
+function sde_interpolant(Θ,dt,u0::Number,u1,idxs,deriv::Type{Val{0}})
   (1-Θ)*u0 + Θ*u1
+end
+
+function sde_interpolant(Θ,dt,u0::Number,u1,idxs,deriv::Type{Val{1}})
+  (u1-u0)/dt
 end
 
 function sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv::Type{Val{0}})
   Θm1 = (1-Θ)
   for (j,i) in enumerate(idxs)
     out[j] = Θm1*u0[i] + Θ*u1[i]
+  end
+end
+
+function sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv::Type{Val{1}})
+  for (j,i) in enumerate(idxs)
+    out[j] = (u1[i]-u0[i])/dt
   end
 end
 
