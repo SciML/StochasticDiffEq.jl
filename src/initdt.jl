@@ -6,8 +6,8 @@ function sde_determine_initdt{tType,uType}(u0::uType,t::tType,tdir,dtmax,abstol,
     f₀ = f(t,u0)
     g₀ = 3g(t,u0)
   else
-    f₀ = similar(u0)
-    g₀ = similar(u0)
+    f₀ = zeros(u0)
+    g₀ = zeros(u0)
     f(t,u0,f₀)
     g(t,u0,g₀); g₀.*=3
   end
