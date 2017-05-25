@@ -124,7 +124,7 @@ function init{uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abstrac
   dtmax > 0 && tdir < 0 && (dtmax *= tdir) # Allow positive dtmax, but auto-convert
   # dtmin is all abs => does not care about sign already.
   if dt == zero(dt) && adaptive
-    dt = tType(ode_determine_initdt(u,t,tdir,dtmax,abstol_internal,reltol_internal,internalnorm,prob,order))
+    dt = tType(sde_determine_initdt(u,t,tdir,dtmax,abstol_internal,reltol_internal,internalnorm,prob,order))
     if sign(dt)!=tdir && dt!=tType(0)
       error("Automatic dt setting has the wrong sign. Exiting. Please report this error.")
     end
