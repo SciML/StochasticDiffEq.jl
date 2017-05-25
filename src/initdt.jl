@@ -38,5 +38,5 @@ function sde_determine_initdt{tType,uType}(u0::uType,t::tType,tdir,dtmax,abstol,
   else
     dt₁ = tType(10.0^(-(2+log10(max(d₁,d₂)))/(order+.5)))
   end
-  dt = tdir*min(100dt₀,dt₁)
+  dt = tdir*min(100dt₀,dt₁,tdir*dtmax)
 end
