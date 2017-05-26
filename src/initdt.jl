@@ -6,8 +6,8 @@ function sde_determine_initdt{tType,uType}(u0::uType,t::tType,tdir,dtmax,abstol,
     f₀ = f(t,u0)
     g₀ = 3g(t,u0)
   else
-    f₀ = similar(u0)
-    g₀ = similar(u0)
+    f₀ = zeros(u0)
+    g₀ = zeros(u0)
     f(t,u0,f₀)
     g(t,u0,g₀); g₀.*=3
   end
@@ -26,8 +26,8 @@ function sde_determine_initdt{tType,uType}(u0::uType,t::tType,tdir,dtmax,abstol,
     f₁ = f(t+tdir*dt₀,u₁)
     g₁ = 3g(t+tdir*dt₀,u₁)
   else
-    f₁ = similar(u0)
-    g₁ = similar(u0)
+    f₁ = zeros(u0)
+    g₁ = zeros(u0)
     f(t,u0,f₁)
     g(t,u0,g₁); g₁.*=3
   end
@@ -38,5 +38,5 @@ function sde_determine_initdt{tType,uType}(u0::uType,t::tType,tdir,dtmax,abstol,
   else
     dt₁ = tType(10.0^(-(2+log10(max(d₁,d₂)))/(order+.5)))
   end
-  dt = tdir*min(100dt₀,dt₁)
+  dt = tdir*min(100dt₀,dt₁,tdir*dtmax)
 end

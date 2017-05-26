@@ -121,16 +121,16 @@ function init{uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abstrac
     order = alg.tableau.order
   end
 
+  dtmax > 0 && tdir < 0 && (dtmax *= tdir) # Allow positive dtmax, but auto-convert
+  # dtmin is all abs => does not care about sign already.
   if dt == zero(dt) && adaptive
-    dt = sde_determine_initdt(u0,float(tspan[1]),tdir,dtmax,abstol,reltol,internalnorm,prob,order)
+    dt = tType(sde_determine_initdt(u,t,tdir,dtmax,abstol,reltol,internalnorm,prob,order))
+    if sign(dt)!=tdir && dt!=tType(0)
+      error("Automatic dt setting has the wrong sign. Exiting. Please report this error.")
+    end
+  elseif adaptive && dt > zero(dt) && tdir < 0
+    dt *= tdir # Allow positive dt, but auto-convert
   end
-
-  if sign(dt)!=tdir && dt!=tType(0)
-    error("dt has the wrong sign. Exiting")
-  end
-
-  dt = tdir*min(abs(dtmax),abs(dt))
-  dt = tdir*max(abs(dt),abs(dtmin))
 
   if typeof(u) <: AbstractArray
     rate_prototype = similar(u/zero(t),indices(u)) # rate doesn't need type info

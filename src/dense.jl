@@ -16,14 +16,32 @@ function sde_interpolant(Θ,integrator::DEIntegrator,idxs,deriv::Type)
   sde_interpolant(Θ,integrator.dt,integrator.uprev,integrator.u,idxs,deriv)
 end
 
-function sde_interpolant(Θ,dt,u0::Number,u1,idxs,deriv::Type)
-  (1-Θ)*u0 + Θ*u1
+function sde_interpolant(Θ,dt,u0::Number,u1,idxs,deriv::Type{Val{0}})
+  (1.-Θ).*u0 .+ Θ.*u1
+end
+
+function sde_interpolant(Θ,dt,u0::Number,u1,idxs,deriv::Type{Val{1}})
+  (u1.-u0)./dt
 end
 
 function sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv::Type{Val{0}})
   Θm1 = (1-Θ)
-  for (j,i) in enumerate(idxs)
-    out[j] = Θm1*u0[i] + Θ*u1[i]
+  if out == nothing
+    return Θm1*u0[idxs] + Θ*u1[idxs]
+  else
+    for (j,i) in enumerate(idxs)
+      out[j] = Θm1*u0[i] + Θ*u1[i]
+    end
+  end
+end
+
+function sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv::Type{Val{1}})
+  if out == nothing
+    return (u1[idxs]-u0[idxs])/dt
+  else
+    for (j,i) in enumerate(idxs)
+      out[j] = (u1[i]-u0[i])/dt
+    end
   end
 end
 
@@ -37,8 +55,9 @@ function sde_interpolant(Θ,dt,u0::AbstractArray,u1,idxs,deriv::Type)
   end
   sde_interpolant!(out,Θ,dt,u0,u1,idxs_internal,deriv)
   if typeof(idxs) <: Number
-    return first(out)
+    return sde_interpolant!(nothing,Θ,dt,u0,u1,idxs_internal,deriv)
   else
+    sde_interpolant!(out,Θ,dt,u0,u1,idxs_internal,deriv)
     return out
   end
 end
@@ -97,7 +116,7 @@ times ts (sorted), with values timeseries and derivatives ks
   tvals[idx[1]] < ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
   i = 2 # Start the search thinking it's between ts[1] and ts[2]
   if idxs == nothing
-    if (eltype(timeseries) <: AbstractArray) && !(eltype(timeseries) <: Array)
+    if (eltype(timeseries) <: AbstractArray) && !(eltype(timeseries) <: Union{StaticArray,Array})
       vals = Vector{Vector{eltype(first(timeseries))}}(length(tvals))
     else
       vals = Vector{eltype(timeseries)}(length(tvals))
