@@ -1,4 +1,4 @@
-julia 0.6-
+julia 0.6.0-pre
 Parameters 0.5.0
 DiffEqBase 1.2.0
 RecursiveArrayTools 0.8.0
