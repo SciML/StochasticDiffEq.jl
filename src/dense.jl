@@ -36,36 +36,33 @@ function sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv::Type{Val{0}})
   Θm1 = (1-Θ)
   if out == nothing
     return Θm1*u0[idxs] + Θ*u1[idxs]
+  elseif idxs == nothing
+    @. out = Θm1*u0 + Θ*u1
   else
-    for (j,i) in enumerate(idxs)
-      out[j] = Θm1*u0[i] + Θ*u1[i]
-    end
+    @views @. out = Θm1*u0[idxs] + Θ*u1[idxs]
   end
 end
 
 function sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv::Type{Val{1}})
   if out == nothing
     return (u1[idxs]-u0[idxs])/dt
+  elseif idxs == nothing
+    @. out = (u1-u0)/dt
   else
-    for (j,i) in enumerate(idxs)
-      out[j] = (u1[i]-u0[i])/dt
-    end
+    @views @. out = (u1[idxs]-u0[idxs])/dt
   end
 end
 
 function sde_interpolant(Θ,dt,u0::AbstractArray,u1,idxs,deriv::Type)
-  if typeof(idxs) <: Tuple
-    out = similar(u0,idxs)
-    idxs_internal=eachindex(u0)
+  if typeof(idxs) <: Void
+    out = similar(u0)
   else
-    out = similar(u0,indices(idxs))
-    idxs_internal=idxs
+    !(typeof(idxs) <: Number) && (out = similar(u0,indices(idxs)))
   end
-  sde_interpolant!(out,Θ,dt,u0,u1,idxs_internal,deriv)
   if typeof(idxs) <: Number
-    return sde_interpolant!(nothing,Θ,dt,u0,u1,idxs_internal,deriv)
+    return sde_interpolant!(nothing,Θ,dt,u0,u1,idxs,deriv)
   else
-    sde_interpolant!(out,Θ,dt,u0,u1,idxs_internal,deriv)
+    sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv)
     return out
   end
 end
@@ -152,12 +149,7 @@ times ts (sorted), with values timeseries and derivatives ks
     else
       dt = ts[i] - ts[i-1]
       Θ = (t-ts[i-1])/dt
-      if idxs == nothing && eltype(timeseries) <: AbstractArray
-        idxs_internal = size(timeseries[i-1])
-      else
-        idxs_internal = idxs
-      end
-      vals[j] = sde_interpolant(Θ,dt,timeseries[i-1],timeseries[i],idxs_internal,deriv)
+      vals[j] = sde_interpolant(Θ,dt,timeseries[i-1],timeseries[i],idxs,deriv)
     end
   end
   vals
@@ -190,12 +182,7 @@ times ts (sorted), with values timeseries and derivatives ks
   else
     dt = ts[i] - ts[i-1]
     Θ = (tval-ts[i-1])/dt
-    if idxs == nothing && eltype(timeseries) <: AbstractArray
-      idxs_internal = size(timeseries[i-1])
-    else
-      idxs_internal = idxs
-    end
-    val = sde_interpolant(Θ,dt,timeseries[i-1],timeseries[i],idxs_internal,deriv)
+    val = sde_interpolant(Θ,dt,timeseries[i-1],timeseries[i],idxs,deriv)
   end
   val
 end
@@ -221,12 +208,7 @@ end
   else
     dt = ts[i] - ts[i-1]
     Θ = (tval-ts[i-1])/dt
-    if idxs == nothing
-      idxs_internal = eachindex(out)
-    else
-      idxs_internal = idxs
-    end
-    sde_interpolant!(out,Θ,dt,timeseries[i-1],timeseries[i],idxs_internal,deriv)
+    sde_interpolant!(out,Θ,dt,timeseries[i-1],timeseries[i],idxs,deriv)
   end
 end
 
@@ -255,15 +237,10 @@ end
     else
       dt = ts[i] - ts[i-1]
       Θ = (t-ts[i-1])/dt
-      if idxs == nothing && eltype(vals) <: AbstractArray
-        idxs_internal = eachindex(vals[j])
-      else
-        idxs_internal = idxs
-      end
       if eltype(timeseries) <: AbstractArray
-        sde_interpolant!(vals[j],Θ,dt,timeseries[i-1],timeseries[i],idxs_internal,deriv)
+        sde_interpolant!(vals[j],Θ,dt,timeseries[i-1],timeseries[i],idxs,deriv)
       else
-        vals[j] = sde_interpolant(Θ,dt,timeseries[i-1],timeseries[i],idxs_internal,deriv)
+        vals[j] = sde_interpolant(Θ,dt,timeseries[i-1],timeseries[i],idxs,deriv)
       end
     end
   end

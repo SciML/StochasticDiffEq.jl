@@ -78,11 +78,7 @@ end
     curt = pop!(integrator.opts.saveat)
     if integrator.opts.saveat!=integrator.t # If <t, interpolate
       Θ = (curt - integrator.tprev)/integrator.dt
-      if integrator.opts.save_idxs == nothing
-        val = sde_interpolant(Θ,integrator,indices(integrator.uprev),Val{0}) # out of place, but force copy later
-      else
-        val = sde_interpolant(Θ,integrator,integrator.opts.save_idxs,Val{0}) # out of place, but force copy later
-      end
+      val = sde_interpolant(Θ,integrator,integrator.opts.save_idxs,Val{0}) # out of place, but force copy later
       save_val = val
       copyat_or_push!(integrator.sol.t,integrator.saveiter,curt)
       copyat_or_push!(integrator.sol.u,integrator.saveiter,save_val,Val{false})
