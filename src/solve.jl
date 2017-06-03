@@ -1,4 +1,3 @@
-
 function solve{algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},recompile_flag}(
   prob::AbstractRODEProblem,
   alg::algType,timeseries=[],ts=[],ks=[],recompile::Type{Val{recompile_flag}}=Val{true};

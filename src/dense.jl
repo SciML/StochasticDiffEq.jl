@@ -1,11 +1,19 @@
 ## Extrapolations are currently just constant
 
 function sde_extrapolant!(out,Θ,integrator::DEIntegrator,idxs,deriv::Type)
-  out .= integrator.u
+  if idxs == nothing
+    out .= integrator.u
+  else
+    out[idxs] .= @view integrator.u[idxs]
+  end
 end
 
 function sde_extrapolant(Θ,integrator::DEIntegrator,idxs,deriv::Type)
-  integrator.u
+  if idxs == nothing
+    return integrator.u
+  else
+    return integrator.u[idxs]
+  end
 end
 
 function sde_interpolant!(out,Θ,integrator::DEIntegrator,idxs,deriv::Type)
@@ -82,22 +90,22 @@ end
   [sde_interpolant!(val,ϕ,integrator,idxs,deriv) for ϕ in Θ]
 end
 
-@inline function current_extrapolant(t::Number,integrator::DEIntegrator,idxs=size(integrator.uprev),deriv=Val{0})
+@inline function current_extrapolant(t::Number,integrator::DEIntegrator,idxs=nothing,deriv=Val{0})
   Θ = (t-integrator.tprev)/(integrator.t-integrator.tprev)
   sde_extrapolant(Θ,integrator,idxs,deriv)
 end
 
-@inline function current_extrapolant!(val,t::Number,integrator::DEIntegrator,idxs=size(integrator.uprev),deriv=Val{0})
+@inline function current_extrapolant!(val,t::Number,integrator::DEIntegrator,idxs=nothing,deriv=Val{0})
   Θ = (t-integrator.tprev)/(integrator.t-integrator.tprev)
   sde_extrapolant!(val,Θ,integrator,idxs,deriv)
 end
 
-@inline function current_extrapolant(t::AbstractArray,integrator::DEIntegrator,idxs=size(integrator.uprev),deriv=Val{0})
+@inline function current_extrapolant(t::AbstractArray,integrator::DEIntegrator,idxs=nothing,deriv=Val{0})
   Θ = (t.-integrator.tprev)./(integrator.t-integrator.tprev)
   [sde_extrapolant(ϕ,integrator,idxs,deriv) for ϕ in Θ]
 end
 
-@inline function current_extrapolant!(val,t,integrator::DEIntegrator,idxs=size(integrator.uprev),deriv=Val{0})
+@inline function current_extrapolant!(val,t,integrator::DEIntegrator,idxs=nothingderiv=Val{0})
   Θ = (t.-integrator.tprev)./(integrator.t-integrator.tprev)
   [sde_extrapolant!(val,ϕ,integrator,idxs,deriv) for ϕ in Θ]
 end
