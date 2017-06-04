@@ -22,11 +22,11 @@
   end
 end
 
-function (integrator::SDEIntegrator)(t,deriv::Type=Val{0};idxs=size(integrator.uprev))
+function (integrator::SDEIntegrator)(t,deriv::Type=Val{0};idxs=nothing)
   current_interpolant(t,integrator,idxs,deriv)
 end
 
-(integrator::SDEIntegrator)(val::AbstractArray,t::Union{Number,AbstractArray},deriv::Type=Val{0};idxs=eachindex(integrator.uprev)) = current_interpolant!(val,t,integrator,idxs,deriv)
+(integrator::SDEIntegrator)(val::AbstractArray,t::Union{Number,AbstractArray},deriv::Type=Val{0};idxs=nothing) = current_interpolant!(val,t,integrator,idxs,deriv)
 
 
 user_cache(integrator::SDEIntegrator) = user_cache(integrator.cache)

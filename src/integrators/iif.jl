@@ -49,14 +49,13 @@ end
   @pack integrator = t,dt,u
 end
 
-type RHS_IIF1{F,uType,tType,DiffCacheType,SizeType,uidxType} <: Function
+type RHS_IIF1{F,uType,tType,DiffCacheType,SizeType} <: Function
   f::F
   tmp::uType
   t::tType
   dt::tType
   dual_cache::DiffCacheType
   sizeu::SizeType
-  uidx::uidxType
 end
 function (p::RHS_IIF1)(u,resid)
   du = get_du(p.dual_cache, eltype(u))
@@ -64,14 +63,13 @@ function (p::RHS_IIF1)(u,resid)
   @. resid = u - p.tmp - p.dt*du
 end
 
-type RHS_IIF2{F,uType,tType,DiffCacheType,SizeType,uidxType} <: Function
+type RHS_IIF2{F,uType,tType,DiffCacheType,SizeType} <: Function
   f::F
   tmp::uType
   t::tType
   dt::tType
   dual_cache::DiffCacheType
   sizeu::SizeType
-  uidx::uidxType
 end
 function (p::RHS_IIF2)(u,resid)
   du = get_du(p.dual_cache, eltype(u))
@@ -113,7 +111,6 @@ end
   rhs.t = t
   rhs.dt = dt
   rhs.tmp = tmp
-  rhs.uidx = eachindex(u)
   rhs.sizeu = size(u)
   nlres = integrator.alg.nlsolve(nl_rhs,uhold)
 

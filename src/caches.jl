@@ -103,7 +103,7 @@ function alg_cache(alg::IIF1M,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype
   tmp = similar(u,indices(u)); rtmp1 = zeros(rate_prototype)
   dual_cache = DiffCache(u,Val{determine_chunksize(u,get_chunksize(alg.nlsolve))})
   uhold = vec(u) # this makes uhold the same values as integrator.u
-  rhs = RHS_IIF1(f,tmp,t,t,dual_cache,size(u),eachindex(u))
+  rhs = RHS_IIF1(f,tmp,t,t,dual_cache,size(u))
   nl_rhs = alg.nlsolve(Val{:init},rhs,uhold)
   noise_tmp = tmp
 
@@ -154,7 +154,7 @@ function alg_cache(alg::IIF2M,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype
   tmp = similar(u,indices(u)); rtmp1 = zeros(rate_prototype)
   dual_cache = DiffCache(u,Val{determine_chunksize(u,get_chunksize(alg.nlsolve))})
   uhold = vec(u) # this makes uhold the same values as integrator.u
-  rhs = RHS_IIF2(f,tmp,t,t,dual_cache,size(u),eachindex(u))
+  rhs = RHS_IIF2(f,tmp,t,t,dual_cache,size(u))
   nl_rhs = alg.nlsolve(Val{:init},rhs,uhold)
   noise_tmp = tmp
 
@@ -203,7 +203,7 @@ function alg_cache(alg::IIF1Mil,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototy
   tmp = similar(u,indices(u)); rtmp1 = zeros(rate_prototype)
   dual_cache = DiffCache(u,Val{determine_chunksize(u,get_chunksize(alg.nlsolve))})
   uhold = vec(u) # this makes uhold the same values as integrator.u
-  rhs = RHS_IIF1(f,tmp,t,t,dual_cache,size(u),eachindex(u))
+  rhs = RHS_IIF1(f,tmp,t,t,dual_cache,size(u))
   nl_rhs = alg.nlsolve(Val{:init},rhs,uhold)
   noise_tmp = similar(noise_rate_prototype)
 

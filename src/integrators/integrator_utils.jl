@@ -269,11 +269,9 @@ end
       if dttmp + L₁ < (1-integrator.q)*integrator.dt #while the backwards movement is less than chop off
         dttmp += L₁
         if isinplace(integrator.sol.prob)
-          for i in eachindex(integrator.ΔW)
-            integrator.ΔWtmp[i] += L₂[i]
-            if alg_needs_extra_process(integrator.alg)
-              integrator.ΔZtmp[i] += L₃[i]
-            end
+          integrator.ΔWtmp .+= L₂
+          if alg_needs_extra_process(integrator.alg)
+            integrator.ΔZtmp .+= L₃
           end
         else
           integrator.ΔWtmp += L₂
@@ -290,11 +288,9 @@ end
     dtK = integrator.dt - dttmp
     qK = integrator.q*integrator.dt/dtK
     if isinplace(integrator.sol.prob)
-      for i in eachindex(integrator.ΔW)
-        integrator.ΔWtmp[i] = integrator.ΔW[i] - integrator.ΔWtmp[i]
-        if alg_needs_extra_process(integrator.alg)
-          integrator.ΔZtmp[i] = integrator.ΔZ[i] - integrator.ΔZtmp[i]
-        end
+      @. integrator.ΔWtmp = integrator.ΔW - integrator.ΔWtmp
+      if alg_needs_extra_process(integrator.alg)
+        @. integrator.ΔZtmp = integrator.ΔZ - integrator.ΔZtmp
       end
     else
       integrator.ΔWtmp = integrator.ΔW - integrator.ΔWtmp
@@ -348,14 +344,10 @@ end
 @inline function update_noise!(integrator,scaling_factor=integrator.sqdt)
   if isinplace(integrator.noise)
     integrator.noise(integrator.ΔW,integrator)
-    for i in eachindex(integrator.ΔW)
-      integrator.ΔW[i] *= scaling_factor
-    end
+    integrator.ΔW .*= scaling_factor
     if alg_needs_extra_process(integrator.alg)
       integrator.noise(integrator.ΔZ,integrator)
-      for i in eachindex(integrator.ΔW)
-        integrator.ΔZ[i] .*= scaling_factor
-      end
+      integrator.ΔZ .*= scaling_factor
     end
   else
     if typeof(integrator.u) <: AbstractArray
@@ -376,24 +368,16 @@ end
   if isinplace(integrator.noise)
     integrator.noise(integrator.ΔWtilde,integrator)
     if add1 != 0
-      for i in eachindex(integrator.ΔW)
-        integrator.ΔWtilde[i] = add1[i] + scaling*integrator.ΔWtilde[i]
-      end
+      @. integrator.ΔWtilde = add1 + scaling*integrator.ΔWtilde
     else
-      for i in eachindex(integrator.ΔW)
-        integrator.ΔWtilde[i] = scaling*integrator.ΔWtilde[i]
-      end
+      @. integrator.ΔWtilde = scaling*integrator.ΔWtilde
     end
     if alg_needs_extra_process(integrator.alg)
       integrator.noise(integrator.ΔZtilde,integrator)
       if add2 != 0
-        for i in eachindex(integrator.ΔW)
-          integrator.ΔZtilde[i] = add2[i] + scaling*integrator.ΔZtilde[i]
-        end
+        @. integrator.ΔZtilde = add2 + scaling*integrator.ΔZtilde
       else
-        for i in eachindex(integrator.ΔW)
-          integrator.ΔZtilde[i] = scaling*integrator.ΔZtilde[i]
-        end
+        @. integrator.ΔZtilde = scaling*integrator.ΔZtilde
       end
     end
   else
