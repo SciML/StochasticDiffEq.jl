@@ -3,6 +3,6 @@ immutable LinearInterpolationData{uType,tType} <: AbstractDiffEqInterpolation
   ts::tType
 end
 
-DiffEqBase.interp_summary(::LinearInterpolationData) = "First Order Linear"
+DiffEqBase.interp_summary(::LinearInterpolationData) = "1st order linear"
 (interp::LinearInterpolationData)(tvals,idxs,deriv) = sde_interpolation(tvals,interp,idxs,deriv)
 (interp::LinearInterpolationData)(val,tvals,idxs,deriv) = sde_interpolation!(val,tvals,interp,idxs,deriv)
