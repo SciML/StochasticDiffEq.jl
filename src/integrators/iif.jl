@@ -60,7 +60,10 @@ end
 function (p::RHS_IIF1)(u,resid)
   du = get_du(p.dual_cache, eltype(u))
   p.f[2](p.t+p.dt,reshape(u,p.sizeu),du)
-  @. resid = u - p.tmp - p.dt*du
+  #@. resid = u - p.tmp - p.dt*du
+  for i in eachindex(u)
+    resid[i] = u[i] - p.tmp[i] - p.dt*du[i]
+  end
 end
 
 type RHS_IIF2{F,uType,tType,DiffCacheType,SizeType} <: Function
@@ -74,18 +77,22 @@ end
 function (p::RHS_IIF2)(u,resid)
   du = get_du(p.dual_cache, eltype(u))
   p.f[2](p.t+p.dt,reshape(u,p.sizeu),du)
-  @. resid = u - p.tmp - 0.5p.dt*du
+  #@. resid = u - p.tmp - 0.5p.dt*du
+  for i in eachindex(u)
+    resid[i] = u[i] - p.tmp[i] - 0.5p.dt*du[i]
+  end
 end
 
 @inline function perform_step!(integrator,cache::Union{IIF1MCache,IIF2MCache,IIF1MilCache},f=integrator.f)
   @unpack rtmp1,rtmp2,rtmp3,tmp,noise_tmp = cache
   @unpack uhold,rhs,nl_rhs = cache
   @unpack t,dt,uprev,u,W = integrator
+  uidx = eachindex(u)
 
   integrator.g(t,uprev,rtmp2)
   if typeof(cache) <: Union{IIF1MCache,IIF2MCache}
     if is_diagonal_noise(integrator.sol.prob)
-      rtmp2 .*=W.dW # rtmp2 === rtmp3
+      scale!(rtmp2,W.dW) # rtmp2 === rtmp3
     else
       A_mul_B!(rtmp3,rtmp2,W.dW)
     end
@@ -93,11 +100,17 @@ end
     error("Milstein correction does not work.")
   end
 
-  rtmp3 .+= uprev
+  #rtmp3 .+= uprev
+  for i in uidx
+    rtmp3[i] += uprev[i]
+  end
 
   if typeof(cache) <: IIF2MCache
     integrator.f[2](t,uprev,rtmp1)
-    @. rtmp3 = @muladd 0.5dt*rtmp1 + rtmp3
+    #@. rtmp3 = @muladd 0.5dt*rtmp1 + rtmp3
+    for i in uidx
+      rtmp3[i] = @muladd 0.5dt*rtmp1[i] + rtmp3[i]
+    end
   end
 
   A = integrator.f[1](t,uprev,rtmp1)

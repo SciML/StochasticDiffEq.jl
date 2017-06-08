@@ -2,7 +2,7 @@
 
 function sde_extrapolant!(out,Θ,integrator::DEIntegrator,idxs,deriv::Type)
   if idxs == nothing
-    out .= integrator.u
+    recursivecopy!(out,integrator.u)
   else
     out[idxs] .= @view integrator.u[idxs]
   end
@@ -37,9 +37,15 @@ function sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv::Type{Val{0}})
   if out == nothing
     return Θm1*u0[idxs] + Θ*u1[idxs]
   elseif idxs == nothing
-    @. out = Θm1*u0 + Θ*u1
+    #@. out = Θm1*u0 + Θ*u1
+    for i in eachindex(out)
+      out[i] = Θm1*u0[i] + Θ*u1[i]
+    end
   else
-    @views @. out = Θm1*u0[idxs] + Θ*u1[idxs]
+    #@views @. out = Θm1*u0[idxs] + Θ*u1[idxs]
+    for (j,i) in enumerate(idxs)
+      out[j] = Θm1*u0[i] + Θ*u1[i]
+    end
   end
 end
 
@@ -47,9 +53,15 @@ function sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv::Type{Val{1}})
   if out == nothing
     return (u1[idxs]-u0[idxs])/dt
   elseif idxs == nothing
-    @. out = (u1-u0)/dt
+    #@. out = (u1-u0)/dt
+    for i in eachindex(out)
+      out[i] = (u1[i]-u0[i])/dt
+    end
   else
-    @views @. out = (u1[idxs]-u0[idxs])/dt
+    #@views @. out = (u1[idxs]-u0[idxs])/dt
+    for (j,i) in enumerate(idxs)
+      out[j] = (u1[i]-u0[i])/dt
+    end
   end
 end
 

@@ -12,15 +12,21 @@ end
 
   integrator.g(t,uprev,rtmp2)
   if is_diagonal_noise(integrator.sol.prob)
-    rtmp2 .*=W.dW # rtmp2 === rtmp3
+    scale!(rtmp2,W.dW) # rtmp2 === rtmp3
   else
     A_mul_B!(rtmp3,rtmp2,W.dW)
   end
 
   integrator.f[1](t,uprev,rtmp1)
-  @. u = @muladd uprev + dt*rtmp1 + rtmp3
+  #@. u = @muladd uprev + dt*rtmp1 + rtmp3
+  for i in eachindex(u)
+    u[i] = @muladd uprev[i] + dt*rtmp1[i] + rtmp3[i]
+  end
   integrator.f[2](t,uprev,rtmp1)
-  @. u = @muladd u + dt*rtmp1
+  #@. u = @muladd u + dt*rtmp1
+  for i in eachindex(u)
+    u[i] = @muladd u[i] + dt*rtmp1[i]
+  end
 
   @pack integrator = t,dt,u
 end
