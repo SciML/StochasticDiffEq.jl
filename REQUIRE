@@ -10,3 +10,4 @@ DiffEqNoiseProcess
 NLsolve
 ForwardDiff 0.5.0
 StaticArrays
+Reexport
