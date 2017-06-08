@@ -113,10 +113,10 @@ end
 
 @inline function loopfooter!(integrator::SDEIntegrator)
   if integrator.opts.adaptive
-    integrator.q11 = integrator.EEst^integrator.opts.beta1
-    integrator.q = integrator.q11/(integrator.qold^integrator.opts.beta2)
-    integrator.q = max(inv(integrator.opts.qmax),min(inv(integrator.opts.qmin),integrator.q/integrator.opts.gamma))
-    integrator.dtnew = integrator.dt/integrator.q
+    @fastmath integrator.q11 = integrator.EEst^integrator.opts.beta1
+    @fastmath integrator.q = integrator.q11/(integrator.qold^integrator.opts.beta2)
+    @fastmath integrator.q = max(inv(integrator.opts.qmax),min(inv(integrator.opts.qmin),integrator.q/integrator.opts.gamma))
+    @fastmath integrator.dtnew = integrator.dt/integrator.q
     ttmp = integrator.t + integrator.dt
     integrator.isout = integrator.opts.isoutofdomain(ttmp,integrator.u)
     integrator.accept_step = (!integrator.isout && integrator.EEst <= 1.0) || (integrator.opts.force_dtmin && integrator.dt <= integrator.opts.dtmin)
