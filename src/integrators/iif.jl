@@ -61,8 +61,8 @@ function (p::RHS_IIF1)(u,resid)
   du = get_du(p.dual_cache, eltype(u))
   p.f[2](p.t+p.dt,reshape(u,p.sizeu),du)
   #@. resid = u - p.tmp - p.dt*du
-  for i in eachindex(u)
-    resid[i] = u[i] - p.tmp[i] - p.dt*du[i]
+  @tight_loop_macros for i in eachindex(u)
+    @inbounds resid[i] = u[i] - p.tmp[i] - p.dt*du[i]
   end
 end
 
@@ -78,8 +78,8 @@ function (p::RHS_IIF2)(u,resid)
   du = get_du(p.dual_cache, eltype(u))
   p.f[2](p.t+p.dt,reshape(u,p.sizeu),du)
   #@. resid = u - p.tmp - 0.5p.dt*du
-  for i in eachindex(u)
-    resid[i] = u[i] - p.tmp[i] - 0.5p.dt*du[i]
+  @tight_loop_macros for i in eachindex(u)
+    @inbounds resid[i] = u[i] - p.tmp[i] - 0.5p.dt*du[i]
   end
 end
 
@@ -101,15 +101,15 @@ end
   end
 
   #rtmp3 .+= uprev
-  for i in uidx
-    rtmp3[i] += uprev[i]
+  @tight_loop_macros for i in uidx
+    @inbounds rtmp3[i] += uprev[i]
   end
 
   if typeof(cache) <: IIF2MCache
     integrator.f[2](t,uprev,rtmp1)
     #@. rtmp3 = @muladd 0.5dt*rtmp1 + rtmp3
-    for i in uidx
-      rtmp3[i] = @muladd 0.5dt*rtmp1[i] + rtmp3[i]
+    @tight_loop_macros for i in uidx
+      @inbounds rtmp3[i] = @muladd 0.5dt*rtmp1[i] + rtmp3[i]
     end
   end
 

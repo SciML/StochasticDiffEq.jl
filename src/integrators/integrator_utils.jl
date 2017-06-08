@@ -275,12 +275,12 @@ end
             integrator.ΔZtmp .+= L₃
           end
           =#
-          for i in eachindex(integrator.ΔW)
-            integrator.ΔWtmp[i] += L₂[i]
+          @tight_loop_macros for i in eachindex(integrator.ΔW)
+            @inbounds integrator.ΔWtmp[i] += L₂[i]
           end
           if alg_needs_extra_process(integrator.alg)
-            for i in eachindex(integrator.ΔW)
-              integrator.ΔZtmp[i] += L₃[i]
+            @tight_loop_macros for i in eachindex(integrator.ΔW)
+              @inbounds integrator.ΔZtmp[i] += L₃[i]
             end
           end
         else
@@ -299,13 +299,13 @@ end
     qK = integrator.q*integrator.dt/dtK
     if isinplace(integrator.sol.prob)
       #@. integrator.ΔWtmp = integrator.ΔW - integrator.ΔWtmp
-      for i in eachindex(integrator.u)
-        integrator.ΔWtmp[i] = integrator.ΔW[i] - integrator.ΔWtmp[i]
+      @tight_loop_macros for i in eachindex(integrator.u)
+        @inbounds integrator.ΔWtmp[i] = integrator.ΔW[i] - integrator.ΔWtmp[i]
       end
       if alg_needs_extra_process(integrator.alg)
         #@. integrator.ΔZtmp = integrator.ΔZ - integrator.ΔZtmp
-        for i in eachindex(integrator.u)
-          integrator.ΔZtmp[i] = integrator.ΔZ[i] - integrator.ΔZtmp[i]
+        @tight_loop_macros for i in eachindex(integrator.u)
+          @inbounds integrator.ΔZtmp[i] = integrator.ΔZ[i] - integrator.ΔZtmp[i]
         end
       end
     else
@@ -385,26 +385,26 @@ end
     integrator.noise(integrator.ΔWtilde,integrator)
     if add1 != 0
       #@. integrator.ΔWtilde = add1 + scaling*integrator.ΔWtilde
-      for i in eachinex(integrator.u)
-        integrator.ΔWtilde[i] = add1[i] + scaling*integrator.ΔWtilde[i]
+      @tight_loop_macros for i in eachinex(integrator.u)
+        @inbounds integrator.ΔWtilde[i] = add1[i] + scaling*integrator.ΔWtilde[i]
       end
     else
       #@. integrator.ΔWtilde = scaling*integrator.ΔWtilde
-      for i in eachinex(integrator.u)
-        integrator.ΔWtilde[i] = scaling*integrator.ΔWtilde[i]
+      @tight_loop_macros for i in eachinex(integrator.u)
+        @inbounds integrator.ΔWtilde[i] = scaling*integrator.ΔWtilde[i]
       end
     end
     if alg_needs_extra_process(integrator.alg)
       integrator.noise(integrator.ΔZtilde,integrator)
       if add2 != 0
         #@. integrator.ΔZtilde = add2 + scaling*integrator.ΔZtilde
-        for i in eachinex(integrator.u)
-          integrator.ΔZtilde[i] = add2[i] + scaling*integrator.ΔZtilde[i]
+        @tight_loop_macros for i in eachinex(integrator.u)
+          @inbounds integrator.ΔZtilde[i] = add2[i] + scaling*integrator.ΔZtilde[i]
         end
       else
         #@. integrator.ΔZtilde = scaling*integrator.ΔZtilde
-        for i in eachinex(integrator.u)
-          integrator.ΔZtilde[i] = scaling*integrator.ΔZtilde[i]
+        @tight_loop_macros for i in eachinex(integrator.u)
+          @inbounds integrator.ΔZtilde[i] = scaling*integrator.ΔZtilde[i]
         end
       end
     end

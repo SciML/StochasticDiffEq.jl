@@ -19,13 +19,13 @@ end
 
   integrator.f[1](t,uprev,rtmp1)
   #@. u = @muladd uprev + dt*rtmp1 + rtmp3
-  for i in eachindex(u)
-    u[i] = @muladd uprev[i] + dt*rtmp1[i] + rtmp3[i]
+  @tight_loop_macros for i in eachindex(u)
+    @inbounds u[i] = @muladd uprev[i] + dt*rtmp1[i] + rtmp3[i]
   end
   integrator.f[2](t,uprev,rtmp1)
   #@. u = @muladd u + dt*rtmp1
-  for i in eachindex(u)
-    u[i] = @muladd u[i] + dt*rtmp1[i]
+  @tight_loop_macros for i in eachindex(u)
+    @inbounds u[i] = @muladd u[i] + dt*rtmp1[i]
   end
 
   @pack integrator = t,dt,u
