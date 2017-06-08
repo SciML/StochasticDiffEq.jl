@@ -5,7 +5,7 @@ module StochasticDiffEq
   import Base: linspace
 
   import Base: start, next, done, eltype
-  
+
   using Reexport
   @reexport using DiffEqBase
 
@@ -28,6 +28,10 @@ module StochasticDiffEq
                      terminate!,get_du, get_dt,get_proposed_dt,
                      u_modified!,savevalues!,add_tstop!,add_saveat!,set_reltol!,
                      set_abstol!
+
+  macro tight_loop_macros(ex)
+   :($(esc(ex)))
+  end
 
   include("misc_utils.jl")
   include("algorithms.jl")
