@@ -5,8 +5,11 @@ module StochasticDiffEq
   import Base: linspace
 
   import Base: start, next, done, eltype
+  
+  using Reexport
+  @reexport using DiffEqBase
 
-  using DiffEqBase, Parameters, RecursiveArrayTools, Juno,
+  using Parameters, RecursiveArrayTools, Juno,
         DataStructures, Roots, DiffEqNoiseProcess,
         NLsolve, ForwardDiff, StaticArrays
 
