@@ -32,8 +32,10 @@ end
   # Check if the event occured
   if typeof(callback.idxs) <: Void
     previous_condition = callback.condition(integrator.tprev,integrator.uprev,integrator)
-  else
+  elseif typeof(callback.idxs) <: Number
     previous_condition = callback.condition(integrator.tprev,integrator.uprev[callback.idxs],integrator)
+  else
+    previous_condition = callback.condition(integrator.tprev,@view(integrator.uprev[callback.idxs]),integrator)
   end
   if isapprox(previous_condition,0,rtol=callback.reltol,atol=callback.abstol)
     prev_sign = 0.0
@@ -42,9 +44,11 @@ end
   end
   prev_sign_index = 1
   if typeof(callback.idxs) <: Void
-    next_sign = sign(callback.condition(integrator.tprev+integrator.dt,integrator.u,integrator))
+    next_sign = sign(callback.condition(integrator.t,integrator.u,integrator))
+  elseif typeof(callback.idxs) <: Number
+    next_sign = sign(callback.condition(integrator.t,integrator.u[callback.idxs],integrator))
   else
-    next_sign = sign(callback.condition(integrator.tprev+integrator.dt,integrator.u[callback.idxs],integrator))
+    next_sign = sign(callback.condition(integrator.t,@view(integrator.u[callback.idxs]),integrator))
   end
   if ((prev_sign<0 && !(typeof(callback.affect!)<:Void)) || (prev_sign>0 && !(typeof(callback.affect_neg!)<:Void))) && prev_sign*next_sign<0
     event_occurred = true
@@ -172,7 +176,7 @@ function apply_discrete_callback!(integrator::SDEIntegrator,callback::DiscreteCa
   end
 
   integrator.u_modified = true
-  if callback.condition(integrator.tprev+integrator.dt,integrator.u,integrator)
+  if callback.condition(integrator.t,integrator.u,integrator)
     callback.affect!(integrator)
     if callback.save_positions[2]
       savevalues!(integrator)

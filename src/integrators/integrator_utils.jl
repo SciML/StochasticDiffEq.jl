@@ -122,7 +122,12 @@ end
     integrator.accept_step = (!integrator.isout && integrator.EEst <= 1.0) || (integrator.opts.force_dtmin && integrator.dt <= integrator.opts.dtmin)
     if integrator.accept_step # Accepted
       integrator.tprev = integrator.t
-      integrator.t = ttmp
+      if typeof(integrator.t)<:AbstractFloat && !isempty(integrator.opts.tstops)
+        tstop = top(integrator.opts.tstops)
+        abs(ttmp - tstop) < 10eps(integrator.t) ? (integrator.t = tstop) : (integrator.t = ttmp)
+      else
+        integrator.t = ttmp
+      end
       calc_dt_propose!(integrator)
       handle_callbacks!(integrator)
     end
