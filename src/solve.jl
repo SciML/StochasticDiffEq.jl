@@ -274,15 +274,23 @@ function init{uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abstrac
   if typeof(prob.noise) <: Void
     if isinplace
       if alg_needs_extra_process(alg)
-        W = WienerProcess!(t,rand_prototype,rand_prototype)
+        W = WienerProcess!(t,rand_prototype,rand_prototype,
+                           save_everystep=save_everystep,
+                           timeseries_steps=timeseries_steps)
       else
-        W = WienerProcess!(t,rand_prototype)
+        W = WienerProcess!(t,rand_prototype,
+                           save_everystep=save_everystep,
+                           timeseries_steps=timeseries_steps)
       end
     else
       if alg_needs_extra_process(alg)
-        W = WienerProcess(t,rand_prototype,rand_prototype)
+        W = WienerProcess(t,rand_prototype,rand_prototype,
+                           save_everystep=save_everystep,
+                           timeseries_steps=timeseries_steps)
       else
-        W = WienerProcess(t,rand_prototype)
+        W = WienerProcess(t,rand_prototype,
+                           save_everystep=save_everystep,
+                           timeseries_steps=timeseries_steps)
       end
     end
   else
