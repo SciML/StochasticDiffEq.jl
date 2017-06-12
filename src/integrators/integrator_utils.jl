@@ -168,9 +168,10 @@ end
       copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})
     end
   end
-  if integrator.W.t[end] != integrator.t
+  if integrator.W.curt != integrator.t
     accept_step!(integrator.W,integrator.dt,false)
   end
+  save_noise!(integrator.W)
 end
 
 @inline function postamble!(integrator)
