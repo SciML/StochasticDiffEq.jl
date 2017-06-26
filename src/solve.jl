@@ -206,7 +206,7 @@ function init{uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abstrac
 
   uEltype = recursive_eltype(u)
 
-  opts = SDEOptions(Int(maxiters),timeseries_steps,save_everystep,adaptive,uEltype(uEltype(1)*abstol),
+  opts = SDEOptions(maxiters,timeseries_steps,save_everystep,adaptive,uEltype(uEltype(1)*abstol),
     uEltypeNoUnits(reltol),tTypeNoUnits(gamma),tTypeNoUnits(qmax),tTypeNoUnits(qmin),
     dtmax,dtmin,internalnorm,save_idxs,
     tstops_internal,saveat_internal,d_discontinuities_internal,

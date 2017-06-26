@@ -1,5 +1,5 @@
-type SDEOptions{uEltype,uEltypeNoUnits,tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsType,ECType,SType}
-  maxiters::Int
+type SDEOptions{uEltype,uEltypeNoUnits,tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsType,ECType,SType,MI}
+  maxiters::MI
   timeseries_steps::Int
   save_everystep::Bool
   adaptive::Bool
