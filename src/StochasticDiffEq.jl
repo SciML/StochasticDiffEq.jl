@@ -6,6 +6,8 @@ module StochasticDiffEq
 
   import Base: start, next, done, eltype
 
+  import RandomNumbers: Xorshifts
+
   using Reexport
   @reexport using DiffEqBase
 

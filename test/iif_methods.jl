@@ -23,16 +23,16 @@ sol2 = solve(prob2,EM(),dt=1/10)
 srand(100)
 dts = 1./2.^(7:-1:4) #14->7 good plot
 println("IIF scalar")
-sim  = test_convergence(dts,prob,IIF1M(),numMonte=Int(2e1))
-@test abs(sim.𝒪est[:l2]-1) < 0.2 # closer to 1 at this part
+sim  = test_convergence(dts,prob,IIF1M(),numMonte=Int(1e2))
+@test abs(sim.𝒪est[:l2]-0.5) < 0.2 # closer to 1 at this part
 sim  = test_convergence(dts,no_noise_prob,IIF1M(),numMonte=Int(2e1))
-@test abs(sim.𝒪est[:l2]-1) < 0.2 # closer to 1 at this part
+@test abs(sim.𝒪est[:l2]-1.0) < 0.2 # closer to 1 at this part
 
 dts = 1./2.^(7:-1:4) #14->7 good plot
 println("IIF no noise scalar")
 srand(100)
-sim  = test_convergence(dts,prob,IIF2M(),numMonte=Int(2e1))
-@test abs(sim.𝒪est[:l2]-1) < 0.2 # closer to 1 at this part
+sim  = test_convergence(dts,prob,IIF2M(),numMonte=Int(1e2))
+@test abs(sim.𝒪est[:l2]-0.5) < 0.2 # closer to 1 at this part
 sim  = test_convergence(dts,no_noise_prob,IIF2M(),numMonte=Int(1e1))
 @test abs(sim.𝒪est[:l2]-2) < 0.2 # closer to 1 at this part
 

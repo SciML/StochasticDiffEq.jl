@@ -271,26 +271,32 @@ function init{uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abstrac
     randType = typeof(rand_prototype) # Strip units and type info
   end
 
+  prob.seed == 0 ? seed = rand(UInt64) : seed = prob.seed
+
   if typeof(prob.noise) <: Void
     if isinplace
       if alg_needs_extra_process(alg)
         W = WienerProcess!(t,rand_prototype,rand_prototype,
                            save_everystep=save_everystep,
-                           timeseries_steps=timeseries_steps)
+                           timeseries_steps=timeseries_steps,
+                           rng = Xorshifts.Xoroshiro128Plus(seed))
       else
         W = WienerProcess!(t,rand_prototype,
                            save_everystep=save_everystep,
-                           timeseries_steps=timeseries_steps)
+                           timeseries_steps=timeseries_steps,
+                           rng = Xorshifts.Xoroshiro128Plus(seed))
       end
     else
       if alg_needs_extra_process(alg)
         W = WienerProcess(t,rand_prototype,rand_prototype,
                            save_everystep=save_everystep,
-                           timeseries_steps=timeseries_steps)
+                           timeseries_steps=timeseries_steps,
+                           rng = Xorshifts.Xoroshiro128Plus(seed))
       else
         W = WienerProcess(t,rand_prototype,
                            save_everystep=save_everystep,
-                           timeseries_steps=timeseries_steps)
+                           timeseries_steps=timeseries_steps,
+                           rng = Xorshifts.Xoroshiro128Plus(seed))
       end
     end
   else
@@ -318,7 +324,7 @@ function init{uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abstrac
 
   sol = build_solution(prob,alg,ts,timeseries,W=W,
                 calculate_error = false,
-                interp = id, dense = dense)
+                interp = id, dense = dense, seed = seed)
 
   if recompile_flag == true
     FType = typeof(f)
