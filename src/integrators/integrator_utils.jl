@@ -72,7 +72,7 @@ end
 end
 
 
-@inline function savevalues!(integrator::SDEIntegrator)
+@inline function savevalues!(integrator::SDEIntegrator,force_save=false)
   while !isempty(integrator.opts.saveat) && integrator.tdir*top(integrator.opts.saveat) <= integrator.tdir*integrator.t # Perform saveat
     integrator.saveiter += 1
     curt = pop!(integrator.opts.saveat)
@@ -97,7 +97,7 @@ end
       end
     end
   end
-  if integrator.opts.save_everystep && integrator.iter%integrator.opts.timeseries_steps==0
+  if force_save || (integrator.opts.save_everystep && integrator.iter%integrator.opts.timeseries_steps==0)
     integrator.saveiter += 1
     if integrator.opts.save_idxs == nothing
       copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u)
@@ -189,18 +189,17 @@ end
 
   continuous_modified = false
   discrete_modified = false
+  saved_in_cb = false
   if !(typeof(continuous_callbacks)<:Tuple{})
     time,upcrossing,idx,counter = find_first_continuous_callback(integrator,continuous_callbacks...)
     if time != zero(typeof(integrator.t)) && upcrossing != 0 # if not, then no events
-      atleast_one_callback = true
-      continuous_modified = apply_callback!(integrator,continuous_callbacks[idx],time,upcrossing)
+      continuous_modified,saved_in_cb = apply_callback!(integrator,continuous_callbacks[idx],time,upcrossing)
     end
   end
   if !(typeof(discrete_callbacks)<:Tuple{})
-    atleast_one_callback = true
-    discrete_modified = apply_discrete_callback!(integrator,discrete_callbacks...)
+    discrete_modified,saved_in_cb = apply_discrete_callback!(integrator,discrete_callbacks...)
   end
-  if !atleast_one_callback
+  if !saved_in_cb
     update_running_noise!(integrator)
     savevalues!(integrator)
   end

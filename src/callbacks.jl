@@ -131,13 +131,15 @@ function find_callback_time(integrator,callback)
 end
 
 function apply_callback!(integrator,callback::ContinuousCallback,cb_time,prev_sign)
+  saved_in_cb = false
   if cb_time != zero(typeof(integrator.t))
     change_t_via_interpolation!(integrator,integrator.tprev+cb_time)
   end
 
   if callback.save_positions[1]
     update_running_noise!(integrator)
-    savevalues!(integrator)
+    savevalues!(integrator,true)
+    saved_in_cb = true
   end
 
   integrator.u_modified = true
@@ -162,40 +164,44 @@ function apply_callback!(integrator,callback::ContinuousCallback,cb_time,prev_si
       if !callback.save_positions[1]
         update_running_noise!(integrator)
       end
-      savevalues!(integrator)
+      savevalues!(integrator,true)
+      saved_in_cb = true
     end
-    return true
+    return true,saved_in_cb
   end
-  false
+  false,saved_in_cb
 end
 
 #Base Case: Just one
 function apply_discrete_callback!(integrator::SDEIntegrator,callback::DiscreteCallback)
+  saved_in_cb = false
   if callback.save_positions[1]
-    savevalues!(integrator)
+    savevalues!(integrator,true)
+    saved_in_cb = true
   end
 
   integrator.u_modified = true
   if callback.condition(integrator.t,integrator.u,integrator)
     callback.affect!(integrator)
     if callback.save_positions[2]
-      savevalues!(integrator)
+      savevalues!(integrator,true)
+      saved_in_cb = true
     end
   end
-  integrator.u_modified
+  integrator.u_modified,saved_in_cb
 end
 
 #Starting: Get bool from first and do next
 function apply_discrete_callback!(integrator::SDEIntegrator,callback::DiscreteCallback,args...)
-  apply_discrete_callback!(integrator,apply_discrete_callback!(integrator,callback),args...)
+  apply_discrete_callback!(integrator,apply_discrete_callback!(integrator,callback)...,args...)
 end
 
-function apply_discrete_callback!(integrator::SDEIntegrator,discrete_modified::Bool,callback::DiscreteCallback,args...)
-  bool = apply_discrete_callback!(integrator,apply_discrete_callback!(integrator,callback),args...)
-  discrete_modified || bool
+function apply_discrete_callback!(integrator::SDEIntegrator,discrete_modified::Bool,saved_in_cb::Bool,callback::DiscreteCallback,args...)
+  bool,saved_in_cb2 = apply_discrete_callback!(integrator,apply_discrete_callback!(integrator,callback)...,args...)
+  discrete_modified || bool, saved_in_cb || saved_in_cb2
 end
 
-function apply_discrete_callback!(integrator::SDEIntegrator,discrete_modified::Bool,callback::DiscreteCallback)
-  bool = apply_discrete_callback!(integrator,callback)
-  discrete_modified || bool
+function apply_discrete_callback!(integrator::SDEIntegrator,discrete_modified::Bool,saved_in_cb::Bool,callback::DiscreteCallback)
+  bool,saved_in_cb2 = apply_discrete_callback!(integrator,callback)
+  discrete_modified || bool, saved_in_cb || saved_in_cb2
 end
