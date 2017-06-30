@@ -11,8 +11,8 @@ no_noise = (t,u) -> 0.0
 f1_no_noise = (t,u) -> μ
 (p::typeof(f1_no_noise))(::Type{Val{:analytic}},t,u0,W) = u0.*exp.(2μ*t)
 
-prob = SplitSDEProblem((f1,f2),σ,1/2,(0.0,1.0))
-no_noise_prob = SplitSDEProblem((f1_no_noise,f2),no_noise,1/2,(0.0,1.0))
+prob = SDEProblem((f1,f2),σ,1/2,(0.0,1.0))
+no_noise_prob = SDEProblem((f1_no_noise,f2),no_noise,1/2,(0.0,1.0))
 
 sol = solve(prob,IIF1M(),dt=1/10)
 
@@ -69,7 +69,7 @@ function (p::typeof(f1))(::Type{Val{:analytic}},t,u0,W)
 end
 f2 = (t,u,du) -> du .= μ .* u
 
-prob = SplitSDEProblem((f1,f2),σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
+prob = SDEProblem((f1,f2),σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
 
 f1_no_noise = (t,u,du) -> A
 f2 = (t,u,du) -> du .= μ .* u
@@ -80,7 +80,7 @@ function (p::typeof(f1_no_noise))(::Type{Val{:analytic}},t,u0,W)
  tmp = (A+1.01I)*t
  expm(tmp)*u0
 end
-prob_no_noise = SplitSDEProblem((f1_no_noise,f2),σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
+prob_no_noise = SDEProblem((f1_no_noise,f2),σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
 
 
 sol = solve(prob,IIF1M(),dt=1/10)

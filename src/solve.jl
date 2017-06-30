@@ -49,7 +49,11 @@ function init{uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abstrac
     save_everystep = save_timeseries
   end
 
-  if prob.mass_matrix != I
+  if typeof(prob.f)<:Tuple
+    if min((mm != I for mm in prob.mass_matrix)...)
+      error("This solver is not able to use mass matrices.")
+    end
+  elseif prob.mass_matrix != I
     error("This solver is not able to use mass matrices.")
   end
 
