@@ -160,7 +160,7 @@ times ts (sorted), with values timeseries and derivatives ks
       vals[j] = sde_interpolant(Θ,dt,timeseries[i-1],timeseries[i],idxs,deriv)
     end
   end
-  vals
+  DiffEqArray(vals,tvals)
 end
 
 """
