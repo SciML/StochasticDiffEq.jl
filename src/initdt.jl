@@ -1,7 +1,7 @@
 function sde_determine_initdt{tType,uType}(u0::uType,t::tType,tdir,dtmax,abstol,reltol,internalnorm,prob,order)
   f = prob.f
   g = prob.g
-  d₀ = internalnorm(u0./(abstol+abs.(u0)*reltol))
+  d₀ = internalnorm(u0./(abstol.+abs.(u0).*reltol))
   if !isinplace(prob)
     f₀ = f(t,u0)
     g₀ = 3g(t,u0)
