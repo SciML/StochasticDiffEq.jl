@@ -12,44 +12,27 @@ end
   return du
 end
 
-test_probs = [prob_sde_2Dlinear,
-	      SDEProblem(f,σ,prob_sde_2Dlinear.u0,prob_sde_2Dlinear.tspan)]
+probs = [prob_sde_2Dlinear,
+         SDEProblem(f,σ,prob_sde_2Dlinear.u0,prob_sde_2Dlinear.tspan)]
 =#
 
-test_probs = [prob_sde_2Dlinear]
-adaptive_test_algs = [SRI(),SRIW1(),SRA1(),SRA()]
-fixed_test_algs = [RKMil()]
+probs = [prob_sde_2Dlinear]
+algs = [SRI(),SRIW1(),SRA1(),SRA(),RKMil()]
 
-for alg in adaptive_test_algs, prob in test_probs
+for alg in algs, prob in probs
+  dt = typeof(alg)<:StochasticDiffEqAdaptiveAlgorithm ? 0.0 : 0.1
   srand(100)
-  sol = solve(prob,alg)
+  sol = solve(prob,alg;dt=dt)
 
   # Vector of element-wise absolute tolerances
   srand(100)
-  sol2 = solve(prob,alg;abstol=fill(1e-2,4,2))
+  sol2 = solve(prob,alg;dt=dt,abstol=fill(1e-2,4,2))
   
   @test sol.t == sol2.t && sol.u == sol2.u
 
   # Vector of element-wise relative tolerances
   srand(100)
-  sol2 = solve(prob,alg;reltol=fill(1e-2,4,2))
-
-  @test sol.t == sol2.t && sol.u == sol2.u
-end
-
-for alg in fixed_test_algs, prob in test_probs
-  srand(100)
-  sol = solve(prob,alg;dt=0.1)
-
-  # Vector of element-wise absolute tolerances
-  srand(100)
-  sol2 = solve(prob,alg;dt=0.1,abstol=fill(1e-2,4,2))
-  
-  @test sol.t == sol2.t && sol.u == sol2.u
-
-  # Vector of element-wise relative tolerances
-  srand(100)
-  sol2 = solve(prob,alg;dt=0.1,reltol=fill(1e-2,4,2))
+  sol2 = solve(prob,alg;dt=dt,reltol=fill(1e-2,4,2))
 
   @test sol.t == sol2.t && sol.u == sol2.u
 end
