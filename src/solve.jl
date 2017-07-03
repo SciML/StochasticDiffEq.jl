@@ -28,7 +28,7 @@ function init{uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abstrac
               qoldinit=1//10^4, fullnormalize=true,
               beta2=beta2_default(alg),
               beta1=beta1_default(alg,beta2),
-              delta=map(x->1//6,reltol),maxiters = 1e9,
+              delta=1//6,maxiters = 1e9,
               dtmax=tType((prob.tspan[end]-prob.tspan[1])),
               dtmin=tType <: AbstractFloat ? tType(10)*eps(tType) : tType(1//10^(10)),
               internalnorm=ODE_DEFAULT_NORM,
