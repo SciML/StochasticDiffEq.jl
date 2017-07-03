@@ -210,15 +210,15 @@ function init{uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abstrac
 
   uEltype = recursive_eltype(u)
 
-  opts = SDEOptions(maxiters,timeseries_steps,save_everystep,adaptive,uEltype(uEltype(1)*abstol),
-    uEltypeNoUnits(reltol),tTypeNoUnits(gamma),tTypeNoUnits(qmax),tTypeNoUnits(qmin),
+  opts = SDEOptions(maxiters,timeseries_steps,save_everystep,adaptive,map(uEltype,abstol),
+    map(uEltypeNoUnits,reltol),tTypeNoUnits(gamma),tTypeNoUnits(qmax),tTypeNoUnits(qmin),
     dtmax,dtmin,internalnorm,save_idxs,
     tstops_internal,saveat_internal,d_discontinuities_internal,
     userdata,
     progress,progress_steps,
     progress_name,progress_message,
     timeseries_errors,dense_errors,
-    tTypeNoUnits(beta1),tTypeNoUnits(beta2),uEltypeNoUnits(delta),tTypeNoUnits(qoldinit),
+    tTypeNoUnits(beta1),tTypeNoUnits(beta2),map(uEltypeNoUnits,delta),tTypeNoUnits(qoldinit),
     dense,save_start,save_noise,
     callbacks_internal,isoutofdomain,unstable_check,verbose,calck,force_dtmin,
     advance_to_tstop,stop_at_next_tstop)

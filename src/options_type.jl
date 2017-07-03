@@ -1,10 +1,10 @@
-type SDEOptions{uEltype,uEltypeNoUnits,tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsType,ECType,SType,MI}
+type SDEOptions{tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsType,ECType,SType,MI,A,R,D}
   maxiters::MI
   timeseries_steps::Int
   save_everystep::Bool
   adaptive::Bool
-  abstol::uEltype
-  reltol::uEltypeNoUnits
+  abstol::A
+  reltol::R
   gamma::tTypeNoUnits
   qmax::tTypeNoUnits
   qmin::tTypeNoUnits
@@ -24,7 +24,7 @@ type SDEOptions{uEltype,uEltypeNoUnits,tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsT
   dense_errors::Bool
   beta1::tTypeNoUnits
   beta2::tTypeNoUnits
-  delta::uEltypeNoUnits
+  delta::D
   qoldinit::tTypeNoUnits
   dense::Bool
   save_start::Bool

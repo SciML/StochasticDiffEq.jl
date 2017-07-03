@@ -159,8 +159,8 @@ end
     @inbounds u[i] = K[i]+L[i]*W.dW[i] + tmp[i]
   end
   if integrator.opts.adaptive
-    @tight_loop_macros for i in eachindex(u)
-      @inbounds tmp[i] = @muladd(tmp[i])/@muladd(integrator.opts.abstol + max(abs(uprev[i]),abs(u[i]))*integrator.opts.reltol)
+    @tight_loop_macros for (i,atol,rtol) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),Iterators.cycle(integrator.opts.reltol))
+      @inbounds tmp[i] = @muladd(tmp[i])/@muladd(atol + max(abs(uprev[i]),abs(u[i]))*rtol)
     end
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
