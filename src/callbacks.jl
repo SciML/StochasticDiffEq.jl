@@ -175,14 +175,13 @@ end
 #Base Case: Just one
 function apply_discrete_callback!(integrator::SDEIntegrator,callback::DiscreteCallback)
   saved_in_cb = false
-  if callback.save_positions[1]
-    savevalues!(integrator,true)
-    saved_in_cb = true
-  end
-
-  integrator.u_modified = true
   if callback.condition(integrator.t,integrator.u,integrator)
+    if callback.save_positions[1]
+      savevalues!(integrator,true)
+      saved_in_cb = true
+    end
     callback.affect!(integrator)
+    integrator.u_modified = true
     if callback.save_positions[2]
       savevalues!(integrator,true)
       saved_in_cb = true
