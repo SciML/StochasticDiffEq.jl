@@ -5,22 +5,22 @@ function sde_determine_initdt{tType,uType}(u0::uType,t::tType,tdir,dtmax,abstol,
   if !isinplace(prob)
     f₀ = f(t,u0)
     if any(isnan(f₀))
-      error("First function call for f produced NaNs. Exiting.")
+      warn("First function call for f produced NaNs. Exiting.")
     end
     g₀ = 3g(t,u0)
     if any(isnan(g₀))
-      error("First function call for g produced NaNs. Exiting.")
+      warn("First function call for g produced NaNs. Exiting.")
     end
   else
     f₀ = zeros(u0)
     g₀ = zeros(u0)
     f(t,u0,f₀)
     if any((isnan(x) for x in f₀))
-      error("First function call for f produced NaNs. Exiting.")
+      warn("First function call for f produced NaNs. Exiting.")
     end
     g(t,u0,g₀); g₀.*=3
     if any((isnan(x) for x in g₀))
-      error("First function call for g produced NaNs. Exiting.")
+      warn("First function call for g produced NaNs. Exiting.")
     end
   end
 
