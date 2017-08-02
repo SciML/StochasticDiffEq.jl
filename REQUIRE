@@ -1,6 +1,6 @@
 julia 0.6.0
 Parameters 0.5.0
-DiffEqBase 1.15.0
+DiffEqBase 1.16.0
 RecursiveArrayTools 0.8.0
 DataStructures 0.4.6
 Juno 0.2.5
