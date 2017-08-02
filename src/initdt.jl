@@ -45,7 +45,7 @@ function sde_determine_initdt{tType,uType}(u0::uType,t::tType,tdir,dtmax,abstol,
   end
   ΔgMax = max.(abs.(g₀.-g₁),abs.(g₀.+g₁))
   d₂ = internalnorm(max.(abs.(f₁.-f₀.+ΔgMax),abs.(f₁.-f₀.-ΔgMax))./(abstol.+abs.(u0).*reltol))./dt₀
-  if max(d₁,d₂)<=T1(1e-15)
+  if max(d₁,d₂)<=T1(1//Int64(10)^(15))
     dt₁ = max(tType(1//10^(6)),dt₀*1//10^(3))
   else
     dt₁ = tType(10.0^(-(2+log10(max(d₁,d₂)))/(order+.5)))
