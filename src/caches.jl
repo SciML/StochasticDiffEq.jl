@@ -1,8 +1,8 @@
-@compat abstract type StochasticDiffEqCache <: DECache end
-@compat abstract type StochasticDiffEqConstantCache <: StochasticDiffEqCache end
-@compat abstract type StochasticDiffEqMutableCache <: StochasticDiffEqCache end
+abstract type StochasticDiffEqCache <: DECache end
+abstract type StochasticDiffEqConstantCache <: StochasticDiffEqCache end
+abstract type StochasticDiffEqMutableCache <: StochasticDiffEqCache end
 
-type StochasticCompositeCache{T,F} <: StochasticDiffEqCache
+mutable struct StochasticCompositeCache{T,F} <: StochasticDiffEqCache
   caches::T
   choice_function::F
   current::Int
@@ -13,8 +13,8 @@ function alg_cache{T,algType<:StochasticCompositeAlgorithm}(alg::algType,prob,u,
   StochasticCompositeCache(caches,alg.choice_function,1)
 end
 
-immutable EMConstantCache <: StochasticDiffEqConstantCache end
-immutable EMCache{uType,rateType,rateNoiseType,rateNoiseCollectionType} <: StochasticDiffEqMutableCache
+struct EMConstantCache <: StochasticDiffEqConstantCache end
+struct EMCache{uType,rateType,rateNoiseType,rateNoiseCollectionType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   tmp::uType
@@ -39,8 +39,8 @@ function alg_cache(alg::EM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uE
   EMCache(u,uprev,tmp,rtmp1,rtmp2,rtmp3)
 end
 
-immutable SplitEMConstantCache <: StochasticDiffEqConstantCache end
-immutable SplitEMCache{uType,rateType,rateNoiseType,rateNoiseCollectionType} <: StochasticDiffEqMutableCache
+struct SplitEMConstantCache <: StochasticDiffEqConstantCache end
+struct SplitEMCache{uType,rateType,rateNoiseType,rateNoiseCollectionType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   tmp::uType
@@ -65,13 +65,13 @@ function alg_cache(alg::SplitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototy
   SplitEMCache(u,uprev,tmp,rtmp1,rtmp2,rtmp3)
 end
 
-immutable IIF1MConstantCache{vecuType,rhsType,nl_rhsType} <: StochasticDiffEqConstantCache
+struct IIF1MConstantCache{vecuType,rhsType,nl_rhsType} <: StochasticDiffEqConstantCache
   uhold::vecuType
   rhs::rhsType
   nl_rhs::nl_rhsType
 end
 
-immutable IIF1MCache{uType,vecuType,DiffCacheType,rhsType,nl_rhsType,rateType,rateNoiseType,rateNoiseCollectionType,NoiseTmpType} <: StochasticDiffEqMutableCache
+struct IIF1MCache{uType,vecuType,DiffCacheType,rhsType,nl_rhsType,rateType,rateNoiseType,rateNoiseCollectionType,NoiseTmpType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   uhold::vecuType
@@ -116,13 +116,13 @@ function alg_cache(alg::IIF1M,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype
   IIF1MCache(u,uprev,uhold,dual_cache,tmp,rhs,nl_rhs,rtmp1,rtmp2,rtmp3,noise_tmp)
 end
 
-immutable IIF2MConstantCache{vecuType,rhsType,nl_rhsType} <: StochasticDiffEqConstantCache
+struct IIF2MConstantCache{vecuType,rhsType,nl_rhsType} <: StochasticDiffEqConstantCache
   uhold::vecuType
   rhs::rhsType
   nl_rhs::nl_rhsType
 end
 
-immutable IIF2MCache{uType,vecuType,DiffCacheType,rhsType,nl_rhsType,rateType,rateNoiseType,rateNoiseCollectionType,NoiseTmpType} <: StochasticDiffEqMutableCache
+struct IIF2MCache{uType,vecuType,DiffCacheType,rhsType,nl_rhsType,rateType,rateNoiseType,rateNoiseCollectionType,NoiseTmpType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   uhold::vecuType
@@ -167,12 +167,12 @@ function alg_cache(alg::IIF2M,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype
   IIF2MCache(u,uprev,uhold,dual_cache,tmp,rhs,nl_rhs,rtmp1,rtmp2,rtmp3,noise_tmp)
 end
 
-immutable IIF1MilConstantCache{vecuType,rhsType,nl_rhsType} <: StochasticDiffEqConstantCache
+struct IIF1MilConstantCache{vecuType,rhsType,nl_rhsType} <: StochasticDiffEqConstantCache
   uhold::vecuType
   rhs::rhsType
   nl_rhs::nl_rhsType
 end
-immutable IIF1MilCache{uType,vecuType,DiffCacheType,rhsType,nl_rhsType,rateType,rateNoiseType,rateNoiseCollectionType,NoiseTmpType} <: StochasticDiffEqMutableCache
+struct IIF1MilCache{uType,vecuType,DiffCacheType,rhsType,nl_rhsType,rateType,rateNoiseType,rateNoiseCollectionType,NoiseTmpType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   uhold::vecuType
@@ -217,8 +217,8 @@ function alg_cache(alg::IIF1Mil,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototy
 end
 
 
-immutable EulerHeunConstantCache <: StochasticDiffEqConstantCache end
-immutable EulerHeunCache{uType,rateType,rateNoiseType,rateNoiseCollectionType} <: StochasticDiffEqMutableCache
+struct EulerHeunConstantCache <: StochasticDiffEqConstantCache end
+struct EulerHeunCache{uType,rateType,rateNoiseType,rateNoiseCollectionType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   tmp::uType
@@ -241,8 +241,8 @@ function alg_cache(alg::EulerHeun,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_proto
   EulerHeunCache(u,uprev,tmp,ftmp1,ftmp2,nrtmp,gtmp1,gtmp2)
 end
 
-immutable RandomEMConstantCache <: StochasticDiffEqConstantCache end
-immutable RandomEMCache{uType,rateType} <: StochasticDiffEqMutableCache
+struct RandomEMConstantCache <: StochasticDiffEqConstantCache end
+struct RandomEMCache{uType,rateType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   tmp::uType
@@ -259,8 +259,8 @@ function alg_cache(alg::RandomEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_protot
   RandomEMCache(u,uprev,tmp,rtmp)
 end
 
-immutable RKMilConstantCache <: StochasticDiffEqConstantCache end
-immutable RKMilCache{uType,rateType} <: StochasticDiffEqMutableCache
+struct RKMilConstantCache <: StochasticDiffEqConstantCache end
+struct RKMilCache{uType,rateType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   du1::rateType
@@ -281,10 +281,10 @@ function alg_cache(alg::RKMil,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype
   RKMilCache(u,uprev,du1,du2,K,tmp,L)
 end
 
-immutable SRA1ConstantCache <: StochasticDiffEqConstantCache end
+struct SRA1ConstantCache <: StochasticDiffEqConstantCache end
 alg_cache(alg::SRA1,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = SRA1ConstantCache()
 
-immutable SRA1Cache{randType,rateType,uType} <: StochasticDiffEqMutableCache
+struct SRA1Cache{randType,rateType,uType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   chi2::randType
@@ -311,7 +311,7 @@ function alg_cache(alg::SRA1,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
   SRA1Cache(u,uprev,chi2,tmp1,E₁,E₂,gt,k₁,k₂,gpdt,tmp)
 end
 
-immutable SRAConstantCache{VType1,VType2,MType,uType} <: StochasticDiffEqConstantCache
+struct SRAConstantCache{VType1,VType2,MType,uType} <: StochasticDiffEqConstantCache
   c₀::VType1
   c₁::VType1
   A₀::MType
@@ -334,7 +334,7 @@ function alg_cache(alg::SRA,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,u
   SRAConstantCache(alg.tableau,rate_prototype)
 end
 
-immutable SRACache{uType,rateType,tabType} <: StochasticDiffEqMutableCache
+struct SRACache{uType,rateType,tabType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   H0::Vector{uType}
@@ -371,7 +371,7 @@ function alg_cache(alg::SRA,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,u
   SRACache(u,uprev,H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂,tmp,tab)
 end
 
-immutable SRIConstantCache{VType1,VType2,MType,uType} <: StochasticDiffEqConstantCache
+struct SRIConstantCache{VType1,VType2,MType,uType} <: StochasticDiffEqConstantCache
   c₀::VType1
   c₁::VType1
   A₀::MType
@@ -401,7 +401,7 @@ function alg_cache(alg::SRI,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,u
   SRIConstantCache(alg.tableau,rate_prototype,alg.error_terms)
 end
 
-immutable SRICache{randType,uType,rateType,tabType} <: StochasticDiffEqMutableCache
+struct SRICache{randType,uType,rateType,tabType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   H0::Vector{uType}
@@ -456,10 +456,10 @@ function alg_cache(alg::SRI,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,u
     atemp,btemp,E₁,E₂,E₁temp,ftemp,gtemp,chi1,chi2,chi3,tmp,tab)
 end
 
-immutable SRIW1ConstantCache <: StochasticDiffEqConstantCache end
+struct SRIW1ConstantCache <: StochasticDiffEqConstantCache end
 alg_cache(alg::SRIW1,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = SRIW1ConstantCache()
 
-immutable SRIW1Cache{randType,uType,rateType} <: StochasticDiffEqMutableCache
+struct SRIW1Cache{randType,uType,rateType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   chi1::randType

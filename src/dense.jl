@@ -24,15 +24,23 @@ function sde_interpolant(Θ,integrator::DEIntegrator,idxs,deriv::Type)
   sde_interpolant(Θ,integrator.dt,integrator.uprev,integrator.u,idxs,deriv)
 end
 
-function sde_interpolant(Θ,dt,u0::Number,u1,idxs,deriv::Type{Val{0}})
+@muladd function sde_interpolant(Θ,dt,u0::Number,u1,idxs::Void,deriv::Type{Val{0}})
   (1.-Θ).*u0 .+ Θ.*u1
 end
 
-function sde_interpolant(Θ,dt,u0::Number,u1,idxs,deriv::Type{Val{1}})
+@muladd function sde_interpolant(Θ,dt,u0::Number,u1,idxs,deriv::Type{Val{0}})
+  (1.-Θ).*u0[idxs] .+ Θ.*u1[idxs]
+end
+
+function sde_interpolant(Θ,dt,u0::Number,u1,idxs::Void,deriv::Type{Val{1}})
   (u1.-u0)./dt
 end
 
-function sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv::Type{Val{0}})
+function sde_interpolant(Θ,dt,u0::Number,u1,idxs,deriv::Type{Val{1}})
+  (u1[idxs].-u0[idxs])./dt
+end
+
+@muladd function sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv::Type{Val{0}})
   Θm1 = (1-Θ)
   if out == nothing
     return Θm1*u0[idxs] + Θ*u1[idxs]

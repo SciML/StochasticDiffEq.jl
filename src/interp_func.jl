@@ -1,4 +1,4 @@
-immutable LinearInterpolationData{uType,tType} <: AbstractDiffEqInterpolation
+struct LinearInterpolationData{uType,tType} <: AbstractDiffEqInterpolation
   timeseries::uType
   ts::tType
 end

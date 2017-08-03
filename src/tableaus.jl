@@ -3,7 +3,7 @@ RosslerSRI
 
 Holds the Butcher tableaus for a Rosser SRI method.
 """
-immutable RosslerSRI{T,T2} <: Tableau
+struct RosslerSRI{T,T2} <: Tableau
   c₀::Vector{T2}
   c₁::Vector{T2}
   A₀::Matrix{T}
@@ -23,7 +23,7 @@ RosslerSRA
 
 Holds the Butcher tableaus for a Rosser SRA method.
 """
-immutable RosslerSRA{T,T2} <: Tableau
+struct RosslerSRA{T,T2} <: Tableau
   c₀::Vector{T2}
   c₁::Vector{T2}
   A₀::Matrix{T}

@@ -1,4 +1,4 @@
-type SDEOptions{tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsType,ECType,SType,MI,A,R,D}
+mutable struct SDEOptions{tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsType,ECType,SType,MI,A,R,D}
   maxiters::MI
   timeseries_steps::Int
   save_everystep::Bool
