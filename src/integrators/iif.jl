@@ -1,4 +1,4 @@
-type RHS_IIF1M_Scalar{F,CType,tType} <: Function
+mutable struct RHS_IIF1M_Scalar{F,CType,tType} <: Function
   f::F
   t::tType
   dt::tType
@@ -9,7 +9,7 @@ function (p::RHS_IIF1M_Scalar)(u,resid)
   resid[1] .= u[1] .- p.tmp .- p.dt.*p.f[2](p.t+p.dt,u[1])[1]
 end
 
-type RHS_IIF2M_Scalar{F,CType,tType} <: Function
+mutable struct RHS_IIF2M_Scalar{F,CType,tType} <: Function
   f::F
   t::tType
   dt::tType
@@ -49,7 +49,7 @@ end
   @pack integrator = t,dt,u
 end
 
-type RHS_IIF1{F,uType,tType,DiffCacheType,SizeType} <: Function
+mutable struct RHS_IIF1{F,uType,tType,DiffCacheType,SizeType} <: Function
   f::F
   tmp::uType
   t::tType
@@ -66,7 +66,7 @@ function (p::RHS_IIF1)(u,resid)
   end
 end
 
-type RHS_IIF2{F,uType,tType,DiffCacheType,SizeType} <: Function
+mutable struct RHS_IIF2{F,uType,tType,DiffCacheType,SizeType} <: Function
   f::F
   tmp::uType
   t::tType

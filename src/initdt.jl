@@ -1,4 +1,4 @@
-function sde_determine_initdt{tType,uType}(u0::uType,t::tType,tdir,dtmax,abstol,reltol,internalnorm,prob,order)
+function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,internalnorm,prob,order) where {tType,uType}
   f = prob.f
   g = prob.g
   d₀ = internalnorm(u0./(abstol.+abs.(u0).*reltol))
