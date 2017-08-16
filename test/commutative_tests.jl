@@ -8,8 +8,7 @@ const μ = 1.01
 
 u0 = rand(2)
 A = Strang(2)
-B = [σ_const 0
-    0 σ_const]
+B = Diagonal([σ_const for i in 1:2])
 
 function f(t,u,du)
   A_mul_B!(du,A,u)
@@ -35,9 +34,6 @@ dts = 1./2.^(10:-1:3) #14->7 good plot
 sim2 = test_convergence(dts,prob,EM(),numMonte=Int(1e2))
 sim2 = test_convergence(dts,prob,RKMilCommute(),numMonte=Int(4e2))
 
-
-
-
 f1 = (t,u,du) -> A
 function (p::typeof(f1))(::Type{Val{:analytic}},t,u0,W)
  tmp = (A+1.01I-(B^2))*t + B*sum(W)
@@ -60,13 +56,12 @@ sim  = test_convergence(dts,prob,IIF1M(),numMonte=Int(5e1))
 sim  = test_convergence(dts,prob,IIF1Mil(),numMonte=Int(4e2))
 @test abs(sim.𝒪est[:l2]-1.0) < 0.2
 
+u0 = rand(5)
 A = Strang(5)
-f1 = (t,u,du) -> A
-function (p::typeof(f1))(::Type{Val{:analytic}},t,u0,W)
- tmp = (A+1.01I-(B^2))*t + B*sum(W)
- expm(tmp)*u0
+B = Diagonal([σ_const for i in 1:5])
+function f(t,u,du)
+  A_mul_B!(du,A,u)
 end
-f2 = (t,u,du) -> du .= μ .* u
 function σ(t,u,du)
   du[1,1] = σ_const*u[1]
   du[1,2] = σ_const*u[1]
@@ -94,14 +89,31 @@ function σ(t,u,du)
   du[5,4] = σ_const*u[5]
   du[5,5] = σ_const*u[5]
 end
-B = Diagonal([σ_const for i in 1:5])
-u0 = rand(5)
+function (p::typeof(f))(::Type{Val{:analytic}},t,u0,W)
+ tmp = (A+1.01I-(5/2)*(B^2))*t + B*sum(W)
+ expm(tmp)*u0
+end
+A*B == B*A
+
+prob = SDEProblem(f,σ,u0,(0.0,1.0),noise_rate_prototype=rand(5,5))
+sol = solve(prob,RKMilCommute(),dt=1/2^(8))
+sol = solve(prob,EM(),dt=1/2^(10))
+
+dts = 1./2.^(10:-1:3) #14->7 good plot
+sim2 = test_convergence(dts,prob,EM(),numMonte=Int(1e2))
+sim2 = test_convergence(dts,prob,RKMilCommute(),numMonte=Int(1e2))
+
+
+f1 = (t,u,du) -> A
+function (p::typeof(f1))(::Type{Val{:analytic}},t,u0,W)
+ tmp = (A+1.01I-(5/2)*(B^2))*t + B*sum(W)
+ expm(tmp)*u0
+end
+f2 = (t,u,du) -> du .= μ .* u
 prob = SDEProblem((f1,f2),σ,u0,(0.0,1.0),noise_rate_prototype=rand(5,5))
 sol = solve(prob,IIF1M(),dt=1/10)
 sol = solve(prob,IIF1Mil(),dt=1/10)
 
-sim  = test_convergence(dts,prob,IIF1M(),numMonte=Int(5e1))
-@test abs(sim.𝒪est[:l2]-0.5) < 0.2
-
-sim  = test_convergence(dts,prob,IIF1Mil(),numMonte=Int(4e2))
-@test abs(sim.𝒪est[:l2]-1.0) < 0.2
+dts = 1./2.^(10:-1:3) #14->7 good plot
+sim2 = test_convergence(dts,prob,IIF1M(),numMonte=Int(1e2))
+sim2 = test_convergence(dts,prob,IIF1Mil(),numMonte=Int(1e2))
