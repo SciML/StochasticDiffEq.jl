@@ -186,7 +186,8 @@ end
   integrator.g(t,uprev,L)
 
   for j = 1:length(uprev)
-    Kj = uprev .+ dt.*du1 + sqdt*L[:,j]
+    #Kj = uprev .+ dt.*du1 + sqdt*L[:,j] # This works too
+    Kj = uprev .+ sqdt*L[:,j]
     g(t,Kj,tmp)
     Dgj = (tmp - L)/sqdt
     mil_correction .+= Dgj*I[:,j]

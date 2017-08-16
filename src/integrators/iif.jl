@@ -87,9 +87,17 @@ end
   @unpack rtmp1,rtmp2,rtmp3,tmp,noise_tmp = cache
   @unpack uhold,rhs,nl_rhs = cache
   @unpack t,dt,uprev,u,W = integrator
+
+  dW = W.dW; sqdt = integrator.sqdt
+  f = integrator.f; g = integrator.g
+
+  A = integrator.f[1](t,uprev,rtmp1)
+  M = expm(A*dt)
+
   uidx = eachindex(u)
 
   integrator.g(t,uprev,rtmp2)
+  rtmp2 = M*rtmp2 # A_mul_B!(rtmp2,M,gtmp)
   if typeof(cache) <: Union{IIF1MCache,IIF2MCache}
     if is_diagonal_noise(integrator.sol.prob)
       scale!(rtmp2,W.dW) # rtmp2 === rtmp3
@@ -97,25 +105,40 @@ end
       A_mul_B!(rtmp3,rtmp2,W.dW)
     end
   else #Milstein correction
-    error("Milstein correction does not work.")
+    @unpack gtmp,gtmp2 = cache
+    #error("Milstein correction does not work.")
+    A_mul_B!(rtmp3,rtmp2,W.dW)
+
+    I = zeros(length(dW),length(dW));
+    Dg = zeros(length(dW),length(dW)); mil_correction = zeros(length(dW))
+
+    mil_correction .= 0.0
+    for i=1:length(dW),j=1:length(dW)
+        I[j,i] = 0.5*dW[i]*dW[j]
+        j == i && (I[i,i] -= 0.5*dt) # Ito correction
+    end
+
+    for j = 1:length(uprev)
+      #Kj = uprev .+ dt.*du1 + sqdt*rtmp2[:,j] # This works too
+      Kj = uprev .+ sqdt*rtmp2[:,j]
+      g(t,Kj,gtmp); A_mul_B!(gtmp2,M,gtmp)
+      Dgj = (gtmp2 - rtmp2)/sqdt
+      mil_correction .+= Dgj*I[:,j]
+    end
+
+    rtmp3 .+= mil_correction
+
   end
 
-  #rtmp3 .+= uprev
-  @tight_loop_macros for i in uidx
-    @inbounds rtmp3[i] += uprev[i]
-  end
+  A_mul_B!(tmp,M,uprev)
+  tmp .+= rtmp3
 
+  #=
   if typeof(cache) <: IIF2MCache
     integrator.f[2](t,uprev,rtmp1)
-    #@. rtmp3 = @muladd 0.5dt*rtmp1 + rtmp3
-    @tight_loop_macros for i in uidx
-      @inbounds rtmp3[i] = @muladd 0.5dt*rtmp1[i] + rtmp3[i]
-    end
+    @. rtmp3 = @muladd 0.5dt*rtmp1 + rtmp3
   end
-
-  A = integrator.f[1](t,uprev,rtmp1)
-  M = expm(A*dt)
-  A_mul_B!(tmp,M,rtmp3)
+  =#
 
   if integrator.iter > 1 && !integrator.u_modified
     current_extrapolant!(uhold,t+dt,integrator)

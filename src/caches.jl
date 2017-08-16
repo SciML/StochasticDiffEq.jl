@@ -184,6 +184,8 @@ struct IIF1MilCache{uType,vecuType,DiffCacheType,rhsType,nl_rhsType,rateType,rat
   rtmp2::rateNoiseType
   rtmp3::rateNoiseCollectionType
   noise_tmp::NoiseTmpType
+  gtmp::rateNoiseType
+  gtmp2::rateNoiseType
 end
 
 u_cache(c::IIF1MilCache)    = (c.uprev2,c.u_old)
@@ -206,14 +208,14 @@ function alg_cache(alg::IIF1Mil,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototy
   rhs = RHS_IIF1(f,tmp,t,t,dual_cache,size(u))
   nl_rhs = alg.nlsolve(Val{:init},rhs,uhold)
   noise_tmp = similar(noise_rate_prototype)
-
+  gtmp = similar(noise_rate_prototype); gtmp2 = similar(noise_rate_prototype)
   rtmp2 = zeros(noise_rate_prototype)
   if is_diagonal_noise(prob)
     rtmp3 = rtmp2
   else
     rtmp3 = zeros(rate_prototype)
   end
-  IIF1MilCache(u,uprev,uhold,dual_cache,tmp,rhs,nl_rhs,rtmp1,rtmp2,rtmp3,noise_tmp)
+  IIF1MilCache(u,uprev,uhold,dual_cache,tmp,rhs,nl_rhs,rtmp1,rtmp2,rtmp3,noise_tmp,gtmp,gtmp2)
 end
 
 
@@ -299,7 +301,7 @@ alg_cache(alg::RKMilCommute,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,u
 
 function alg_cache(alg::RKMilCommute,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   du1 = zeros(rate_prototype); du2 = zeros(rate_prototype)
-  K = zeros(rate_prototype); tmp = zeros(noise_rate_prototype); 
+  K = zeros(rate_prototype); tmp = zeros(noise_rate_prototype);
   L = zeros(noise_rate_prototype)
   RKMilCommuteCache(u,uprev,du1,du2,K,tmp,L)
 end
