@@ -166,3 +166,35 @@ end
   end
   @pack integrator = t,dt,u
 end
+
+@inline function perform_step!(integrator,cache::RKMilCommuteCache,f=integrator.f)
+  @unpack du1,du2,K,tmp,L = cache
+  @unpack t,dt,uprev,u,W = integrator
+  dW = W.dW; sqdt = integrator.sqdt
+  f = integrator.f; g = integrator.g
+  I = zeros(length(dW),length(dW));
+  Dg = zeros(length(dW),length(dW)); mil_correction = zeros(length(dW))
+
+  mil_correction .= 0.0
+  for i=1:length(dW),j=1:length(dW)
+      I[j,i] = 0.5*dW[i]*dW[j]
+      j == i && (I[i,i] -= 0.5*dt) # Ito correction
+  end
+  e = [[1,0],[0,1]]
+
+  integrator.f(t,uprev,du1)
+  integrator.g(t,uprev,L)
+
+  for j = 1:length(uprev)
+    Kj = uprev .+ dt.*du1 + sqdt*L[:,j]
+    g(t,Kj,tmp)
+    Dgj = (tmp - L)/sqdt
+    mil_correction .+= Dgj*I[:,j]
+  end
+  u .= uprev .+ dt.*du1 + L*dW
+  #@show u
+  u .+= mil_correction
+  #@show u
+
+  @pack integrator = t,dt,u
+end

@@ -13,6 +13,7 @@ alg_order(alg::IIF1Mil) = 1//1
 alg_order(alg::EulerHeun) = 1//2
 alg_order(alg::RandomEM) = 1//2
 alg_order(alg::RKMil) = 1//1
+alg_order(alg::RKMilCommute) = 1//1
 alg_order(alg::SRI) = alg.tableau.order
 alg_order(alg::SRIW1) = 3//2
 alg_order(alg::SRA) = alg.tableau.order
@@ -27,6 +28,7 @@ isdtchangeable(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorith
 alg_interpretation(alg::StochasticDiffEqAlgorithm) = :Ito
 alg_interpretation(alg::EulerHeun) = :Stratonovich
 alg_interpretation{interpretation}(alg::RKMil{interpretation}) = interpretation
+alg_interpretation{interpretation}(alg::RKMilCommute{interpretation}) = interpretation
 
 alg_compatible(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = true
 

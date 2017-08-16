@@ -28,6 +28,9 @@ immutable EulerHeun <: StochasticDiffEqAlgorithm end
 immutable RKMil{interpretation} <: StochasticDiffEqAlgorithm end
 Base.@pure RKMil(;interpretation=:Ito) = RKMil{interpretation}()
 
+immutable RKMilCommute{interpretation} <: StochasticDiffEqAlgorithm end
+Base.@pure RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
+
 @with_kw immutable SRA{TabType} <: StochasticDiffEqAdaptiveAlgorithm
   tableau::TabType = constructSRA1()
 end
