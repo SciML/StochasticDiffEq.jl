@@ -284,7 +284,7 @@ function alg_cache(alg::RKMil,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype
 end
 
 struct RKMilCommuteConstantCache <: StochasticDiffEqConstantCache end
-struct RKMilCommuteCache{uType,rateType,rateNoiseType} <: StochasticDiffEqMutableCache
+struct RKMilCommuteCache{uType,rateType,rateNoiseType,WikType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   du1::rateType
@@ -292,6 +292,11 @@ struct RKMilCommuteCache{uType,rateType,rateNoiseType} <: StochasticDiffEqMutabl
   K::rateType
   tmp::rateNoiseType
   L::rateNoiseType
+  I::WikType
+  Dg::WikType
+  mil_correction::rateType
+  Kj::uType
+  Dgj::rateNoiseType
 end
 
 u_cache(c::RKMilCommuteCache) = ()
@@ -303,7 +308,10 @@ function alg_cache(alg::RKMilCommute,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_pr
   du1 = zeros(rate_prototype); du2 = zeros(rate_prototype)
   K = zeros(rate_prototype); tmp = zeros(noise_rate_prototype);
   L = zeros(noise_rate_prototype)
-  RKMilCommuteCache(u,uprev,du1,du2,K,tmp,L)
+  I = zeros(length(ΔW),length(ΔW));
+  Dg = zeros(length(ΔW),length(ΔW)); mil_correction = zeros(rate_prototype)
+  Kj = similar(u); Dgj = zeros(noise_rate_prototype)
+  RKMilCommuteCache(u,uprev,du1,du2,K,tmp,L,I,Dg,mil_correction,Kj,Dgj)
 end
 
 struct SRA1ConstantCache <: StochasticDiffEqConstantCache end

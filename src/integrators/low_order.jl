@@ -170,10 +170,9 @@ end
 @inline function perform_step!(integrator,cache::RKMilCommuteCache,f=integrator.f)
   @unpack du1,du2,K,tmp,L = cache
   @unpack t,dt,uprev,u,W = integrator
+  @unpack I,mil_correction,Kj,Dgj = cache
   dW = W.dW; sqdt = integrator.sqdt
   f = integrator.f; g = integrator.g
-  I = zeros(length(dW),length(dW));
-  Dg = zeros(length(dW),length(dW)); mil_correction = zeros(length(dW))
 
   mil_correction .= 0.0
   for i=1:length(dW),j=1:length(dW)
@@ -185,11 +184,11 @@ end
   integrator.g(t,uprev,L)
 
   for j = 1:length(uprev)
-    #Kj = uprev .+ dt.*du1 + sqdt*L[:,j] # This works too
-    Kj = uprev .+ sqdt*L[:,j]
+    @. Kj = uprev + dt*du1 + sqdt*@view(L[:,j]) # This works too
+    #Kj .= uprev .+ sqdt*L[:,j]
     g(t,Kj,tmp)
-    Dgj = (tmp - L)/sqdt
-    mil_correction .+= Dgj*I[:,j]
+    @. Dgj = (tmp - L)/sqdt
+    mil_correction += Dgj*@view(I[:,j])
   end
   u .= uprev .+ dt.*du1 + L*dW
   u .+= mil_correction
