@@ -1,7 +1,7 @@
 using StochasticDiffEq, DiffEqBase, Base.Test
 
-f = (t,u,du) -> du.=1.01u
-g = function (t,u,du)
+f(t,u,du) = (du.=1.01u)
+function g(t,u,du)
   du[1,1] = 0.3u[1]
   du[1,2] = 0.6u[1]
   du[1,3] = 0.9u[1]
@@ -17,7 +17,7 @@ sol = solve(prob,EM(),dt=1/1000)
 
 @test length(sol.W[1]) == 4
 
-g = function (t,u,du)
+function g(t,u,du)
   @test typeof(du) <: SparseMatrixCSC
   du[1,1] = 0.3u[1]
   du[1,2] = 0.6u[1]

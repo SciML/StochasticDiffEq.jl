@@ -6,10 +6,10 @@ A = [-3/2 1/20
 B = [1/5 1/100
     1/100 1/5]
 
-f = function (t,u,du)
+function f(t,u,du)
   A_mul_B!(du,A,u)
 end
-σ = function (t,u,du)
+function σ(t,u,du)
   A_mul_B!(@view(du[:,1]),B,u)
   A_mul_B!(@view(du[:,2]),B,u)
 end
@@ -38,11 +38,11 @@ A = Strang(2)
 B = [1/5 1/100
     1/100 1/5]
 
-f = function (t,u,du)
+function f(t,u,du)
   A_mul_B!(du,A,u)
   du .+= 1.01u
 end
-σ = function (t,u,du)
+function σ(t,u,du)
   A_mul_B!(@view(du[:,1]),B,u)
   A_mul_B!(@view(du[:,2]),B,u)
 end

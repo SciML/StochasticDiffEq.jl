@@ -1,22 +1,23 @@
-using DiffEqBase, StochasticDiffEq, DiffEqNoiseProcess, Base.Test, DiffEqDevTools, SpecialMatrices
+using DiffEqBase, StochasticDiffEq, DiffEqNoiseProcess,
+      Base.Test, DiffEqDevTools, SpecialMatrices
 const μ = 1.01
 const σ_const = 0.87
 
-f = (t,u) -> μ * u + μ * u
-f1 = (t,u) -> μ
+f(t,u) = μ * u + μ * u
+f1(t,u) = μ
 (p::typeof(f1))(::Type{Val{:analytic}},t,u0,W) = u0.*exp.((2μ-(σ_const^2)/2)t+σ_const*W)
-f2 = (t,u) -> μ * u
-σ = (t,u) -> σ_const*u
-no_noise = (t,u) -> 0.0
-f1_no_noise = (t,u) -> μ
+f2(t,u) = μ * u
+σ(t,u) = σ_const*u
+no_noise(t,u) = 0.0
+f1_no_noise(t,u) = μ
 (p::typeof(f1_no_noise))(::Type{Val{:analytic}},t,u0,W) = u0.*exp.(2μ*t)
 
-prob = SDEProblem((f1,f2),σ,1/2,(0.0,1.0))
-no_noise_prob = SDEProblem((f1_no_noise,f2),no_noise,1/2,(0.0,1.0))
+prob = SDEProblem{false}((f1,f2),σ,1/2,(0.0,1.0))
+no_noise_prob = SDEProblem{false}((f1_no_noise,f2),no_noise,1/2,(0.0,1.0))
 
 sol = solve(prob,IIF1M(),dt=1/10)
 
-prob2 = SDEProblem(f,σ,1/2,(0.0,1.0),noise = NoiseWrapper(sol.W))
+prob2 = SDEProblem{false}(f,σ,1/2,(0.0,1.0),noise = NoiseWrapper(sol.W))
 
 sol2 = solve(prob2,EM(),dt=1/10)
 
@@ -48,11 +49,11 @@ A = Strang(2)
 B = [σ_const 0
     0 σ_const]
 
-f = function (t,u,du)
+function f(t,u,du)
   A_mul_B!(du,A,u)
   du .+= 1.01u
 end
-σ = function (t,u,du)
+function σ(t,u,du)
   A_mul_B!(@view(du[:,1]),B,u)
   A_mul_B!(@view(du[:,2]),B,u)
 end
@@ -62,18 +63,18 @@ function (p::typeof(f))(::Type{Val{:analytic}},t,u0,W)
  expm(tmp)*u0
 end
 
-f1 = (t,u,du) -> A
+f1(t,u,du) = A
 function (p::typeof(f1))(::Type{Val{:analytic}},t,u0,W)
  tmp = (A+1.01I-(B^2))*t + B*sum(W)
  expm(tmp)*u0
 end
-f2 = (t,u,du) -> du .= μ .* u
+f2(t,u,du) = du .= μ .* u
 
 prob = SDEProblem((f1,f2),σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
 
-f1_no_noise = (t,u,du) -> A
-f2 = (t,u,du) -> du .= μ .* u
-σ = function (t,u,du)
+f1_no_noise(t,u,du) = A
+f2(t,u,du) = (du .= μ .* u)
+function σ(t,u,du)
   du .= 0
 end
 function (p::typeof(f1_no_noise))(::Type{Val{:analytic}},t,u0,W)
