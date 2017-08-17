@@ -4,15 +4,15 @@ const μ = 1.01
 const σ_const = 0.87
 
 f(t,u) = μ * u + μ * u
-f1(t,u) = μ
-(p::typeof(f1))(::Type{Val{:analytic}},t,u0,W) = u0.*exp.((2μ-(σ_const^2)/2)t+σ_const*W)
+f1_μ(t,u) = μ
+(p::typeof(f1_μ))(::Type{Val{:analytic}},t,u0,W) = u0.*exp.((2μ-(σ_const^2)/2)t+σ_const*W)
 f2(t,u) = μ * u
 σ(t,u) = σ_const*u
 no_noise(t,u) = 0.0
 f1_no_noise(t,u) = μ
 (p::typeof(f1_no_noise))(::Type{Val{:analytic}},t,u0,W) = u0.*exp.(2μ*t)
 
-prob = SDEProblem{false}((f1,f2),σ,1/2,(0.0,1.0))
+prob = SDEProblem{false}((f1_μ,f2),σ,1/2,(0.0,1.0))
 no_noise_prob = SDEProblem{false}((f1_no_noise,f2),no_noise,1/2,(0.0,1.0))
 
 sol = solve(prob,IIF1M(),dt=1/10)

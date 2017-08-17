@@ -2,7 +2,7 @@ using StochasticDiffEq, DiffEqDevTools, DiffEqBase, DiffEqProblemLibrary, Base.T
 srand(100)
 prob = prob_sde_linear
 f(t,u) = 2u
-prob = SDEProblem(f,prob.f,prob.u0,prob.tspan)
+prob = SDEProblem{false}(f,prob.f,prob.u0,prob.tspan)
 sol = solve(prob,EM(),dt=1//2^(4),saveat = 0.33)
 
 sol.t == [0.0,.33,.33+.33,1]
