@@ -63,25 +63,25 @@ function (p::typeof(f))(::Type{Val{:analytic}},t,u0,W)
  expm(tmp)*u0
 end
 
-f1(t,u,du) = A
-function (p::typeof(f1))(::Type{Val{:analytic}},t,u0,W)
+f1_A(t,u,du) = A
+function (p::typeof(f1_A))(::Type{Val{:analytic}},t,u0,W)
  tmp = (A+1.01I-(B^2))*t + B*sum(W)
  expm(tmp)*u0
 end
 f2(t,u,du) = du .= μ .* u
 
-prob = SDEProblem((f1,f2),σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
+prob = SDEProblem((f1_A,f2),σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
 
 f1_no_noise(t,u,du) = A
 f2(t,u,du) = (du .= μ .* u)
-function σ(t,u,du)
+function σ2(t,u,du)
   du .= 0
 end
 function (p::typeof(f1_no_noise))(::Type{Val{:analytic}},t,u0,W)
  tmp = (A+1.01I)*t
  expm(tmp)*u0
 end
-prob_no_noise = SDEProblem((f1_no_noise,f2),σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
+prob_no_noise = SDEProblem((f1_no_noise,f2),σ2,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
 
 
 sol = solve(prob,IIF1M(),dt=1/10)
