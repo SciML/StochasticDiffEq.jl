@@ -311,7 +311,7 @@ function init{uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abstrac
     end
   else
     W = prob.noise
-    if W.t[end] != t
+    if !(typeof(W) <: NoiseGrid) && W.t[end] != t
       error("Starting time in the noise process is not the starting time of the simulation. The noise process should be re-initialized for repeated use")
     end
     # Reseed
