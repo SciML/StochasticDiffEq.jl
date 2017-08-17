@@ -180,7 +180,6 @@ end
       I[j,i] = 0.5*dW[i]*dW[j]
       j == i && (I[i,i] -= 0.5*dt) # Ito correction
   end
-  e = [[1,0],[0,1]]
 
   integrator.f(t,uprev,du1)
   integrator.g(t,uprev,L)
@@ -193,9 +192,7 @@ end
     mil_correction .+= Dgj*I[:,j]
   end
   u .= uprev .+ dt.*du1 + L*dW
-  #@show u
   u .+= mil_correction
-  #@show u
 
   @pack integrator = t,dt,u
 end
