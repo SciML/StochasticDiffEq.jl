@@ -100,11 +100,12 @@ end
   @unpack t,dt,uprev,u,W = integrator
   K = @muladd uprev .+ dt.*integrator.f(t,uprev)
   L = integrator.g(t,uprev)
-  utilde = @.  K + L*integrator.sqdt
   if alg_interpretation(integrator.alg) == :Ito
+    utilde = @.  K + L*integrator.sqdt
     mil_correction = (integrator.g(t,utilde).-L)./(2 .* integrator.sqdt).*(W.dW.^2 .- dt)
   elseif alg_interpretation(integrator.alg) == :Stratonovich
-    mil_correction = W.dW.*(integrator.g(t,utilde).+L)./2
+    utilde = @. uprev + L*integrator.sqdt
+    mil_correction = (integrator.g(t,utilde).-L)./(2 .* integrator.sqdt).*(W.dW.^2)
   end
   u = @. K+L*W.dW+mil_correction
   if integrator.opts.adaptive
@@ -141,23 +142,17 @@ end
   @unpack t,dt,uprev,u,W = integrator
   integrator.f(t,uprev,du1)
   integrator.g(t,uprev,L)
-  @tight_loop_macros for i in eachindex(u)
-    @inbounds K[i] = @muladd uprev[i] + dt*du1[i]
-    @inbounds tmp[i] = @muladd K[i] + L[i]*integrator.sqdt
-  end
-  integrator.g(t,tmp,du2)
+  @. K = @muladd uprev + dt*du1
   if alg_interpretation(integrator.alg) == :Ito
-    @tight_loop_macros for i in eachindex(u)
-      @inbounds tmp[i] = (du2[i]-L[i])/(2integrator.sqdt)*(W.dW[i].^2 - dt)
-    end
+    @. tmp = @muladd K + L*integrator.sqdt
+    integrator.g(t,tmp,du2)
+    @. tmp = (du2-L)/(2integrator.sqdt)*(W.dW.^2 - dt)
   elseif alg_interpretation(integrator.alg) == :Stratonovich
-    @tight_loop_macros for i in eachindex(u)
-      @inbounds tmp[i] = (du2[i]-L[i])/(2integrator.sqdt)*(W.dW[i].^2)
-    end
+    @. tmp = @muladd uprev + L*integrator.sqdt
+    integrator.g(t,tmp,du2)
+    @. tmp = (du2-L)/(2integrator.sqdt)*(W.dW.^2)
   end
-  @tight_loop_macros for i in eachindex(u)
-    @inbounds u[i] = K[i]+L[i]*W.dW[i] + tmp[i]
-  end
+  @. u = K+L*W.dW + tmp
   if integrator.opts.adaptive
     @tight_loop_macros for (i,atol,rtol) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),Iterators.cycle(integrator.opts.reltol))
       @inbounds tmp[i] = @muladd(tmp[i])/@muladd(atol + max(abs(uprev[i]),abs(u[i]))*rtol)
