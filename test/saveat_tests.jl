@@ -1,8 +1,8 @@
 using StochasticDiffEq, DiffEqDevTools, DiffEqBase, DiffEqProblemLibrary, Base.Test
 srand(100)
 prob = prob_sde_linear
-f = (t,u) -> 2u
-prob = SDEProblem(f,prob.f,prob.u0,prob.tspan)
+f(t,u) = 2u
+prob = SDEProblem{false}(f,prob.f,prob.u0,prob.tspan)
 sol = solve(prob,EM(),dt=1//2^(4),saveat = 0.33)
 
 sol.t == [0.0,.33,.33+.33,1]
@@ -19,7 +19,7 @@ sol = solve(prob,EM(),dt=1//2^(4),saveat = 0.33,save_start=false,save_everystep=
 sol.t != [.33,.33+.33,1]
 
 prob = prob_sde_2Dlinear
-f = (t,u,du) -> prob.f(t,u,du)
+f(t,u,du) = prob.f(t,u,du)
 prob2 = SDEProblem(f,prob.g,vec(prob.u0),prob.tspan)
 srand(200)
 sol = solve(prob2,EM(),dt=1//2^(4),saveat = 0.33,save_start=false,save_everystep=true)

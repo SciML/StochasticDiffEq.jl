@@ -1,7 +1,7 @@
 using StaticArrays
 using DiffEqBase, StochasticDiffEq
 
-f = (t,u,du) -> du .= u
+f(t,u,du) = (du .= u)
 
 u0 = zeros(MVector{2,Float64}, 2) + 1
 u0[1] = ones(MVector{2,Float64}) + 1
@@ -22,7 +22,7 @@ sol = solve(ode, EM(), dt=1.e-2)
 sol = solve(ode, SRIW1())
 
 u0 = ones(SVector{2,Float64})
-f = (t,u) -> u
+f(t,u) = u
 prob = SDEProblem(f, f, u0, (0.,1.))
 sol = solve(ode, EM(), dt=1.e-2)
 sol = solve(ode, SRIW1())

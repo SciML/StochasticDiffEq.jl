@@ -1,12 +1,12 @@
 using StochasticDiffEq, DiffEqProblemLibrary, Base.Test
 
 #=
-f = (t,u) -> begin
+function f(t,u)
   du = similar(u)
   prob_sde_2Dlinear.f(t,u,du)
   return du
 end
-σ = (t,u) -> begin
+function σ(t,u)
   du = similar(u)
   prob_sde_2Dlinear.g(t,u,du)
   return du
@@ -27,7 +27,7 @@ for alg in algs, prob in probs
   # Vector of element-wise absolute tolerances
   srand(100)
   sol2 = solve(prob,alg;dt=dt,abstol=fill(1e-2,4,2))
-  
+
   @test sol.t == sol2.t && sol.u == sol2.u
 
   # Vector of element-wise relative tolerances

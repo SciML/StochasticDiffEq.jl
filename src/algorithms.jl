@@ -28,6 +28,9 @@ struct EulerHeun <: StochasticDiffEqAlgorithm end
 struct RKMil{interpretation} <: StochasticDiffEqAlgorithm end
 Base.@pure RKMil(;interpretation=:Ito) = RKMil{interpretation}()
 
+struct RKMilCommute{interpretation} <: StochasticDiffEqAlgorithm end
+Base.@pure RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
+
 @with_kw struct SRA{TabType} <: StochasticDiffEqAdaptiveAlgorithm
   tableau::TabType = constructSRA1()
 end

@@ -282,15 +282,18 @@ kwargs...) where {uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abs
 
   if typeof(prob.noise) <: Void
     if isinplace
+      #adaptive ? achoice = :RSwM3 : achoice = :RSwM1
       if alg_needs_extra_process(alg)
         W = WienerProcess!(t,rand_prototype,rand_prototype,
                            save_everystep=save_everystep,
                            timeseries_steps=timeseries_steps,
+                           rswm=RSWM(adaptivealg=:RSwM1),
                            rng = Xorshifts.Xoroshiro128Plus(seed))
       else
         W = WienerProcess!(t,rand_prototype,
                            save_everystep=save_everystep,
                            timeseries_steps=timeseries_steps,
+                           rswm=RSWM(adaptivealg=:RSwM1),
                            rng = Xorshifts.Xoroshiro128Plus(seed))
       end
     else
@@ -308,7 +311,7 @@ kwargs...) where {uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,Abs
     end
   else
     W = prob.noise
-    if W.t[end] != t
+    if !(typeof(W) <: NoiseGrid) && W.t[end] != t
       error("Starting time in the noise process is not the starting time of the simulation. The noise process should be re-initialized for repeated use")
     end
     # Reseed

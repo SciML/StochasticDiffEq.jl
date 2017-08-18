@@ -1,19 +1,19 @@
 using StochasticDiffEq, RecursiveArrayTools, DiffEqBase, Base.Test#, ParameterizedFunctions
-f = function (t,u,du)
+function f(t,u,du)
   du[1] = u[2]
   du[2] = -9.81
 end
 
-g = function (t,u,du)
+function g(t,u,du)
   nothing
 end
 
-condtion= function (t,u,integrator) # Event when event_f(t,u,k) == 0
+function condtion(t,u,integrator) # Event when event_f(t,u,k) == 0
   u[1]
 end
 
 affect! = nothing
-affect_neg! = function (integrator)
+function affect_neg!(integrator)
   integrator.u[2] = -integrator.u[2]
 end
 
@@ -27,7 +27,7 @@ sol = solve(prob,SRIW1(),callback=callback,adaptive=false,dt=3/4)
 
 @test sol[1,6] < 1e-14
 
-g = function (t,u,du)
+function g(t,u,du)
   du[2] = .125*u[2]
 end
 

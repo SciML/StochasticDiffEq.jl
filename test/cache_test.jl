@@ -1,22 +1,22 @@
 using StochasticDiffEq, DiffEqBase
 
-f = function (t,u,du)
+function f(t,u,du)
   for i in 1:length(u)
     du[i] = (0.3/length(u))*u[i]
   end
 end
 
-g = function (t,u,du)
+function g(t,u,du)
   for i in 1:length(u)
     du[i] = (0.3/length(u))*u[i]
   end
 end
 
-condition = function (t,u,integrator)
+function condition(t,u,integrator)
   1-maximum(u)
 end
 
-affect! = function (integrator)
+function callback_affect!(integrator)
   u = integrator.u
   resize!(integrator,length(u)+1)
   maxidx = findmax(u)[2]
@@ -26,7 +26,7 @@ affect! = function (integrator)
   nothing
 end
 
-callback = ContinuousCallback(condition,affect!)
+callback = ContinuousCallback(condition,callback_affect!)
 
 u0 = [0.2]
 tspan = (0.0,100.0)
@@ -48,7 +48,7 @@ sol = solve(prob,RKMil(),callback=callback,dt=1/4)
 sol = solve(prob,SRI(),callback=callback)
 
 
-g = function (t,u,du)
+function g(t,u,du)
   for i in 1:length(u)
     du[i] = (0.3/length(u))
   end
