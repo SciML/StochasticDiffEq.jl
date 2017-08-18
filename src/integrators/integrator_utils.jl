@@ -12,6 +12,7 @@
         integrator.dtnew = integrator.dt/min(inv(integrator.opts.qmin),integrator.q11/integrator.opts.gamma)
       end
       fix_dtnew_at_bounds!(integrator)
+      modify_dtnew_for_tstops!(integrator)
       reject_step!(integrator.W,integrator.dtnew)
       integrator.dt = integrator.dtnew
       integrator.sqdt = sqrt(abs(integrator.dt))
@@ -40,6 +41,17 @@ end
       integrator.dt = integrator.tdir*abs(top(tstops)-integrator.t)
     elseif integrator.dtchangeable # always try to step! with dtcache, but lower if a tstops
       integrator.dt = integrator.tdir*min(abs(integrator.dtcache),abs(top(tstops)-integrator.t)) # step! to the end
+    end
+  end
+end
+
+@inline function modify_dtnew_for_tstops!(integrator)
+  tstops = integrator.opts.tstops
+  if !isempty(tstops)
+    if integrator.tdir > 0
+      integrator.dt = min(abs(integrator.dtnew),abs(top(tstops)-integrator.t)) # step! to the end
+    else
+      integrator.dt = -min(abs(integrator.dtnew),abs(top(tstops)-integrator.t))
     end
   end
 end
@@ -112,12 +124,12 @@ end
 end
 
 @inline function loopfooter!(integrator::SDEIntegrator)
+  ttmp = integrator.t + integrator.dt
   if integrator.opts.adaptive
     @fastmath integrator.q11 = integrator.EEst^integrator.opts.beta1
     @fastmath integrator.q = integrator.q11/(integrator.qold^integrator.opts.beta2)
     @fastmath integrator.q = max(inv(integrator.opts.qmax),min(inv(integrator.opts.qmin),integrator.q/integrator.opts.gamma))
     @fastmath integrator.dtnew = integrator.dt/integrator.q
-    ttmp = integrator.t + integrator.dt
     integrator.isout = integrator.opts.isoutofdomain(ttmp,integrator.u)
     integrator.accept_step = (!integrator.isout && integrator.EEst <= 1.0) || (integrator.opts.force_dtmin && integrator.dt <= integrator.opts.dtmin)
     if integrator.accept_step # Accepted
@@ -133,7 +145,12 @@ end
     end
   else # Non adaptive
     integrator.tprev = integrator.t
-    integrator.t = integrator.t + integrator.dt
+    if typeof(integrator.t)<:AbstractFloat && !isempty(integrator.opts.tstops)
+      tstop = top(integrator.opts.tstops)
+      abs(ttmp - tstop) < 10eps(integrator.t) ? (integrator.t = tstop) : (integrator.t = ttmp)
+    else
+      integrator.t = ttmp
+    end
     integrator.accept_step = true
     integrator.dtpropose = integrator.dt
     handle_callbacks!(integrator)
@@ -155,6 +172,18 @@ end
     integrator.dtpropose = max(integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
   else
     integrator.dtpropose = min(integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
+  end
+  modify_dtpropose_for_tstops!(integrator)
+end
+
+@inline function modify_dtpropose_for_tstops!(integrator)
+  tstops = integrator.opts.tstops
+  if !isempty(tstops)
+    if integrator.tdir > 0
+      integrator.dtpropose = min(abs(integrator.dtpropose),abs(top(tstops)-integrator.t)) # step! to the end
+    else
+      integrator.dtpropose = -min(abs(integrator.dtpropose),abs(top(tstops)-integrator.t))
+    end
   end
 end
 
@@ -200,7 +229,6 @@ end
     discrete_modified,saved_in_cb = apply_discrete_callback!(integrator,discrete_callbacks...)
   end
   if !saved_in_cb
-    update_running_noise!(integrator)
     savevalues!(integrator)
   end
 
@@ -225,122 +253,6 @@ end
   accept_step!(integrator.W,integrator.dt)
   integrator.dt = integrator.W.dt
   integrator.sqdt = sqrt(abs(integrator.dt)) # It can change dt, like in RSwM1
-end
-
-@inline function update_running_noise!(integrator)
-end
-
-@inline function perform_rswm_rejection!(integrator)
-  integrator.q = integrator.dtnew/integrator.dt
-  if adaptive_alg(integrator.alg.rswm)==:RSwM1 || adaptive_alg(integrator.alg.rswm)==:RSwM2
-    generate_tildes(integrator,integrator.q*integrator.ΔW,integrator.q*integrator.ΔZ,sqrt(abs((1-integrator.q)*integrator.dtnew)))
-    cutLength = integrator.dt-integrator.dtnew
-    if cutLength > integrator.alg.rswm.discard_length
-      push!(integrator.S₁,(cutLength,integrator.ΔW-integrator.ΔWtilde,integrator.ΔZ-integrator.ΔZtilde))
-    end
-    if length(integrator.S₁) > integrator.sol.maxstacksize
-        integrator.sol.maxstacksize = length(integrator.S₁)
-    end
-    if isinplace(integrator.sol.prob)
-      copy!(integrator.ΔW,integrator.ΔWtilde)
-      if alg_needs_extra_process(integrator.alg)
-        copy!(integrator.ΔZ,integrator.ΔZtilde)
-      end
-    else
-      integrator.ΔW = integrator.ΔWtilde
-      if alg_needs_extra_process(integrator.alg)
-        integrator.ΔZ = integrator.ΔZtilde
-      end
-    end
-    integrator.dt = integrator.dtnew
-    integrator.sqdt = sqrt(abs(integrator.dt))
-  else # RSwM3
-    if !(isinplace(integrator.sol.prob))
-      dttmp = zero(integrator.t); integrator.ΔWtmp = zero(integrator.ΔWtmp)
-      if alg_needs_extra_process(integrator.alg)
-        integrator.ΔZtmp = zero(integrator.ΔZtmp)
-      end
-    else
-      dttmp = zero(integrator.t); fill!(integrator.ΔWtmp,zero(eltype(integrator.ΔWtmp)))
-      if alg_needs_extra_process(integrator.alg)
-        fill!(integrator.ΔZtmp,zero(eltype(integrator.ΔZtmp)))
-      end
-    end
-    if length(integrator.S₂) > integrator.sol.maxstacksize2
-      integrator.sol.maxstacksize2= length(integrator.S₂)
-    end
-    while !isempty(integrator.S₂)
-      L₁,L₂,L₃ = pop!(integrator.S₂)
-      if dttmp + L₁ < (1-integrator.q)*integrator.dt #while the backwards movement is less than chop off
-        dttmp += L₁
-        if isinplace(integrator.sol.prob)
-          #=
-          integrator.ΔWtmp .+= L₂
-          if alg_needs_extra_process(integrator.alg)
-            integrator.ΔZtmp .+= L₃
-          end
-          =#
-          @tight_loop_macros for i in eachindex(integrator.ΔW)
-            @inbounds integrator.ΔWtmp[i] += L₂[i]
-          end
-          if alg_needs_extra_process(integrator.alg)
-            @tight_loop_macros for i in eachindex(integrator.ΔW)
-              @inbounds integrator.ΔZtmp[i] += L₃[i]
-            end
-          end
-        else
-          integrator.ΔWtmp += L₂
-          if alg_needs_extra_process(integrator.alg)
-            integrator.ΔZtmp += L₃
-          end
-        end
-        push!(integrator.S₁,(L₁,L₂,L₃))
-      else
-        push!(integrator.S₂,(L₁,L₂,L₃))
-        break
-      end
-    end # end while
-    dtK = integrator.dt - dttmp
-    qK = integrator.q*integrator.dt/dtK
-    if isinplace(integrator.sol.prob)
-      #@. integrator.ΔWtmp = integrator.ΔW - integrator.ΔWtmp
-      @tight_loop_macros for i in eachindex(integrator.u)
-        @inbounds integrator.ΔWtmp[i] = integrator.ΔW[i] - integrator.ΔWtmp[i]
-      end
-      if alg_needs_extra_process(integrator.alg)
-        #@. integrator.ΔZtmp = integrator.ΔZ - integrator.ΔZtmp
-        @tight_loop_macros for i in eachindex(integrator.u)
-          @inbounds integrator.ΔZtmp[i] = integrator.ΔZ[i] - integrator.ΔZtmp[i]
-        end
-      end
-    else
-      integrator.ΔWtmp = integrator.ΔW - integrator.ΔWtmp
-      if alg_needs_extra_process(integrator.alg)
-        integrator.ΔZtmp = integrator.ΔZ - integrator.ΔZtmp
-      end
-    end
-    generate_tildes(integrator,qK*integrator.ΔWtmp,qK*integrator.ΔZtmp,sqrt(abs((1-qK)*qK*dtK)))
-    cutLength = (1-qK)*dtK
-    if cutLength > integrator.alg.rswm.discard_length
-      push!(integrator.S₁,(cutLength,integrator.ΔWtmp-integrator.ΔWtilde,integrator.ΔZtmp-integrator.ΔZtilde))
-    end
-    if length(integrator.S₁) > integrator.sol.maxstacksize
-        integrator.sol.maxstacksize = length(integrator.S₁)
-    end
-    integrator.dt = integrator.dtnew
-    integrator.sqdt = sqrt(abs(integrator.dt))
-    if isinplace(integrator.sol.prob)
-      copy!(integrator.ΔW,integrator.ΔWtilde)
-      if alg_needs_extra_process(integrator.alg)
-        copy!(integrator.ΔZ,integrator.ΔZtilde)
-      end
-    else
-      integrator.ΔW = integrator.ΔWtilde
-      if alg_needs_extra_process(integrator.alg)
-        integrator.ΔZ = integrator.ΔZtilde
-      end
-    end
-  end
 end
 
 @inline function handle_tstop!(integrator)

@@ -137,7 +137,6 @@ function apply_callback!(integrator,callback::ContinuousCallback,cb_time,prev_si
   end
 
   if callback.save_positions[1]
-    update_running_noise!(integrator)
     savevalues!(integrator,true)
     saved_in_cb = true
   end
@@ -161,9 +160,6 @@ function apply_callback!(integrator,callback::ContinuousCallback,cb_time,prev_si
   if integrator.u_modified
     #reeval_internals_due_to_modification!(integrator)
     if callback.save_positions[2]
-      if !callback.save_positions[1]
-        update_running_noise!(integrator)
-      end
       savevalues!(integrator,true)
       saved_in_cb = true
     end

@@ -47,7 +47,6 @@ sol = solve(prob,EM(),callback=callback,dt=1/4)
 sol = solve(prob,RKMil(),callback=callback,dt=1/4)
 sol = solve(prob,SRI(),callback=callback)
 
-
 function g(t,u,du)
   for i in 1:length(u)
     du[i] = (0.3/length(u))

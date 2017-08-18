@@ -11,7 +11,7 @@
       integrator.u = integrator(t)
     end
     integrator.dtnew = integrator.t - t
-    reject_step!(integrator.W,integrator.dtnew) #this only changes dt and noise, so no interpolation problems
+    reject_step!(integrator.W,t-integrator.tprev) #this only changes dt and noise, so no interpolation problems
     integrator.dt = integrator.dtnew
     integrator.sqdt = sqrt(abs(integrator.dt))
     integrator.t = t
