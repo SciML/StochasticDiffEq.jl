@@ -172,7 +172,9 @@ end
   @. mil_correction = zero(u)
   for i=1:length(dW),j=1:length(dW)
       I[j,i] = 0.5*dW[i]*dW[j]
-      j == i && (I[i,i] -= 0.5*dt) # Ito correction
+      if alg_interpretation(integrator.alg) == :Ito
+        j == i && (I[i,i] -= 0.5*dt) # Ito correction
+      end
   end
 
   integrator.f(t,uprev,du1)
