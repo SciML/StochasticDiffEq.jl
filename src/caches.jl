@@ -8,7 +8,7 @@ mutable struct StochasticCompositeCache{T,F} <: StochasticDiffEqCache
   current::Int
 end
 
-function alg_cache{T,algType<:StochasticCompositeAlgorithm}(alg::algType,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{T}})
+function alg_cache(alg::algType,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{T}}) where {T,algType<:StochasticCompositeAlgorithm}
   caches = map((x)->alg_cache(x,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,Val{T}),alg.algs)
   StochasticCompositeCache(caches,alg.choice_function,1)
 end

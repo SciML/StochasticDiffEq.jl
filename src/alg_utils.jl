@@ -27,8 +27,8 @@ isdtchangeable(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorith
 
 alg_interpretation(alg::StochasticDiffEqAlgorithm) = :Ito
 alg_interpretation(alg::EulerHeun) = :Stratonovich
-alg_interpretation{interpretation}(alg::RKMil{interpretation}) = interpretation
-alg_interpretation{interpretation}(alg::RKMilCommute{interpretation}) = interpretation
+alg_interpretation(alg::RKMil{interpretation}) where {interpretation} = interpretation
+alg_interpretation(alg::RKMilCommute{interpretation}) where {interpretation} = interpretation
 
 alg_compatible(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = true
 

@@ -6,45 +6,45 @@
 @compat abstract type StochasticDiffEqRODEAdaptiveAlgorithm <: StochasticDiffEqRODEAlgorithm end
 @compat abstract type StochasticDiffEqRODECompositeAlgorithm <: StochasticDiffEqRODEAlgorithm end
 
-immutable EM <: StochasticDiffEqAlgorithm end
-immutable SplitEM <: StochasticDiffEqAlgorithm end
+struct EM <: StochasticDiffEqAlgorithm end
+struct SplitEM <: StochasticDiffEqAlgorithm end
 
-immutable IIF1M{F} <: StochasticDiffEqAlgorithm
+struct IIF1M{F} <: StochasticDiffEqAlgorithm
   nlsolve::F
 end
 Base.@pure IIF1M(;nlsolve=NLSOLVEJL_SETUP()) = IIF1M{typeof(nlsolve)}(nlsolve)
 
-immutable IIF2M{F} <: StochasticDiffEqAlgorithm
+struct IIF2M{F} <: StochasticDiffEqAlgorithm
   nlsolve::F
 end
 Base.@pure IIF2M(;nlsolve=NLSOLVEJL_SETUP()) = IIF2M{typeof(nlsolve)}(nlsolve)
 
-immutable IIF1Mil{F} <: StochasticDiffEqAlgorithm
+struct IIF1Mil{F} <: StochasticDiffEqAlgorithm
   nlsolve::F
 end
 Base.@pure IIF1Mil(;nlsolve=NLSOLVEJL_SETUP()) = IIF1Mil{typeof(nlsolve)}(nlsolve)
 
-immutable EulerHeun <: StochasticDiffEqAlgorithm end
-immutable RKMil{interpretation} <: StochasticDiffEqAlgorithm end
+struct EulerHeun <: StochasticDiffEqAlgorithm end
+struct RKMil{interpretation} <: StochasticDiffEqAlgorithm end
 Base.@pure RKMil(;interpretation=:Ito) = RKMil{interpretation}()
 
-immutable RKMilCommute{interpretation} <: StochasticDiffEqAlgorithm end
+struct RKMilCommute{interpretation} <: StochasticDiffEqAlgorithm end
 Base.@pure RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
 
-@with_kw immutable SRA{TabType} <: StochasticDiffEqAdaptiveAlgorithm
+@with_kw struct SRA{TabType} <: StochasticDiffEqAdaptiveAlgorithm
   tableau::TabType = constructSRA1()
 end
-@with_kw immutable SRI{TabType} <: StochasticDiffEqAdaptiveAlgorithm
+@with_kw struct SRI{TabType} <: StochasticDiffEqAdaptiveAlgorithm
   tableau::TabType = constructSRIW1()
   error_terms = 4
 end
 
-immutable SRIW1 <: StochasticDiffEqAdaptiveAlgorithm end
-immutable SRA1 <: StochasticDiffEqAdaptiveAlgorithm end
+struct SRIW1 <: StochasticDiffEqAdaptiveAlgorithm end
+struct SRA1 <: StochasticDiffEqAdaptiveAlgorithm end
 
-immutable StochasticCompositeAlgorithm{T,F} <: StochasticDiffEqCompositeAlgorithm
+struct StochasticCompositeAlgorithm{T,F} <: StochasticDiffEqCompositeAlgorithm
   algs::T
   choice_function::F
 end
 
-immutable RandomEM <: StochasticDiffEqRODEAlgorithm end
+struct RandomEM <: StochasticDiffEqRODEAlgorithm end
