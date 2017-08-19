@@ -13,3 +13,4 @@ StaticArrays
 Reexport
 RandomNumbers
 MuladdMacro
+ForwardDiff

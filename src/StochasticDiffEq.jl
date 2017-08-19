@@ -39,9 +39,11 @@ module StochasticDiffEq
   include("misc_utils.jl")
   include("algorithms.jl")
   include("options_type.jl")
+  include("derivative_wrappers.jl")
   include("interp_func.jl")
   include("caches/basic_method_caches.jl")
   include("caches/iif_caches.jl")
+  include("caches/sdirk_caches.jl")
   include("caches/rossler_caches.jl")
   include("integrators/type.jl")
   include("dense.jl")
@@ -56,6 +58,7 @@ module StochasticDiffEq
   include("integrators/iif.jl")
   include("integrators/sri.jl")
   include("integrators/sra.jl")
+  include("integrators/sdirk.jl")
   include("integrators/split.jl")
   include("integrators/composite_integrator.jl")
   include("tableaus.jl")
@@ -68,6 +71,8 @@ module StochasticDiffEq
   export EulerHeun
 
   export SplitEM, IIF1M, IIF2M, IIF1Mil
+
+  export ImplicitEM
 
   export StochasticDiffEqRODEAlgorithm, StochasticDiffEqRODEAdaptiveAlgorithm,
          StochasticDiffEqRODECompositeAlgorithm
