@@ -15,7 +15,8 @@ module StochasticDiffEq
         DataStructures, Roots, DiffEqNoiseProcess,
         NLsolve, ForwardDiff, StaticArrays, MuladdMacro
 
-  import DiffEqBase: ODE_DEFAULT_NORM, ODE_DEFAULT_ISOUTOFDOMAIN, ODE_DEFAULT_PROG_MESSAGE, ODE_DEFAULT_UNSTABLE_CHECK
+  import DiffEqBase: ODE_DEFAULT_NORM, ODE_DEFAULT_ISOUTOFDOMAIN,
+         ODE_DEFAULT_PROG_MESSAGE, ODE_DEFAULT_UNSTABLE_CHECK
 
   import RecursiveArrayTools: chain
 
@@ -39,7 +40,9 @@ module StochasticDiffEq
   include("algorithms.jl")
   include("options_type.jl")
   include("interp_func.jl")
-  include("caches.jl")
+  include("caches/basic_method_caches.jl")
+  include("caches/iif_caches.jl")
+  include("caches/rossler_caches.jl")
   include("integrators/type.jl")
   include("dense.jl")
   include("callbacks.jl")
