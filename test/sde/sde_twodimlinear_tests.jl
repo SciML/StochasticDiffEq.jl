@@ -26,7 +26,19 @@ sim = test_convergence(dts,prob,EM(),numMonte=1000)
 sim = test_convergence(dts,prob,ImplicitEM(),numMonte=100)
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
 
+sim = test_convergence(dts,prob,ImplicitEM(theta=1),numMonte=100)
+@test abs(sim.𝒪est[:l2]-.5) < 0.1
+
+sim = test_convergence(dts,prob,ImplicitEM(symplectic=true),numMonte=100)
+@test abs(sim.𝒪est[:l2]-.5) < 0.1
+
 sim = test_convergence(dts,prob,ImplicitRKMil(),numMonte=100)
+@test abs(sim.𝒪est[:l2]-1) < 0.1
+
+sim = test_convergence(dts,prob,ImplicitRKMil(theta=1),numMonte=100)
+@test abs(sim.𝒪est[:l2]-1) < 0.1
+
+sim = test_convergence(dts,prob,ImplicitRKMil(symplectic=true),numMonte=100)
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
 sim2 = test_convergence(dts,prob,RKMil(),numMonte=100)

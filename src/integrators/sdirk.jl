@@ -1,9 +1,12 @@
 @muladd function perform_step!(integrator,
                                cache::Union{ImplicitEMConstantCache,
                                             ImplicitEulerHeunConstantCache,
-                                            ImplicitRKMilConstantCache},f=integrator.f)
+                                            ImplicitRKMilConstantCache},
+                                            f=integrator.f)
   @unpack t,dt,uprev,u = integrator
   @unpack uf = cache
+  theta = integrator.alg.theta
+  integrator.alg.symplectic ? a = dt/2 : a = dt
   uf.t = t
 
   # TODO: Stochastic extrapolants?
@@ -11,10 +14,10 @@
 
   if typeof(uprev) <: AbstractArray
     J = ForwardDiff.jacobian(uf,uprev)
-    W = I - dt*J
+    W = I - dt*theta*J
   else
     J = ForwardDiff.derivative(uf,uprev)
-    W = 1 - dt*J
+    W = 1 - dt*theta*J
   end
 
   z = u - uprev
@@ -25,16 +28,20 @@
   L = integrator.g(t,uprev)
   gtmp = L.*integrator.W.dW
 
+  if typeof(cache) <: ImplicitRKMilConstantCache || integrator.alg.theta != 1
+    ftmp = integrator.f(t,uprev)
+  else
+    ftmp = 0
+  end
+
   if typeof(cache) <: ImplicitEulerHeunConstantCache
     utilde = @. uprev + gtmp
     gtmp = @. ((integrator.g(t,utilde) + L)/2)*integrator.W.dW
   end
 
-
-
   if typeof(cache) <: ImplicitRKMilConstantCache
     if alg_interpretation(integrator.alg) == :Ito
-      K = @muladd uprev .+ dt.*integrator.f(t,uprev)
+      K = @muladd uprev .+ dt.*ftmp
       utilde = @.  K + L*integrator.sqdt
       mil_correction = (integrator.g(t,utilde).-L)./(2 .* integrator.sqdt).*
                        (integrator.W.dW.^2 .- dt)
@@ -48,7 +55,13 @@
   end
 
   iter += 1
-  b = -z .+ dt.*f(t+dt,uprev + z + gtmp)
+  if integrator.alg.symplectic
+    # u = uprev + z then  u = (uprev+u)/2 = (uprev+uprev+z)/2 = uprev + z/2
+    u = @. uprev + z/2 + gtmp/2
+  else
+    u = @. uprev + dt*(1-theta)*ftmp + theta*z + gtmp
+  end
+  b = -z .+ dt.*f(t+a,u)
   dz = W\b
   ndz = integrator.opts.internalnorm(dz)
   z = z + dz
@@ -63,7 +76,13 @@
   fail_convergence = false
   while (do_newton || iter < integrator.alg.min_newton_iter) && iter < integrator.alg.max_newton_iter
     iter += 1
-    b = -z .+ dt.*f(t+dt,uprev + z + gtmp)
+    if integrator.alg.symplectic
+      # u = uprev + z then  u = (uprev+u)/2 = (uprev+uprev+z)/2 = uprev + z/2
+      u = @. uprev + z/2 + gtmp/2
+    else
+      u = @. uprev + dt*(1-theta)*ftmp + theta*z + gtmp
+    end
+    b = -z .+ dt.*f(t+a,u)
     dz = W\b
     ndzprev = ndz
     ndz = integrator.opts.internalnorm(dz)
@@ -77,6 +96,12 @@
     z = z + dz
   end
 
+  if integrator.alg.symplectic
+    u = @. uprev + z + gtmp
+  else
+    u = @. uprev + dt*(1-theta)*ftmp + theta*z + gtmp
+  end
+
   if (iter >= integrator.alg.max_newton_iter && do_newton) || fail_convergence
     integrator.force_stepfail = true
     return
@@ -84,7 +109,7 @@
 
   cache.ηold = η
   cache.newton_iters = iter
-  u = uprev + z + gtmp
+  u = @. uprev + dt*(1-theta)*ftmp + theta*z + gtmp
 
   #=
   if integrator.opts.adaptive && integrator.success_iter > 0
@@ -107,10 +132,11 @@ end
                                             ImplicitRKMilCache},
                                f=integrator.f)
   @unpack t,dt,uprev,u = integrator
-  @unpack uf,du1,dz,z,k,J,W,jac_config,gtmp,gtmp2 = cache
+  @unpack uf,du1,dz,z,k,J,W,jac_config,gtmp,gtmp2,tmp = cache
+  integrator.alg.symplectic ? a = dt/2 : a = dt
   dW = integrator.W.dW
   mass_matrix = integrator.sol.prob.mass_matrix
-
+  theta = integrator.alg.theta
 
   if integrator.success_iter > 0 && !integrator.u_modified && integrator.alg.extrapolant == :interpolant
     current_extrapolant!(u,t+dt,integrator)
@@ -141,8 +167,9 @@ end
     end
     if integrator.iter < 1 || new_jac || abs(dt - (t-integrator.tprev)) > 100eps()
       new_W = true
+      thetadt = dt*theta
       for j in 1:length(u), i in 1:length(u)
-          @inbounds W[i,j] = mass_matrix[i,j]-dt*J[i,j]
+          @inbounds W[i,j] = mass_matrix[i,j]-thetadt*J[i,j]
       end
     else
       new_W = false
@@ -154,6 +181,12 @@ end
   # Handle noise computations
 
   integrator.g(t,uprev,gtmp)
+
+  if typeof(cache) <: ImplicitRKMilConstantCache || integrator.alg.theta != 1
+    f(t,uprev,tmp)
+  else
+    tmp .= 0
+  end
 
   if is_diagonal_noise(integrator.sol.prob)
     @tight_loop_macros for i in eachindex(u)
@@ -179,7 +212,6 @@ end
   if typeof(cache) <: ImplicitRKMilCache
     gtmp3 = cache.gtmp3
     if alg_interpretation(integrator.alg) == :Ito
-      f(t,uprev,du1)
       @. z = @muladd uprev + dt*du1 + gtmp*integrator.sqdt
       integrator.g(t,z,gtmp3)
       @. gtmp2 += (gtmp3-gtmp)/(2integrator.sqdt)*(dW.^2 - dt)
@@ -196,9 +228,13 @@ end
   iter = 0
   κ = cache.κ
   tol = cache.tol
-  @. u += gtmp2
+  if integrator.alg.symplectic
+    @. u = uprev + z/2 + gtmp2/2
+  else
+    @. u = uprev + dt*(1-theta)*tmp + theta*z + gtmp2
+  end
   iter += 1
-  f(t+dt,u,k)
+  f(t+a,u,k)
   scale!(k,dt)
   if mass_matrix == I
     k .-= z
@@ -213,7 +249,6 @@ end
   end
   ndz = integrator.opts.internalnorm(dz)
   z .+= dz
-  @. u = uprev + z + gtmp2
 
   η = max(cache.ηold,eps(first(u)))^(0.8)
   if integrator.success_iter > 0
@@ -225,7 +260,12 @@ end
   fail_convergence = false
   while (do_newton || iter < integrator.alg.min_newton_iter) && iter < integrator.alg.max_newton_iter
     iter += 1
-    f(t+dt,u,k)
+    if integrator.alg.symplectic
+      @. u = uprev + z/2 + gtmp2/2
+    else
+      @. u = uprev + dt*(1-theta)*tmp + theta*z + gtmp2
+    end
+    f(t+a,u,k)
     scale!(k,dt)
     if mass_matrix == I
       k .-= z
@@ -248,7 +288,12 @@ end
     η = θ/(1-θ)
     do_newton = (η*ndz > κ*tol)
     z .+= dz
+  end
+
+  if integrator.alg.symplectic
     @. u = uprev + z + gtmp2
+  else
+    @. u = uprev + dt*(1-theta)*tmp + theta*z + gtmp2
   end
 
   if (iter >= integrator.alg.max_newton_iter && do_newton) || fail_convergence
