@@ -7,6 +7,7 @@ isadaptive(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECom
 
 alg_order(alg::EM) = 1//2
 alg_order(alg::ImplicitEM) = 1//2
+alg_order(alg::ImplicitMil) = 1//1
 alg_order(alg::SplitEM) = 1//2
 alg_order(alg::IIF1M) = 1//2
 alg_order(alg::IIF2M) = 1//2
@@ -30,6 +31,7 @@ alg_interpretation(alg::StochasticDiffEqAlgorithm) = :Ito
 alg_interpretation(alg::EulerHeun) = :Stratonovich
 alg_interpretation(alg::RKMil{interpretation}) where {interpretation} = interpretation
 alg_interpretation(alg::RKMilCommute{interpretation}) where {interpretation} = interpretation
+alg_interpretation(alg::ImplicitMil{CS,AD,F,K,T,T2,Controller,interpretation}) where {CS,AD,F,K,T,T2,Controller,interpretation} = interpretation
 
 alg_compatible(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = true
 
@@ -38,6 +40,7 @@ alg_compatible(prob,alg::SRIW1) = is_diagonal_noise(prob)
 alg_compatible(prob,alg::SRA) = is_diagonal_noise(prob)
 alg_compatible(prob,alg::SRA1) = is_diagonal_noise(prob)
 alg_compatible(prob,alg::RKMil) = is_diagonal_noise(prob)
+alg_compatible(prob,alg::ImplicitMil) = is_diagonal_noise(prob)
 
 alg_needs_extra_process(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = false
 alg_needs_extra_process(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = max((alg_needs_extra_process(a) for a in alg.algs)...)

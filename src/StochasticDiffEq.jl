@@ -72,7 +72,7 @@ module StochasticDiffEq
 
   export SplitEM, IIF1M, IIF2M, IIF1Mil
 
-  export ImplicitEM
+  export ImplicitEM, ImplicitMil
 
   export StochasticDiffEqRODEAlgorithm, StochasticDiffEqRODEAdaptiveAlgorithm,
          StochasticDiffEqRODECompositeAlgorithm

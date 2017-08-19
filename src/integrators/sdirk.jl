@@ -1,4 +1,6 @@
-@muladd function perform_step!(integrator,cache::ImplicitEMConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,
+                               cache::Union{ImplicitEMConstantCache,
+                                            ImplicitMilConstantCache},f=integrator.f)
   @unpack t,dt,uprev,u = integrator
   @unpack uf = cache
   uf.t = t
@@ -19,7 +21,23 @@
   κ = cache.κ
   tol = cache.tol
 
-  gtmp = integrator.g(t,uprev).*integrator.W.dW
+  L = integrator.g(t,uprev)
+  gtmp = L.*integrator.W.dW
+
+  if typeof(cache) <: ImplicitMilConstantCache
+    if alg_interpretation(integrator.alg) == :Ito
+      K = @muladd uprev .+ dt.*integrator.f(t,uprev)
+      utilde = @.  K + L*integrator.sqdt
+      mil_correction = (integrator.g(t,utilde).-L)./(2 .* integrator.sqdt).*
+                       (integrator.W.dW.^2 .- dt)
+      gtmp += mil_correction
+    elseif alg_interpretation(integrator.alg) == :Stratonovich
+      utilde = @. uprev + L*integrator.sqdt
+      mil_correction = (integrator.g(t,utilde).-L)./(2 .* integrator.sqdt).*
+                       (integrator.W.dW.^2)
+      gtmp += mil_correction
+    end
+  end
 
   iter += 1
   b = -z .+ dt.*f(t+dt,uprev + z + gtmp)
@@ -75,7 +93,9 @@
   integrator.u = u
 end
 
-@muladd function perform_step!(integrator,cache::ImplicitEMCache,f=integrator.f)
+@muladd function perform_step!(integrator,
+                               cache::Union{ImplicitEMCache,ImplicitMilCache},
+                               f=integrator.f)
   @unpack t,dt,uprev,u = integrator
   @unpack uf,du1,dz,z,k,J,W,jac_config,gtmp,gtmp2 = cache
   dW = integrator.W.dW
@@ -119,15 +139,35 @@ end
     end
   end
 
+  ##############################################################################
+
+  # Handle noise computations
+
   integrator.g(t,uprev,gtmp)
 
   if is_diagonal_noise(integrator.sol.prob)
     @tight_loop_macros for i in eachindex(u)
-      @inbounds gtmp2[i]*=dW[i] # gtmp2 === gtmp
+      @inbounds gtmp2[i]=gtmp[i]*dW[i]
     end
   else
     A_mul_B!(gtmp2,gtmp,dW)
   end
+
+  if typeof(cache) <: ImplicitMilCache
+    gtmp3 = cache.gtmp3
+    if alg_interpretation(integrator.alg) == :Ito
+      f(t,uprev,du1)
+      @. z = @muladd uprev + dt*du1 + gtmp*integrator.sqdt
+      integrator.g(t,z,gtmp3)
+      @. gtmp2 += (gtmp3-gtmp)/(2integrator.sqdt)*(dW.^2 - dt)
+    elseif alg_interpretation(integrator.alg) == :Stratonovich
+      @. z = @muladd uprev + gtmp*integrator.sqdt
+      integrator.g(t,z,gtmp3)
+      @. gtmp2 += (gtmp3-gtmp)/(2integrator.sqdt)*(dW.^2)
+    end
+  end
+
+  ##############################################################################
 
   @. z = u - uprev
   iter = 0
