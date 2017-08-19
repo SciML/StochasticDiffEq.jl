@@ -45,3 +45,6 @@ alg_needs_extra_process(alg::SRI) = true
 alg_needs_extra_process(alg::SRIW1) = true
 alg_needs_extra_process(alg::SRA) = true
 alg_needs_extra_process(alg::SRA1) = true
+
+alg_autodiff(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
+get_chunksize(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = CS

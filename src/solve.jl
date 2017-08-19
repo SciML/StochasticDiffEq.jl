@@ -25,6 +25,7 @@ function init(
   adaptive=isadaptive(alg),gamma=9//10,
   abstol=1e-2,reltol=1e-2,
   qmax=qmax_default(alg),qmin=qmin_default(alg),
+  failfactor = 2,
   qoldinit=1//10^4, fullnormalize=true,
   beta2=beta2_default(alg),
   beta1=beta1_default(alg,beta2),
@@ -215,6 +216,7 @@ function init(
 
   opts = SDEOptions(maxiters,timeseries_steps,save_everystep,adaptive,map(uEltype,abstol),
     map(uEltypeNoUnits,reltol),tTypeNoUnits(gamma),tTypeNoUnits(qmax),tTypeNoUnits(qmin),
+    tTypeNoUnits(failfactor),
     dtmax,dtmin,internalnorm,save_idxs,
     tstops_internal,saveat_internal,d_discontinuities_internal,
     userdata,
@@ -330,6 +332,8 @@ function init(
   isout = false
   accept_step = false
   u_modified = false
+  last_stepfail = false
+  force_stepfail = false
   tprev = t
   iter = 0
   success_iter = 0
@@ -361,7 +365,8 @@ function init(
                   uEltypeNoUnits,typeof(W),rateType,typeof(sol),typeof(cache),
                   typeof(prog),FType,GType,typeof(opts),typeof(noise)}(
                   f,g,noise,uprev,tprev,t,u,tType(dt),tType(dt),tType(dt),dtcache,T,tdir,
-                  just_hit_tstop,isout,accept_step,dtchangeable,u_modified,
+                  just_hit_tstop,isout,accept_step,last_stepfail,force_stepfail,
+                  dtchangeable,u_modified,
                   saveiter,
                   alg,sol,
                   cache,sqdt,W,
@@ -392,7 +397,6 @@ function solve!(integrator::SDEIntegrator)
     handle_tstop!(integrator)
   end
   postamble!(integrator)
-  #for i in integrator end
 
   if typeof(integrator.sol.prob.f) <: Tuple
     f = integrator.sol.prob.f[1]

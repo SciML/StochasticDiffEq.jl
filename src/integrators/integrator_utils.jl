@@ -9,7 +9,7 @@
     elseif integrator.opts.adaptive && !integrator.accept_step
       if integrator.isout
         integrator.dtnew = integrator.dt*integrator.opts.qmin
-      else
+      elseif !integrator.force_stepfail
         integrator.dtnew = integrator.dt/min(inv(integrator.opts.qmin),integrator.q11/integrator.opts.gamma)
       end
       fix_dtnew_at_bounds!(integrator)
@@ -21,6 +21,7 @@
   end
 
   integrator.iter += 1
+  integrator.force_stepfail = false
   choose_algorithm!(integrator,integrator.cache)
 end
 
@@ -40,7 +41,8 @@ end
       end
     elseif integrator.dtcache == zero(integrator.t) && integrator.dtchangeable # Use integrator.opts.tstops
       integrator.dt = integrator.tdir*abs(top(tstops)-integrator.t)
-    elseif integrator.dtchangeable # always try to step! with dtcache, but lower if a tstops
+    elseif integrator.dtchangeable && !integrator.force_stepfail
+      # always try to step! with dtcache, but lower if a tstops
       integrator.dt = integrator.tdir*min(abs(integrator.dtcache),abs(top(tstops)-integrator.t)) # step! to the end
     end
   end
@@ -126,7 +128,11 @@ end
 
 @inline function loopfooter!(integrator::SDEIntegrator)
   ttmp = integrator.t + integrator.dt
-  if integrator.opts.adaptive
+  if integrator.force_stepfail
+      integrator.last_stepfail = true
+      integrator.accept_step = false
+      integrator.dtnew = integrator.dt/integrator.opts.failfactor
+  elseif integrator.opts.adaptive
     @fastmath integrator.q11 = integrator.EEst^integrator.opts.beta1
     @fastmath integrator.q = integrator.q11/(integrator.qold^integrator.opts.beta2)
     @fastmath integrator.q = max(inv(integrator.opts.qmax),min(inv(integrator.opts.qmin),integrator.q/integrator.opts.gamma))
@@ -134,6 +140,7 @@ end
     integrator.isout = integrator.opts.isoutofdomain(ttmp,integrator.u)
     integrator.accept_step = (!integrator.isout && integrator.EEst <= 1.0) || (integrator.opts.force_dtmin && integrator.dt <= integrator.opts.dtmin)
     if integrator.accept_step # Accepted
+      integrator.last_stepfail = false
       integrator.tprev = integrator.t
       if typeof(integrator.t)<:AbstractFloat && !isempty(integrator.opts.tstops)
         tstop = top(integrator.opts.tstops)
@@ -173,18 +180,6 @@ end
     integrator.dtpropose = max(integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
   else
     integrator.dtpropose = min(integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end
-  end
-  modify_dtpropose_for_tstops!(integrator)
-end
-
-@inline function modify_dtpropose_for_tstops!(integrator)
-  tstops = integrator.opts.tstops
-  if !isempty(tstops)
-    if integrator.tdir > 0
-      integrator.dtpropose = min(abs(integrator.dtpropose),abs(top(tstops)-integrator.t)) # step! to the end
-    else
-      integrator.dtpropose = -min(abs(integrator.dtpropose),abs(top(tstops)-integrator.t))
-    end
   end
 end
 

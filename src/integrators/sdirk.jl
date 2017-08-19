@@ -77,7 +77,7 @@ end
 
 @muladd function perform_step!(integrator,cache::ImplicitEMCache,f=integrator.f)
   @unpack t,dt,uprev,u = integrator
-  @unpack uf,du1,dz,z,k,J,W,jac_config = cache
+  @unpack uf,du1,dz,z,k,J,W,jac_config,gtmp = cache
   mass_matrix = integrator.sol.prob.mass_matrix
 
 
@@ -118,11 +118,15 @@ end
     end
   end
 
+  integrator.g(t,uprev,gtmp)
+  gtmp .*= integrator.W.dW # Diagonal noise
+
+
   @. z = u - uprev
   iter = 0
   κ = cache.κ
   tol = cache.tol
-
+  @. u += gtmp
   iter += 1
   f(t+dt,u,k)
   scale!(k,dt)
@@ -139,7 +143,7 @@ end
   end
   ndz = integrator.opts.internalnorm(dz)
   z .+= dz
-  @. u = uprev + z
+  @. u = uprev + z + gtmp
 
   η = max(cache.ηold,eps(first(u)))^(0.8)
   if integrator.success_iter > 0
@@ -174,7 +178,7 @@ end
     η = θ/(1-θ)
     do_newton = (η*ndz > κ*tol)
     z .+= dz
-    @. u = uprev + z
+    @. u = uprev + z + gtmp
   end
 
   if (iter >= integrator.alg.max_newton_iter && do_newton) || fail_convergence
@@ -184,7 +188,7 @@ end
 
   cache.ηold = η
   cache.newton_iters = iter
-
+  #=
   if integrator.opts.adaptive && integrator.success_iter > 0
     # Use 2rd divided differences a la SPICE and Shampine
     uprev2 = integrator.uprev2
@@ -200,6 +204,5 @@ end
   else
     integrator.EEst = 1
   end
-
-  f(t+dt,u,integrator.fsallast)
+  =#
 end

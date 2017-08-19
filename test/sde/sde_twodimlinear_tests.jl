@@ -8,6 +8,7 @@ sol = solve(prob,EM(),dt=1/2^(3))
 sol = solve(prob,RKMil(),dt=1/2^(3))
 sol = solve(prob,SRI(),dt=1/2^(3))
 sol = solve(prob,SRIW1(),dt=1/2^(3))
+sol = solve(prob,ImplicitEM(),dt=1/2^(3))
 
 sol = solve(prob,SRIW1(),dt=1/2^(3),save_everystep=false)
 
@@ -19,7 +20,9 @@ println("Convergence Test on 2D Linear")
 dts = 1./2.^(7:-1:4) #14->7 good plot
 
 sim = test_convergence(dts,prob,EM(),numMonte=1000)
+@test abs(sim.𝒪est[:l2]-.5) < 0.1
 
+sim = test_convergence(dts,prob,ImplicitEM(),numMonte=100)
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
 
 sim2 = test_convergence(dts,prob,RKMil(),numMonte=100)

@@ -8,6 +8,7 @@ mutable struct SDEOptions{tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsType,ECType,ST
   gamma::tTypeNoUnits
   qmax::tTypeNoUnits
   qmin::tTypeNoUnits
+  failfactor::tTypeNoUnits
   dtmax::tType
   dtmin::tType
   internalnorm::F2

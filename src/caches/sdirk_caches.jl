@@ -1,13 +1,13 @@
-mutable struct ImplicitEMCache{uType,rateType,J,JC,UF,uEltypeNoUnits} <: StochasticDiffEqMutableCache
+mutable struct ImplicitEMCache{uType,rateType,J,JC,UF,uEltypeNoUnits,noiseRateType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
-  uprev2::uType
   du1::rateType
   fsalfirst::rateType
   k::rateType
   z::uType
   dz::uType
   tmp::uType
+  gtmp::noiseRateType
   J::J
   W::J
   jac_config::JC
@@ -27,7 +27,7 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prot
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
   W = similar(J)
   z = similar(u)
-  dz = similar(u); tmp = similar(u)
+  dz = similar(u); tmp = similar(u); gtmp = similar(noise_rate_prototype)
   fsalfirst = zeros(rate_prototype)
   k = zeros(rate_prototype)
   vfr = VectorFReturn(f,size(u))
@@ -48,9 +48,11 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prot
   if alg.tol != nothing
     tol = alg.tol
   else
+    reltol = 1e-5 # TODO: generalize
     tol = min(0.03,first(reltol)^(0.5))
   end
-  ImplicitEMCache(u,uprev,uprev2,du1,fsalfirst,k,z,dz,tmp,J,W,jac_config,uf,ηold,κ,tol,10000)
+  ImplicitEMCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,J,W,jac_config,uf,
+                  ηold,κ,tol,10000)
 end
 
 mutable struct ImplicitEMConstantCache{F,uEltypeNoUnits} <: StochasticDiffEqConstantCache
