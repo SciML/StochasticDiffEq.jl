@@ -6,6 +6,7 @@ isadaptive(alg::Union{StochasticDiffEqAdaptiveAlgorithm,StochasticDiffEqRODEAdap
 isadaptive(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = isadaptive(alg.algs[1])
 
 alg_order(alg::EM) = 1//2
+alg_order(alg::ImplicitEM) = 1//2
 alg_order(alg::SplitEM) = 1//2
 alg_order(alg::IIF1M) = 1//2
 alg_order(alg::IIF2M) = 1//2

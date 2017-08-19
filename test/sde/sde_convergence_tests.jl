@@ -3,6 +3,13 @@ srand(100)
 dts = 1./2.^(10:-1:2) #14->7 good plot
 
 prob = prob_sde_wave
+sol = solve(prob,ImplicitEM(),dt=1/10)
+
+
+
+
+sim  = test_convergence(dts,prob,ImplicitEM(),numMonte=Int(1e1))
+@test abs(sim.𝒪est[:l2]-.5) < 0.1
 sim  = test_convergence(dts,prob,EM(),numMonte=Int(1e1))
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
 sim2 = test_convergence(dts,prob,RKMil(),numMonte=Int(2e2))

@@ -21,9 +21,8 @@ end
 u_cache(c::ImplicitEMCache)    = (c.uprev2,c.z,c.dz)
 du_cache(c::ImplicitEMCache)   = (c.k,c.fsalfirst)
 
-function alg_cache(alg::ImplicitEM,u,rate_prototype,uEltypeNoUnits,
-                   tTypeNoUnits,uprev,uprev2,f,t,reltol,::Type{Val{true}})
-
+function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
+                   uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   du1 = zeros(rate_prototype)
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
   W = similar(J)
@@ -62,8 +61,8 @@ mutable struct ImplicitEMConstantCache{F,uEltypeNoUnits} <: StochasticDiffEqCons
   newton_iters::Int
 end
 
-function alg_cache(alg::ImplicitEM,u,rate_prototype,uEltypeNoUnits,
-                   tTypeNoUnits,uprev,uprev2,f,t,reltol,::Type{Val{false}})
+function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
+                   uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   uf = UDerivativeWrapper(f,t)
   ηold = one(uEltypeNoUnits)
 
@@ -75,6 +74,7 @@ function alg_cache(alg::ImplicitEM,u,rate_prototype,uEltypeNoUnits,
   if alg.tol != nothing
     tol = alg.tol
   else
+    reltol = 1e-5 # TODO: generalize
     tol = min(0.03,first(reltol)^(0.5))
   end
 

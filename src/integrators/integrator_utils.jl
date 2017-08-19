@@ -4,6 +4,7 @@
   # Accept or reject the step
   if integrator.iter > 0
     if (integrator.opts.adaptive && integrator.accept_step) || !integrator.opts.adaptive
+      integrator.success_iter += 1
       apply_step!(integrator)
     elseif integrator.opts.adaptive && !integrator.accept_step
       if integrator.isout

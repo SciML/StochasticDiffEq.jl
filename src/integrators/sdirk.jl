@@ -19,7 +19,7 @@
   κ = cache.κ
   tol = cache.tol
 
-  gtmp = integrator.g(t,uprev)
+  gtmp = integrator.g(t,uprev).*integrator.W.dW
 
   iter += 1
   b = -z .+ dt.*f(t+dt,uprev + z + gtmp)
@@ -60,6 +60,7 @@
   cache.newton_iters = iter
   u = uprev + z + gtmp
 
+  #=
   if integrator.opts.adaptive && integrator.success_iter > 0
     # Use 2rd divided differences a la SPICE and Shampine
     uprev2 = integrator.uprev2
@@ -70,6 +71,7 @@
   else
     integrator.EEst = 1
   end
+  =#
   integrator.u = u
 end
 

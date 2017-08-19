@@ -332,6 +332,7 @@ function init(
   u_modified = false
   tprev = t
   iter = 0
+  success_iter = 0
   q11 = tTypeNoUnits(1)
 
   rateType = typeof(u/t) ## Can be different if united
@@ -364,7 +365,7 @@ function init(
                   saveiter,
                   alg,sol,
                   cache,sqdt,W,
-                  opts,iter,prog,EEst,q,
+                  opts,iter,success_iter,prog,EEst,q,
                   tTypeNoUnits(qoldinit),q11)
 
   integrator.W.dt = integrator.dt

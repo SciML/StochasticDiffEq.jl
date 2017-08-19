@@ -25,6 +25,7 @@ mutable struct SDEIntegrator{T1,uType,uEltype,tType,tTypeNoUnits,uEltypeNoUnits,
   W::randType
   opts::OType
   iter::Int
+  success_iter::Int
   prog::progType
   EEst::tTypeNoUnits
   q::tTypeNoUnits
