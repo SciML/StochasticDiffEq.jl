@@ -80,7 +80,7 @@ Base.@pure ImplicitEM(;chunk_size=0,autodiff=true,diff_type=:central,
                           linsolve,diff_type,κ,tol,extrapolant,min_newton_iter,
                           max_newton_iter,new_jac_conv_bound)
 
-struct ImplicitMil{CS,AD,F,K,T,T2,Controller,interpretation} <: StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}
+struct ImplicitEulerHeun{CS,AD,F,K,T,T2,Controller} <: StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}
   linsolve::F
   diff_type::Symbol
   κ::K
@@ -90,12 +90,32 @@ struct ImplicitMil{CS,AD,F,K,T,T2,Controller,interpretation} <: StochasticDiffEq
   max_newton_iter::Int
   new_jac_conv_bound::T2
 end
-Base.@pure ImplicitMil(;chunk_size=0,autodiff=true,diff_type=:central,
+Base.@pure ImplicitEulerHeun(;chunk_size=0,autodiff=true,diff_type=:central,
+                          linsolve=DEFAULT_LINSOLVE,κ=nothing,tol=nothing,
+                          extrapolant=:constant,min_newton_iter=1,
+                          max_newton_iter=7,new_jac_conv_bound = 1e-3,
+                          controller = :Predictive) =
+                          ImplicitEulerHeun{chunk_size,autodiff,typeof(linsolve),
+                          typeof(κ),typeof(tol),typeof(new_jac_conv_bound),controller}(
+                          linsolve,diff_type,κ,tol,extrapolant,min_newton_iter,
+                          max_newton_iter,new_jac_conv_bound)
+
+struct ImplicitRKMil{CS,AD,F,K,T,T2,Controller,interpretation} <: StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}
+  linsolve::F
+  diff_type::Symbol
+  κ::K
+  tol::T
+  extrapolant::Symbol
+  min_newton_iter::Int
+  max_newton_iter::Int
+  new_jac_conv_bound::T2
+end
+Base.@pure ImplicitRKMil(;chunk_size=0,autodiff=true,diff_type=:central,
                           linsolve=DEFAULT_LINSOLVE,κ=nothing,tol=nothing,
                           extrapolant=:constant,min_newton_iter=1,
                           max_newton_iter=7,new_jac_conv_bound = 1e-3,
                           controller = :Predictive,interpretation=:Ito) =
-                          ImplicitMil{chunk_size,autodiff,typeof(linsolve),
+                          ImplicitRKMil{chunk_size,autodiff,typeof(linsolve),
                           typeof(κ),typeof(tol),typeof(new_jac_conv_bound),
                           controller,interpretation}(
                           linsolve,diff_type,κ,tol,extrapolant,min_newton_iter,

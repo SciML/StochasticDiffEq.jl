@@ -1,6 +1,7 @@
 @muladd function perform_step!(integrator,
                                cache::Union{ImplicitEMConstantCache,
-                                            ImplicitMilConstantCache},f=integrator.f)
+                                            ImplicitEulerHeunConstantCache,
+                                            ImplicitRKMilConstantCache},f=integrator.f)
   @unpack t,dt,uprev,u = integrator
   @unpack uf = cache
   uf.t = t
@@ -24,7 +25,14 @@
   L = integrator.g(t,uprev)
   gtmp = L.*integrator.W.dW
 
-  if typeof(cache) <: ImplicitMilConstantCache
+  if typeof(cache) <: ImplicitEulerHeunConstantCache
+    utilde = @. uprev + gtmp
+    gtmp = @. ((integrator.g(t,utilde) + L)/2)*integrator.W.dW
+  end
+
+
+
+  if typeof(cache) <: ImplicitRKMilConstantCache
     if alg_interpretation(integrator.alg) == :Ito
       K = @muladd uprev .+ dt.*integrator.f(t,uprev)
       utilde = @.  K + L*integrator.sqdt
@@ -94,7 +102,9 @@
 end
 
 @muladd function perform_step!(integrator,
-                               cache::Union{ImplicitEMCache,ImplicitMilCache},
+                               cache::Union{ImplicitEMCache,
+                                            ImplicitEulerHeunCache,
+                                            ImplicitRKMilCache},
                                f=integrator.f)
   @unpack t,dt,uprev,u = integrator
   @unpack uf,du1,dz,z,k,J,W,jac_config,gtmp,gtmp2 = cache
@@ -153,7 +163,20 @@ end
     A_mul_B!(gtmp2,gtmp,dW)
   end
 
-  if typeof(cache) <: ImplicitMilCache
+  if typeof(cache) <: ImplicitEulerHeunCache
+    @. z = uprev + gtmp2
+    integrator.g(t,z,gtmp2)
+    @. gtmp = (gtmp2 + gtmp)/2
+    if is_diagonal_noise(integrator.sol.prob)
+      @tight_loop_macros for i in eachindex(u)
+        @inbounds gtmp2[i]=gtmp[i]*dW[i]
+      end
+    else
+      A_mul_B!(gtmp2,gtmp,dW)
+    end
+  end
+
+  if typeof(cache) <: ImplicitRKMilCache
     gtmp3 = cache.gtmp3
     if alg_interpretation(integrator.alg) == :Ito
       f(t,uprev,du1)
