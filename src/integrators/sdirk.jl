@@ -77,7 +77,8 @@ end
 
 @muladd function perform_step!(integrator,cache::ImplicitEMCache,f=integrator.f)
   @unpack t,dt,uprev,u = integrator
-  @unpack uf,du1,dz,z,k,J,W,jac_config,gtmp = cache
+  @unpack uf,du1,dz,z,k,J,W,jac_config,gtmp,gtmp2 = cache
+  dW = integrator.W.dW
   mass_matrix = integrator.sol.prob.mass_matrix
 
 
@@ -119,14 +120,20 @@ end
   end
 
   integrator.g(t,uprev,gtmp)
-  gtmp .*= integrator.W.dW # Diagonal noise
 
+  if is_diagonal_noise(integrator.sol.prob)
+    @tight_loop_macros for i in eachindex(u)
+      @inbounds gtmp2[i]*=dW[i] # gtmp2 === gtmp
+    end
+  else
+    A_mul_B!(gtmp2,gtmp,dW)
+  end
 
   @. z = u - uprev
   iter = 0
   κ = cache.κ
   tol = cache.tol
-  @. u += gtmp
+  @. u += gtmp2
   iter += 1
   f(t+dt,u,k)
   scale!(k,dt)
@@ -143,7 +150,7 @@ end
   end
   ndz = integrator.opts.internalnorm(dz)
   z .+= dz
-  @. u = uprev + z + gtmp
+  @. u = uprev + z + gtmp2
 
   η = max(cache.ηold,eps(first(u)))^(0.8)
   if integrator.success_iter > 0
@@ -178,7 +185,7 @@ end
     η = θ/(1-θ)
     do_newton = (η*ndz > κ*tol)
     z .+= dz
-    @. u = uprev + z + gtmp
+    @. u = uprev + z + gtmp2
   end
 
   if (iter >= integrator.alg.max_newton_iter && do_newton) || fail_convergence

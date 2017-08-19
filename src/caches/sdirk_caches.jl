@@ -8,6 +8,7 @@ mutable struct ImplicitEMCache{uType,rateType,J,JC,UF,uEltypeNoUnits,noiseRateTy
   dz::uType
   tmp::uType
   gtmp::noiseRateType
+  gtmp2::rateType
   J::J
   W::J
   jac_config::JC
@@ -51,7 +52,14 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prot
     reltol = 1e-5 # TODO: generalize
     tol = min(0.03,first(reltol)^(0.5))
   end
-  ImplicitEMCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,J,W,jac_config,uf,
+
+  if is_diagonal_noise(prob)
+    gtmp2 = gtmp
+  else
+    gtmp2 = similar(rate_prototype)
+  end
+
+  ImplicitEMCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,J,W,jac_config,uf,
                   ηold,κ,tol,10000)
 end
 
