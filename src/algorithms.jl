@@ -80,7 +80,9 @@ Base.@pure ImplicitEM(;chunk_size=0,autodiff=true,diff_type=:central,
                           controller = :Predictive) =
                           ImplicitEM{chunk_size,autodiff,typeof(linsolve),
                           typeof(κ),typeof(tol),typeof(new_jac_conv_bound),controller}(
-                          linsolve,diff_type,κ,tol,theta,extrapolant,
+                          linsolve,diff_type,κ,tol,
+                          symplectic ? 1/2 : theta,
+                          extrapolant,
                           min_newton_iter,
                           max_newton_iter,new_jac_conv_bound,symplectic)
 
@@ -104,7 +106,8 @@ Base.@pure ImplicitEulerHeun(;chunk_size=0,autodiff=true,diff_type=:central,
                           controller = :Predictive) =
                           ImplicitEulerHeun{chunk_size,autodiff,typeof(linsolve),
                           typeof(κ),typeof(tol),typeof(new_jac_conv_bound),controller}(
-                          linsolve,diff_type,κ,tol,theta,
+                          linsolve,diff_type,κ,tol,
+                          symplectic ? 1/2 : theta,
                           extrapolant,min_newton_iter,
                           max_newton_iter,new_jac_conv_bound,symplectic)
 
@@ -129,7 +132,8 @@ Base.@pure ImplicitRKMil(;chunk_size=0,autodiff=true,diff_type=:central,
                           ImplicitRKMil{chunk_size,autodiff,typeof(linsolve),
                           typeof(κ),typeof(tol),typeof(new_jac_conv_bound),
                           controller,interpretation}(
-                          linsolve,diff_type,κ,tol,theta,
+                          linsolve,diff_type,κ,tol,
+                          symplectic ? 1/2 : theta,
                           extrapolant,min_newton_iter,
                           max_newton_iter,new_jac_conv_bound,symplectic)
 

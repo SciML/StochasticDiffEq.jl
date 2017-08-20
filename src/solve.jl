@@ -54,7 +54,7 @@ function init(
     if min((mm != I for mm in prob.mass_matrix)...)
       error("This solver is not able to use mass matrices.")
     end
-  elseif prob.mass_matrix != I
+  elseif prob.mass_matrix != I && !alg_mass_matrix_compatible(alg)
     error("This solver is not able to use mass matrices.")
   end
 

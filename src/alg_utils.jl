@@ -52,3 +52,15 @@ alg_needs_extra_process(alg::SRA1) = true
 
 alg_autodiff(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
 get_chunksize(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = CS
+
+alg_mass_matrix_compatible(alg::StochasticDiffEqAlgorithm) = false
+
+function alg_mass_matrix_compatible(alg::StochasticDiffEqNewtonAlgorithm)
+    if alg.symplectic
+        return true
+    elseif theta == 1
+        return true
+    else
+        error("Algorithm must be set as symplectic or theta=1 for mass matrices")
+    end
+end
