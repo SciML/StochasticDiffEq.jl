@@ -3,7 +3,7 @@
 
   # Accept or reject the step
   if integrator.iter > 0
-    if (integrator.opts.adaptive && integrator.accept_step) || !integrator.opts.adaptive
+    if ((integrator.opts.adaptive && integrator.accept_step) || !integrator.opts.adaptive) && !integrator.force_stepfail
       integrator.success_iter += 1
       apply_step!(integrator)
     elseif integrator.opts.adaptive && !integrator.accept_step
@@ -129,9 +129,13 @@ end
 @inline function loopfooter!(integrator::SDEIntegrator)
   ttmp = integrator.t + integrator.dt
   if integrator.force_stepfail
-      integrator.last_stepfail = true
-      integrator.accept_step = false
+    if integrator.opts.adaptive
       integrator.dtnew = integrator.dt/integrator.opts.failfactor
+    elseif integrator.last_stepfail
+      error("Newton steps could not converge and algorithm is not adaptive. Use a lower dt.")
+    end
+    integrator.last_stepfail = true
+    integrator.accept_step = false
   elseif integrator.opts.adaptive
     @fastmath integrator.q11 = integrator.EEst^integrator.opts.beta1
     @fastmath integrator.q = integrator.q11/(integrator.qold^integrator.opts.beta2)
@@ -159,6 +163,7 @@ end
     else
       integrator.t = ttmp
     end
+    integrator.last_stepfail = false
     integrator.accept_step = true
     integrator.dtpropose = integrator.dt
     handle_callbacks!(integrator)
