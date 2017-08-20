@@ -20,19 +20,13 @@
     W = 1 - dt*theta*J
   end
 
-  z = u - uprev
   iter = 0
   κ = cache.κ
   tol = cache.tol
 
   L = integrator.g(t,uprev)
+  ftmp = integrator.f(t,uprev)
   gtmp = L.*integrator.W.dW
-
-  if typeof(cache) <: ImplicitRKMilConstantCache || integrator.alg.theta != 1
-    ftmp = integrator.f(t,uprev)
-  else
-    ftmp = 0
-  end
 
   if typeof(cache) <: ImplicitEulerHeunConstantCache
     utilde = @. uprev + gtmp
@@ -52,6 +46,12 @@
                        (integrator.W.dW.^2)
       gtmp += mil_correction
     end
+  end
+
+  if integrator.alg.symplectic
+    z = zero(u) # constant extrapolation, justified by ODE IM
+  else
+    z = dt*ftmp # linear extrapolation
   end
 
   iter += 1
@@ -181,12 +181,7 @@ end
   # Handle noise computations
 
   integrator.g(t,uprev,gtmp)
-
-  if typeof(cache) <: ImplicitRKMilConstantCache || integrator.alg.theta != 1
-    f(t,uprev,tmp)
-  else
-    tmp .= 0
-  end
+  integrator.f(t,uprev,tmp)
 
   if is_diagonal_noise(integrator.sol.prob)
     @tight_loop_macros for i in eachindex(u)
@@ -212,7 +207,7 @@ end
   if typeof(cache) <: ImplicitRKMilCache
     gtmp3 = cache.gtmp3
     if alg_interpretation(integrator.alg) == :Ito
-      @. z = @muladd uprev + dt*du1 + gtmp*integrator.sqdt
+      @. z = @muladd uprev + dt*tmp + gtmp*integrator.sqdt
       integrator.g(t,z,gtmp3)
       @. gtmp2 += (gtmp3-gtmp)/(2integrator.sqdt)*(dW.^2 - dt)
     elseif alg_interpretation(integrator.alg) == :Stratonovich
@@ -224,7 +219,12 @@ end
 
   ##############################################################################
 
-  @. z = u - uprev
+  if integrator.alg.symplectic
+    @. z = zero(u) # Justified by ODE solvers, constrant extrapolation when IM
+  else
+    @. z = dt*tmp # linear extrapolation
+  end
+
   iter = 0
   κ = cache.κ
   tol = cache.tol
