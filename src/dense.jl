@@ -137,8 +137,8 @@ times ts (sorted), with values timeseries and derivatives ks
   @unpack ts,timeseries = id
   tdir = sign(ts[end]-ts[1])
   idx = sortperm(tvals,rev=tdir<0)
-  tvals[idx[end]] > ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
-  tvals[idx[1]] < ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
+  tdir*tvals[idx[end]] > tdir*ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
+  tdir*tvals[idx[1]] < tdir*ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
   i = 2 # Start the search thinking it's between ts[1] and ts[2]
   if typeof(idxs) <: Number
     vals = Vector{eltype(first(timeseries))}(length(tvals))
@@ -179,9 +179,9 @@ times ts (sorted), with values timeseries and derivatives ks
 """
 @inline function sde_interpolation(tval::Number,id,idxs,deriv)
   @unpack ts,timeseries = id
-  tval > ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
-  tval < ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
   tdir = sign(ts[end]-ts[1])
+  tdir*tval > tdir*ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
+  tdir*tval < tdir*ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
   @inbounds i = searchsortedfirst(ts,tval,rev=tdir<0) # It's in the interval ts[i-1] to ts[i]
   @inbounds if ts[i] == tval
     if idxs == nothing
@@ -205,9 +205,9 @@ end
 
 @inline function sde_interpolation!(out,tval::Number,id,idxs,deriv)
   @unpack ts,timeseries = id
-  tval > ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
-  tval < ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
   tdir = sign(ts[end]-ts[1])
+  tdir*tval > tdir*ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
+  tdir*tval < tdir*ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
   @inbounds i = searchsortedfirst(ts,tval,rev=tdir<0) # It's in the interval ts[i-1] to ts[i]
   @inbounds if ts[i] == tval
     if idxs == nothing
@@ -232,8 +232,8 @@ end
   @unpack ts,timeseries = id
   tdir = sign(ts[end]-ts[1])
   idx = sortperm(tvals,rev=tdir<0)
-  tvals[idx[end]] > ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
-  tvals[idx[1]] < ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
+  tdir*tvals[idx[end]] > tdir*ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
+  tdir*tvals[idx[1]] < tdir*ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
   i = 2 # Start the search thinking it's between ts[1] and ts[2]
   @inbounds for j in idx
     t = tvals[j]
