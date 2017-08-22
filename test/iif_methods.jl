@@ -45,7 +45,7 @@ sim  = test_convergence(dts,prob,IIF1Mil(),numMonte=Int(2e1))
 
 
 u0 = rand(2)
-A = Strang(2)
+A = full(Strang(2))
 B = [σ_const 0
     0 σ_const]
 

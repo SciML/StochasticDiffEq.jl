@@ -7,7 +7,7 @@ const σ_const = 0.87
 const μ = 1.01
 
 u0 = rand(2)
-A = Strang(2)
+A = full(Strang(2))
 B = Diagonal([σ_const for i in 1:2])
 
 function f_commute(t,u,du)
