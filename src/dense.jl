@@ -25,63 +25,64 @@ function sde_interpolant(Θ,integrator::DEIntegrator,idxs,deriv::Type)
 end
 
 @muladd function sde_interpolant(Θ,dt,u0::Number,u1,idxs::Void,deriv::Type{Val{0}})
-  (1.-Θ).*u0 .+ Θ.*u1
+  @. (1-Θ)*u0 + Θ*u1
 end
 
 @muladd function sde_interpolant(Θ,dt,u0::Number,u1,idxs,deriv::Type{Val{0}})
-  (1.-Θ).*u0[idxs] .+ Θ.*u1[idxs]
+  @. (1-Θ)*u0[idxs] + Θ*u1[idxs]
 end
 
 function sde_interpolant(Θ,dt,u0::Number,u1,idxs::Void,deriv::Type{Val{1}})
-  (u1.-u0)./dt
+  @. (u1-u0)/dt
 end
 
 function sde_interpolant(Θ,dt,u0::Number,u1,idxs,deriv::Type{Val{1}})
-  (u1[idxs].-u0[idxs])./dt
+  @. (u1[idxs]-u0[idxs])/dt
 end
 
 @muladd function sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv::Type{Val{0}})
   Θm1 = (1-Θ)
   if out == nothing
-    return Θm1*u0[idxs] + Θ*u1[idxs]
+    if idxs == nothing
+      return @. Θm1*u0 + Θ*u1
+    else
+      return @. Θm1*u0[idxs] + Θ*u1[idxs]
+    end
   elseif idxs == nothing
-    #@. out = Θm1*u0 + Θ*u1
-    for i in eachindex(out)
-      out[i] = Θm1*u0[i] + Θ*u1[i]
-    end
+    @. out = Θm1*u0 + Θ*u1
   else
-    #@views @. out = Θm1*u0[idxs] + Θ*u1[idxs]
-    for (j,i) in enumerate(idxs)
-      out[j] = Θm1*u0[i] + Θ*u1[i]
-    end
+    @views @. out = Θm1*u0[idxs] + Θ*u1[idxs]
   end
 end
 
 function sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv::Type{Val{1}})
   if out == nothing
-    return (u1[idxs]-u0[idxs])/dt
+    if idxs == nothing
+      return @. (u1-u0)/dt
+    else
+      return @. (u1[idxs]-u0[idxs])/dt
+    end
   elseif idxs == nothing
-    #@. out = (u1-u0)/dt
-    for i in eachindex(out)
-      out[i] = (u1[i]-u0[i])/dt
-    end
+    @. out = (u1-u0)/dt
   else
-    #@views @. out = (u1[idxs]-u0[idxs])/dt
-    for (j,i) in enumerate(idxs)
-      out[j] = (u1[i]-u0[i])/dt
-    end
+    @views @. out = (u1[idxs]-u0[idxs])/dt
   end
 end
 
 function sde_interpolant(Θ,dt,u0::AbstractArray,u1,idxs,deriv::Type)
-  if typeof(idxs) <: Void
-    out = similar(u0)
-  else
-    !(typeof(idxs) <: Number) && (out = similar(u0,indices(idxs)))
-  end
   if typeof(idxs) <: Number
     return sde_interpolant!(nothing,Θ,dt,u0,u1,idxs,deriv)
   else
+    # determine output type
+    # required for calculation of time derivatives with autodifferentiation
+    S = promote_type(typeof(oneunit(Θ) * oneunit(eltype(u0))), # Θ*u0
+                     typeof(oneunit(eltype(u0)) / oneunit(dt))) # u1/dt
+
+    if typeof(idxs) <: Void
+      out = similar(u0, S)
+    else
+      out = similar(u0, S, indices(idxs))
+    end
     sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv)
     return out
   end
@@ -142,8 +143,8 @@ times ts (sorted), with values timeseries and derivatives ks
   i = 2 # Start the search thinking it's between ts[1] and ts[2]
   if typeof(idxs) <: Number
     vals = Vector{eltype(first(timeseries))}(length(tvals))
-  elseif typeof(idxs) <: AbstractVector
-     vals = Vector{Vector{eltype(first(timeseries))}}(length(tvals))
+  elseif typeof(idxs) <: AbstractArray
+     vals = Vector{Array{eltype(first(timeseries)),ndims(idxs)}}(length(tvals))
   else
     vals = Vector{eltype(timeseries)}(length(tvals))
   end
