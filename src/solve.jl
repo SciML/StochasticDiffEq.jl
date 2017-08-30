@@ -191,10 +191,20 @@ function init(
   tTypeNoUnits   = typeof(recursive_one(t))
 
   ### Algorithm-specific defaults ###
-  ksEltype = Vector{rateType}
+  # if save_idxs == nothing
+  #   ksEltype = Vector{rateType}
+  # else
+  #   ks_prototype = rate_prototype[save_idxs]
+  #   ksEltype = Vector{typeof(ks_prototype)}
+  # end
 
   # Have to convert incase passed in wrong.
-  timeseries = convert(Vector{uType},timeseries_init)
+  if save_idxs == nothing
+    timeseries = convert(Vector{uType},timeseries_init)
+  else
+    u_initial = u[save_idxs]
+    timeseries = convert(Vector{typeof(u_initial)},timeseries_init)
+  end
   ts = convert(Vector{tType},ts_init)
   #ks = convert(Vector{ksEltype},ks_init)
   alg_choice = Int[]
@@ -204,10 +214,11 @@ function init(
     copyat_or_push!(ts,1,t)
     if save_idxs == nothing
       copyat_or_push!(timeseries,1,u)
+      # copyat_or_push!(ks,1,[rate_prototype])
     else
-      copyat_or_push!(timeseries,1,u[save_idxs],Val{false})
+      copyat_or_push!(timeseries,1,u_initial,Val{false})
+      # copyat_or_push!(ks,1,[ks_prototype])
     end
-    #copyat_or_push!(ks,1,[rate_prototype])
   else
     saveiter = 0
   end
@@ -230,9 +241,9 @@ function init(
 
   progress ? (prog = Juno.ProgressBar(name=progress_name)) : prog = nothing
 
-  notsaveat_idxs = Int[1]
+  # notsaveat_idxs = Int[1]
 
-  k = ksEltype[]
+  # k = rateType[]
 
   if uType <: Array
     uprev = copy(u)
