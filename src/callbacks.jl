@@ -176,8 +176,8 @@ function apply_discrete_callback!(integrator::SDEIntegrator,callback::DiscreteCa
       savevalues!(integrator,true)
       saved_in_cb = true
     end
-    callback.affect!(integrator)
     integrator.u_modified = true
+    callback.affect!(integrator)
     if callback.save_positions[2]
       savevalues!(integrator,true)
       saved_in_cb = true
