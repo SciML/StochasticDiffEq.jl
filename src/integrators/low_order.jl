@@ -100,6 +100,7 @@ end
   @unpack t,dt,uprev,u,W = integrator
   K = @muladd uprev .+ dt.*integrator.f(t,uprev)
   L = integrator.g(t,uprev)
+  mil_correction = zero(u)
   if alg_interpretation(integrator.alg) == :Ito
     utilde = @.  K + L*integrator.sqdt
     mil_correction = (integrator.g(t,utilde).-L)./(2 .* integrator.sqdt).*(W.dW.^2 .- dt)
