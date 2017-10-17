@@ -391,8 +391,8 @@ function init(
   DiffEqNoiseProcess.setup_next_step!(integrator.W)
 
   if initialize_integrator
-    initialize!(integrator,integrator.cache)
     initialize!(callbacks_internal,t,u,integrator)
+    initialize!(integrator,integrator.cache)
   end
   integrator
 end
