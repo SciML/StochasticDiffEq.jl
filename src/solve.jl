@@ -391,7 +391,33 @@ function init(
   DiffEqNoiseProcess.setup_next_step!(integrator.W)
 
   if initialize_integrator
-    initialize!(callbacks_internal,t,u,integrator)
+
+    u_modified = initialize!(callbacks_internal,t,u,integrator)
+
+    # if the user modifies u, we need to fix previous values before initializing
+    # FSAL in order for the starting derivatives to be correct
+    if u_modified
+      if alg_extrapolates(integrator.alg)
+        if isinplace(integrator.sol.prob)
+          recursivecopy!(integrator.uprev2,integrator.uprev)
+        else
+          integrator.uprev2 = integrator.uprev
+        end
+      end
+      if isinplace(integrator.sol.prob)
+        recursivecopy!(integrator.uprev,integrator.u)
+      else
+        integrator.uprev = integrator.u
+      end
+
+      # reset this as it is now handled so the integrators should proceed as normal
+      integrator.u_modified = false
+
+      if initialize_save && any((c)->c.save_positions[2],callbacks_internal)
+        savevalues!(integrator,true)
+      end
+    end
+
     initialize!(integrator,integrator.cache)
   end
   integrator
