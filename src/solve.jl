@@ -41,6 +41,7 @@ function init(
   progress=false, progress_message = ODE_DEFAULT_PROG_MESSAGE,
   progress_name="SDE",
   userdata=nothing,callback=nothing,
+  initialize_save = true,
   timeseries_errors = true, dense_errors=false,
   initialize_integrator=true,
   kwargs...) where {uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},ND,recompile_flag}
@@ -366,18 +367,10 @@ function init(
     # FSAL in order for the starting derivatives to be correct
     if u_modified
 
-      if isinplace(integrator.sol.prob)
+      if isinplace
         recursivecopy!(integrator.uprev,integrator.u)
       else
         integrator.uprev = integrator.u
-      end
-
-      if alg_extrapolates(integrator.alg)
-        if isinplace(integrator.sol.prob)
-          recursivecopy!(integrator.uprev2,integrator.uprev)
-        else
-          integrator.uprev2 = integrator.uprev
-        end
       end
 
       # reset this as it is now handled so the integrators should proceed as normal
@@ -394,9 +387,9 @@ function init(
   end
 
   if integrator.dt == zero(integrator.dt) && integrator.opts.adaptive
-    integrator.dt = tType(ode_determine_initdt(integrator.u,integrator.t,
+    integrator.dt = tType(sde_determine_initdt(integrator.u,integrator.t,
     integrator.tdir,integrator.opts.dtmax,integrator.opts.abstol,integrator.opts.reltol,
-    integrator.opts.internalnorm,integrator.sol.prob,order,integrator.alg))
+    integrator.opts.internalnorm,integrator.sol.prob,order))
     if sign(integrator.dt)!=integrator.tdir && integrator.dt!=tType(0) && !isnan(integrator.dt)
       error("Automatic dt setting has the wrong sign. Exiting. Please report this error.")
     end

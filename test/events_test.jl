@@ -25,7 +25,7 @@ prob = SDEProblem(f,g,u0,tspan)
 
 sol = solve(prob,SRIW1(),callback=callback,adaptive=false,dt=3/4)
 
-@test sol[1,6] < 1e-14
+@test minimum(sol[1,:]) > -1e-12 && minimum(sol[1,:]) < 1e-12
 
 function g(t,u,du)
   du[2] = .125*u[2]
