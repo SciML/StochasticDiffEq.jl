@@ -127,17 +127,6 @@ function init(
 
   dtmax > 0 && tdir < 0 && (dtmax *= tdir) # Allow positive dtmax, but auto-convert
   # dtmin is all abs => does not care about sign already.
-  if dt == zero(dt) && adaptive
-    dt = tType(sde_determine_initdt(u,t,tdir,dtmax,abstol,reltol,internalnorm,prob,order))
-    if sign(dt)!=tdir && dt!=tType(0) && !isnan(dt)
-      error("Automatic dt setting has the wrong sign. Exiting. Please report this error.")
-    end
-    if isnan(dt)
-      warn("Automatic dt set the starting dt as NaN, causing instability.")
-    end
-  elseif adaptive && dt > zero(dt) && tdir < 0
-    dt *= tdir # Allow positive dt, but auto-convert
-  end
 
   if typeof(u) <: AbstractArray
     rate_prototype = similar(u/zero(t),indices(u)) # rate doesn't need type info
@@ -257,26 +246,6 @@ function init(
   dtcache = tType(dt)
   dtchangeable = true
 
-  ## Modify the first dt for tstops
-  if !isempty(tstops_internal)
-    if adaptive
-      if tdir > 0
-        dt = min(abs(dt),abs(top(tstops_internal)-t)) # step! to the end
-      else
-        dt = -min(abs(dt),abs(top(tstops_internal)-t))
-      end
-    elseif dt == zero(t) && dtchangeable # Use integrator.opts.tstops
-      dt = tdir*abs(top(tstops_internal)-t)
-    elseif dtchangeable # always try to step! with dtcache, but lower if a tstops
-      dt = tdir*min(abs(dtcache),abs(top(tstops_internal)-t)) # step! to the end
-    end
-  end
-  ### Needs to be done before first rand
-
-
-  sqdt = tdir*sqrt(abs(dt))
-
-
   if !(uType <: AbstractArray)
     rand_prototype = zero(u/u) # Strip units and type info
     randType = typeof(rand_prototype)
@@ -383,12 +352,9 @@ function init(
                   dtchangeable,u_modified,
                   saveiter,
                   alg,sol,
-                  cache,sqdt,W,
+                  cache,tType(dt),W,
                   opts,iter,success_iter,prog,EEst,q,
                   tTypeNoUnits(qoldinit),q11)
-
-  integrator.W.dt = integrator.dt
-  DiffEqNoiseProcess.setup_next_step!(integrator.W)
 
   if initialize_integrator
 
@@ -426,6 +392,31 @@ function init(
 
     initialize!(integrator,integrator.cache)
   end
+
+  if integrator.dt == zero(integrator.dt) && integrator.opts.adaptive
+    integrator.dt = tType(ode_determine_initdt(integrator.u,integrator.t,
+    integrator.tdir,integrator.opts.dtmax,integrator.opts.abstol,integrator.opts.reltol,
+    integrator.opts.internalnorm,integrator.sol.prob,order,integrator.alg))
+    if sign(integrator.dt)!=integrator.tdir && integrator.dt!=tType(0) && !isnan(integrator.dt)
+      error("Automatic dt setting has the wrong sign. Exiting. Please report this error.")
+    end
+    if isnan(integrator.dt)
+      if verbose
+        warn("Automatic dt set the starting dt as NaN, causing instability.")
+      end
+    end
+  elseif integrator.opts.adaptive && integrator.dt > zero(integrator.dt) && integrator.tdir < 0
+    integrator.dt *= integrator.tdir # Allow positive dt, but auto-convert
+  end
+
+  ## Modify the first dt for tstops
+  modify_dt_for_tstops!(integrator)
+  ### Needs to be done before first rand
+  integrator.sqdt = integrator.tdir*sqrt(abs(integrator.dt))
+
+  integrator.W.dt = integrator.dt
+  DiffEqNoiseProcess.setup_next_step!(integrator.W)
+
 
   integrator
 end
