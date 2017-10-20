@@ -19,7 +19,7 @@ function init(
   save_timeseries = nothing,
   save_everystep = isempty(saveat),
   save_idxs = nothing,
-  save_start = true,
+  save_start = true,save_end = true,
   dense = save_everystep,
   calck = (!isempty(setdiff(saveat,tstops)) || dense),
   adaptive=isadaptive(alg),gamma=9//10,
@@ -228,7 +228,7 @@ function init(
     progress_name,progress_message,
     timeseries_errors,dense_errors,
     tTypeNoUnits(beta1),tTypeNoUnits(beta2),map(uEltypeNoUnits,delta),tTypeNoUnits(qoldinit),
-    dense,save_start,save_noise,
+    dense,save_start,save_end,save_noise,
     callbacks_internal,isoutofdomain,unstable_check,verbose,calck,force_dtmin,
     advance_to_tstop,stop_at_next_tstop)
 
@@ -373,15 +373,15 @@ function init(
         integrator.uprev = integrator.u
       end
 
-      # reset this as it is now handled so the integrators should proceed as normal
-      integrator.u_modified = false
-
       if initialize_save &&
         (any((c)->c.save_positions[2],callbacks_internal.discrete_callbacks) ||
         any((c)->c.save_positions[2],callbacks_internal.continuous_callbacks))
         savevalues!(integrator,true)
       end
     end
+
+    # reset this as it is now handled so the integrators should proceed as normal
+    integrator.u_modified = false
 
     initialize!(integrator,integrator.cache)
   end

@@ -29,6 +29,7 @@ mutable struct SDEOptions{tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsType,ECType,ST
   qoldinit::tTypeNoUnits
   dense::Bool
   save_start::Bool
+  save_end::Bool
   save_noise::Bool
   callback::F3
   isoutofdomain::F4
