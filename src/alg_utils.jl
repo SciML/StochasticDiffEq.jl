@@ -58,7 +58,7 @@ alg_mass_matrix_compatible(alg::StochasticDiffEqAlgorithm) = false
 function alg_mass_matrix_compatible(alg::StochasticDiffEqNewtonAlgorithm)
     if alg.symplectic
         return true
-    elseif theta == 1
+    elseif alg.theta == 1
         return true
     else
         error("Algorithm must be set as symplectic or theta=1 for mass matrices")
