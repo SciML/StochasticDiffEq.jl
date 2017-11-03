@@ -20,6 +20,7 @@ LONGER_TESTS && @time @testset "Weak Convergence Tests" begin include("weak_conv
 @time @testset "Static Array Tests" begin include("static_array_tests.jl") end
 @time @testset "Noise Type Tests" begin include("noise_type_test.jl") end
 @time @testset "Cummutative Noise Methods Tests" begin include("commutative_tests.jl") end
+@time @testset "Mass matrix tests" begin include("mass_matrix_tests.jl") end
 @time @testset "tdir Tests" begin include("tdir_tests.jl") end
 @time @testset "tstops Tests" begin include("tstops_tests.jl") end
 @time @testset "saveat Tests" begin include("saveat_tests.jl") end
