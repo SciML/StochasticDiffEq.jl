@@ -216,3 +216,64 @@ end
 function terminate!(integrator::SDEIntegrator)
   integrator.opts.tstops.valtree = typeof(integrator.opts.tstops.valtree)()
 end
+
+DiffEqBase.has_reinit(integrator::SDEIntegrator) = true
+function DiffEqBase.reinit!(integrator::SDEIntegrator,u0 = integrator.sol.prob.u0;
+  t0 = integrator.sol.prob.tspan[1], tf = integrator.sol.prob.tspan[2],
+  erase_sol = true, tstops = nothing, saveat = nothing)
+
+  if isinplace(integrator.sol.prob)
+    recursivecopy!(integrator.u,u0)
+    recursivecopy!(integrator.uprev,integrator.u)
+  else
+    integrator.u = u0
+    integrator.uprev = integrator.u
+  end
+
+  integrator.t = t0
+  integrator.tprev = t0
+
+  # Get rid of tstops states
+  while !isempty(integrator.opts.tstops)
+    pop!(integrator.opts.tstops)
+  end
+  push!(integrator.opts.tstops,tf)
+  if tstops != nothing
+    push!(integrator.opts.tstops,tstops)
+  end
+
+  # Get rid of saveat states
+  while !isempty(integrator.opts.saveat)
+    pop!(integrator.opts.saveat)
+  end
+  if saveat != nothing
+    push!(integrator.opts.saveat,saveat)
+  end
+
+  if erase_sol
+    if integrator.opts.save_start
+      resize_start = 1
+    else
+      resize_start = 0
+    end
+    resize!(integrator.sol.u,resize_start)
+    resize!(integrator.sol.t,resize_start)
+    if integrator.sol.u_analytic != nothing
+      resize!(integrator.sol.u_analytic,0)
+    end
+    if typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm
+      resize!(integrator.sol.alg_choice,resize_start)
+    end
+    integrator.saveiter = resize_start
+  end
+  integrator.iter = 0
+  integrator.success_iter = 0
+
+  # full re-initialize the PI in timestepping
+  integrator.qold = integrator.opts.qoldinit
+  integrator.q11 = typeof(integrator.t)(1)
+
+  initialize!(integrator,integrator.cache)
+
+  reinit!(integrator.W,integrator.dt)
+end
