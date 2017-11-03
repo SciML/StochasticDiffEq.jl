@@ -4,11 +4,11 @@ function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,intern
   d₀ = internalnorm(u0./(abstol.+abs.(u0).*reltol))
   if !isinplace(prob)
     f₀ = f(t,u0)
-    if any(isnan(f₀))
+    if any(isnan.(f₀))
       warn("First function call for f produced NaNs. Exiting.")
     end
     g₀ = 3g(t,u0)
-    if any(isnan(g₀))
+    if any(isnan.(g₀))
       warn("First function call for g produced NaNs. Exiting.")
     end
   else
