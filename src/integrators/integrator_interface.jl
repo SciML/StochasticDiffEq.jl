@@ -221,7 +221,7 @@ DiffEqBase.has_reinit(integrator::SDEIntegrator) = true
 function DiffEqBase.reinit!(integrator::SDEIntegrator,u0 = integrator.sol.prob.u0;
   t0 = integrator.sol.prob.tspan[1], tf = integrator.sol.prob.tspan[2],
   erase_sol = true, tstops = nothing, saveat = nothing, reinit_cache = true,
-  reset_dt = true)
+  reset_dt = (integrator.dtcache != zero(integrator.dt)) && integrator.opts.adaptive)
 
   if isinplace(integrator.sol.prob)
     recursivecopy!(integrator.u,u0)
