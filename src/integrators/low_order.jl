@@ -1,6 +1,11 @@
 @inline function perform_step!(integrator,cache::EMConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
-  u = @muladd uprev .+ dt.*integrator.f(t,uprev) .+ integrator.g(t,uprev).*W.dW
+  if is_diagonal_noise(integrator.sol.prob)
+    noise = integrator.g(t,uprev).*W.dW
+  else
+    noise = integrator.g(t,uprev)*W.dW
+  end
+  u = @muladd uprev .+ dt.*integrator.f(t,uprev) .+ noise
   @pack integrator = t,dt,u
 end
 
@@ -29,8 +34,19 @@ end
   @unpack t,dt,uprev,u,W = integrator
   ftmp = integrator.f(t,uprev)
   gtmp = integrator.g(t,uprev)
-  tmp = @. @muladd uprev + ftmp.*dt + gtmp.*W.dW
-  u = @muladd uprev .+ (1/2).*dt.*(ftmp.+integrator.f(t+dt,tmp)) .+ (1/2).*(gtmp.+integrator.g(t+dt,tmp)).*W.dW
+  if is_diagonal_noise(integrator.sol.prob)
+    noise = gtmp.*W.dW
+  else
+    noise = gtmp*W.dW
+  end
+  tmp = @. @muladd uprev + ftmp.*dt + noise
+  gtmp2 = (1/2).*(gtmp.+integrator.g(t+dt,tmp))
+  if is_diagonal_noise(integrator.sol.prob)
+    noise2 = gtmp2.*W.dW
+  else
+    noise2 = gtmp2*W.dW
+  end
+  u = @muladd uprev .+ (1/2).*dt.*(ftmp.+integrator.f(t+dt,tmp)) .+ noise2
   @pack integrator = t,dt,u
 end
 
