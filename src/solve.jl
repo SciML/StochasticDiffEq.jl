@@ -82,23 +82,6 @@ function init(
     error("Timespan is trivial")
   end
 
-  d_discontinuities_col = collect(d_discontinuities)
-
-  if tdir>0
-    tstops_internal = binary_minheap(convert(Vector{tType},append!(collect(tstops),d_discontinuities_col)))
-  else
-    tstops_internal = binary_maxheap(convert(Vector{tType},append!(collect(tstops),d_discontinuities_col)))
-  end
-
-  if !isempty(tstops) && tstops[end] != tspan[2]
-    push!(tstops_internal,tspan[2])
-  elseif isempty(tstops)
-    push!(tstops_internal,tspan[2])
-  end
-
-  if top(tstops_internal) == tspan[1]
-    pop!(tstops_internal)
-  end
   f = prob.f
   if typeof(prob) <: AbstractSDEProblem
     g = prob.g
@@ -146,37 +129,8 @@ function init(
     end
   end
 
-  if typeof(saveat) <: Number
-    if (tspan[1]:saveat:tspan[end])[end] == tspan[end]
-      saveat_vec = convert(Vector{tType},collect(tType,tspan[1]+saveat:saveat:tspan[end]))
-    else
-      saveat_vec = convert(Vector{tType},collect(tType,tspan[1]+saveat:saveat:(tspan[end]-saveat)))
-    end
-  else
-    saveat_vec =  convert(Vector{tType},collect(saveat))
-  end
-
-  if !isempty(saveat_vec) && saveat_vec[end] == tspan[2]
-    pop!(saveat_vec)
-  end
-
-  if tdir>0
-    saveat_internal = binary_minheap(saveat_vec)
-  else
-    saveat_internal = binary_maxheap(saveat_vec)
-  end
-
-  if !isempty(saveat_internal) && top(saveat_internal) == tspan[1]
-    pop!(saveat_internal)
-  end
-
-  d_discontinuities_vec =  convert(Vector{tType},d_discontinuities_col)
-
-  if tdir>0
-    d_discontinuities_internal = binary_minheap(d_discontinuities_vec)
-  else
-    d_discontinuities_internal = binary_maxheap(d_discontinuities_vec)
-  end
+  tstops_internal, saveat_internal, d_discontinuities_internal =
+    tstop_saveat_disc_handling(tstops,saveat,d_discontinuities,tdir,tspan,tType)
 
   callbacks_internal = CallbackSet(callback,prob.callback)
 
@@ -223,6 +177,7 @@ function init(
     tTypeNoUnits(failfactor),
     dtmax,dtmin,internalnorm,save_idxs,
     tstops_internal,saveat_internal,d_discontinuities_internal,
+    tstops,saveat,d_discontinuities,
     userdata,
     progress,progress_steps,
     progress_name,progress_message,
@@ -358,38 +313,12 @@ function init(
                   tTypeNoUnits(qoldinit),q11)
 
   if initialize_integrator
-
-    integrator.u_modified = true
-
-    u_modified = initialize!(callbacks_internal,t,u,integrator)
-
-    # if the user modifies u, we need to fix previous values before initializing
-    # FSAL in order for the starting derivatives to be correct
-    if u_modified
-
-      if isinplace
-        recursivecopy!(integrator.uprev,integrator.u)
-      else
-        integrator.uprev = integrator.u
-      end
-
-      if initialize_save &&
-        (any((c)->c.save_positions[2],callbacks_internal.discrete_callbacks) ||
-        any((c)->c.save_positions[2],callbacks_internal.continuous_callbacks))
-        savevalues!(integrator,true)
-      end
-    end
-
-    # reset this as it is now handled so the integrators should proceed as normal
-    integrator.u_modified = false
-
+    initialize_callbacks!(integrator)
     initialize!(integrator,integrator.cache)
   end
 
   if integrator.dt == zero(integrator.dt) && integrator.opts.adaptive
-    integrator.dt = tType(sde_determine_initdt(integrator.u,integrator.t,
-    integrator.tdir,integrator.opts.dtmax,integrator.opts.abstol,integrator.opts.reltol,
-    integrator.opts.internalnorm,integrator.sol.prob,order))
+    auto_dt_reset!(integrator)
     if sign(integrator.dt)!=integrator.tdir && integrator.dt!=tType(0) && !isnan(integrator.dt)
       error("Automatic dt setting has the wrong sign. Exiting. Please report this error.")
     end
@@ -440,4 +369,70 @@ function solve!(integrator::SDEIntegrator)
   end
   integrator.sol = solution_new_retcode(integrator.sol,:Success)
   nothing
+end
+
+# Helpers
+
+function tstop_saveat_disc_handling(tstops,saveat,d_discontinuities,tdir,tspan,tType)
+  tstops_vec = vec(collect(tType,Iterators.filter(x->tdir*tspan[1]<tdir*x≤tdir*tspan[end],Iterators.flatten((tstops,d_discontinuities,tspan[end])))))
+
+  if tdir>0
+    tstops_internal = binary_minheap(tstops_vec)
+  else
+    tstops_internal = binary_maxheap(tstops_vec)
+  end
+
+  if typeof(saveat) <: Number
+    if (tspan[1]:saveat:tspan[end])[end] == tspan[end]
+      saveat_vec = convert(Vector{tType},collect(tType,tspan[1]+saveat:saveat:tspan[end]))
+    else
+      saveat_vec = convert(Vector{tType},collect(tType,tspan[1]+saveat:saveat:(tspan[end]-saveat)))
+    end
+  else
+    saveat_vec = vec(collect(tType,Iterators.filter(x->tdir*tspan[1]<tdir*x<tdir*tspan[end],saveat)))
+  end
+
+  if tdir>0
+    saveat_internal = binary_minheap(saveat_vec)
+  else
+    saveat_internal = binary_maxheap(saveat_vec)
+  end
+
+  d_discontinuities_vec = vec(collect(d_discontinuities))
+
+  if tdir>0
+    d_discontinuities_internal = binary_minheap(d_discontinuities_vec)
+  else
+    d_discontinuities_internal = binary_maxheap(d_discontinuities_vec)
+  end
+  tstops_internal,saveat_internal,d_discontinuities_internal
+end
+
+function initialize_callbacks!(integrator)
+  t = integrator.t
+  u = integrator.u
+  callbacks = integrator.opts.callback
+  integrator.u_modified = true
+
+  u_modified = initialize!(callbacks,t,u,integrator)
+
+  # if the user modifies u, we need to fix previous values before initializing
+  # FSAL in order for the starting derivatives to be correct
+  if u_modified
+
+    if isinplace
+      recursivecopy!(integrator.uprev,integrator.u)
+    else
+      integrator.uprev = integrator.u
+    end
+
+    if initialize_save &&
+      (any((c)->c.save_positions[2],callbacks.discrete_callbacks) ||
+      any((c)->c.save_positions[2],callbacks.continuous_callbacks))
+      savevalues!(integrator,true)
+    end
+  end
+
+  # reset this as it is now handled so the integrators should proceed as normal
+  integrator.u_modified = false
 end
