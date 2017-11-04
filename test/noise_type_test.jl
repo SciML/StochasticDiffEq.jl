@@ -15,6 +15,22 @@ prob = SDEProblem(f,g,ones(2),(0.0,1.0),noise_rate_prototype=zeros(2,4))
 
 sol = solve(prob,EM(),dt=1/1000)
 
+f(t,u,du) = (du.=1.01u)
+function g(t,u,du)
+  du[1,1] = 0.3
+  du[1,2] = 0.6
+  du[1,3] = 0.9
+  du[1,4] = 0.12
+  du[2,1] = 1.2
+  du[2,2] = 0.2
+  du[2,3] = 0.3
+  du[2,4] = 1.8
+end
+prob = SDEProblem(f,g,ones(2),(0.0,1.0),noise_rate_prototype=zeros(2,4))
+
+sol = solve(prob,SRA1())
+sol = solve(prob,SRA())
+
 @test length(sol.W[1]) == 4
 
 function g(t,u,du)

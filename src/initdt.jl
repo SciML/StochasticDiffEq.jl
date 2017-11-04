@@ -13,7 +13,11 @@ function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,intern
     end
   else
     f₀ = zeros(u0)
-    g₀ = zeros(u0)
+    if prob.noise_rate_prototype != nothing
+      g₀ = zeros(prob.noise_rate_prototype)
+    else
+      g₀ = zeros(u0)
+    end
     f(t,u0,f₀)
     if any((isnan(x) for x in f₀))
       warn("First function call for f produced NaNs. Exiting.")
@@ -39,7 +43,11 @@ function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,intern
     g₁ = 3g(t+tdir*dt₀,u₁)
   else
     f₁ = zeros(u0)
-    g₁ = zeros(u0)
+    if prob.noise_rate_prototype != nothing
+      g₁ = zeros(prob.noise_rate_prototype)
+    else
+      g₁ = zeros(u0)
+    end
     f(t,u0,f₁)
     g(t,u0,g₁); g₁.*=3
   end

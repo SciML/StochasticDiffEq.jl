@@ -68,9 +68,16 @@ end
   integrator.g(t,uprev,gt)
   integrator.g(t+dt,uprev,gpdt)
   integrator.f(t,uprev,k₁); k₁*=dt
+  @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+
+  if is_diagonal_noise(integrator.sol.prob)
+    @. E₁ = chi2*gpdt
+  else
+    A_mul_B!(E₁,gpdt,chi2)
+  end
+
   for i in eachindex(u)
-    @inbounds chi2[i] = (W.dW[i] + W.dZ[i]/sqrt(3))/2 #I_(1,0)/h
-    @inbounds tmp1[i] = uprev[i]+3k₁[i]/4 + 3chi2[i]*gpdt[i]/2
+    @inbounds tmp1[i] = uprev[i]+3k₁[i]/4 + 3E₁[i]/2
   end
 
   integrator.f(t+3dt/4,tmp1,k₂); k₂*=dt
@@ -80,8 +87,14 @@ end
     @inbounds E₂[i] = chi2[i]*(gt[i]-gpdt[i]) #Only for additive!
   end
 
+  if is_diagonal_noise(integrator.sol.prob)
+    @. tmp1 = W.dW*gpdt
+  else
+    A_mul_B!(tmp1,gpdt,W.dW)
+  end
+
   for i in eachindex(u)
-    @inbounds u[i] = uprev[i] + k₁[i]/3 + 2k₂[i]/3 + E₂[i] + W.dW[i]*gpdt[i]
+    @inbounds u[i] = uprev[i] + k₁[i]/3 + 2k₂[i]/3 + E₂[i] + tmp1[i]
   end
 
   if integrator.opts.adaptive
@@ -142,9 +155,7 @@ end
   @unpack t,dt,uprev,u,W = integrator
   @unpack H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂,tmp = cache
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages = cache.tab
-  for i in eachindex(u)
-    @inbounds chi2[i] = .5*(W.dW[i] + W.dZ[i]/sqrt(3)) #I_(1,0)/h
-  end
+  @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   for i in 1:stages
     fill!(H0[i],zero(eltype(integrator.u)))
   end
@@ -154,13 +165,16 @@ end
     for j = 1:i-1
       integrator.f(@muladd(t + c₀[j]*dt),H0[j],ftmp)
       integrator.g(@muladd(t + c₁[j]*dt),H0[j],gtmp)
-      @tight_loop_macros for k in eachindex(u)
-        @inbounds A0temp[k] = @muladd A0temp[k] + A₀[j,i]*ftmp[k]
-        @inbounds B0temp[k] = @muladd B0temp[k] + B₀[j,i]*gtmp[k]
+      @. A0temp = @muladd A0temp + A₀[j,i]*ftmp
+      if is_diagonal_noise(integrator.sol.prob)
+        @. B0temp = @muladd B0temp + B₀[j,i]*gtmp*chi2
+      else
+        A_mul_B!(E₁temp,gtmp,chi2)
+        @. B0temp = @muladd B0temp + B₀[j,i]*E₁temp
       end
     end
     @tight_loop_macros for j in eachindex(u)
-      @inbounds H0[i][j] = @muladd uprev[j] + A0temp[j]*dt + B0temp[j]*chi2[j]
+      @inbounds H0[i][j] = @muladd uprev[j] + A0temp[j]*dt + B0temp[j]
     end
   end
   fill!(atemp ,zero(eltype(integrator.u)))
@@ -171,10 +185,20 @@ end
   for i = 1:stages
     integrator.f(@muladd(t+c₀[i]*dt),H0[i],ftmp)
     integrator.g(@muladd(t+c₁[i]*dt),H0[i],gtmp)
+    if is_diagonal_noise(integrator.sol.prob)
+      @. btemp = @muladd btemp + β₁[i]*W.dW*gtmp
+    else
+      A_mul_B!(E₁temp,gtmp,W.dW)
+      @. btemp = @muladd btemp + β₁[i]*E₁temp
+    end
+    if is_diagonal_noise(integrator.sol.prob)
+      @. E₂ = @muladd E₂ + β₂[i]*chi2*gtmp
+    else
+      A_mul_B!(E₁temp,gtmp,chi2)
+      @. E₂ = @muladd E₂ + β₂[i]*E₁temp
+    end
     @tight_loop_macros for j in eachindex(u)
       @inbounds atemp[j]  =  @muladd atemp[j]  + α[i]*ftmp[j]
-      @inbounds btemp[j]  =  @muladd btemp[j]  + (β₁[i]*W.dW[j])*gtmp[j]
-      @inbounds E₂[j]     =  @muladd E₂[j]     + (β₂[i]*chi2[j])*gtmp[j]
       @inbounds E₁temp[j] =  E₁temp[j] +  ftmp[j]
     end
   end

@@ -1,17 +1,17 @@
 struct SRA1ConstantCache <: StochasticDiffEqConstantCache end
 alg_cache(alg::SRA1,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = SRA1ConstantCache()
 
-struct SRA1Cache{randType,rateType,uType} <: StochasticDiffEqMutableCache
+struct SRA1Cache{randType,rateType,uType,rateNoiseType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   chi2::randType
   tmp1::uType
   E₁::rateType
   E₂::rateType
-  gt::rateType
+  gt::rateNoiseType
   k₁::rateType
   k₂::rateType
-  gpdt::rateType
+  gpdt::rateNoiseType
   tmp::uType
 end
 
@@ -22,7 +22,7 @@ user_cache(c::SRA1Cache) = (c.u,c.uprev,c.tmp,c.tmp1)
 function alg_cache(alg::SRA1,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   chi2 = similar(ΔW)
   tmp1 = zeros(u)
-  E₁ = zeros(rate_prototype); gt = zeros(rate_prototype); gpdt = zeros(rate_prototype)
+  E₁ = zeros(rate_prototype); gt = zeros(noise_rate_prototype); gpdt = zeros(noise_rate_prototype)
   E₂ = zeros(rate_prototype); k₁ = zeros(rate_prototype); k₂ = zeros(rate_prototype)
   tmp = zeros(u)
   SRA1Cache(u,uprev,chi2,tmp1,E₁,E₂,gt,k₁,k₂,gpdt,tmp)
@@ -51,15 +51,15 @@ function alg_cache(alg::SRA,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,u
   SRAConstantCache(alg.tableau,rate_prototype)
 end
 
-struct SRACache{uType,rateType,tabType} <: StochasticDiffEqMutableCache
+struct SRACache{uType,rateType,tabType,randType,rateNoiseType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   H0::Vector{uType}
   A0temp::rateType
   B0temp::rateType
   ftmp::rateType
-  gtmp::rateType
-  chi2::rateType
+  gtmp::rateNoiseType
+  chi2::randType
   atemp::rateType
   btemp::rateType
   E₁::rateType
@@ -81,7 +81,7 @@ function alg_cache(alg::SRA,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,u
     push!(H0,zeros(u))
   end
   A0temp = zeros(rate_prototype); B0temp = zeros(rate_prototype)
-  ftmp = zeros(rate_prototype); gtmp = zeros(rate_prototype); chi2 = zeros(rate_prototype)
+  ftmp = zeros(rate_prototype); gtmp = zeros(noise_rate_prototype); chi2 = similar(ΔW)
   atemp = zeros(rate_prototype); btemp = zeros(rate_prototype); E₂ = zeros(rate_prototype); E₁temp = zeros(rate_prototype)
   E₁ = zeros(rate_prototype)
   tmp = zeros(u)

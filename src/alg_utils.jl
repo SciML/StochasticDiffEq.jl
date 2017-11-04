@@ -38,8 +38,8 @@ alg_compatible(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlg
 
 alg_compatible(prob,alg::SRI) = is_diagonal_noise(prob)
 alg_compatible(prob,alg::SRIW1) = is_diagonal_noise(prob)
-alg_compatible(prob,alg::SRA) = is_diagonal_noise(prob)
-alg_compatible(prob,alg::SRA1) = is_diagonal_noise(prob)
+alg_compatible(prob,alg::SRA) = true
+alg_compatible(prob,alg::SRA1) = true
 alg_compatible(prob,alg::RKMil) = is_diagonal_noise(prob)
 alg_compatible(prob,alg::ImplicitRKMil) = is_diagonal_noise(prob)
 
