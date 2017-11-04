@@ -1,4 +1,4 @@
-using StochasticDiffEq, DiffEqDevTools, DiffEqProblemLibrary
+using StochasticDiffEq, DiffEqDevTools, DiffEqProblemLibrary, Base.Test
 srand(100)
 prob = prob_sde_linear
 
@@ -25,6 +25,13 @@ sim3 = test_convergence(dts,prob,SRI(),numMonte=NUM_MONTE)
 
 # test reinit
 integrator = init(prob,EM(),dt=1//2^(4))
+solve!(integrator)
+reinit!(integrator)
+solve!(integrator)
+
+# test reinit
+prob2 = SDEProblem((t,u)->prob.f(t,u),prob.g,prob.u0,prob.tspan)
+integrator = init(prob2,EM(),dt=1//2^(4), tstops = [1//2], saveat = [1//3])
 solve!(integrator)
 reinit!(integrator)
 solve!(integrator)

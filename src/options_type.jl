@@ -1,4 +1,5 @@
-mutable struct SDEOptions{tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsType,ECType,SType,MI,A,R,D}
+mutable struct SDEOptions{tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsType,ECType,SType,MI,A,R,D,
+           tcache,savecache,disccache}
   maxiters::MI
   timeseries_steps::Int
   save_everystep::Bool
@@ -16,6 +17,9 @@ mutable struct SDEOptions{tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsType,ECType,ST
   tstops::tstopsType
   saveat::tstopsType
   d_discontinuities::tstopsType
+  tstops_cache::tcache
+  saveat_cache::savecache
+  d_discontinuities_cache::disccache
   userdata::ECType
   progress::Bool
   progress_steps::Int
