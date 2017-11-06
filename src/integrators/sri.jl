@@ -56,11 +56,17 @@ end
   @unpack c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄,stages,error_terms = cache.tab
   @unpack H0,H1,A0temp,A1temp,B0temp,B1temp,A0temp2,A1temp2,B0temp2,B1temp2,atemp,btemp,E₁,E₂,E₁temp,ftemp,gtemp,chi1,chi2,chi3,tmp = cache
   @unpack t,dt,uprev,u,W = integrator
-  @tight_loop_macros for i in eachindex(u)
-    @inbounds chi1[i] = .5*(W.dW[i].^2 - dt)/integrator.sqdt #I_(1,1)/sqrt(h)
-    @inbounds chi2[i] = .5*(W.dW[i] + W.dZ[i]/sqrt(3)) #I_(1,0)/h
-    @inbounds chi3[i] = 1/6 * (W.dW[i].^3 - 3*W.dW[i]*dt)/dt #I_(1,1,1)/h
+
+  if typeof(W.dW) <: Union{SArray,Number}
+    chi1 = @. (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
+    chi2 = @. (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    chi3 = @. (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
+  else
+    @. chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
+    @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    @. chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   end
+
   for i=1:stages
     fill!(H0[i],zero(eltype(integrator.u)))
     fill!(H1[i],zero(eltype(integrator.u)))

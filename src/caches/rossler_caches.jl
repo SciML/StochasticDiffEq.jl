@@ -20,7 +20,11 @@ du_cache(c::SRA1Cache) = (c.chi2,c.E₁,c.E₂,c.gt,c.k₁,c.k₂,c.gpdt)
 user_cache(c::SRA1Cache) = (c.u,c.uprev,c.tmp,c.tmp1)
 
 function alg_cache(alg::SRA1,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
-  chi2 = similar(ΔW)
+  if typeof(ΔW) <: Union{SArray,Number}
+    chi2 = copy(ΔW)
+  else
+    chi2 = similar(ΔW)
+  end
   tmp1 = zeros(u)
   E₁ = zeros(rate_prototype); gt = zeros(noise_rate_prototype); gpdt = zeros(noise_rate_prototype)
   E₂ = zeros(rate_prototype); k₁ = zeros(rate_prototype); k₂ = zeros(rate_prototype)
@@ -81,7 +85,12 @@ function alg_cache(alg::SRA,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,u
     push!(H0,zeros(u))
   end
   A0temp = zeros(rate_prototype); B0temp = zeros(rate_prototype)
-  ftmp = zeros(rate_prototype); gtmp = zeros(noise_rate_prototype); chi2 = similar(ΔW)
+  ftmp = zeros(rate_prototype); gtmp = zeros(noise_rate_prototype);
+  if typeof(ΔW) <: Union{SArray,Number}
+    chi2 = copy(ΔW)
+  else
+    chi2 = similar(ΔW)
+  end
   atemp = zeros(rate_prototype); btemp = zeros(rate_prototype); E₂ = zeros(rate_prototype); E₁temp = zeros(rate_prototype)
   E₁ = zeros(rate_prototype)
   tmp = zeros(u)

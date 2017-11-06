@@ -68,7 +68,11 @@ end
   integrator.g(t,uprev,gt)
   integrator.g(t+dt,uprev,gpdt)
   integrator.f(t,uprev,k₁); k₁*=dt
-  @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+  if typeof(W.dW) <: Union{SArray,Number}
+    chi2 = @. (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+  else
+    @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+  end
 
   if is_diagonal_noise(integrator.sol.prob)
     @. E₁ = chi2*gpdt
@@ -155,7 +159,13 @@ end
   @unpack t,dt,uprev,u,W = integrator
   @unpack H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂,tmp = cache
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages = cache.tab
-  @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+
+  if typeof(W.dW) <: Union{SArray,Number}
+    chi2 = @. (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+  else
+    @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+  end
+  
   for i in 1:stages
     fill!(H0[i],zero(eltype(integrator.u)))
   end
