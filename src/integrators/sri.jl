@@ -167,11 +167,17 @@ end
 @inline function perform_step!(integrator,cache::SRIW1Cache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
   @unpack chi1,chi2,chi3,fH01o4,g₁o2,H0,H11,H12,H13,g₂o3,Fg₂o3,g₃o3,Tg₃o3,mg₁,E₁,E₂,fH01,fH02,g₁,g₂,g₃,g₄,tmp = cache
-  @tight_loop_macros for i in eachindex(u)
-    @inbounds chi1[i] = (W.dW[i].^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
-    @inbounds chi2[i] = (W.dW[i] + W.dZ[i]/sqrt(3))/2 #I_(1,0)/h
-    @inbounds chi3[i] = (W.dW[i].^3 - 3W.dW[i]*dt)/6dt #I_(1,1,1)/h
+
+  if typeof(W.dW) <: Union{SArray,Number}
+    chi1 = @. (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
+    chi2 = @. (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    chi3 = @. (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
+  else
+    @. chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
+    @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    @. chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   end
+
   integrator.f(t,uprev,fH01)
   @tight_loop_macros for i in eachindex(u)
     @inbounds fH01[i] = dt*fH01[i]

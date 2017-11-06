@@ -167,7 +167,16 @@ function alg_cache(alg::SRI,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,u
   atemp = zeros(rate_prototype); btemp = zeros(rate_prototype)
   E₁ = zeros(rate_prototype); E₂ = zeros(rate_prototype); E₁temp = zeros(rate_prototype)
   ftemp = zeros(rate_prototype); gtemp = zeros(rate_prototype)
-  chi1 = similar(ΔW); chi2 = similar(ΔW); chi3 = similar(ΔW)
+
+  if typeof(ΔW) <: Union{SArray,Number}
+    chi1 = copy(ΔW)
+    chi2 = copy(ΔW)
+    chi3 = copy(ΔW)
+  else
+    chi1 = similar(ΔW)
+    chi2 = similar(ΔW)
+    chi3 = similar(ΔW)
+  end
   tmp = zeros(u)
   SRICache(u,uprev,H0,H1,A0temp,A1temp,B0temp,B1temp,A0temp2,A1temp2,B0temp2,B1temp2,
     atemp,btemp,E₁,E₂,E₁temp,ftemp,gtemp,chi1,chi2,chi3,tmp,tab)
@@ -210,9 +219,15 @@ du_cache(c::SRIW1Cache) = (c.chi1,c.chi2,c.chi3,c.fH01o4,c.g₁o2,c.g₂o3,c.Fg�
 user_cache(c::SRIW1Cache) = (c.u,c.uprev,c.tmp,c.H0,c.H11,c.H12,c.H13)
 
 function alg_cache(alg::SRIW1,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
-  chi1 = similar(ΔW)
-  chi2 = similar(ΔW)
-  chi3 = similar(ΔW)
+  if typeof(ΔW) <: Union{SArray,Number}
+    chi1 = copy(ΔW)
+    chi2 = copy(ΔW)
+    chi3 = copy(ΔW)
+  else
+    chi1 = similar(ΔW)
+    chi2 = similar(ΔW)
+    chi3 = similar(ΔW)
+  end
   fH01o4 = zeros(rate_prototype)
   g₁o2 = zeros(rate_prototype)
   H0 = zeros(u)
