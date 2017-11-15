@@ -28,6 +28,19 @@ end
 
 (integrator::SDEIntegrator)(val::AbstractArray,t::Union{Number,AbstractArray},deriv::Type=Val{0};idxs=nothing) = current_interpolant!(val,t,integrator,idxs,deriv)
 
+function u_modified!(integrator::SDEIntegrator,bool::Bool)
+  integrator.u_modified = bool
+end
+
+get_proposed_dt(integrator::SDEIntegrator) = integrator.dtpropose
+set_proposed_dt!(integrator::SDEIntegrator,dt::Number) = (integrator.dtpropose = dt)
+
+function set_proposed_dt!(integrator::SDEIntegrator,integrator2::SDEIntegrator)
+  integrator.dtpropose = integrator2.dtpropose
+  integrator.qold = integrator2.qold
+  integrator.erracc = integrator2.erracc
+  integrator.dtacc = integrator2.dtacc
+end
 
 user_cache(integrator::SDEIntegrator) = user_cache(integrator.cache)
 u_cache(integrator::SDEIntegrator) = u_cache(integrator.cache)
