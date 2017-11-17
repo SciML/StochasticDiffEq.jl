@@ -146,8 +146,6 @@ end
     copy!(u,uprev)
   end
 
-  uf.t = t
-
   if has_invW(f)
     f(Val{:invW},t,uprev,dt,W) # W == inverse W
   else
@@ -158,11 +156,8 @@ end
       if has_jac(f)
         f(Val{:jac},t,uprev,J)
       else
-        if alg_autodiff(integrator.alg)
-          ForwardDiff.jacobian!(J,uf,vec(du1),vec(uprev),jac_config)
-        else
-          Calculus.finite_difference_jacobian!(uf,vec(uprev),vec(du1),J,integrator.alg.diff_type)
-        end
+        uf.t = t
+        jacobian!(J, uf, uprev, du1, integrator, jac_config)
       end
     end
     if integrator.iter < 1 || new_jac || abs(dt - (t-integrator.tprev)) > 100eps()
