@@ -1,22 +1,3 @@
-mutable struct VectorF{F,SizeType} <: Function
-  f::F
-  sizeu::SizeType
-end
-function (p::VectorF)(t,uprev,du)
-  p.f(t,reshape(uprev,p.sizeu...),reshape(du,p.sizeu...))
-  uprev = vec(uprev)
-  du = vec(du)
-end
-
-mutable struct VectorFReturn{F,SizeType} <: Function
-  f::F
-  sizeu::SizeType
-end
-function (p::VectorFReturn)(t,uprev,du)
-  p.f(t,reshape(uprev,p.sizeu...),reshape(du,p.sizeu...))
-  vec(du)
-end
-
 mutable struct TimeGradientWrapper{VFType,uType} <: Function
   vf::VFType
   uprev::uType
