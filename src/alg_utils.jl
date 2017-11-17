@@ -32,7 +32,7 @@ alg_interpretation(alg::StochasticDiffEqAlgorithm) = :Ito
 alg_interpretation(alg::EulerHeun) = :Stratonovich
 alg_interpretation(alg::RKMil{interpretation}) where {interpretation} = interpretation
 alg_interpretation(alg::RKMilCommute{interpretation}) where {interpretation} = interpretation
-alg_interpretation(alg::ImplicitRKMil{CS,AD,F,K,T,T2,Controller,interpretation}) where {CS,AD,F,K,T,T2,Controller,interpretation} = interpretation
+alg_interpretation(alg::ImplicitRKMil{CS,AD,F,S,K,T,T2,Controller,interpretation}) where {CS,AD,F,S,K,T,T2,Controller,interpretation} = interpretation
 
 alg_compatible(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = true
 
