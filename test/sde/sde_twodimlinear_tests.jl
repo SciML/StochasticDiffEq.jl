@@ -9,6 +9,7 @@ sol = solve(prob,RKMil(),dt=1/2^(3))
 sol = solve(prob,SRI(),dt=1/2^(3))
 sol = solve(prob,SRIW1(),dt=1/2^(3))
 sol = solve(prob,ImplicitEM(),dt=1/2^(3))
+sol = solve(prob,ImplicitEM(autodiff=false),dt=1/2^(3))
 sol = solve(prob,ImplicitRKMil(),dt=1/2^(3))
 
 sol = solve(prob,SRIW1(),dt=1/2^(3),save_everystep=false)
@@ -32,13 +33,22 @@ sim = test_convergence(dts,prob,ImplicitEM(theta=1),numMonte=100)
 sim = test_convergence(dts,prob,ImplicitEM(symplectic=true),numMonte=100)
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
 
+sim = test_convergence(dts,prob,ImplicitEM(symplectic=true,autodiff=false),numMonte=100)
+@test abs(sim.𝒪est[:l2]-.5) < 0.1
+
 sim = test_convergence(dts,prob,ImplicitRKMil(),numMonte=100)
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
 sim = test_convergence(dts,prob,ImplicitRKMil(theta=1),numMonte=100)
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
+sim = test_convergence(dts,prob,ImplicitRKMil(theta=1,autodiff=false),numMonte=100)
+@test abs(sim.𝒪est[:l2]-1) < 0.1
+
 sim = test_convergence(dts,prob,ImplicitRKMil(symplectic=true),numMonte=100)
+@test abs(sim.𝒪est[:l2]-1) < 0.1
+
+sim = test_convergence(dts,prob,ImplicitRKMil(symplectic=true,autodiff=false),numMonte=100)
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
 sim2 = test_convergence(dts,prob,RKMil(),numMonte=100)
