@@ -34,7 +34,7 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prot
 
   uf = UJacobianWrapper(f,t,uprev,du1)
   if alg_autodiff(alg)
-    jac_config = ForwardDiff.JacobianConfig(uf,vec(du1),vec(uprev),
+    jac_config = ForwardDiff.JacobianConfig(uf,du1,uprev,
                     ForwardDiff.Chunk{determine_chunksize(u,alg)}())
   else
     jac_config = nothing
@@ -127,7 +127,7 @@ function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,rate_prototype,noise_ra
 
   uf = UJacobianWrapper(f,t,uprev,du1)
   if alg_autodiff(alg)
-    jac_config = ForwardDiff.JacobianConfig(uf,vec(du1),vec(uprev),
+    jac_config = ForwardDiff.JacobianConfig(uf,du1,uprev,
                     ForwardDiff.Chunk{determine_chunksize(u,alg)}())
   else
     jac_config = nothing
@@ -217,7 +217,7 @@ function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_p
 
   uf = UJacobianWrapper(f,t,uprev,du1)
   if alg_autodiff(alg)
-    jac_config = ForwardDiff.JacobianConfig(uf,vec(du1),vec(uprev),
+    jac_config = ForwardDiff.JacobianConfig(uf,du1,uprev,
                     ForwardDiff.Chunk{determine_chunksize(u,alg)}())
   else
     jac_config = nothing
