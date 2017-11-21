@@ -8,7 +8,7 @@ Roots
 Compat 0.17.0
 DiffEqNoiseProcess 0.5.0
 NLsolve
-ForwardDiff 0.5.0
+ForwardDiff 0.7.0
 StaticArrays
 Reexport
 RandomNumbers
