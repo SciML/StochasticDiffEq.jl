@@ -33,7 +33,7 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prot
   k = zeros(rate_prototype)
 
   uf = DiffEqDiffTools.UJacobianWrapper(f,t)
-  jac_config = build_jac_config(alg,uf,du1,uprev,u,tmp,dz)
+  jac_config = build_jac_config(alg,f,uf,du1,uprev,u,tmp,dz)
   ηold = one(uEltypeNoUnits)
 
   if alg.κ != nothing
@@ -121,7 +121,7 @@ function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,rate_prototype,noise_ra
   k = zeros(rate_prototype)
 
   uf = UJacobianWrapper(f,t)
-  jac_config = build_jac_config(alg,uf,du1,uprev,u,tmp,dz)
+  jac_config = build_jac_config(alg,f,uf,du1,uprev,u,tmp,dz)
   ηold = one(uEltypeNoUnits)
 
   if alg.κ != nothing
@@ -206,7 +206,7 @@ function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_p
   k = zeros(rate_prototype)
 
   uf = UJacobianWrapper(f,t)
-  jac_config = build_jac_config(alg,uf,du1,uprev,u,tmp,dz)
+  jac_config = build_jac_config(alg,f,uf,du1,uprev,u,tmp,dz)
   ηold = one(uEltypeNoUnits)
 
   if alg.κ != nothing
