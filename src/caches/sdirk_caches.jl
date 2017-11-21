@@ -68,7 +68,7 @@ end
 
 function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  uf = UDerivativeWrapper(f,t)
+  uf = DiffEqDiffTools.UDerivativeWrapper(f,t)
   ηold = one(uEltypeNoUnits)
 
   if alg.κ != nothing
@@ -152,7 +152,7 @@ end
 
 function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  uf = UDerivativeWrapper(f,t)
+  uf = DiffEqDiffTools.UDerivativeWrapper(f,t)
   ηold = one(uEltypeNoUnits)
 
   if alg.κ != nothing
@@ -238,7 +238,7 @@ end
 
 function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  uf = UDerivativeWrapper(f,t)
+  uf = DiffEqDiffTools.UDerivativeWrapper(f,t)
   ηold = one(uEltypeNoUnits)
 
   if alg.κ != nothing
