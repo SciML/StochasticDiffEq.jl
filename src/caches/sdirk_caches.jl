@@ -32,13 +32,8 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prot
   fsalfirst = zeros(rate_prototype)
   k = zeros(rate_prototype)
 
-  uf = UJacobianWrapper(f,t,tmp,dz)
-  if alg_autodiff(alg)
-    jac_config = ForwardDiff.JacobianConfig(uf,du1,uprev,
-                    ForwardDiff.Chunk{determine_chunksize(u,alg)}())
-  else
-    jac_config = nothing
-  end
+  uf = DiffEqDiffTools.UJacobianWrapper(f,t)
+  jac_config = build_jac_config(alg,f,uf,du1,uprev,u,tmp,dz)
   ηold = one(uEltypeNoUnits)
 
   if alg.κ != nothing
@@ -73,7 +68,7 @@ end
 
 function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  uf = UDerivativeWrapper(f,t)
+  uf = DiffEqDiffTools.UDerivativeWrapper(f,t)
   ηold = one(uEltypeNoUnits)
 
   if alg.κ != nothing
@@ -125,13 +120,8 @@ function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,rate_prototype,noise_ra
   fsalfirst = zeros(rate_prototype)
   k = zeros(rate_prototype)
 
-  uf = UJacobianWrapper(f,t,tmp,dz)
-  if alg_autodiff(alg)
-    jac_config = ForwardDiff.JacobianConfig(uf,du1,uprev,
-                    ForwardDiff.Chunk{determine_chunksize(u,alg)}())
-  else
-    jac_config = nothing
-  end
+  uf = DiffEqDiffTools.UJacobianWrapper(f,t)
+  jac_config = build_jac_config(alg,f,uf,du1,uprev,u,tmp,dz)
   ηold = one(uEltypeNoUnits)
 
   if alg.κ != nothing
@@ -162,7 +152,7 @@ end
 
 function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  uf = UDerivativeWrapper(f,t)
+  uf = DiffEqDiffTools.UDerivativeWrapper(f,t)
   ηold = one(uEltypeNoUnits)
 
   if alg.κ != nothing
@@ -215,13 +205,8 @@ function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_p
   fsalfirst = zeros(rate_prototype)
   k = zeros(rate_prototype)
 
-  uf = UJacobianWrapper(f,t,tmp,dz)
-  if alg_autodiff(alg)
-    jac_config = ForwardDiff.JacobianConfig(uf,du1,uprev,
-                    ForwardDiff.Chunk{determine_chunksize(u,alg)}())
-  else
-    jac_config = nothing
-  end
+  uf = DiffEqDiffTools.UJacobianWrapper(f,t)
+  jac_config = build_jac_config(alg,f,uf,du1,uprev,u,tmp,dz)
   ηold = one(uEltypeNoUnits)
 
   if alg.κ != nothing
@@ -253,7 +238,7 @@ end
 
 function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  uf = UDerivativeWrapper(f,t)
+  uf = DiffEqDiffTools.UDerivativeWrapper(f,t)
   ηold = one(uEltypeNoUnits)
 
   if alg.κ != nothing
