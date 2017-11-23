@@ -44,7 +44,7 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prot
   if alg.tol != nothing
     tol = alg.tol
   else
-    reltol = 1e-5 # TODO: generalize
+    reltol = 1e-1 # TODO: generalize
     tol = min(0.03,first(reltol)^(0.5))
   end
 
@@ -79,7 +79,7 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prot
   if alg.tol != nothing
     tol = alg.tol
   else
-    reltol = 1e-5 # TODO: generalize
+    reltol = 1e-1 # TODO: generalize
     tol = min(0.03,first(reltol)^(0.5))
   end
 
@@ -132,7 +132,7 @@ function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,rate_prototype,noise_ra
   if alg.tol != nothing
     tol = alg.tol
   else
-    reltol = 1e-5 # TODO: generalize
+    reltol = 1e-1 # TODO: generalize
     tol = min(0.03,first(reltol)^(0.5))
   end
 
@@ -163,7 +163,7 @@ function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,rate_prototype,noise_ra
   if alg.tol != nothing
     tol = alg.tol
   else
-    reltol = 1e-5 # TODO: generalize
+    reltol = 1e-1 # TODO: generalize
     tol = min(0.03,first(reltol)^(0.5))
   end
 
@@ -217,7 +217,7 @@ function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_p
   if alg.tol != nothing
     tol = alg.tol
   else
-    reltol = 1e-5 # TODO: generalize
+    reltol = 1e-1 # TODO: generalize
     tol = min(0.03,first(reltol)^(0.5))
   end
 
@@ -249,7 +249,7 @@ function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_p
   if alg.tol != nothing
     tol = alg.tol
   else
-    reltol = 1e-5 # TODO: generalize
+    reltol = 1e-1 # TODO: generalize
     tol = min(0.03,first(reltol)^(0.5))
   end
 
