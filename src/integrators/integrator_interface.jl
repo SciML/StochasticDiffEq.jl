@@ -176,7 +176,7 @@ function deleteat_noise!(integrator,cache,idxs)
   deleteat!(integrator.W.dWtilde,idxs)
   deleteat!(integrator.W.dWtmp,idxs)
   deleteat!(integrator.W.curW,idxs)
-  DiffEqNoiseProcess.deleteat_stack!(integrator.W.S₂,idxs)
+  DiffEqNoiseProcess.resize_stack!(integrator.W,length(integrator.u))
 
   if alg_needs_extra_process(integrator.alg)
     deleteat!(integrator.W.curZ,idxs)
