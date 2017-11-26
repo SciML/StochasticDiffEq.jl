@@ -259,14 +259,6 @@ function init(
         error("Starting time in the noise process is not the starting time of the simulation. The noise process should be re-initialized for repeated use")
       end
     end
-    # Reseed
-    if typeof(W) <: NoiseProcess
-      if prob.seed != 0
-        srand(W.rng,seed)
-      else
-        srand(W.rng,seed)
-      end
-    end
   end
 
   EEst = tTypeNoUnits(1)
