@@ -252,7 +252,7 @@ function init(
     end
   else
     W = prob.noise
-    if !(typeof(W) <: NoiseGrid) && W.t[end] != t
+    if W.t[end] != t
       if W.reset
         reinit!(W,t)
         # Reseed
