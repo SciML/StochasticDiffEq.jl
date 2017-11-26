@@ -240,7 +240,7 @@ end
   if has_invW(f)
     A_mul_B!(vec(dz),W,vec(k)) # Here W is actually invW
   else
-    integrator.alg.linsolve(vec(dz),W,vec(k),new_W)
+    cache.linsolve(vec(dz),W,vec(k),new_W)
   end
   ndz = integrator.opts.internalnorm(dz)
   z .+= dz
@@ -271,7 +271,7 @@ end
     if has_invW(f)
       A_mul_B!(dz,W,k) # Here W is actually invW
     else
-      integrator.alg.linsolve(vec(dz),W,vec(k),false)
+      cache.linsolve(vec(dz),W,vec(k),false)
     end
     ndzprev = ndz
     ndz = integrator.opts.internalnorm(dz)
