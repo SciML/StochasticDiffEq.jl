@@ -253,7 +253,11 @@ function init(
   else
     W = prob.noise
     if !(typeof(W) <: NoiseGrid) && W.t[end] != t
-      error("Starting time in the noise process is not the starting time of the simulation. The noise process should be re-initialized for repeated use")
+      if W.reset
+        reinit!(W,t)
+      else
+        error("Starting time in the noise process is not the starting time of the simulation. The noise process should be re-initialized for repeated use")
+      end
     end
     # Reseed
     if typeof(W) <: NoiseProcess
