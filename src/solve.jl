@@ -89,7 +89,8 @@ function init(
     g = nothing
   end
   u0 = prob.u0
-  uEltype = recursive_eltype(u0)
+  uBottomEltype = recursive_bottom_eltype(u0)
+  uBottomEltypeNoUnits = recursive_unitless_bottom_eltype(u0)
 
   if typeof(prob.u0) <: Array
     u = recursivecopy(prob.u0)
@@ -134,7 +135,7 @@ function init(
 
   callbacks_internal = CallbackSet(callback,prob.callback)
 
-  uEltypeNoUnits = typeof(recursive_one(u))
+  uEltypeNoUnits = recursive_unitless_eltype(u0)
   tTypeNoUnits   = typeof(recursive_one(t))
 
   ### Algorithm-specific defaults ###
@@ -170,10 +171,8 @@ function init(
     saveiter = 0
   end
 
-  uEltype = recursive_eltype(u)
-
-  opts = SDEOptions(maxiters,timeseries_steps,save_everystep,adaptive,map(uEltype,abstol),
-    map(uEltypeNoUnits,reltol),tTypeNoUnits(gamma),tTypeNoUnits(qmax),tTypeNoUnits(qmin),
+  opts = SDEOptions(maxiters,timeseries_steps,save_everystep,adaptive,map(uBottomEltype,abstol),
+    map(uBottomEltypeNoUnits,reltol),tTypeNoUnits(gamma),tTypeNoUnits(qmax),tTypeNoUnits(qmin),
     tTypeNoUnits(failfactor),
     dtmax,dtmin,internalnorm,save_idxs,
     tstops_internal,saveat_internal,d_discontinuities_internal,
@@ -182,7 +181,7 @@ function init(
     progress,progress_steps,
     progress_name,progress_message,
     timeseries_errors,dense_errors,
-    tTypeNoUnits(beta1),tTypeNoUnits(beta2),map(uEltypeNoUnits,delta),tTypeNoUnits(qoldinit),
+    tTypeNoUnits(beta1),tTypeNoUnits(beta2),map(uBottomEltypeNoUnits,delta),tTypeNoUnits(qoldinit),
     dense,save_start,save_end,save_noise,
     callbacks_internal,isoutofdomain,unstable_check,verbose,calck,force_dtmin,
     advance_to_tstop,stop_at_next_tstop)
@@ -280,7 +279,7 @@ function init(
 
   rateType = typeof(u/t) ## Can be different if united
 
-  cache = alg_cache(alg,prob,u,W.dW,W.dZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,tTypeNoUnits,uprev,f,t,Val{isinplace})
+  cache = alg_cache(alg,prob,u,W.dW,W.dZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,Val{isinplace})
 
   id = LinearInterpolationData(timeseries,ts)
 
@@ -300,7 +299,7 @@ function init(
     cacheType =  OrdinaryDiffEqCache
   end
 
-  integrator =    SDEIntegrator{typeof(alg),uType,uEltype,tType,tTypeNoUnits,
+  integrator =    SDEIntegrator{typeof(alg),uType,uBottomEltype,tType,tTypeNoUnits,
                   uEltypeNoUnits,typeof(W),rateType,typeof(sol),typeof(cache),
                   typeof(prog),FType,GType,typeof(opts),typeof(noise)}(
                   f,g,noise,uprev,tprev,t,u,tType(dt),tType(dt),tType(dt),dtcache,T,tdir,

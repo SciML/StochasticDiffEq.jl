@@ -24,7 +24,7 @@ u_cache(c::ImplicitEMCache)    = (c.uprev2,c.z,c.dz)
 du_cache(c::ImplicitEMCache)   = (c.k,c.fsalfirst)
 
 function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   du1 = zeros(rate_prototype)
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
   W = similar(J)
@@ -69,7 +69,7 @@ mutable struct ImplicitEMConstantCache{F,uEltypeNoUnits} <: StochasticDiffEqCons
 end
 
 function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
+                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   uf = DiffEqDiffTools.UDerivativeWrapper(f,t)
   ηold = one(uEltypeNoUnits)
 
@@ -114,7 +114,7 @@ u_cache(c::ImplicitEulerHeunCache)    = (c.uprev2,c.z,c.dz)
 du_cache(c::ImplicitEulerHeunCache)   = (c.k,c.fsalfirst)
 
 function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   du1 = zeros(rate_prototype)
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
   W = similar(J)
@@ -155,7 +155,7 @@ mutable struct ImplicitEulerHeunConstantCache{F,uEltypeNoUnits} <: StochasticDif
 end
 
 function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
+                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   uf = DiffEqDiffTools.UDerivativeWrapper(f,t)
   ηold = one(uEltypeNoUnits)
 
@@ -201,7 +201,7 @@ u_cache(c::ImplicitRKMilCache)    = (c.uprev2,c.z,c.dz)
 du_cache(c::ImplicitRKMilCache)   = (c.k,c.fsalfirst)
 
 function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   du1 = zeros(rate_prototype)
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
   W = similar(J)
@@ -243,7 +243,7 @@ mutable struct ImplicitRKMilConstantCache{F,uEltypeNoUnits} <: StochasticDiffEqC
 end
 
 function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
+                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   uf = DiffEqDiffTools.UDerivativeWrapper(f,t)
   ηold = one(uEltypeNoUnits)
 

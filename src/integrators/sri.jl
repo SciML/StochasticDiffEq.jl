@@ -45,7 +45,7 @@
   @. u = uprev + @muladd(dt*atemp + btemp) + E₂
 
   if integrator.opts.adaptive
-    @. tmp = @muladd(integrator.opts.delta*E₁+E₂)/@muladd(integrator.opts.abstol + max(abs(uprev),abs(u))*integrator.opts.reltol)
+    @. tmp = @muladd(integrator.opts.delta*E₁+E₂)/@muladd(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
   @pack integrator = t,dt,u
@@ -121,7 +121,7 @@ end
   if integrator.opts.adaptive
     @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
 						  Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
-      @inbounds tmp[i] = @muladd(δ*E₁[i]+E₂[i])/@muladd(atol + max(abs(uprev[i]),abs(u[i]))*rtol)
+      @inbounds tmp[i] = @muladd(δ*E₁[i]+E₂[i])/@muladd(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
     end
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
@@ -163,7 +163,7 @@ end
   @. u = @muladd uprev +  (fH01 + 2fH02)/3 + W.dW*(mg₁ + Fg₂o3 + Tg₃o3) + chi1*(mg₁ + Fg₂o3 - g₃o3) + E₂
 
   if integrator.opts.adaptive
-    @. tmp = @muladd(integrator.opts.delta*E₁+E₂)/@muladd(integrator.opts.abstol + max(abs(uprev),abs(u))*integrator.opts.reltol)
+    @. tmp = @muladd(integrator.opts.delta*E₁+E₂)/@muladd(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
   @pack integrator = t,dt,u
@@ -223,7 +223,7 @@ end
   if integrator.opts.adaptive
     @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
 						  Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
-      @inbounds tmp[i] = @muladd(δ*E₁[i]+E₂[i])/@muladd(atol + max(abs(uprev[i]),abs(u[i]))*rtol)
+      @inbounds tmp[i] = @muladd(δ*E₁[i]+E₂[i])/@muladd(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
     end
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
@@ -263,7 +263,7 @@ end
 
   u = @. uprev + (fH01 + 2fH02)/3 + W.dW.*(mg₁ + Fg₂o3 + Tg₃o3) + chi1.*(mg₁ + Fg₂o3 - g₃o3) + E₂
   if integrator.opts.adaptive
-    tmp = @. @muladd(integrator.opts.delta*E₁+E₂)/(@muladd(integrator.opts.abstol + max.(abs.(uprev),abs.(u))*integrator.opts.reltol))
+    tmp = @. @muladd(integrator.opts.delta*E₁+E₂)/(@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
   @pack integrator = t,dt,u
@@ -302,7 +302,7 @@ end
 
   u = uprev + (fH01 + 2fH02)/3 + W.dW.*(mg₁ + Fg₂o3 + Tg₃o3) + chi1.*(mg₁ + Fg₂o3 - g₃o3) + E₂
   if integrator.opts.adaptive
-    integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta.*E₁.+E₂)./(@muladd(integrator.opts.abstol .+ max.(abs.(uprev),abs.(u)).*integrator.opts.reltol)))
+    integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta.*E₁.+E₂)./(@muladd(integrator.opts.abstol .+ max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u)).*integrator.opts.reltol)))
   end
   @pack integrator = t,dt,u
 end
@@ -350,7 +350,7 @@ end
   u = muladd.(dt,atemp,uprev) .+ btemp .+ E₂
 
   if integrator.opts.adaptive
-    tmp = @. @muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(abs.(uprev),abs.(u))*integrator.opts.reltol)
+    tmp = @. @muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
   @pack integrator = t,dt,u
@@ -399,7 +399,7 @@ end
   u = @muladd(uprev + dt*atemp) + btemp + E₂
 
   if integrator.opts.adaptive
-    integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(abs.(uprev),abs.(u))*integrator.opts.reltol))
+    integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
   end
   @pack integrator = t,dt,u
 end
