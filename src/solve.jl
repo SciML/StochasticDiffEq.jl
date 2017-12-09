@@ -407,7 +407,7 @@ function tstop_saveat_disc_handling(tstops,saveat,d_discontinuities,tdir,tspan,t
   tstops_internal,saveat_internal,d_discontinuities_internal
 end
 
-function initialize_callbacks!(integrator)
+function initialize_callbacks!(integrator, initialize_save = true)
   t = integrator.t
   u = integrator.u
   callbacks = integrator.opts.callback
@@ -419,7 +419,7 @@ function initialize_callbacks!(integrator)
   # FSAL in order for the starting derivatives to be correct
   if u_modified
 
-    if isinplace
+    if isinplace(integrator.sol.prob)
       recursivecopy!(integrator.uprev,integrator.u)
     else
       integrator.uprev = integrator.u
