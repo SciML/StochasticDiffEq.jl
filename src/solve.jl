@@ -78,10 +78,6 @@ function init(
       error("Fixed timestep methods require a choice of dt or choosing the tstops")
   end
 
-  if tspan[1] == tspan[2]
-    error("Timespan is trivial")
-  end
-
   f = prob.f
   if typeof(prob) <: AbstractSDEProblem
     g = prob.g
