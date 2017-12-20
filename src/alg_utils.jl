@@ -21,6 +21,8 @@ alg_order(alg::SRI) = alg.tableau.order
 alg_order(alg::SRIW1) = 3//2
 alg_order(alg::SRA) = alg.tableau.order
 alg_order(alg::SRA1) = 2//1
+alg_order(alg::SRA2) = 2//1
+alg_order(alg::SRA3) = 2//1
 alg_order(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = alg_order(alg.algs[1])
 
 beta2_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = 2//(5alg_order(alg))
@@ -36,10 +38,13 @@ alg_interpretation(alg::ImplicitRKMil{CS,AD,F,S,K,T,T2,Controller,interpretation
 
 alg_compatible(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = true
 
+alg_compatible(prob,alg::StochasticDiffEqAlgorithm) = false
 alg_compatible(prob,alg::SRI) = is_diagonal_noise(prob)
 alg_compatible(prob,alg::SRIW1) = is_diagonal_noise(prob)
-alg_compatible(prob,alg::SRA) = true
-alg_compatible(prob,alg::SRA1) = true
+alg_compatible(prob,alg::SRA) = is_diagonal_noise(prob)
+alg_compatible(prob,alg::SRA1) = is_diagonal_noise(prob)
+alg_compatible(prob,alg::SRA2) = is_diagonal_noise(prob)
+alg_compatible(prob,alg::SRA3) = is_diagonal_noise(prob)
 alg_compatible(prob,alg::RKMil) = is_diagonal_noise(prob)
 alg_compatible(prob,alg::ImplicitRKMil) = is_diagonal_noise(prob)
 
@@ -49,6 +54,8 @@ alg_needs_extra_process(alg::SRI) = true
 alg_needs_extra_process(alg::SRIW1) = true
 alg_needs_extra_process(alg::SRA) = true
 alg_needs_extra_process(alg::SRA1) = true
+alg_needs_extra_process(alg::SRA2) = true
+alg_needs_extra_process(alg::SRA3) = true
 
 alg_autodiff(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
 get_chunksize(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = CS

@@ -45,6 +45,7 @@ module StochasticDiffEq
   include("caches/basic_method_caches.jl")
   include("caches/iif_caches.jl")
   include("caches/sdirk_caches.jl")
+  include("caches/sra_caches.jl")
   include("caches/rossler_caches.jl")
   include("integrators/type.jl")
   include("dense.jl")
