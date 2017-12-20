@@ -155,6 +155,24 @@ end
 end
 =#
 
+@inline function perform_step!(integrator,cache::SRA2ConstantCache,f=integrator.f)
+  @unpack t,dt,uprev,u,W = integrator
+  gpdt = integrator.g(t+dt,uprev)
+  chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+  k₁ = dt*integrator.f(t,uprev)
+  k₂ = dt*integrator.f(t+3dt/4,uprev+3k₁/4 + 3chi2*integrator.g(t+dt,uprev)/2)
+  E₁ = k₁ + k₂
+  E₂ = chi2.*(integrator.g(t,uprev)-gpdt) #Only for additive!
+
+  if integrator.opts.adaptive
+    u = uprev + k₁/3 + 2k₂/3 + E₂ + W.dW*gpdt
+    integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
+  else
+    u = uprev + k₁/3 + 2k₂/3 + E₂ + W.dW*gpdt
+  end
+  @pack integrator = t,dt,u
+end
+
 @inline function perform_step!(integrator,cache::SRACache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
   @unpack H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂,tmp = cache
