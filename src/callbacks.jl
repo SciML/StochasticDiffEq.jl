@@ -103,11 +103,11 @@ function find_callback_time(integrator,callback)
             tmp = @view integrator.cache.tmp[callback.idxs]
           end
         end
-        zero_func = (Θ) -> begin
-          if typeof(integrator.cache) <: OrdinaryDiffEqMutableCache && !(typeof(callback.idxs) <: Number)
-            ode_interpolant!(tmp,Θ,integrator,callback.idxs,Val{0})
+        find_zero = (Θ) -> begin
+          if typeof(integrator.cache) <: StochasticDiffEqMutableCache && !(typeof(callback.idxs) <: Number)
+            sde_interpolant!(tmp,Θ,integrator,callback.idxs,Val{0})
           else
-            tmp = ode_interpolant(Θ,integrator,callback.idxs,Val{0})
+            tmp = sde_interpolant(Θ,integrator,callback.idxs,Val{0})
           end
           callback.condition(integrator.tprev+Θ*integrator.dt,tmp,integrator)
         end
