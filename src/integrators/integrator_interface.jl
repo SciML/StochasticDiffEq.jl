@@ -70,7 +70,7 @@ function resize_noise!(integrator,cache,bot_idx,i)
     if alg_needs_extra_process(integrator.alg)
       resize!(c[3],i)
     end
-    if i > bot_idx # fill in rands
+    if i >= bot_idx # fill in rands
       fill_new_noise_caches!(integrator,c,c[1],bot_idx:i)
     end
   end
@@ -79,23 +79,31 @@ function resize_noise!(integrator,cache,bot_idx,i)
     if alg_needs_extra_process(integrator.alg)
       resize!(c[3],i)
     end
-    if i > bot_idx # fill in rands
+    if i >= bot_idx # fill in rands
       fill_new_noise_caches!(integrator,c,c[1],bot_idx:i)
     end
   end
   resize!(integrator.W.dW,i)
+  integrator.W.dW[end] = zero(eltype(integrator.u))
   resize!(integrator.W.dWtilde,i)
+  integrator.W.dWtilde[end] = zero(eltype(integrator.u))
   resize!(integrator.W.dWtmp,i)
+  integrator.W.dWtmp[end] = zero(eltype(integrator.u))
   resize!(integrator.W.curW,i)
+  integrator.W.curW[end] = zero(eltype(integrator.u))
   DiffEqNoiseProcess.resize_stack!(integrator.W,i)
 
   if alg_needs_extra_process(integrator.alg)
     resize!(integrator.W.dZ,i)
+    integrator.W.dZ[end] = zero(eltype(integrator.u))
     resize!(integrator.W.dZtilde,i)
+    integrator.W.dZtilde[end] = zero(eltype(integrator.u))
     resize!(integrator.W.dZtmp,i)
+    integrator.W.dZtmp[end] = zero(eltype(integrator.u))
     resize!(integrator.W.curZ,i)
+    integrator.W.curZ[end] = zero(eltype(integrator.u))
   end
-  if i > bot_idx # fill in rands
+  if i >= bot_idx # fill in rands
     fill!(@view(integrator.W.curW[bot_idx:i]),zero(eltype(integrator.u)))
     if alg_needs_extra_process(integrator.alg)
       fill!(@view(integrator.W.curZ[bot_idx:i]),zero(eltype(integrator.u)))
@@ -115,10 +123,11 @@ end
       c[3][idxs] .= integrator.noise(length(idxs),integrator,scaling_factor)
     end
   end
+
 end
 
 function resize_non_user_cache!(integrator::SDEIntegrator,cache,i)
-  bot_idx = length(integrator.u)
+  bot_idx = length(integrator.u) + 1
   resize_noise!(integrator,cache,bot_idx,i)
   for c in default_non_user_cache(integrator)
     resize!(c,i)
@@ -203,10 +212,14 @@ function addat_noise!(integrator,cache,idxs)
   end
 
   addat!(integrator.W.dW,idxs)
+  integrator.W.dW[idxs] .= zero(eltype(integrator.u))
   addat!(integrator.W.curW,idxs)
+  integrator.W.curW[idxs] .= zero(eltype(integrator.u))
   if alg_needs_extra_process(integrator.alg)
     addat!(integrator.W.dZ,idxs)
+    integrator.W.dZ[idxs] .= zero(eltype(integrator.u))
     addat!(integrator.W.curZ,idxs)
+    integrator.W.curZ[idxs] .= zero(eltype(integrator.u))
   end
 
   i = length(integrator.u)
