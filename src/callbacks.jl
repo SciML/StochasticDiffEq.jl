@@ -113,6 +113,7 @@ function find_callback_time(integrator,callback)
           callback.condition(integrator.tprev+Θ*integrator.dt,tmp,integrator)
         end
         @show (bottom_θ,top_Θ)
+        @show integrator.tprev,integrator.t
         @show integrator.uprev,integrator.u
         Θ = prevfloat(prevfloat(find_zero(zero_func,(bottom_θ,top_Θ),FalsePosition(),abstol = callback.abstol/10,verbose = true)))
         # 2 prevfloat guerentees that the new time is either 1 or 2 floating point
