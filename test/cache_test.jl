@@ -2,13 +2,13 @@ using StochasticDiffEq, DiffEqBase
 
 function f(t,u,du)
   for i in 1:length(u)
-    du[i] = (0.3/length(u))*u[i]
+    du[i] = (0.5/length(u))*u[i]
   end
 end
 
 function g(t,u,du)
   for i in 1:length(u)
-    du[i] = (0.3/length(u))*u[i]
+    du[i] = (0.5/length(u))*u[i]
   end
 end
 
@@ -43,6 +43,7 @@ p2 = plot(sol.t,map((x)->length(x),sol[:]),lw=3,
 plot(p1,p2,layout=(2,1),size=(600,1000))
 =#
 
+srand(3)
 sol = solve(prob,EM(),callback=callback,dt=1/4)
 sol = solve(prob,RKMil(),callback=callback,dt=1/4)
 sol = solve(prob,SRI(),callback=callback)
