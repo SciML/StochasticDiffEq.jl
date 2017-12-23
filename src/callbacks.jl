@@ -103,7 +103,7 @@ function find_callback_time(integrator,callback)
             tmp = @view integrator.cache.tmp[callback.idxs]
           end
         end
-        find_zero = (Θ) -> begin
+        zero_func = (Θ) -> begin
           if typeof(integrator.cache) <: StochasticDiffEqMutableCache && !(typeof(callback.idxs) <: Number)
             sde_interpolant!(tmp,Θ,integrator,callback.idxs,Val{0})
           else
