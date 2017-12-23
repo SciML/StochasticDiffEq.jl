@@ -109,6 +109,7 @@ function find_callback_time(integrator,callback)
           else
             tmp = sde_interpolant(Θ,integrator,callback.idxs,Val{0})
           end
+          @show tmp
           callback.condition(integrator.tprev+Θ*integrator.dt,tmp,integrator)
         end
         @show (bottom_θ,top_Θ)
