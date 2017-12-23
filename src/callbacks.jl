@@ -111,7 +111,7 @@ function find_callback_time(integrator,callback)
           end
           callback.condition(integrator.tprev+Θ*integrator.dt,tmp,integrator)
         end
-        Θ = prevfloat(prevfloat(find_zero(zero_func,(bottom_θ,top_Θ),FalsePosition(),abstol = callback.abstol/10)))
+        Θ = prevfloat(prevfloat(find_zero(zero_func,(bottom_θ,top_Θ),FalsePosition(),abstol = callback.abstol/10,verbose = true)))
         # 2 prevfloat guerentees that the new time is either 1 or 2 floating point
         # numbers just before the event, but not after. If there's a barrier
         # which is never supposed to be crossed, then this will ensure that
