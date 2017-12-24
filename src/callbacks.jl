@@ -103,7 +103,7 @@ function find_callback_time(integrator,callback)
             tmp = @view integrator.cache.tmp[callback.idxs]
           end
         end
-        find_zero = (Θ) -> begin
+        zero_func = (Θ) -> begin
           if typeof(integrator.cache) <: StochasticDiffEqMutableCache && !(typeof(callback.idxs) <: Number)
             sde_interpolant!(tmp,Θ,integrator,callback.idxs,Val{0})
           else
@@ -111,7 +111,7 @@ function find_callback_time(integrator,callback)
           end
           callback.condition(integrator.tprev+Θ*integrator.dt,tmp,integrator)
         end
-        Θ = prevfloat(prevfloat(fzero(find_zero,bottom_θ,top_Θ)))
+        Θ = prevfloat(prevfloat(find_zero(zero_func,(bottom_θ,top_Θ),FalsePosition(),abstol = callback.abstol/10)))
         # 2 prevfloat guerentees that the new time is either 1 or 2 floating point
         # numbers just before the event, but not after. If there's a barrier
         # which is never supposed to be crossed, then this will ensure that
