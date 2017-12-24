@@ -41,12 +41,21 @@ alg_compatible(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlg
 alg_compatible(prob,alg::StochasticDiffEqAlgorithm) = false
 alg_compatible(prob,alg::SRI) = is_diagonal_noise(prob)
 alg_compatible(prob,alg::SRIW1) = is_diagonal_noise(prob)
-alg_compatible(prob,alg::SRA) = is_diagonal_noise(prob)
-alg_compatible(prob,alg::SRA1) = is_diagonal_noise(prob)
-alg_compatible(prob,alg::SRA2) = is_diagonal_noise(prob)
-alg_compatible(prob,alg::SRA3) = is_diagonal_noise(prob)
+alg_compatible(prob,alg::SRA) = true
+alg_compatible(prob,alg::SRA1) = true
+alg_compatible(prob,alg::SRA2) = true
+alg_compatible(prob,alg::SRA3) = true
+alg_compatible(prob,alg::EM) = true
+alg_compatible(prob,alg::EulerHeun) = true
+alg_compatible(prob,alg::SplitEM) = true
+alg_compatible(prob,alg::ImplicitEM) = true
+alg_compatible(prob,alg::ImplicitEulerHeun) = true
 alg_compatible(prob,alg::RKMil) = is_diagonal_noise(prob)
 alg_compatible(prob,alg::ImplicitRKMil) = is_diagonal_noise(prob)
+alg_compatible(prob,alg::RKMilCommute) = true # No good check for commutative noise
+alg_compatible(prob,alg::IIF1M) = true
+alg_compatible(prob,alg::IIF2M) = true
+alg_compatible(prob,alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = max((alg_compatible(prob,a) for a in alg.algs)...)
 
 alg_needs_extra_process(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = false
 alg_needs_extra_process(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = max((alg_needs_extra_process(a) for a in alg.algs)...)

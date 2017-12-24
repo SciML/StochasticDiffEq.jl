@@ -32,7 +32,7 @@ function alg_cache(alg::SRA1,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
   SRA1Cache(u,uprev,chi2,tmp1,E₁,E₂,gt,k₁,k₂,gpdt,tmp)
 end
 
-struct SRA2ConstantCache <: StochasticDiffEqConstantCache
+struct SRA2ConstantCache{T} <: StochasticDiffEqConstantCache
   a21::T
   b21::T
   c02::T
@@ -45,8 +45,9 @@ struct SRA2ConstantCache <: StochasticDiffEqConstantCache
   beta22::T
 end
 
-function alg_cache(alg::SRA2::T
-prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
+function alg_cache(alg::SRA2,prob,u,ΔW,ΔZ,rate_prototype,
+                   noise_rate_prototype,uEltypeNoUnits,
+                   uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
 
   a21 = uBottomEltype(3//4)
   b21 = uBottomEltype(3//2)
@@ -61,7 +62,7 @@ prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,
   SRA2ConstantCache(a21,b21,c02,c11,c12,α1,α2,beta12,beta21,beta22)
 end
 
-struct ThreeStageSRAConstantCache <: StochasticDiffEqConstantCache
+struct ThreeStageSRAConstantCache{T} <: StochasticDiffEqConstantCache
   a21::T
   a31::T
   a32::T
@@ -84,8 +85,9 @@ struct ThreeStageSRAConstantCache <: StochasticDiffEqConstantCache
   beta23::T
 end
 
-function alg_cache(alg::SRA3::T
-prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
+function alg_cache(alg::SRA3,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
+                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,
+                   f,t,::Type{Val{false}})
 
   a21 = uBottomEltype(3//4)
   b21 = uBottomEltype(3//2)
@@ -97,7 +99,7 @@ prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,
   beta12 = uBottomEltype(1)
   beta21 = uBottomEltype(-3//2)
   beta22 = uBottomEltype(3//2)
-  SRA3ConstantCache(a21,b21,c02,c11,c12,α1,α2,beta12,beta21,beta22)
+  ThreeStageSRAConstantCache(a21,b21,c02,c11,c12,α1,α2,beta12,beta21,beta22)
 end
 
 struct SRAConstantCache{VType1,VType2,MType,uType} <: StochasticDiffEqConstantCache
