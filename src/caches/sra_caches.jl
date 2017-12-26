@@ -45,10 +45,7 @@ struct SRA2ConstantCache{T} <: StochasticDiffEqConstantCache
   beta22::T
 end
 
-function alg_cache(alg::SRA2,prob,u,ΔW,ΔZ,rate_prototype,
-                   noise_rate_prototype,uEltypeNoUnits,
-                   uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-
+function SRA2ConstantCache(uBottomEltype)
   a21 = uBottomEltype(3//4)
   b21 = uBottomEltype(3//2)
   c02 = uBottomEltype(3//4)
@@ -60,6 +57,42 @@ function alg_cache(alg::SRA2,prob,u,ΔW,ΔZ,rate_prototype,
   beta21 = uBottomEltype(3//2)
   beta22 = uBottomEltype(-3//2)
   SRA2ConstantCache(a21,b21,c02,c11,c12,α1,α2,beta12,beta21,beta22)
+end
+
+function alg_cache(alg::SRA2,prob,u,ΔW,ΔZ,rate_prototype,
+                   noise_rate_prototype,uEltypeNoUnits,
+                   uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
+  SRA2ConstantCache(uBottomEltype)
+end
+
+struct SRA2Cache{uType,randType,tabType,NT,T} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+  chi2::randType
+  tab::tabType
+  g1::NT
+  g2::NT
+  k1::T
+  k2::T
+  E₁::T
+  E₂::T
+  tmp::T
+end
+
+function alg_cache(alg::SRA2,prob,u,ΔW,ΔZ,rate_prototype,
+                   noise_rate_prototype,uEltypeNoUnits,
+                   uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+  if typeof(ΔW) <: Union{SArray,Number}
+    chi2 = copy(ΔW)
+  else
+    chi2 = similar(ΔW)
+  end
+  tab = SRA2ConstantCache(uBottomEltype)
+  g1 = zeros(noise_rate_prototype); g2 = zeros(noise_rate_prototype)
+  k1 = zeros(rate_prototype); k2 = zeros(rate_prototype)
+  E₁ = zeros(rate_prototype); E₂ = zeros(rate_prototype)
+  tmp = g2
+  SRA2Cache(u,uprev,chi2,tab,g1,g2,k1,k2,E₁,E₂,tmp)
 end
 
 struct ThreeStageSRAConstantCache{T} <: StochasticDiffEqConstantCache
@@ -85,10 +118,7 @@ struct ThreeStageSRAConstantCache{T} <: StochasticDiffEqConstantCache
   beta23::T
 end
 
-function alg_cache(alg::SRA3,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,
-                   f,t,::Type{Val{false}})
-
+function SRA3ConstantCache(uBottomEltype)
   a21 = uBottomEltype(1)
   a31 = uBottomEltype(1//4)
   a32 = uBottomEltype(1//4)
@@ -113,10 +143,7 @@ function alg_cache(alg::SRA3,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
                              α1,α2,α3,beta11,beta12,beta13,beta21,beta22,beta23)
 end
 
-function alg_cache(alg::SOSRA,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,
-                   f,t,::Type{Val{false}})
-
+function SOSRAConstantCache(uBottomEltype)
   α1 = uBottomEltype(0.2889874966892885)
   α2 = uBottomEltype(0.6859880440839937)
   α3 = uBottomEltype(0.025024459226717772)
@@ -141,10 +168,7 @@ function alg_cache(alg::SOSRA,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype
                              α1,α2,α3,beta11,beta12,beta13,beta21,beta22,beta23)
 end
 
-function alg_cache(alg::SOSRA2,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,
-                   f,t,::Type{Val{false}})
-
+function SOSRA2ConstantCache(uBottomEltype)
   α1 = uBottomEltype(0.4999999999999998)
   α2 = uBottomEltype(-0.9683897375354181)
   α3 = uBottomEltype(1.4683897375354185)
@@ -167,6 +191,24 @@ function alg_cache(alg::SOSRA2,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototyp
   b32 = uBottomEltype(0.7490415909204886)
   ThreeStageSRAConstantCache(a21,a31,a32,b21,b31,b32,c02,c03,c11,c12,c13,
                              α1,α2,α3,beta11,beta12,beta13,beta21,beta22,beta23)
+end
+
+function alg_cache(alg::SRA3,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
+                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,
+                   f,t,::Type{Val{false}})
+  SRA3ConstantCache(uBottomEltype)
+end
+
+function alg_cache(alg::SOSRA,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
+                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,
+                   f,t,::Type{Val{false}})
+  SOSRAConstantCache(uBottomEltype)
+end
+
+function alg_cache(alg::SOSRA2,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
+                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,
+                   f,t,::Type{Val{false}})
+  SOSRA2ConstantCache(uBottomEltype)
 end
 
 struct SRAConstantCache{VType1,VType2,MType,uType} <: StochasticDiffEqConstantCache

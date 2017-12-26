@@ -135,6 +135,54 @@ end
   @pack integrator = t,dt,u
 end
 
+@inline function perform_step!(integrator,cache::SRA2Cache,f=integrator.f)
+  @unpack t,dt,uprev,u,W = integrator
+  @unpack chi2,tab,g1,g2,k1,k2,E₁,E₂,tmp = cache
+  @unpack a21,b21,c02,c11,c12,α1,α2,beta12,beta21,beta22 = cache.tab
+  H01 = E₁
+
+  if typeof(W.dW) <: Union{SArray,Number}
+    chi2 = @. (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+  else
+    @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+  end
+
+  integrator.g(t+c11*dt,uprev,g1)
+  integrator.f(t,uprev,k1)
+
+  if is_diagonal_noise(integrator.sol.prob)
+    @. H01 = uprev + dt*a21*k1 + chi2*b21*g1
+  else
+    A_mul_B!(E₁,chi2,g1)
+    @. H01 = uprev + dt*a21*k1 + b21*E₁
+  end
+
+  integrator.g(t+c12*dt,H01,g2)
+  integrator.f(t+c02*dt,H01,k2)
+
+  if is_diagonal_noise(integrator.sol.prob)
+    @. E₂ = W.dW*(beta12*g2) + chi2*(beta21*g1 + beta22*g2)
+  else
+    @. E₂ = beta21*g1 + beta22*g2
+    A_mul_B!(E₁,chi2,E₂)
+    g2 .*= beta12
+    A_mul_B!(E₂,W.dW,g2)
+    @. E₂ += E₁
+  end
+
+  @. E₁ = dt*(α1*k1 + α2*k2)
+  @. u = uprev + E₁ + E₂
+
+  if integrator.opts.adaptive
+    @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
+						  Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
+      @inbounds tmp[i] = @muladd(δ*E₁[i]+E₂[i])/@muladd(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
+    end
+    integrator.EEst = integrator.opts.internalnorm(tmp)
+  end
+  @pack integrator = t,dt,u
+end
+
 @inline function perform_step!(integrator,cache::ThreeStageSRAConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
   @unpack a21,a31,a32,b21,b31,b32,c02,c03,c11,c12,c13,α1,α2,α3,beta11,beta12,beta13,beta21,beta22,beta23 = cache
