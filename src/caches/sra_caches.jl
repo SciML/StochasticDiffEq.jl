@@ -57,8 +57,8 @@ function alg_cache(alg::SRA2,prob,u,ΔW,ΔZ,rate_prototype,
   α1 = uBottomEltype(1//3)
   α2 = uBottomEltype(2//3)
   beta12 = uBottomEltype(1)
-  beta21 = uBottomEltype(-3//2)
-  beta22 = uBottomEltype(3//2)
+  beta21 = uBottomEltype(3//2)
+  beta22 = uBottomEltype(-3//2)
   SRA2ConstantCache(a21,b21,c02,c11,c12,α1,α2,beta12,beta21,beta22)
 end
 
@@ -89,17 +89,56 @@ function alg_cache(alg::SRA3,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,
                    f,t,::Type{Val{false}})
 
-  a21 = uBottomEltype(3//4)
-  b21 = uBottomEltype(3//2)
-  c02 = uBottomEltype(3//4)
-  c11 = uBottomEltype(1//3)
-  c12 = uBottomEltype(1)
-  α1 = uBottomEltype(1//3)
-  α2 = uBottomEltype(2//3)
-  beta12 = uBottomEltype(1)
-  beta21 = uBottomEltype(-3//2)
-  beta22 = uBottomEltype(3//2)
-  ThreeStageSRAConstantCache(a21,b21,c02,c11,c12,α1,α2,beta12,beta21,beta22)
+  a21 = uBottomEltype(1)
+  a31 = uBottomEltype(1//4)
+  a32 = uBottomEltype(1//4)
+  b21 = uBottomEltype(0)
+  b31 = uBottomEltype(1)
+  b32 = uBottomEltype(1//2)
+  c02 = uBottomEltype(1)
+  c03 = uBottomEltype(1//2)
+  c11 = uBottomEltype(1)
+  c12 = uBottomEltype(0)
+  c13 = uBottomEltype(0)
+  α1 = uBottomEltype(1//6)
+  α2 = uBottomEltype(1//6)
+  α3 = uBottomEltype(2//3)
+  beta11 = uBottomEltype(1)
+  beta12 = uBottomEltype(0)
+  beta13 = uBottomEltype(0)
+  beta21 = uBottomEltype(-1)
+  beta22 = uBottomEltype(1)
+  beta23 = uBottomEltype(0)
+  ThreeStageSRAConstantCache(a21,a31,a32,b21,b31,b32,c02,c03,c11,c12,c13,
+                             α1,α2,α3,beta11,beta12,beta13,beta21,beta22,beta23)
+end
+
+function alg_cache(alg::SOSRA,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
+                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,
+                   f,t,::Type{Val{false}})
+
+  a21 = uBottomEltype(1)
+  a31 = uBottomEltype(1//4)
+  a32 = uBottomEltype(1//4)
+  b21 = uBottomEltype(0)
+  b31 = uBottomEltype(1)
+  b32 = uBottomEltype(1//2)
+  c02 = uBottomEltype(1)
+  c03 = uBottomEltype(1//2)
+  c11 = uBottomEltype(1)
+  c12 = uBottomEltype(0)
+  c13 = uBottomEltype(0)
+  α1 = uBottomEltype(1//6)
+  α2 = uBottomEltype(1//6)
+  α3 = uBottomEltype(2//3)
+  beta11 = uBottomEltype(1)
+  beta12 = uBottomEltype(0)
+  beta13 = uBottomEltype(0)
+  beta21 = uBottomEltype(-1)
+  beta22 = uBottomEltype(1)
+  beta23 = uBottomEltype(0)
+  ThreeStageSRAConstantCache(a21,a31,a32,b21,b31,b32,c02,c03,c11,c12,c13,
+                             α1,α2,α3,beta11,beta12,beta13,beta21,beta22,beta23)
 end
 
 struct SRAConstantCache{VType1,VType2,MType,uType} <: StochasticDiffEqConstantCache
