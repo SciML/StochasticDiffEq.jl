@@ -27,4 +27,20 @@ sol = solve(prob,SRA1())
 
 W = WienerProcess(0.0,0.0,0.0)
 prob = SDEProblem(f,g,u0,(0.0,1.0),noise=W)
+sol = solve(prob,SRA2())
+
+W = WienerProcess(0.0,0.0,0.0)
+prob = SDEProblem(f,g,u0,(0.0,1.0),noise=W)
+sol = solve(prob,SRA3())
+
+W = WienerProcess(0.0,0.0,0.0)
+prob = SDEProblem(f,g,u0,(0.0,1.0),noise=W)
+sol = solve(prob,SOSRA())
+
+W = WienerProcess(0.0,0.0,0.0)
+prob = SDEProblem(f,g,u0,(0.0,1.0),noise=W)
+sol = solve(prob,SOSRA2())
+
+W = WienerProcess(0.0,0.0,0.0)
+prob = SDEProblem(f,g,u0,(0.0,1.0),noise=W)
 sol = solve(prob,SRA())

@@ -1,4 +1,4 @@
-using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools
+using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Base.Test
 srand(100)
 
 prob = prob_sde_additive
@@ -35,4 +35,10 @@ sim = test_convergence(dts,prob,SRA(),numMonte=5)
 sim2 = test_convergence(dts,prob,SRA1(),numMonte=5)
 @test abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!
 sim2 = test_convergence(dts,prob,SRA2(),numMonte=5)
+@test abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!
+sim2 = test_convergence(dts,prob,SRA3(),numMonte=5)
+@test abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!
+sim2 = test_convergence(dts,prob,SOSRA(),numMonte=10)
+@test abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!
+sim2 = test_convergence(dts,prob,SOSRA2(),numMonte=5)
 @test abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!

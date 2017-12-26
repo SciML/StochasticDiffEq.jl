@@ -29,6 +29,10 @@ end
 prob = SDEProblem(f,g,ones(2),(0.0,1.0),noise_rate_prototype=zeros(2,4))
 
 sol = solve(prob,SRA1())
+sol = solve(prob,SRA2())
+sol = solve(prob,SRA3())
+sol = solve(prob,SOSRA())
+sol = solve(prob,SOSRA2())
 sol = solve(prob,SRA())
 
 @test length(sol.W[1]) == 4

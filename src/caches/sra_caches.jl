@@ -91,7 +91,7 @@ function alg_cache(alg::SRA2,prob,u,ΔW,ΔZ,rate_prototype,
   g1 = zeros(noise_rate_prototype); g2 = zeros(noise_rate_prototype)
   k1 = zeros(rate_prototype); k2 = zeros(rate_prototype)
   E₁ = zeros(rate_prototype); E₂ = zeros(rate_prototype)
-  tmp = g2
+  tmp = k1
   SRA2Cache(u,uprev,chi2,tab,g1,g2,k1,k2,E₁,E₂,tmp)
 end
 
@@ -209,6 +209,92 @@ function alg_cache(alg::SOSRA2,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototyp
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,
                    f,t,::Type{Val{false}})
   SOSRA2ConstantCache(uBottomEltype)
+end
+
+struct ThreeStageSRACache{uType,randType,tabType,NT,T,GT} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+  chi2::randType
+  tab::tabType
+  g1::NT
+  g2::NT
+  g3::NT
+  k1::T
+  k2::T
+  k3::T
+  E₁::T
+  E₂::T
+  tmp::T
+  gtmp::GT
+end
+
+function alg_cache(alg::SRA3,prob,u,ΔW,ΔZ,rate_prototype,
+                   noise_rate_prototype,uEltypeNoUnits,
+                   uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+  if typeof(ΔW) <: Union{SArray,Number}
+    chi2 = copy(ΔW)
+  else
+    chi2 = similar(ΔW)
+  end
+  tab = SRA3ConstantCache(uBottomEltype)
+  g1 = zeros(noise_rate_prototype); g2 = zeros(noise_rate_prototype)
+  g3 = zeros(noise_rate_prototype)
+  k1 = zeros(rate_prototype); k2 = zeros(rate_prototype)
+  k3 = zeros(rate_prototype)
+  E₁ = zeros(rate_prototype); E₂ = zeros(rate_prototype)
+  tmp = k1
+  if typeof(noise_rate_prototype) == typeof(rate_prototype)
+    gtmp = nothing
+  else
+    gtmp = zeros(noise_rate_prototype)
+  end
+  ThreeStageSRACache(u,uprev,chi2,tab,g1,g2,g3,k1,k2,k3,E₁,E₂,tmp,gtmp)
+end
+
+function alg_cache(alg::SOSRA,prob,u,ΔW,ΔZ,rate_prototype,
+                   noise_rate_prototype,uEltypeNoUnits,
+                   uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+  if typeof(ΔW) <: Union{SArray,Number}
+    chi2 = copy(ΔW)
+  else
+    chi2 = similar(ΔW)
+  end
+  tab = SOSRAConstantCache(uBottomEltype)
+  g1 = zeros(noise_rate_prototype); g2 = zeros(noise_rate_prototype)
+  g3 = zeros(noise_rate_prototype)
+  k1 = zeros(rate_prototype); k2 = zeros(rate_prototype)
+  k3 = zeros(rate_prototype)
+  E₁ = zeros(rate_prototype); E₂ = zeros(rate_prototype)
+  tmp = k1
+  if typeof(noise_rate_prototype) == typeof(rate_prototype)
+    gtmp = nothing
+  else
+    gtmp = zeros(noise_rate_prototype)
+  end
+  ThreeStageSRACache(u,uprev,chi2,tab,g1,g2,g3,k1,k2,k3,E₁,E₂,tmp,gtmp)
+end
+
+function alg_cache(alg::SOSRA2,prob,u,ΔW,ΔZ,rate_prototype,
+                   noise_rate_prototype,uEltypeNoUnits,
+                   uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+  if typeof(ΔW) <: Union{SArray,Number}
+    chi2 = copy(ΔW)
+  else
+    chi2 = similar(ΔW)
+  end
+  tab = SOSRA2ConstantCache(uBottomEltype)
+  g1 = zeros(noise_rate_prototype); g2 = zeros(noise_rate_prototype)
+  g3 = zeros(noise_rate_prototype)
+  k1 = zeros(rate_prototype); k2 = zeros(rate_prototype)
+  k3 = zeros(rate_prototype)
+  E₁ = zeros(rate_prototype); E₂ = zeros(rate_prototype)
+  tmp = k1
+  if typeof(noise_rate_prototype) == typeof(rate_prototype)
+    gtmp = nothing
+  else
+    gtmp = zeros(noise_rate_prototype)
+  end
+  ThreeStageSRACache(u,uprev,chi2,tab,g1,g2,g3,k1,k2,k3,E₁,E₂,tmp,gtmp)
 end
 
 struct SRAConstantCache{VType1,VType2,MType,uType} <: StochasticDiffEqConstantCache

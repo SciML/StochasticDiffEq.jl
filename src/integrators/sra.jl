@@ -153,7 +153,7 @@ end
   if is_diagonal_noise(integrator.sol.prob)
     @. H01 = uprev + dt*a21*k1 + chi2*b21*g1
   else
-    A_mul_B!(E₁,chi2,g1)
+    A_mul_B!(E₁,g1,chi2)
     @. H01 = uprev + dt*a21*k1 + b21*E₁
   end
 
@@ -163,10 +163,10 @@ end
   if is_diagonal_noise(integrator.sol.prob)
     @. E₂ = W.dW*(beta12*g2) + chi2*(beta21*g1 + beta22*g2)
   else
-    @. E₂ = beta21*g1 + beta22*g2
-    A_mul_B!(E₁,chi2,E₂)
+    @. g1 = beta21*g1 + beta22*g2
+    A_mul_B!(E₁,g1,chi2)
     g2 .*= beta12
-    A_mul_B!(E₂,W.dW,g2)
+    A_mul_B!(E₂,g2,W.dW)
     @. E₂ += E₁
   end
 
@@ -208,6 +208,72 @@ end
 
   if integrator.opts.adaptive
     integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
+  end
+  @pack integrator = t,dt,u
+end
+
+@inline function perform_step!(integrator,cache::ThreeStageSRACache,f=integrator.f)
+  @unpack t,dt,uprev,u,W = integrator
+  @unpack chi2,tab,g1,g2,g3,k1,k2,k3,E₁,E₂,tmp,gtmp = cache
+  @unpack a21,a31,a32,b21,b31,b32,c02,c03,c11,c12,c13,α1,α2,α3,beta11,beta12,beta13,beta21,beta22,beta23 = cache.tab
+
+  H01 = E₁; H02 = E₁
+
+  if typeof(W.dW) <: Union{SArray,Number}
+    chi2 = @. (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+  else
+    @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+  end
+
+  integrator.g(t+c11*dt,uprev,g1)
+  integrator.f(t,uprev,k1)
+
+  if is_diagonal_noise(integrator.sol.prob)
+    @. H01 = uprev + dt*a21*k1 + chi2*b21*g1
+  else
+    A_mul_B!(E₁,g1,chi2)
+    @. H01 = uprev + dt*a21*k1 + b21*E₁
+  end
+
+  integrator.g(t+c12*dt,H01,g2)
+  integrator.f(t+c02*dt,H01,k2)
+
+  if is_diagonal_noise(integrator.sol.prob)
+    for i in eachindex(u)
+      H02[i] = uprev[i] + dt*(a31*k1[i] + a32*k2[i]) + chi2[i]*(b31*g1[i] + b32*g2[i])
+    end
+  else
+    @. gtmp = b31*g1 + b32*g2
+    A_mul_B!(E₁,gtmp,chi2)
+    for i in eachindex(u)
+      H02[i] = uprev[i] + dt*(a31*k1[i] + a32*k2[i]) + E₁[i]
+    end
+  end
+
+  integrator.g(t+c13*dt,H02,g3)
+  integrator.f(t+c03*dt,H02,k3)
+
+  if is_diagonal_noise(integrator.sol.prob)
+    for i in eachindex(u)
+      E₂[i] = W.dW[i]*(beta11*g1[i] + beta12*g2[i] + beta13*g3[i]) + chi2[i]*(beta21*g1[i] + beta22*g2[i] + beta23*g3[i])
+    end
+  else
+    @. gtmp = beta21*g1 + beta22*g2 + beta23*g3
+    A_mul_B!(E₁,gtmp,chi2)
+    @. gtmp = beta11*g1 + beta12*g2 + beta13*g3
+    A_mul_B!(E₂,gtmp,W.dW)
+    @. E₂ += E₁
+  end
+
+  @. E₁ = dt*(α1*k1 + α2*k2 + α3*k3)
+  u = uprev + E₁ + E₂
+
+  if integrator.opts.adaptive
+    @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
+						  Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
+      @inbounds tmp[i] = @muladd(δ*E₁[i]+E₂[i])/@muladd(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
+    end
+    integrator.EEst = integrator.opts.internalnorm(tmp)
   end
   @pack integrator = t,dt,u
 end
