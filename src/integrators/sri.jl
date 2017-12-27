@@ -415,28 +415,28 @@ end
   k1 = integrator.f(t,uprev)
   g1 = integrator.g(t+c11*dt,uprev)
 
-  H01 = uprev + dt*a021*k1 + chi2*b021*g1
+  H01 = uprev + dt*a021*k1 + chi2.*b021*g1
   H11 = uprev + dt*a121*k1 + integrator.sqdt*b121*g1
 
   k2 = integrator.f(t+c02*dt,H01)
   g2 = integrator.g(t+c12*dt,H11)
 
-  H02 = uprev + dt*(a031*k1 + a032*k2) + chi2*(b031*g1 + b032*g2)
+  H02 = uprev + dt*(a031*k1 + a032*k2) + chi2.*(b031*g1 + b032*g2)
   H12 = uprev + dt*(a131*k1 + a132*k2) + integrator.sqdt*(b131*g1 + b132*g2)
 
   k3 = integrator.f(t+c03*dt,H02)
   g3 = integrator.g(t+c13*dt,H12)
 
-  H03 = uprev + dt*(a041*k1 + a042*k2 + a043*k3) + chi2*(b041*g1 + b042*g2 + b043*g3)
+  H03 = uprev + dt*(a041*k1 + a042*k2 + a043*k3) + chi2.*(b041*g1 + b042*g2 + b043*g3)
   H13 = uprev + dt*(a141*k1 + a142*k2 + a143*k3) + integrator.sqdt*(b141*g1 + b142*g2 + b143*g3)
 
   k4 = integrator.f(t+c04*dt,H03)
   g4 = integrator.g(t+c14*dt,H13)
 
   E₁ = dt*(α1*k1 + α2*k2 + α3*k3 + α4*k4)
-  E₂ = chi2*(beta31*g1 + beta32*g2 + beta33*g3 + beta34*g4) + chi3*(beta41*g1 + beta42*g2 + beta43*g3 + beta44*g4)
+  E₂ = chi2.*(beta31*g1 + beta32*g2 + beta33*g3 + beta34*g4) + chi3.*(beta41*g1 + beta42*g2 + beta43*g3 + beta44*g4)
 
-  u = uprev + E₁ + E₂ + W.dW*(beta11*g1 + beta12*g2 + beta13*g3 + beta14*g4) + chi1*(beta21*g1 + beta22*g2 + beta23*g3 + beta24*g4)
+  u = uprev + E₁ + E₂ + W.dW.*(beta11*g1 + beta12*g2 + beta13*g3 + beta14*g4) + chi1.*(beta21*g1 + beta22*g2 + beta23*g3 + beta24*g4)
 
   if integrator.opts.adaptive
     integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
@@ -451,34 +451,42 @@ end
 
   sqdt = integrator.sqdt
 
-  @. chi1 = .5*(W.dW.^2 - dt)/sqdt #I_(1,1)/sqrt(h)
-  @. chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
-  @. chi3 = 1/6 * (W.dW.^3 - 3*W.dW*dt)/dt #I_(1,1,1)/h
+  if typeof(W.dW) <: Union{SArray,Number}
+    chi1 = @. (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
+    chi2 = @. (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    chi3 = @. (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
+  else
+    @. chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
+    @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    @. chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
+  end
 
   integrator.f(t,uprev,k1)
   integrator.g(t+c11*dt,uprev,g1)
 
-  @. H01 = uprev + dt*a021*k1 + chi2*b021*g1
-  @. H11 = uprev + dt*a121*k1 + sqdt*b121*g1
+  @. tmp = uprev + dt*a021*k1 + chi2*b021*g1
+  integrator.f(t+c02*dt,tmp,k2)
 
-  integrator.f(t+c02*dt,H01,k2)
-  integrator.g(t+c12*dt,H11,g2)
-
-  for i in eachindex(u)
-    H02[i] = uprev[i] + dt*(a031*k1[i] + a032*k2[i]) + chi2[i]*(b031*g1[i] + b032*g2[i])
-    H12[i] = uprev[i] + dt*(a131*k1[i] + a132*k2[i]) + sqdt*(b131*g1[i] + b132*g2[i])
-  end
-
-  integrator.f(t+c03*dt,H02,k3)
-  integrator.g(t+c13*dt,H12,g3)
+  @. tmp = uprev + dt*a121*k1 + sqdt*b121*g1
+  integrator.g(t+c12*dt,tmp,g2)
 
   for i in eachindex(u)
-    H03[i] = uprev[i] + dt*(a041*k1[i] + a042*k2[i] + a043*k3[i]) + chi2*(b041*g1[i] + b042*g2[i] + b043*g3[i])
-    H13[i] = uprev[i] + dt*(a141*k1[i] + a142*k2[i] + a143*k3[i]) + sqdt*(b141*g1[i] + b142*g2[i] + b143*g3[i])
+    tmp[i] = uprev[i] + dt*(a031*k1[i] + a032*k2[i]) + chi2[i]*(b031*g1[i] + b032*g2[i])
   end
+  integrator.f(t+c03*dt,tmp,k3)
+  for i in eachindex(u)
+    tmp[i] = uprev[i] + dt*(a131*k1[i] + a132*k2[i]) + sqdt*(b131*g1[i] + b132*g2[i])
+  end
+  integrator.g(t+c13*dt,tmp,g3)
 
-  integrator.f(t+c04*dt,H03,k4)
-  integrator.g(t+c14*dt,H13,g4)
+  for i in eachindex(u)
+    tmp[i] = uprev[i] + dt*(a041*k1[i] + a042*k2[i] + a043*k3[i]) + chi2[i]*(b041*g1[i] + b042*g2[i] + b043*g3[i])
+  end
+  integrator.f(t+c04*dt,tmp,k4)
+  for i in eachindex(u)
+    tmp[i] = uprev[i] + dt*(a141*k1[i] + a142*k2[i] + a143*k3[i]) + sqdt*(b141*g1[i] + b142*g2[i] + b143*g3[i])
+  end
+  integrator.g(t+c14*dt,tmp,g4)
 
   @. E₁ = dt*(α1*k1 + α2*k2 + α3*k3 + α4*k4)
   for i in eachindex(u)

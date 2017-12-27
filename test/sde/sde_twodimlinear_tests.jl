@@ -8,13 +8,14 @@ sol = solve(prob,EM(),dt=1/2^(3))
 sol = solve(prob,RKMil(),dt=1/2^(3))
 sol = solve(prob,SRI(),dt=1/2^(3))
 sol = solve(prob,SRIW1(),dt=1/2^(3))
+sol = solve(prob,SRIW2(),dt=1/2^(3))
+sol = solve(prob,SOSRI(),dt=1/2^(3))
+sol = solve(prob,SOSRI2(),dt=1/2^(3))
 sol = solve(prob,ImplicitEM(),dt=1/2^(3))
 sol = solve(prob,ImplicitEM(autodiff=false),dt=1/2^(3))
 sol = solve(prob,ImplicitRKMil(),dt=1/2^(3))
 
 sol = solve(prob,SRIW1(),dt=1/2^(3),save_everystep=false)
-
-
 sol = solve(prob,SRIW1(),dt=1/2^(3),progress=true,progress_steps=1)
 
 ## Convergence Testing
@@ -58,4 +59,13 @@ sim3 = test_convergence(dts,prob,SRI(),numMonte=10)
 @test abs(sim3.𝒪est[:final]-1.5) < 0.3
 
 sim4 = test_convergence(dts,prob,SRIW1(),numMonte=100)
+@test abs(sim4.𝒪est[:final]-1.5) < 0.3
+
+sim4 = test_convergence(dts,prob,SRIW2(),numMonte=100)
+@test abs(sim4.𝒪est[:final]-1.5) < 0.3
+
+sim4 = test_convergence(dts,prob,SOSRI(),numMonte=100)
+@test abs(sim4.𝒪est[:final]-1.5) < 0.3
+
+sim4 = test_convergence(dts,prob,SOSRI2(),numMonte=100)
 @test abs(sim4.𝒪est[:final]-1.5) < 0.3
