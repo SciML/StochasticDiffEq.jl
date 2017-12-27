@@ -125,9 +125,9 @@ end
   k2 = integrator.f(t+c02*dt,H01)
 
   E₁ = dt*(α1*k1 + α2*k2)
-  E₂ = W.dW*(beta12*g2) + chi2*(beta21*g1 + beta22*g2)
+  E₂ = chi2*(beta21*g1 + beta22*g2)
 
-  u = uprev + E₁ + E₂
+  u = uprev + E₁ + E₂ + W.dW*(beta12*g2)
 
   if integrator.opts.adaptive
     integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
@@ -160,18 +160,18 @@ end
   integrator.g(t+c12*dt,H01,g2)
   integrator.f(t+c02*dt,H01,k2)
 
+  @. E₁ = dt*(α1*k1 + α2*k2)
+
   if is_diagonal_noise(integrator.sol.prob)
-    @. E₂ = W.dW*(beta12*g2) + chi2*(beta21*g1 + beta22*g2)
+    @. E₂ = chi2*(beta21*g1 + beta22*g2)
+    @. u = uprev + E₁ + E₂ + W.dW*(beta12*g2)
   else
     @. g1 = beta21*g1 + beta22*g2
-    A_mul_B!(E₁,g1,chi2)
+    A_mul_B!(E₂,g1,chi2)
     g2 .*= beta12
-    A_mul_B!(E₂,g2,W.dW)
-    @. E₂ += E₁
+    A_mul_B!(k1,g2,W.dW)
+    @. u = uprev + E₁ + E₂ + k1
   end
-
-  @. E₁ = dt*(α1*k1 + α2*k2)
-  @. u = uprev + E₁ + E₂
 
   if integrator.opts.adaptive
     @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
@@ -202,9 +202,9 @@ end
   k3 = integrator.f(t+c03*dt,H02)
 
   E₁ = dt*(α1*k1 + α2*k2 + α3*k3)
-  E₂ = W.dW*(beta11*g1 + beta12*g2 + beta13*g3) + chi2*(beta21*g1 + beta22*g2 + beta23*g3)
+  E₂ = chi2*(beta21*g1 + beta22*g2 + beta23*g3)
 
-  u = uprev + E₁ + E₂
+  u = uprev + E₁ + E₂ + W.dW*(beta11*g1 + beta12*g2 + beta13*g3)
 
   if integrator.opts.adaptive
     integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
@@ -253,20 +253,18 @@ end
   integrator.g(t+c13*dt,H02,g3)
   integrator.f(t+c03*dt,H02,k3)
 
+  @. E₁ = dt*(α1*k1 + α2*k2 + α3*k3)
+
   if is_diagonal_noise(integrator.sol.prob)
-    for i in eachindex(u)
-      E₂[i] = W.dW[i]*(beta11*g1[i] + beta12*g2[i] + beta13*g3[i]) + chi2[i]*(beta21*g1[i] + beta22*g2[i] + beta23*g3[i])
-    end
+    @. E₂ = chi2*(beta21*g1 + beta22*g2 + beta23*g3)
+    @. u = uprev + E₁ + E₂ + W.dW*(beta11*g1 + beta12*g2 + beta13*g3)
   else
     @. gtmp = beta21*g1 + beta22*g2 + beta23*g3
-    A_mul_B!(E₁,gtmp,chi2)
+    A_mul_B!(E₂,gtmp,chi2)
     @. gtmp = beta11*g1 + beta12*g2 + beta13*g3
-    A_mul_B!(E₂,gtmp,W.dW)
-    @. E₂ += E₁
+    A_mul_B!(k1,gtmp,W.dW)
+    @. u = uprev + E₁ + E₂ + k1
   end
-
-  @. E₁ = dt*(α1*k1 + α2*k2 + α3*k3)
-  u = uprev + E₁ + E₂
 
   if integrator.opts.adaptive
     @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),

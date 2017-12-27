@@ -12,7 +12,6 @@ sol =solve(prob,SOSRA2(),dt=1/2^(3))
 prob = prob_sde_additivesystem
 
 ## Solve and plot
-println("Solve and Plot")
 sol =solve(prob,SRA(),dt=1/2^(3))
 sol =solve(prob,SRA1(),dt=1/2^(3))
 sol =solve(prob,SRA2(),dt=1/2^(3))
