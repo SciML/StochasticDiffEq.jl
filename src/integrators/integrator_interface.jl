@@ -52,6 +52,12 @@ default_non_user_cache(integrator::SDEIntegrator) = chain(u_cache(integrator),du
   t < integrator.t && error("Tried to add a tstop that is behind the current time. This is strictly forbidden")
   push!(integrator.opts.tstops,t)
 end
+
+function DiffEqBase.add_saveat!(integrator::SDEIntegrator,t)
+  integrator.tdir * (t - integrator.t) < 0 && error("Tried to add a saveat that is behind the current time. This is strictly forbidden")
+  push!(integrator.opts.saveat,t)
+end
+
 resize_non_user_cache!(integrator::SDEIntegrator,i::Int) = resize_non_user_cache!(integrator,integrator.cache,i)
 deleteat_non_user_cache!(integrator::SDEIntegrator,i) = deleteat_non_user_cache!(integrator,integrator.cache,i)
 addat_non_user_cache!(integrator::SDEIntegrator,i) = addat_non_user_cache!(integrator,integrator.cache,i)
