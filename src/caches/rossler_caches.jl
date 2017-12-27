@@ -157,7 +157,7 @@ function alg_cache(alg::SRIW1,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype
   SRIW1Cache(u,uprev,chi1,chi2,chi3,fH01o4,g₁o2,H0,H11,H12,H13,g₂o3,Fg₂o3,g₃o3,Tg₃o3,mg₁,E₁,E₂,fH01,fH02,g₁,g₂,g₃,g₄,tmp)
 end
 
-struct FourStageSRIConstantCache <: StochasticDiffEqConstantCache
+struct FourStageSRIConstantCache{T} <: StochasticDiffEqConstantCache
   a021::T
   a031::T
   a032::T
@@ -401,4 +401,46 @@ function alg_cache(alg::SOSRI2,prob,u,ΔW,ΔZ,rate_prototype,
                    noise_rate_prototype,uEltypeNoUnits,
                    uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   SOSRI2ConstantCache(uBottomEltype)
+end
+
+struct FourStageSRICache{uType,randType,tabType,NT,T} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+  chi1::randType
+  chi2::randType
+  chi3::randType
+  tab::tabType
+  g1::NT
+  g2::NT
+  g3::NT
+  g4::NT
+  k1::T
+  k2::T
+  k3::T
+  k4::T
+  E₁::T
+  E₂::T
+  tmp::T
+end
+
+function alg_cache(alg::SRA3,prob,u,ΔW,ΔZ,rate_prototype,
+                   noise_rate_prototype,uEltypeNoUnits,
+                   uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+  if typeof(ΔW) <: Union{SArray,Number}
+    chi1 = copy(ΔW)
+    chi2 = copy(ΔW)
+    chi3 = copy(ΔW)
+  else
+    chi1 = similar(ΔW)
+    chi2 = similar(ΔW)
+    chi3 = similar(ΔW)
+  end
+  tab = SRA3ConstantCache(uBottomEltype)
+  g1 = zeros(noise_rate_prototype); g2 = zeros(noise_rate_prototype)
+  g3 = zeros(noise_rate_prototype); g4 = zeros(noise_rate_prototype)
+  k1 = zeros(rate_prototype); k2 = zeros(rate_prototype)
+  k3 = zeros(rate_prototype); k4 = zeros(rate_prototype)
+  E₁ = zeros(rate_prototype); E₂ = zeros(rate_prototype)
+  tmp = k1
+  ThreeStageSRACache(u,uprev,chi1,chi2,chi3,tab,g1,g2,g3,g4,k1,k2,k3,k4,E₁,E₂,tmp)
 end

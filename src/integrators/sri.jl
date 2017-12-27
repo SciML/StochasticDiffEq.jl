@@ -403,3 +403,95 @@ end
   end
   @pack integrator = t,dt,u
 end
+
+@inline function perform_step!(integrator,cache::FourStageSRIConstantCache,f=integrator.f)
+  @unpack t,dt,uprev,u,W = integrator
+  @unpack a021,a031,a032,a041,a042,a043,a121,a131,a132,a141,a142,a143,b021,b031,b032,b041,b042,b043,b121,b131,b132,b141,b142,b143,c02,c03,c04,c11,c12,c13,c14,α1,α2,α3,α4,beta11,beta12,beta13,beta14,beta21,beta22,beta23,beta24,beta31,beta32,beta33,beta34,beta41,beta42,beta43,beta44 = cache
+
+  chi1 = .5*(W.dW.^2 - dt)/integrator.sqdt #I_(1,1)/sqrt(h)
+  chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
+  chi3 = 1/6 * (W.dW.^3 - 3*W.dW*dt)/dt #I_(1,1,1)/h
+
+  k1 = integrator.f(t,uprev)
+  g1 = integrator.g(t+c11*dt,uprev)
+
+  H01 = uprev + dt*a021*k1 + chi2*b021*g1
+  H11 = uprev + dt*a121*k1 + integrator.sqdt*b121*g1
+
+  k2 = integrator.f(t+c02*dt,H01)
+  g2 = integrator.g(t+c12*dt,H11)
+
+  H02 = uprev + dt*(a031*k1 + a032*k2) + chi2*(b031*g1 + b032*g2)
+  H12 = uprev + dt*(a131*k1 + a132*k2) + integrator.sqdt*(b131*g1 + b132*g2)
+
+  k3 = integrator.f(t+c03*dt,H02)
+  g3 = integrator.g(t+c13*dt,H12)
+
+  H03 = uprev + dt*(a041*k1 + a042*k2 + a043*k3) + chi2*(b041*g1 + b042*g2 + b043*g3)
+  H13 = uprev + dt*(a141*k1 + a142*k2 + a143*k3) + integrator.sqdt*(b141*g1 + b142*g2 + b143*g3)
+
+  k4 = integrator.f(t+c04*dt,H03)
+  g4 = integrator.g(t+c14*dt,H13)
+
+  E₁ = dt*(α1*k1 + α2*k2 + α3*k3 + α4*k4)
+  E₂ = chi2*(beta31*g1 + beta32*g2 + beta33*g3 + beta34*g4) + chi3*(beta41*g1 + beta42*g2 + beta43*g3 + beta44*g4)
+
+  u = uprev + E₁ + E₂ + W.dW*(beta11*g1 + beta12*g2 + beta13*g3 + beta14*g4) + chi1*(beta21*g1 + beta22*g2 + beta23*g3 + beta24*g4)
+
+  if integrator.opts.adaptive
+    integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
+  end
+  @pack integrator = t,dt,u
+end
+
+@inline function perform_step!(integrator,cache::FourStageSRICache,f=integrator.f)
+  @unpack t,dt,uprev,u,W = integrator
+  @unpack chi1,chi2,chi3,tab,g1,g2,g3,g4,k1,k2,k3,k4,E₁,E₂,tmp = cache
+  @unpack a021,a031,a032,a041,a042,a043,a121,a131,a132,a141,a142,a143,b021,b031,b032,b041,b042,b043,b121,b131,b132,b141,b142,b143,c02,c03,c04,c11,c12,c13,c14,α1,α2,α3,α4,beta11,beta12,beta13,beta14,beta21,beta22,beta23,beta24,beta31,beta32,beta33,beta34,beta41,beta42,beta43,beta44 = cache.tab
+
+  sqdt = integrator.sqdt
+
+  @. chi1 = .5*(W.dW.^2 - dt)/sqdt #I_(1,1)/sqrt(h)
+  @. chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
+  @. chi3 = 1/6 * (W.dW.^3 - 3*W.dW*dt)/dt #I_(1,1,1)/h
+
+  integrator.f(t,uprev,k1)
+  integrator.g(t+c11*dt,uprev,g1)
+
+  @. H01 = uprev + dt*a021*k1 + chi2*b021*g1
+  @. H11 = uprev + dt*a121*k1 + sqdt*b121*g1
+
+  integrator.f(t+c02*dt,H01,k2)
+  integrator.g(t+c12*dt,H11,g2)
+
+  for i in eachindex(u)
+    H02[i] = uprev[i] + dt*(a031*k1[i] + a032*k2[i]) + chi2[i]*(b031*g1[i] + b032*g2[i])
+    H12[i] = uprev[i] + dt*(a131*k1[i] + a132*k2[i]) + sqdt*(b131*g1[i] + b132*g2[i])
+  end
+
+  integrator.f(t+c03*dt,H02,k3)
+  integrator.g(t+c13*dt,H12,g3)
+
+  for i in eachindex(u)
+    H03[i] = uprev[i] + dt*(a041*k1[i] + a042*k2[i] + a043*k3[i]) + chi2*(b041*g1[i] + b042*g2[i] + b043*g3[i])
+    H13[i] = uprev[i] + dt*(a141*k1[i] + a142*k2[i] + a143*k3[i]) + sqdt*(b141*g1[i] + b142*g2[i] + b143*g3[i])
+  end
+
+  integrator.f(t+c04*dt,H03,k4)
+  integrator.g(t+c14*dt,H13,g4)
+
+  @. E₁ = dt*(α1*k1 + α2*k2 + α3*k3 + α4*k4)
+  for i in eachindex(u)
+    E₂[i] = chi2[i]*(beta31*g1[i] + beta32*g2[i] + beta33*g3[i] + beta34*g4[i]) + chi3[i]*(beta41*g1[i] + beta42*g2[i] + beta43*g3[i] + beta44*g4[i])
+    u[i] = uprev[i] + E₁[i] + E₂[i] + W.dW[i]*(beta11*g1[i] + beta12*g2[i] + beta13*g3[i] + beta14*g4[i]) + chi1[i]*(beta21*g1[i] + beta22*g2[i] + beta23*g3[i] + beta24*g4[i])
+  end
+
+  if integrator.opts.adaptive
+    @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
+              Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
+      @inbounds tmp[i] = @muladd(δ*E₁[i]+E₂[i])/@muladd(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
+    end
+    integrator.EEst = integrator.opts.internalnorm(tmp)
+  end
+  @pack integrator = t,dt,u
+end

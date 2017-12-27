@@ -188,9 +188,10 @@ end
   @unpack a21,a31,a32,b21,b31,b32,c02,c03,c11,c12,c13,α1,α2,α3,beta11,beta12,beta13,beta21,beta22,beta23 = cache
 
   chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
-  g1 = integrator.g(t+c11*dt,uprev)
 
+  g1 = integrator.g(t+c11*dt,uprev)
   k1 = integrator.f(t,uprev)
+
   H01 = uprev + dt*a21*k1 + chi2*b21*g1
 
   g2 = integrator.g(t+c12*dt,H01)
