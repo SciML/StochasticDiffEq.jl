@@ -73,6 +73,44 @@ function constructSRIW1(T=Float64,T2=Float64)
 end
 
 """
+constructSRIW2()
+
+Constructs the tableau type for the SRIW1 method.
+"""
+function constructSRIW2(T=Float64,T2=Float64)
+  c₀ = [0;1;1//2;0]
+  c₁ = [0;1//4;1;1//4]
+  A₀ = [0 0 0 0
+      1 0 0 0
+      1//4 1//4 0 0
+      0 0 0 0]
+  A₁ = [0 0 0 0
+      1//4 0 0 0
+      1 0 0 0
+      0 0 1//4 0]
+  B₀ = [0 0 0 0
+      0 0 0 0
+      1 1//2 0 0
+      0 0 0 0]
+  B₁ = [0 0 0 0
+      -1//2 0 0 0
+      1 0 0 0
+      2 -1 1//2 0]
+
+  α = [1//6;1//6;2//3;0]
+
+  β₁ = [-1;4//3;2//3;0]
+  β₂ = [1;-4//3;1//3;0]
+  β₃ = [2;-4//3;-2//3;0]
+  β₄ = [-2;5//3;-2//3;1]
+  RosslerSRI(map(T2,c₀),map(T2,c₁),
+             map(T,A₀),map(T,A₁),
+             map(T,B₀),map(T,B₁),
+             map(T,α),map(T,β₁),map(T,β₂),
+             map(T,β₃),map(T,β₄),3//2)
+end
+
+"""
 constructSRIOpt1()
 
 Opti6-12-11-10-01-47

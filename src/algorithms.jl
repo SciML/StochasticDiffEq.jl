@@ -35,6 +35,9 @@ end
 end
 
 struct SRIW1 <: StochasticDiffEqAdaptiveAlgorithm end
+struct SRIW2 <: StochasticDiffEqAdaptiveAlgorithm end
+struct SOSRI <: StochasticDiffEqAdaptiveAlgorithm end
+struct SOSRI2 <: StochasticDiffEqAdaptiveAlgorithm end
 struct SRA1 <: StochasticDiffEqAdaptiveAlgorithm end
 struct SRA2 <: StochasticDiffEqAdaptiveAlgorithm end
 struct SRA3 <: StochasticDiffEqAdaptiveAlgorithm end
