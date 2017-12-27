@@ -44,6 +44,7 @@ function init(
   initialize_save = true,
   timeseries_errors = true, dense_errors=false,
   initialize_integrator=true,
+  seed = 0,
   kwargs...) where {uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},ND,recompile_flag}
 
   if save_timeseries != nothing
@@ -214,7 +215,7 @@ function init(
     randType = typeof(rand_prototype) # Strip units and type info
   end
 
-  prob.seed == 0 ? seed = rand(UInt64) : seed = prob.seed
+  seed == 0 ? (prob.seed == 0 ? _seed = rand(UInt64) : _seed = prob.seed) : _seed = seed
 
   if typeof(prob.noise) <: Void
     if isinplace
@@ -224,25 +225,25 @@ function init(
                            save_everystep=save_everystep,
                            timeseries_steps=timeseries_steps,
                            rswm=rswm,
-                           rng = Xorshifts.Xoroshiro128Plus(seed))
+                           rng = Xorshifts.Xoroshiro128Plus(_seed))
       else
         W = WienerProcess!(t,rand_prototype,
                            save_everystep=save_everystep,
                            timeseries_steps=timeseries_steps,
                            rswm=rswm,
-                           rng = Xorshifts.Xoroshiro128Plus(seed))
+                           rng = Xorshifts.Xoroshiro128Plus(_seed))
       end
     else
       if alg_needs_extra_process(alg)
         W = WienerProcess(t,rand_prototype,rand_prototype,
                            save_everystep=save_everystep,
                            timeseries_steps=timeseries_steps,
-                           rng = Xorshifts.Xoroshiro128Plus(seed))
+                           rng = Xorshifts.Xoroshiro128Plus(_seed))
       else
         W = WienerProcess(t,rand_prototype,
                            save_everystep=save_everystep,
                            timeseries_steps=timeseries_steps,
-                           rng = Xorshifts.Xoroshiro128Plus(seed))
+                           rng = Xorshifts.Xoroshiro128Plus(_seed))
       end
     end
   else
@@ -253,7 +254,7 @@ function init(
       end
       # Reseed
       if typeof(W) <: NoiseProcess && W.reseed
-        srand(W.rng,seed)
+        srand(W.rng,_seed)
       end
     elseif W.t[end] != t
       error("Starting time in the noise process is not the starting time of the simulation. The noise process should be re-initialized for repeated use")
@@ -281,7 +282,7 @@ function init(
 
   sol = build_solution(prob,alg,ts,timeseries,W=W,
                 calculate_error = false,
-                interp = id, dense = dense, seed = seed)
+                interp = id, dense = dense, seed = _seed)
 
   if recompile_flag == true
     FType = typeof(f)
