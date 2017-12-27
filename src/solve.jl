@@ -44,7 +44,7 @@ function init(
   initialize_save = true,
   timeseries_errors = true, dense_errors=false,
   initialize_integrator=true,
-  seed = 0,
+  seed = UInt64(0),
   kwargs...) where {uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},ND,recompile_flag}
 
   if save_timeseries != nothing
