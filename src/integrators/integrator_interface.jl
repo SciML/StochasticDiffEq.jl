@@ -322,3 +322,11 @@ function DiffEqBase.auto_dt_reset!(integrator::SDEIntegrator)
   integrator.tdir,integrator.opts.dtmax,integrator.opts.abstol,integrator.opts.reltol,
   integrator.opts.internalnorm,integrator.sol.prob,alg_order(integrator.alg))
 end
+
+@inline function DiffEqBase.get_du(integrator::ODEIntegrator)
+  (integrator.u - integrator.uprev) / integrator.dt
+end
+
+@inline function DiffEqBase.get_du!(out,integrator::ODEIntegrator)
+  @. out = (integrator.u - integrator.uprev) / integrator.dt
+end
