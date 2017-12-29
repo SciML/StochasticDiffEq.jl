@@ -18,6 +18,14 @@ sol = solve(prob,ImplicitRKMil(),dt=1/2^(3))
 sol = solve(prob,SRIW1(),dt=1/2^(3),save_everystep=false)
 sol = solve(prob,SRIW1(),dt=1/2^(3),progress=true,progress_steps=1)
 
+sol = solve(prob,SRIW1(),dt=1/2^(3),seed=1)
+sol2 = solve(prob,SRI(error_terms=2),dt=1/2^(3),seed=1)
+sol.t ≈ sol2.t
+
+sol2 = solve(prob,SRI(tableau=StochasticDiffEq.constructSRIOpt1()),dt=1/2^(3),seed=1)
+sol = solve(prob,SOSRI(),dt=1/2^(3),seed=1)
+sol.t ≈ sol2.t
+
 ## Convergence Testing
 println("Convergence Test on 2D Linear")
 dts = 1./2.^(7:-1:4) #14->7 good plot

@@ -494,7 +494,7 @@ end
     @inbounds u[i] = uprev[i] + dt*(α1*k1[i] + α2*k2[i] + α3*k3[i] + α4*k4[i]) + E₂[i] + W.dW[i]*(beta11*g1[i] + beta12*g2[i] + beta13*g3[i] + beta14*g4[i]) + chi1[i]*(beta21*g1[i] + beta22*g2[i] + beta23*g3[i] + beta24*g4[i])
   end
 
-  @. E₁ = dt*(α1*k1 + α2*k2 + α3*k3 + α4*k4)
+  @. E₁ = dt*(k1 + k2 + k3 + k4)
 
   if integrator.opts.adaptive
     @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),

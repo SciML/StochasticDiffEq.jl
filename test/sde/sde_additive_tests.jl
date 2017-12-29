@@ -13,7 +13,12 @@ sol3 = solve(prob,RackKenCarp(),dt=1/2^(3),adaptive=false)
 @test sol3.errors[:l2] ≈ 0.0 atol = 1e-14
 
 prob = prob_sde_additive
-sol =solve(prob,SRA(),dt=1/2^(3))
+
+# Test error in stepping and seeding simultaniously
+sol  = solve(prob,SRA(StochasticDiffEq.constructSOSRA()),dt=1/2^(3),seed=1)
+sol2 = solve(prob,SOSRA(),dt=1/2^(3),seed=1)
+@test sol.t == sol2.t
+
 sol =solve(prob,SRA1(),dt=1/2^(3))
 sol =solve(prob,SRA2(),dt=1/2^(3))
 sol =solve(prob,SRA3(),dt=1/2^(3))
