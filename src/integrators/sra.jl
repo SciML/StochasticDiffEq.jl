@@ -129,9 +129,8 @@ end
 
   u = uprev + E₁ + E₂ + W.dW*(beta12*g2)
 
-  E₁ = dt*(k1 + k2)
-
   if integrator.opts.adaptive
+    E₁ = dt*(k1 + k2)
     integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
   end
   @pack integrator = t,dt,u
@@ -178,9 +177,8 @@ end
     end
   end
 
-  @. E₁ = dt*(k1 + k2)
-
   if integrator.opts.adaptive
+    @. E₁ = dt*(k1 + k2)
     @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
 						  Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
       @inbounds tmp[i] = @muladd(δ*E₁[i]+E₂[i])/@muladd(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
@@ -214,9 +212,8 @@ end
 
   u = uprev + E₁ + E₂ + W.dW*(beta11*g1 + beta12*g2 + beta13*g3)
 
-  E₁ = dt*(k1 + k2 + k3)
-
   if integrator.opts.adaptive
+    E₁ = dt*(k1 + k2 + k3)
     integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
   end
   @pack integrator = t,dt,u
@@ -267,7 +264,7 @@ end
     @. E₂ = chi2*(beta21*g1 + beta22*g2 + beta23*g3)
     #@. u = uprev + dt*(α1*k1 + α2*k2 + α3*k3) + E₂ + W.dW*(beta11*g1 + beta12*g2 + beta13*g3)
     for i in eachindex(u)
-      @inbounds u[i] = uprev[i] + dt*(α1*k1[i] + α2*k2[i] + α3*k3[i]) + E₂[i] + W.dW[i]*(beta11*g1[i] + beta12*g2 + beta13*g3)
+      @inbounds u[i] = uprev[i] + dt*(α1*k1[i] + α2*k2[i] + α3*k3[i]) + E₂[i] + W.dW[i]*(beta11*g1[i] + beta12*g2[i] + beta13*g3[i])
     end
   else
     @. gtmp = beta21*g1 + beta22*g2 + beta23*g3
@@ -279,9 +276,8 @@ end
     end
   end
 
-  @. E₁ = dt*(k1 + k2 + k3)
-
   if integrator.opts.adaptive
+    @. E₁ = dt*(k1 + k2 + k3)
     @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
 						  Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
       @inbounds tmp[i] = @muladd(δ*E₁[i]+E₂[i])/@muladd(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)

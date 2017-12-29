@@ -85,12 +85,13 @@ alg_needs_extra_process(alg::SOSRA2) = true
 alg_needs_extra_process(alg::RackKenCarp) = true
 
 alg_autodiff(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
+alg_autodiff(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
 get_chunksize(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = CS
+get_chunksize(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = CS
 
 alg_mass_matrix_compatible(alg::StochasticDiffEqAlgorithm) = false
 
 function alg_mass_matrix_compatible(alg::StochasticDiffEqNewtonAlgorithm)
-    typeof(alg) <: RackKenCarp && return false
     if alg.symplectic
         return true
     elseif alg.theta == 1

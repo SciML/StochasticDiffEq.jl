@@ -144,7 +144,7 @@ Base.@pure ImplicitRKMil(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           extrapolant,min_newton_iter,
                           max_newton_iter,new_jac_conv_bound,symplectic)
 
-struct RackKenCarp{CS,AD,F,FDT,K,T,T2,Controller} <: StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}
+struct RackKenCarp{CS,AD,F,FDT,K,T,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}
   linsolve::F
   diff_type::FDT
   κ::K

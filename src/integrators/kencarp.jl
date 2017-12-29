@@ -96,7 +96,8 @@
     tmp = @. uprev + a31*z₁ + a32*z₂ + ea31*k1 + ea32*k2
   else
     # Guess is from Hermite derivative on z₁ and z₂
-    z₃ = @. α31*z₁ + α32*z₂
+    #z₃ = @. α31*z₁ + α32*z₂
+    z₃ = z₂
     tmp = @. uprev + a31*z₁ + a32*z₂
   end
 
@@ -140,13 +141,14 @@
   # Note: Can use g1 since c13 = 0 => g3 == g1
 
   if typeof(integrator.f) <: SplitFunction
-    z₄ = z₃
+    z₄ = z₂
     u = @. tmp + γ*z₃
     k3 = dt*f2(tstep, u)
     tmp = @. uprev + a41*z₁ + a42*z₂ + a43*z₃ + ea41*k1 + ea42*k2 + ea43*k3 + chi2*nb043*g1
   else
     @unpack α41,α42 = cache.tab
-    z₄ = @. α41*z₁ + α42*z₂
+    #z₄ = @. α41*z₁ + α42*z₂
+    z₄ = z₂
     tmp = @. uprev + a41*z₁ + a42*z₂ + a43*z₃ + chi2*nb043*g1
   end
 
@@ -185,11 +187,13 @@
   u = @. tmp + γ*z₄
   g4 = g(t+dt,uprev)
 
+  E₂ = chi2*(g1-g4)
+
   if typeof(integrator.f) <: SplitFunction
     k4 = dt*f2(tstep, u)
-    u = @. uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + eb1*k1 + eb2*k2 + eb3*k3 + eb4*k4 + integrator.W.dW*g4 + chi2*(g1-g4)
+    u = @. uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + eb1*k1 + eb2*k2 + eb3*k3 + eb4*k4 + integrator.W.dW*g4 + E₂
   else
-    u = @. uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + integrator.W.dW*g4 + chi2*(g1-g4)
+    u = @. uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + integrator.W.dW*g4 + E₂
   end
 
   ################################### Finalize
@@ -198,6 +202,8 @@
   cache.newton_iters = iter
 
   if integrator.opts.adaptive
+
+    #=
     if typeof(integrator.f) <: SplitFunction
       tmp = @. btilde1*z₁  + btilde2*z₂  + btilde3*z₃ + btilde4*z₄ + ebtilde1*k1 + ebtilde2*k2 + ebtilde3*k3 + ebtilde4*k4 + chi2*(g1-g4)
     else
@@ -208,8 +214,12 @@
     else
       est = tmp
     end
-    atmp = calculate_residuals(est, uprev, u, integrator.opts.abstol, integrator.opts.reltol,integrator.opts.internalnorm)
-    integrator.EEst = integrator.opts.internalnorm(atmp)
+
+    =#
+
+    E₁ = z₁ + z₂ + z₃ + z₄
+
+    integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
   end
 
   integrator.u = u
@@ -224,6 +234,11 @@ end
   @unpack ea21,ea31,ea32,ea41,ea42,ea43,eb1,eb2,eb3,eb4 = cache.tab
   @unpack ebtilde1,ebtilde2,ebtilde3,ebtilde4 = cache.tab
   @unpack nb021,nb043 = cache.tab
+
+  # Some aliases
+
+  E₁ = g4
+  E₂ = dz
 
   if typeof(integrator.f) <: SplitFunction
     f = integrator.f.f1
@@ -364,7 +379,8 @@ end
     end
   else
     # Guess is from Hermite derivative on z₁ and z₂
-    @. z₃ = α31*z₁ + α32*z₂
+    #@. z₃ = α31*z₁ + α32*z₂
+    z₃ .= z₂
     @. tmp = uprev + a31*z₁ + a32*z₂
   end
 
@@ -425,12 +441,13 @@ end
     for i in eachindex(tmp)
       @inbounds tmp[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + ea41*k1[i] + ea42*k2[i] + ea43*k3[i] + nb043*z₄[i]
     end
-    z₄ .= z₃
+    z₄ .= z₂
   else
     @unpack α41,α42 = cache.tab
     # z₄ is storage for the g1*chi2
     @. tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + nb043*z₄
-    @. z₄ = α41*z₁ + α42*z₂
+    z₄ .= z₂
+    #@. z₄ = α41*z₁ + α42*z₂
   end
 
   @. u = tmp + γ*z₄
@@ -482,30 +499,32 @@ end
   if typeof(integrator.f) <: SplitFunction
     f2(tstep, u, k4); k4 .*= dt
     if is_diagonal_noise(integrator.sol.prob)
+      @. E₂ = chi2*(g1-g4)
       #@. u = uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + eb1*k1 + eb2*k2 + eb3*k3 + eb4*k4 + integrator.W.dW*g4 + chi2*(g1-g4)
       for i in eachindex(u)
-        @inbounds u[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + γ*z₄[i] + eb1*k1[i] + eb2*k2[i] + eb3*k3[i] + eb4*k4[i] + integrator.W.dW[i]*g4[i] + chi2[i]*(g1[i]-g4[i])
+        @inbounds u[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + γ*z₄[i] + eb1*k1[i] + eb2*k2[i] + eb3*k3[i] + eb4*k4[i] + integrator.W.dW[i]*g4[i] + chi2*(g1-g4)
       end
     else
       g1 .-= g4
-      A_mul_B!(dz,g1,chi2)
+      A_mul_B!(E₂,g1,chi2)
       A_mul_B!(tmp,g4,integrator.W.dW)
       for i in eachindex(u)
-        @inbounds u[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + γ*z₄[i] + eb1*k1[i] + eb2*k2[i] + eb3*k3[i] + eb4*k4[i] + tmp[i] + dz[i]
+        @inbounds u[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + γ*z₄[i] + eb1*k1[i] + eb2*k2[i] + eb3*k3[i] + eb4*k4[i] + tmp[i] + E₂[i]
       end
     end
   else
     if is_diagonal_noise(integrator.sol.prob)
+      @. E₂ = chi2*(g1-g4)
       #@. u = uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + integrator.W.dW*g4 + chi2*(g1-g4)
       for i in eachindex(u)
-        @inbounds u[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + γ*z₄[i] + integrator.W.dW[i]*g4[i] + chi2[i]*(g1[i]-g4[i])
+        @inbounds u[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + γ*z₄[i] + integrator.W.dW[i]*g4[i] + E₂[i]
       end
     else
       g1 .-= g4
-      A_mul_B!(dz,g1,chi2)
+      A_mul_B!(E₂,g1,chi2)
       A_mul_B!(tmp,g4,integrator.W.dW)
       for i in eachindex(u)
-        @inbounds u[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + γ*z₄[i] + tmp[i] + dz[i]
+        @inbounds u[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + γ*z₄[i] + tmp[i] + E₂[i]
       end
     end
   end
@@ -516,6 +535,8 @@ end
   cache.newton_iters = iter
 
   if integrator.opts.adaptive
+
+    #=
     if typeof(integrator.f) <: SplitFunction
       if is_diagonal_noise(integrator.sol.prob)
         #@. dz = btilde1*z₁  + btilde2*z₂  + btilde3*z₃ + btilde4*z₄ + ebtilde1*k1 + ebtilde2*k2 + ebtilde3*k3 + ebtilde4*k4
@@ -540,6 +561,7 @@ end
         @. dz += btilde1*z₁ + btilde2*z₂ + btilde3*z₃ + btilde4*z₄
       end
     end
+
     if integrator.alg.smooth_est # From Shampine
       if has_invW(f)
         A_mul_B!(vec(tmp),W,vec(dz))
@@ -549,8 +571,16 @@ end
     else
       tmp .= dz
     end
-    calculate_residuals!(atmp, tmp, uprev, u, integrator.opts.abstol, integrator.opts.reltol,integrator.opts.internalnorm)
-    integrator.EEst = integrator.opts.internalnorm(atmp)
+
+    =#
+
+    @. E₁ = z₁ + z₂ + z₃ + z₄
+
+    @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
+						  Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
+      @inbounds tmp[i] = @muladd(δ*E₁[i]+E₂[i])/@muladd(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
+    end
+    integrator.EEst = integrator.opts.internalnorm(tmp)
   end
 
 end
