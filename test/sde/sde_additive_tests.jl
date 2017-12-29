@@ -1,13 +1,13 @@
 using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Base.Test
 srand(100)
 
-f(t,u) = 0.0
-f(::Type{Val{:analytic}},t,u0,W) = W
-g(t,u) = 1.0
-prob = SDEProblem(f,g,0.0,(0.0,1.0))
-sol1 = solve(prob,SRA1(),dt=1/2^(3),seed=1,adaptive=false)
-sol2 = solve(prob,SOSRA(),dt=1/2^(3),seed=1,adaptive=false)
-sol3 = solve(prob,RackKenCarp(),dt=1/2^(3),seed=1,adaptive=false)
+f_bm(t,u) = 0.0
+f_bm(::Type{Val{:analytic}},t,u0,W) = W
+g_bm(t,u) = 1.0
+prob = SDEProblem(f_bm,g_bm,0.0,(0.0,1.0))
+sol1 = solve(prob,SRA1(),dt=1/2^(3),adaptive=false)
+sol2 = solve(prob,SOSRA(),dt=1/2^(3),adaptive=false)
+sol3 = solve(prob,RackKenCarp(),dt=1/2^(3),adaptive=false)
 @test sol1.errors[:l2] ≈ 0.0 atol = 1e-14
 @test sol2.errors[:l2] ≈ 0.0 atol = 1e-14
 @test sol3.errors[:l2] ≈ 0.0 atol = 1e-14
