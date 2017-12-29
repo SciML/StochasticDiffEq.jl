@@ -433,10 +433,11 @@ end
   k4 = integrator.f(t+c04*dt,H03)
   g4 = integrator.g(t+c14*dt,H13)
 
-  E₁ = dt*(α1*k1 + α2*k2 + α3*k3 + α4*k4)
   E₂ = chi2.*(beta31*g1 + beta32*g2 + beta33*g3 + beta34*g4) + chi3.*(beta41*g1 + beta42*g2 + beta43*g3 + beta44*g4)
 
-  u = uprev + E₁ + E₂ + W.dW.*(beta11*g1 + beta12*g2 + beta13*g3 + beta14*g4) + chi1.*(beta21*g1 + beta22*g2 + beta23*g3 + beta24*g4)
+  u = uprev + dt*(α1*k1 + α2*k2 + α3*k3 + α4*k4) + E₂ + W.dW.*(beta11*g1 + beta12*g2 + beta13*g3 + beta14*g4) + chi1.*(beta21*g1 + beta22*g2 + beta23*g3 + beta24*g4)
+
+  E₁ = dt*(k1 + k2 + k3 + k4)
 
   if integrator.opts.adaptive
     integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
@@ -471,28 +472,29 @@ end
   integrator.g(t+c12*dt,tmp,g2)
 
   for i in eachindex(u)
-    tmp[i] = uprev[i] + dt*(a031*k1[i] + a032*k2[i]) + chi2[i]*(b031*g1[i] + b032*g2[i])
+    @inbounds tmp[i] = uprev[i] + dt*(a031*k1[i] + a032*k2[i]) + chi2[i]*(b031*g1[i] + b032*g2[i])
   end
   integrator.f(t+c03*dt,tmp,k3)
   for i in eachindex(u)
-    tmp[i] = uprev[i] + dt*(a131*k1[i] + a132*k2[i]) + sqdt*(b131*g1[i] + b132*g2[i])
+    @inbounds tmp[i] = uprev[i] + dt*(a131*k1[i] + a132*k2[i]) + sqdt*(b131*g1[i] + b132*g2[i])
   end
   integrator.g(t+c13*dt,tmp,g3)
 
   for i in eachindex(u)
-    tmp[i] = uprev[i] + dt*(a041*k1[i] + a042*k2[i] + a043*k3[i]) + chi2[i]*(b041*g1[i] + b042*g2[i] + b043*g3[i])
+    @inbounds tmp[i] = uprev[i] + dt*(a041*k1[i] + a042*k2[i] + a043*k3[i]) + chi2[i]*(b041*g1[i] + b042*g2[i] + b043*g3[i])
   end
   integrator.f(t+c04*dt,tmp,k4)
   for i in eachindex(u)
-    tmp[i] = uprev[i] + dt*(a141*k1[i] + a142*k2[i] + a143*k3[i]) + sqdt*(b141*g1[i] + b142*g2[i] + b143*g3[i])
+    @inbounds tmp[i] = uprev[i] + dt*(a141*k1[i] + a142*k2[i] + a143*k3[i]) + sqdt*(b141*g1[i] + b142*g2[i] + b143*g3[i])
   end
   integrator.g(t+c14*dt,tmp,g4)
 
-  @. E₁ = dt*(α1*k1 + α2*k2 + α3*k3 + α4*k4)
   for i in eachindex(u)
-    E₂[i] = chi2[i]*(beta31*g1[i] + beta32*g2[i] + beta33*g3[i] + beta34*g4[i]) + chi3[i]*(beta41*g1[i] + beta42*g2[i] + beta43*g3[i] + beta44*g4[i])
-    u[i] = uprev[i] + E₁[i] + E₂[i] + W.dW[i]*(beta11*g1[i] + beta12*g2[i] + beta13*g3[i] + beta14*g4[i]) + chi1[i]*(beta21*g1[i] + beta22*g2[i] + beta23*g3[i] + beta24*g4[i])
+    @inbounds E₂[i] = chi2[i]*(beta31*g1[i] + beta32*g2[i] + beta33*g3[i] + beta34*g4[i]) + chi3[i]*(beta41*g1[i] + beta42*g2[i] + beta43*g3[i] + beta44*g4[i])
+    @inbounds u[i] = uprev[i] + dt*(α1*k1[i] + α2*k2[i] + α3*k3[i] + α4*k4[i]) + E₂[i] + W.dW[i]*(beta11*g1[i] + beta12*g2[i] + beta13*g3[i] + beta14*g4[i]) + chi1[i]*(beta21*g1[i] + beta22*g2[i] + beta23*g3[i] + beta24*g4[i])
   end
+
+  @. E₁ = dt*(α1*k1 + α2*k2 + α3*k3 + α4*k4)
 
   if integrator.opts.adaptive
     @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
