@@ -72,6 +72,8 @@ sim8 = test_convergence(dts,prob,SOSRA(),numMonte=Int(1e1))
 @test abs(sim8.𝒪est[:final]-2) < 0.3
 sim9 = test_convergence(dts,prob,SOSRA2(),numMonte=Int(1e1))
 @test abs(sim9.𝒪est[:final]-2) < 0.3
+sim10 = test_convergence(dts,prob,RackKenCarp(),numMonte=Int(1e1))
+@test abs(sim10.𝒪est[:final]-2) < 0.3
 
 sim2 = test_convergence(dts,prob,SRA(tableau=StochasticDiffEq.constructSRA2()),numMonte=Int(1e1))
 @test abs(sim2.𝒪est[:final]-2) < 0.3

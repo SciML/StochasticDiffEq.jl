@@ -8,6 +8,7 @@ sol =solve(prob,SRA2(),dt=1/2^(3))
 sol =solve(prob,SRA3(),dt=1/2^(3))
 sol =solve(prob,SOSRA(),dt=1/2^(3))
 sol =solve(prob,SOSRA2(),dt=1/2^(3))
+sol =solve(prob,RackKenCarp(),dt=1/2^(3))
 
 prob = prob_sde_additivesystem
 
@@ -18,6 +19,7 @@ sol =solve(prob,SRA2(),dt=1/2^(3))
 sol =solve(prob,SRA3(),dt=1/2^(3))
 sol =solve(prob,SOSRA(),dt=1/2^(3))
 sol =solve(prob,SOSRA2(),dt=1/2^(3))
+sol =solve(prob,RackKenCarp(),dt=1/2^(3))
 
 #First index is the sime, so sol.timeseries[1,..] is the initial condition
 #Last indices are the indexes of the variables. Since our initial condition
@@ -40,4 +42,6 @@ sim2 = test_convergence(dts,prob,SRA3(),numMonte=5)
 sim2 = test_convergence(dts,prob,SOSRA(),numMonte=10)
 @test abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!
 sim2 = test_convergence(dts,prob,SOSRA2(),numMonte=5)
+@test abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!
+sim2 = test_convergence(dts,prob,RackKenCarp(),numMonte=5)
 @test abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!

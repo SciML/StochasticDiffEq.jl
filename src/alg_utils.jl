@@ -28,6 +28,7 @@ alg_order(alg::SRA2) = 2//1
 alg_order(alg::SRA3) = 2//1
 alg_order(alg::SOSRA) = 2//1
 alg_order(alg::SOSRA2) = 2//1
+alg_order(alg::RackKenCarp) = 2//1
 alg_order(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = alg_order(alg.algs[1])
 
 beta2_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = 2//(5alg_order(alg))
@@ -55,6 +56,7 @@ alg_compatible(prob,alg::SRA2) = true
 alg_compatible(prob,alg::SRA3) = true
 alg_compatible(prob,alg::SOSRA) = true
 alg_compatible(prob,alg::SOSRA2) = true
+alg_compatible(prob,alg::RackKenCarp) = true
 alg_compatible(prob,alg::EM) = true
 alg_compatible(prob,alg::EulerHeun) = true
 alg_compatible(prob,alg::SplitEM) = true
@@ -80,6 +82,7 @@ alg_needs_extra_process(alg::SRA2) = true
 alg_needs_extra_process(alg::SRA3) = true
 alg_needs_extra_process(alg::SOSRA) = true
 alg_needs_extra_process(alg::SOSRA2) = true
+alg_needs_extra_process(alg::RackKenCarp) = true
 
 alg_autodiff(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
 get_chunksize(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = CS
@@ -87,6 +90,7 @@ get_chunksize(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,
 alg_mass_matrix_compatible(alg::StochasticDiffEqAlgorithm) = false
 
 function alg_mass_matrix_compatible(alg::StochasticDiffEqNewtonAlgorithm)
+    typeof(alg) <: RackKenCarp && return false
     if alg.symplectic
         return true
     elseif alg.theta == 1
