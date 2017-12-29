@@ -378,6 +378,55 @@ function checkSRAOrder(SRA;tol=1e-6)
   return(conditions)
 end
 
+"""
+constructSOSRA2()
+
+Constructs the taleau type for the SOSRA method.
+"""
+function constructRackKenCarp(T=Float64,T2=Float64)
+    γ  = T(0.435866521508459)
+    a31 = T(0.2576482460664272)
+    a32 = -T(0.09351476757488625)
+    a41 = T(0.18764102434672383)
+    a42 = -T(0.595297473576955)
+    a43 = T(0.9717899277217721)
+    # bhat1 = T(2756255671327//12835298489170)
+    # bhat2 = -T(10771552573575//22201958757719)
+    # bhat3 = T(9247589265047//10645013368117)
+    # bhat4 = T(2193209047091//5459859503100)
+    btilde1 = T(0.027099261876665316) # bhat1-a41
+    btilde2 = T(0.11013520969201586) # bhat2-a42
+    btilde3 = T(-0.10306492520138458) # bhat3-a43
+    btilde4 = T(-0.0341695463672966) # bhat4-γ
+    c3 = T2(0.6)
+    c2 = 2γ
+    θ = c3/c2
+    α31 = ((1 + (-4θ + 3θ^2)) + (6θ*(1-θ)/c2)*γ)
+    α32 = ((-2θ + 3θ^2) + (6θ*(1-θ)/c2)*γ)
+    θ = 1/c2
+    α41 = ((1 + (-4θ + 3θ^2)) + (6θ*(1-θ)/c2)*γ)
+    α42 = ((-2θ + 3θ^2) + (6θ*(1-θ)/c2)*γ)
+
+    nb021 = T(-12.246764387585056)
+    nb043 = T(-14.432096958608753)
+    α  = [a41;a42;a43;γ]
+    β₁ = [0,0,0,1]
+    β₂ = [1,0,0,-1]
+    A₀ = [0 0 0 0
+          γ γ 0 0
+          a31 a32 γ 0
+          a41 a42 a43 γ]
+    B₀ = [0 0 0 0
+          nb021 0 0 0
+          0 0 0 0
+          0 0 nb043 0]
+    c₀ = [0,c2,c3,1]
+    c₁ = [0,0,0,1]
+    RosslerSRA(map(T2,c₀),map(T2,c₁),
+               map(T,A₀),map(T,B₀),
+               map(T,α),map(T,β₁),map(T,β₂),4//2)
+end
+
 struct RackKenCarpTableau{T,T2}
     γ::T
     a31::T
@@ -408,6 +457,8 @@ struct RackKenCarpTableau{T,T2}
     ebtilde2::T
     ebtilde3::T
     ebtilde4 ::T
+    nb021::T
+    nb043::T
 end
 
 #=
@@ -462,9 +513,11 @@ Base.@pure function RackKenCarpTableau{T<:CompiledFloats,T2<:CompiledFloats}(::T
   ebtilde3 = -T(0.10306492520138458)
   ebtilde4 = -T(0.0341695463672966)
 
+  nb021 = T(-12.246764387585056)
+  nb043 = T(-14.432096958608753)
   RackKenCarpTableau(γ,a31,a32,a41,a42,a43,btilde1,btilde2,btilde3,btilde4,c3,α31,
                   α32,α41,α42,ea21,ea31,ea32,ea41,ea42,ea43,eb1,eb2,eb3,eb4,
-                  ebtilde1,ebtilde2,ebtilde3,ebtilde4)
+                  ebtilde1,ebtilde2,ebtilde3,ebtilde4,nb021,nb043)
 end
 
 
@@ -508,9 +561,14 @@ function RackKenCarpTableau(T,T2)
   ebtilde2 = T(parse(BigInt,"18411887981491912264464127")//parse(BigInt,"167175311446532472108584143"))
   ebtilde3 = -T(parse(BigInt,"12719313754959329011138489")//parse(BigInt,"123410692144842870217698057"))
   ebtilde4 = -T(parse(BigInt,"47289384293135913063989")//parse(BigInt,"1383962894467812063558225"))
+
+  # Noise Tableau
+
+  nb021 = T(parse(BigFloat,"-12.246764387585055918338744103409192607986567514699471403397969732723452087723101"))
+  nb043 = T(parse(BigFloat,"-14.432096958608752822047165680776748797565142459789556194474191884258734697161106"))
   RackKenCarpTableau(γ,a31,a32,a41,a42,a43,btilde1,btilde2,btilde3,btilde4,c3,α31,
                   α32,α41,α42,ea21,ea31,ea32,ea41,ea42,ea43,eb1,eb2,eb3,eb4,
-                  ebtilde1,ebtilde2,ebtilde3,ebtilde4)
+                  ebtilde1,ebtilde2,ebtilde3,ebtilde4,nb021,nb043)
 end
 
 # Flip them all!

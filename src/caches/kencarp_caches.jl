@@ -32,7 +32,7 @@ function alg_cache(alg::RackKenCarp,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_pro
   RackKenCarpConstantCache(uf,ηold,κ,tol,10000,tab)
 end
 
-mutable struct RackKenCarpCache{uType,rateType,uNoUnitsType,J,UF,JC,uEltypeNoUnits,Tab,F,kType} <: StochasticDiffEqMutableCache
+mutable struct RackKenCarpCache{uType,rateType,uNoUnitsType,J,UF,JC,uEltypeNoUnits,Tab,F,kType,randType,rateNoiseType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   du1::rateType
@@ -60,6 +60,9 @@ mutable struct RackKenCarpCache{uType,rateType,uNoUnitsType,J,UF,JC,uEltypeNoUni
   tol::uEltypeNoUnits
   newton_iters::Int
   tab::Tab
+  chi2::randType
+  g1::rateNoiseType
+  g4::rateNoiseType
 end
 
 u_cache(c::RackKenCarpCache)    = (c.z₁,c.z₂,c.z₃,c.z₄,c.dz)
@@ -102,12 +105,21 @@ function alg_cache(alg::RackKenCarp,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_pro
     tol = min(0.03,first(reltol)^(0.5))
   end
 
+  if typeof(ΔW) <: Union{SArray,Number}
+    chi2 = copy(ΔW)
+  else
+    chi2 = similar(ΔW)
+  end
+
+  g1 = zeros(noise_rate_prototype); g4 = zeros(noise_rate_prototype)
+
   tab = RackKenCarpTableau(real(uBottomEltype),real(tTypeNoUnits))
 
   ηold = one(uEltypeNoUnits)
 
   RackKenCarpCache{typeof(u),typeof(rate_prototype),typeof(atmp),typeof(J),typeof(uf),
-              typeof(jac_config),uEltypeNoUnits,typeof(tab),typeof(linsolve),typeof(k1)}(
+              typeof(jac_config),uEltypeNoUnits,typeof(tab),typeof(linsolve),typeof(k1),
+              typeof(chi2),typeof(g1)}(
               u,uprev,du1,fsalfirst,k,z₁,z₂,z₃,z₄,k1,k2,k3,k4,dz,b,tmp,atmp,J,
-              W,uf,jac_config,linsolve,ηold,κ,tol,10000,tab)
+              W,uf,jac_config,linsolve,ηold,κ,tol,10000,tab,chi2,g1,g4)
 end
