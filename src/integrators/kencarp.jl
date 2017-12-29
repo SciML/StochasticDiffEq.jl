@@ -28,14 +28,7 @@
     W = 1 - γdt*J
   end
 
-  if typeof(integrator.f) <: SplitFunction
-    # Explicit tableau is not FSAL
-    # Make this not compute on repeat
-    z₁ = dt.*f(t, uprev)
-  else
-    # FSAL Step 1
-    z₁ = dt.*integrator.fsalfirst
-  end
+  z₁ = dt.*f(t, uprev)
 
   ##### Step 2
 
@@ -207,15 +200,6 @@
     integrator.EEst = integrator.opts.internalnorm(atmp)
   end
 
-  if typeof(integrator.f) <: SplitFunction
-    integrator.k[1] = integrator.fsalfirst
-    integrator.fsallast = integrator.f(t+dt,u)
-    integrator.k[2] = integrator.fsallast
-  else
-    integrator.fsallast = z₄./dt
-    integrator.k[1] = integrator.fsalfirst
-    integrator.k[2] = integrator.fsallast
-  end
   integrator.u = u
 end
 
@@ -267,16 +251,9 @@ end
     end
   end
 
-  if typeof(integrator.f) <: SplitFunction
-    # Explicit tableau is not FSAL
-    # Make this not compute on repeat
-    if !repeat_step && !integrator.last_stepfail
-      f(integrator.t, integrator.uprev, z₁)
-      z₁ .*= dt
-    end
-  else
-    # FSAL Step 1
-    @. z₁ = dt*integrator.fsalfirst
+  if !repeat_step && !integrator.last_stepfail
+    f(integrator.t, integrator.uprev, z₁)
+    z₁ .*= dt
   end
 
   ##### Step 2
@@ -292,7 +269,10 @@ end
 
   if typeof(integrator.f) <: SplitFunction
     # This assumes the implicit part is cheaper than the explicit part
-    @. k1 = dt*integrator.fsalfirst - z₁
+    if !repeat_step && !integrator.last_stepfail
+      f2(integrator.t, integrator.uprev, k1)
+      k1 .*= dt
+    end
     @. tmp += ea21*k1
   end
 
@@ -500,9 +480,4 @@ end
     integrator.EEst = integrator.opts.internalnorm(atmp)
   end
 
-  if typeof(integrator.f) <: SplitFunction
-    integrator.f(t+dt,u,integrator.fsallast)
-  else
-    @. integrator.fsallast = z₄/dt
-  end
 end

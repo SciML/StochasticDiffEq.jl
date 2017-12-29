@@ -33,6 +33,8 @@ module StochasticDiffEq
                      u_modified!,savevalues!,add_tstop!,add_saveat!,set_reltol!,
                      set_abstol!
 
+  const CompiledFloats = Union{Float32,Float64}
+
   macro tight_loop_macros(ex)
    :($(esc(ex)))
   end
@@ -47,6 +49,7 @@ module StochasticDiffEq
   include("caches/sdirk_caches.jl")
   include("caches/sra_caches.jl")
   include("caches/rossler_caches.jl")
+  include("caches/kencarp_caches.jl")
   include("integrators/type.jl")
   include("dense.jl")
   include("callbacks.jl")
@@ -61,6 +64,7 @@ module StochasticDiffEq
   include("integrators/sri.jl")
   include("integrators/sra.jl")
   include("integrators/sdirk.jl")
+  include("integrators/kencarp.jl")
   include("integrators/split.jl")
   include("integrators/composite_integrator.jl")
   include("tableaus.jl")
@@ -69,7 +73,7 @@ module StochasticDiffEq
           StochasticCompositeAlgorithm
 
   export EM, RKMil, SRA, SRI, SRIW1, SRA1, SRA2, SRA3, SOSRA, SOSRA2, RKMilCommute,
-         SRIW2, SOSRI, SOSRI2
+         SRIW2, SOSRI, SOSRI2, RackKenCarp
 
   export EulerHeun
 

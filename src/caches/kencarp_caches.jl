@@ -1,4 +1,4 @@
-mutable struct RackKenCarpCacheConstantCache{F,uEltypeNoUnits,Tab} <: OrdinaryDiffEqConstantCache
+mutable struct RackKenCarpConstantCache{F,uEltypeNoUnits,Tab} <: StochasticDiffEqConstantCache
   uf::F
   ηold::uEltypeNoUnits
   κ::uEltypeNoUnits
@@ -23,15 +23,16 @@ function alg_cache(alg::RackKenCarp,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_pro
   if alg.tol != nothing
     tol = alg.tol
   else
+    reltol = 1e-1 # TODO: generalize
     tol = min(0.03,first(reltol)^(0.5))
   end
 
-  tab = KenCarp3Tableau(real(uBottomEltypeNoUnits),real(tTypeNoUnits))
+  tab = RackKenCarpTableau(real(uBottomEltype),real(tTypeNoUnits))
 
-  RackKenCarpCacheConstantCache(uf,ηold,κ,tol,10000,tab)
+  RackKenCarpConstantCache(uf,ηold,κ,tol,10000,tab)
 end
 
-mutable struct RackKenCarpCache{uType,rateType,uNoUnitsType,J,UF,JC,uEltypeNoUnits,Tab,F,kType} <: OrdinaryDiffEqMutableCache
+mutable struct RackKenCarpCache{uType,rateType,uNoUnitsType,J,UF,JC,uEltypeNoUnits,Tab,F,kType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   du1::rateType
@@ -97,15 +98,16 @@ function alg_cache(alg::RackKenCarp,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_pro
   if alg.tol != nothing
     tol = alg.tol
   else
+    reltol = 1e-1 # TODO: generalize
     tol = min(0.03,first(reltol)^(0.5))
   end
 
-  tab = KenCarp3Tableau(real(uBottomEltypeNoUnits),real(tTypeNoUnits))
+  tab = RackKenCarpTableau(real(uBottomEltype),real(tTypeNoUnits))
 
   ηold = one(uEltypeNoUnits)
 
   RackKenCarpCache{typeof(u),typeof(rate_prototype),typeof(atmp),typeof(J),typeof(uf),
-              typeof(jac_config),uEltypeNoUnits,typeof(tab),typeof(linsolve)}(
-              u,uprev,du1,fsalfirst,k,z₁,z₂,z₃,z₄,dz,b,tmp,atmp,J,
+              typeof(jac_config),uEltypeNoUnits,typeof(tab),typeof(linsolve),typeof(k1)}(
+              u,uprev,du1,fsalfirst,k,z₁,z₂,z₃,z₄,k1,k2,k3,k4,dz,b,tmp,atmp,J,
               W,uf,jac_config,linsolve,ηold,κ,tol,10000,tab)
 end
