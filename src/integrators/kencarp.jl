@@ -295,6 +295,7 @@ end
 
   # TODO: Add extrapolation for guess
   @. z₂ = z₁
+  #@. z₂ = zero(u)
 
   # initial step of Newton iteration
   iter = 1
@@ -371,6 +372,7 @@ end
 
   if typeof(integrator.f) <: SplitFunction
     z₃ .= z₂
+    #@. z₃ = zero(u)
     @. u = tmp + γ*z₂
     f2(tstep, u, k2); k2 .*= dt
     #@. tmp = uprev + a31*z₁ + a32*z₂ + ea31*k1 + ea32*k2
@@ -381,6 +383,7 @@ end
     # Guess is from Hermite derivative on z₁ and z₂
     #@. z₃ = α31*z₁ + α32*z₂
     z₃ .= z₂
+    #@. z₃ = zero(u)
     @. tmp = uprev + a31*z₁ + a32*z₂
   end
 
@@ -402,7 +405,7 @@ end
   fail_convergence = false
   while (do_newton || iter < integrator.alg.min_newton_iter) && iter < integrator.alg.max_newton_iter
     iter += 1
-    u = @. tmp + γ*z₃
+    @. u = tmp + γ*z₃
     f(tstep,u,k)
     @. b = dt*k - z₃
     if has_invW(f)
@@ -433,7 +436,6 @@ end
   tstep = t + dt
 
   if typeof(integrator.f) <: SplitFunction
-
     @. u = tmp + γ*z₃
     f2(tstep, u, k3); k3 .*= dt
     # z₄ is storage for the g1*chi2 from earlier
@@ -441,11 +443,13 @@ end
     for i in eachindex(tmp)
       @inbounds tmp[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + ea41*k1[i] + ea42*k2[i] + ea43*k3[i] + nb043*z₄[i]
     end
+    #@. z₄ = zero(u)
     z₄ .= z₂
   else
     @unpack α41,α42 = cache.tab
     # z₄ is storage for the g1*chi2
     @. tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + nb043*z₄
+    #@. z₄ = zero(u)
     z₄ .= z₂
     #@. z₄ = α41*z₁ + α42*z₂
   end
@@ -493,16 +497,17 @@ end
     return
   end
 
-  @. u = tmp + γ*z₄
+
   g(t+dt,u,g4)
 
   if typeof(integrator.f) <: SplitFunction
+    @. u = tmp + γ*z₄
     f2(tstep, u, k4); k4 .*= dt
     if is_diagonal_noise(integrator.sol.prob)
       @. E₂ = chi2*(g1-g4)
       #@. u = uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + eb1*k1 + eb2*k2 + eb3*k3 + eb4*k4 + integrator.W.dW*g4 + chi2*(g1-g4)
       for i in eachindex(u)
-        @inbounds u[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + γ*z₄[i] + eb1*k1[i] + eb2*k2[i] + eb3*k3[i] + eb4*k4[i] + integrator.W.dW[i]*g4[i] + chi2*(g1-g4)
+        @inbounds u[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + γ*z₄[i] + eb1*k1[i] + eb2*k2[i] + eb3*k3[i] + eb4*k4[i] + integrator.W.dW[i]*g4[i] + E₂[i]
       end
     else
       g1 .-= g4

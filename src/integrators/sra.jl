@@ -171,9 +171,9 @@ end
     @. g1 = beta21*g1 + beta22*g2
     A_mul_B!(E₂,g1,chi2)
     g2 .*= beta12
-    A_mul_B!(k1,g2,W.dW)
+    A_mul_B!(E₁,g2,W.dW)
     for i in eachindex(u)
-      @inbounds u[i] = uprev[i] + dt*(α1*k1[i] + α2*k2[i]) + E₂[i] + k1[i]
+      @inbounds u[i] = uprev[i] + dt*(α1*k1[i] + α2*k2[i]) + E₂[i] + E₁[i]
     end
   end
 
@@ -270,9 +270,9 @@ end
     @. gtmp = beta21*g1 + beta22*g2 + beta23*g3
     A_mul_B!(E₂,gtmp,chi2)
     @. gtmp = beta11*g1 + beta12*g2 + beta13*g3
-    A_mul_B!(k1,gtmp,W.dW)
+    A_mul_B!(E₁,gtmp,W.dW)
     for i in eachindex(u)
-      @inbounds u[i] = uprev[i] + dt*(α1*k1[i] + α2*k2[i] + α3*k3[i]) + E₂[i] + k1[i]
+      @inbounds u[i] = uprev[i] + dt*(α1*k1[i] + α2*k2[i] + α3*k3[i]) + E₂[i] + E₁[i]
     end
   end
 
