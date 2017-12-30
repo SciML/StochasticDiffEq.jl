@@ -48,7 +48,7 @@
 
   if typeof(integrator.f) <: SplitFunction
     # This assumes the implicit part is cheaper than the explicit part
-    k1 = dt*f(t,uprev) - z₁
+    k1 = dt*f2(t,uprev)
     tmp += ea21*k1
   end
 
