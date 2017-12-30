@@ -92,7 +92,7 @@
   if typeof(integrator.f) <: SplitFunction
     z₃ = z₂
     u = @. tmp + γ*z₂
-    k2 = dt*f2(tstep, u)
+    k2 = dt*f2(t + 2γ*dt, u)
     tmp = @. uprev + a31*z₁ + a32*z₂ + ea31*k1 + ea32*k2
   else
     # Guess is from Hermite derivative on z₁ and z₂
@@ -143,7 +143,7 @@
   if typeof(integrator.f) <: SplitFunction
     z₄ = z₂
     u = @. tmp + γ*z₃
-    k3 = dt*f2(tstep, u)
+    k3 = dt*f2(t + c3*dt, u)
     tmp = @. uprev + a41*z₁ + a42*z₂ + a43*z₃ + ea41*k1 + ea42*k2 + ea43*k3 + chi2*nb043*g1
   else
     @unpack α41,α42 = cache.tab
@@ -190,7 +190,7 @@
   E₂ = chi2*(g1-g4)
 
   if typeof(integrator.f) <: SplitFunction
-    k4 = dt*f2(tstep, u)
+    k4 = dt*f2(t+dt, u)
     u = @. uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + eb1*k1 + eb2*k2 + eb3*k3 + eb4*k4 + integrator.W.dW*g4 + E₂
   else
     u = @. uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + integrator.W.dW*g4 + E₂
@@ -374,7 +374,7 @@ end
     z₃ .= z₂
     #@. z₃ = zero(u)
     @. u = tmp + γ*z₂
-    f2(tstep, u, k2); k2 .*= dt
+    f2(t + 2γ*dt, u, k2); k2 .*= dt
     #@. tmp = uprev + a31*z₁ + a32*z₂ + ea31*k1 + ea32*k2
     for i in eachindex(tmp)
       @inbounds tmp[i] = uprev[i] + a31*z₁[i] + a32*z₂[i] + ea31*k1[i] + ea32*k2[i]
@@ -437,7 +437,7 @@ end
 
   if typeof(integrator.f) <: SplitFunction
     @. u = tmp + γ*z₃
-    f2(tstep, u, k3); k3 .*= dt
+    f2(t + c3*dt, u, k3); k3 .*= dt
     # z₄ is storage for the g1*chi2 from earlier
     #@. tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + ea41*k1 + ea42*k2 + ea43*k3
     for i in eachindex(tmp)
@@ -502,7 +502,7 @@ end
 
   if typeof(integrator.f) <: SplitFunction
     @. u = tmp + γ*z₄
-    f2(tstep, u, k4); k4 .*= dt
+    f2(t+dt, u, k4); k4 .*= dt
     if is_diagonal_noise(integrator.sol.prob)
       @. E₂ = chi2*(g1-g4)
       #@. u = uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + eb1*k1 + eb2*k2 + eb3*k3 + eb4*k4 + integrator.W.dW*g4 + chi2*(g1-g4)

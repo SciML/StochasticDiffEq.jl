@@ -451,6 +451,7 @@ end
   @unpack t,dt,uprev,u,W = integrator
   chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
   H0[:]=zeros(stages)
+
   for i = 1:stages
     A0temp = zero(u)
     B0temp = zero(u)
@@ -458,6 +459,7 @@ end
       A0temp = @muladd A0temp + A₀[j,i]*integrator.f(@muladd(t + c₀[j]*dt),H0[j])
       B0temp = @muladd B0temp + B₀[j,i]*integrator.g(@muladd(t + c₁[j]*dt),H0[j]) #H0[..,i] argument ignored
     end
+
     H0[i] = uprev + A0temp*dt + B0temp.*chi2
   end
 

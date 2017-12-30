@@ -476,7 +476,7 @@ function constructExplicitRackKenCarp(T=Float64,T2=Float64)
     A₀ = [0 0 0 0
           ea21 0 0 0
           ea31 ea32 0 0
-          ea41 ea42 ea43 γ]
+          ea41 ea42 ea43 0]
     B₀ = [0 0 0 0
           nb021 0 0 0
           0 0 0 0
