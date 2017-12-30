@@ -53,8 +53,8 @@ sim2 = test_convergence(dts,prob,SOSRA(),numMonte=10)
 @test abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!
 sim2 = test_convergence(dts,prob,SOSRA2(),numMonte=5)
 @test abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!
-dts = 1./2.^(11:-1:8) #14->7 good plot
+dts = 1./2.^(11:-1:7) #14->7 good plot
 sim2 = test_convergence(dts,prob,RackKenCarp(),numMonte=20)
 @test abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!
-sim2 = test_convergence(dts,prob,RackKenCarp(min_newton_iter=5),numMonte=20)
+sim2 = test_convergence(dts,prob,RackKenCarp(min_newton_iter=3),numMonte=20)
 @test abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!
