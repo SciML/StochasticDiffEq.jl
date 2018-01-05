@@ -1,5 +1,5 @@
 #=
-@inline function perform_step!(integrator,cache::SRICache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SRICache,f=integrator.f)
   @unpack c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄,stages,error_terms = cache.tab
   @unpack H0,H1,A0temp,A1temp,B0temp,B1temp,A0temp2,A1temp2,B0temp2,B1temp2,atemp,btemp,E₁,E₂,E₁temp,ftemp,gtemp,chi1,chi2,chi3,tmp = cache
   @unpack t,dt,uprev,u,W = integrator
@@ -52,15 +52,15 @@
 end
 =#
 
-@inline function perform_step!(integrator,cache::SRICache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SRICache,f=integrator.f)
   @unpack c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄,stages,error_terms = cache.tab
   @unpack H0,H1,A0temp,A1temp,B0temp,B1temp,A0temp2,A1temp2,B0temp2,B1temp2,atemp,btemp,E₁,E₂,E₁temp,ftemp,gtemp,chi1,chi2,chi3,tmp = cache
   @unpack t,dt,uprev,u,W = integrator
 
   if typeof(W.dW) <: Union{SArray,Number}
-    chi1 = @. (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
-    chi2 = @. (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
-    chi3 = @. (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
+    chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
+    chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   else
     @. chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
     @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
@@ -129,7 +129,7 @@ end
 end
 
 #=
-@inline function perform_step!(integrator,cache::SRIW1Cache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SRIW1Cache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
   @unpack chi1,chi2,chi3,fH01o4,g₁o2,H0,H11,H12,H13,g₂o3,Fg₂o3,g₃o3,Tg₃o3,mg₁,E₁,E₂,fH01,fH02,g₁,g₂,g₃,g₄,tmp = cache
   @. chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
@@ -170,14 +170,14 @@ end
 end
 =#
 
-@inline function perform_step!(integrator,cache::SRIW1Cache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SRIW1Cache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
   @unpack chi1,chi2,chi3,fH01o4,g₁o2,H0,H11,H12,H13,g₂o3,Fg₂o3,g₃o3,Tg₃o3,mg₁,E₁,E₂,fH01,fH02,g₁,g₂,g₃,g₄,tmp = cache
 
   if typeof(W.dW) <: Union{SArray,Number}
-    chi1 = @. (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
-    chi2 = @. (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
-    chi3 = @. (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
+    chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
+    chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   else
     @. chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
     @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
@@ -230,47 +230,7 @@ end
   @pack integrator = t,dt,u
 end
 
-#=
-@inline function perform_step!(integrator,cache::SRIW1ConstantCache,f=integrator.f)
-  @unpack t,dt,uprev,u,W = integrator
-  chi1 = @. (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
-  chi2 = @. (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
-  chi3 = @. (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
-  fH01 = dt*integrator.f(t,uprev)
-
-  g₁ = integrator.g(t,uprev)
-  fH01o4 = fH01/4
-  dto4 = dt/4
-  g₁o2 = g₁/2
-  H0 =  @. @muladd uprev + 3*(fH01o4  + chi2.*g₁o2)
-  H11 = @. @muladd uprev + fH01o4   + integrator.sqdt*g₁o2
-  H12 = @. @muladd uprev + fH01     - integrator.sqdt*g₁
-  g₂ = integrator.g(t+dto4,H11)
-  g₃ = integrator.g(t+dt,H12)
-  H13 = @. @muladd uprev + fH01o4 + integrator.sqdt*(-5g₁ + 3g₂ + g₃/2)
-
-
-  g₄ = integrator.g(t+dto4,H13)
-  fH02 = dt*integrator.f(t+3dto4,H0)
-
-  g₂o3 = g₂/3
-  Fg₂o3 = 4g₂o3
-  g₃o3 = g₃/3
-  Tg₃o3 = 2g₃o3
-  mg₁ = -g₁
-  E₁ = fH01+fH02
-  E₂ = @. @muladd chi2.*(2g₁ - Fg₂o3 - Tg₃o3) + chi3.*(2mg₁ + 5g₂o3 - Tg₃o3 + g₄)
-
-  u = @. uprev + (fH01 + 2fH02)/3 + W.dW.*(mg₁ + Fg₂o3 + Tg₃o3) + chi1.*(mg₁ + Fg₂o3 - g₃o3) + E₂
-  if integrator.opts.adaptive
-    tmp = @. @muladd(integrator.opts.delta*E₁+E₂)/(@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
-    integrator.EEst = integrator.opts.internalnorm(tmp)
-  end
-  @pack integrator = t,dt,u
-end
-=#
-
-@inline function perform_step!(integrator,cache::SRIW1ConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SRIW1ConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
   chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
   chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
@@ -307,57 +267,7 @@ end
   @pack integrator = t,dt,u
 end
 
-#=
-@inline function perform_step!(integrator,cache::SRIConstantCache,f=integrator.f)
-  @unpack t,dt,uprev,u,W = integrator
-  error_terms = integrator.alg.error_terms
-  @unpack c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄,stages,H0,H1,error_terms = cache
-  chi1 = @. .5*(W.dW.^2 - dt)/integrator.sqdt #I_(1,1)/sqrt(h)
-  chi2 = @. .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
-  chi3 = @. 1/6 * (W.dW.^3 - 3*W.dW*dt)/dt #I_(1,1,1)/h
-
-  fill!(H0,zero(typeof(u)))
-  fill!(H1,zero(typeof(u)))
-  for i = 1:stages
-    A0temp = zero(u)
-    B0temp = zero(u)
-    A1temp = zero(u)
-    B1temp = zero(u)
-    for j = 1:i-1
-      A0temp = @muladd A0temp .+ A₀[j,i].*integrator.f(t + c₀[j]*dt,H0[j])
-      B0temp = @muladd B0temp .+ B₀[j,i].*integrator.g(t + c₁[j]*dt,H1[j])
-      A1temp = @muladd A1temp .+ A₁[j,i].*integrator.f(t + c₀[j]*dt,H0[j])
-      B1temp = @muladd B1temp .+ B₁[j,i].*integrator.g(t + c₁[j]*dt,H1[j])
-    end
-    H0[i] = @muladd uprev .+ A0temp.*dt .+ B0temp.*chi2
-    H1[i] = @muladd uprev .+ A1temp.*dt .+ B1temp.*integrator.sqdt
-  end
-  atemp = zero(u)
-  btemp = zero(u)
-  E₂    = zero(u)
-  E₁temp= zero(u)
-  for i = 1:stages
-    ftemp = integrator.f(t+c₀[i]*dt,H0[i])
-    atemp = @muladd atemp .+ α[i].*ftemp
-    btemp = @muladd btemp .+ (β₁[i].*W.dW + β₂[i].*chi1).*integrator.g(t+c₁[i]*dt,H1[i])
-    E₂    = @muladd E₂    .+ (β₃[i].*chi2 + β₄[i].*chi3).*integrator.g(t+c₁[i]*dt,H1[i])
-    if i <= error_terms #1 or 2
-      E₁temp += ftemp
-    end
-  end
-  E₁ = dt*E₁temp
-
-  u = muladd.(dt,atemp,uprev) .+ btemp .+ E₂
-
-  if integrator.opts.adaptive
-    tmp = @. @muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol)
-    integrator.EEst = integrator.opts.internalnorm(tmp)
-  end
-  @pack integrator = t,dt,u
-end
-=#
-
-@inline function perform_step!(integrator,cache::SRIConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SRIConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
   error_terms = integrator.alg.error_terms
   @unpack c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄,stages,H0,H1,error_terms = cache
@@ -404,7 +314,7 @@ end
   @pack integrator = t,dt,u
 end
 
-@inline function perform_step!(integrator,cache::FourStageSRIConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::FourStageSRIConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
   @unpack a021,a031,a032,a041,a042,a043,a121,a131,a132,a141,a142,a143,b021,b031,b032,b041,b042,b043,b121,b131,b132,b141,b142,b143,c02,c03,c04,c11,c12,c13,c14,α1,α2,α3,α4,beta11,beta12,beta13,beta14,beta21,beta22,beta23,beta24,beta31,beta32,beta33,beta34,beta41,beta42,beta43,beta44 = cache
 
@@ -445,7 +355,7 @@ end
   @pack integrator = t,dt,u
 end
 
-@inline function perform_step!(integrator,cache::FourStageSRICache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::FourStageSRICache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
   @unpack chi1,chi2,chi3,tab,g1,g2,g3,g4,k1,k2,k3,k4,E₁,E₂,tmp = cache
   @unpack a021,a031,a032,a041,a042,a043,a121,a131,a132,a141,a142,a143,b021,b031,b032,b041,b042,b043,b121,b131,b132,b141,b142,b143,c02,c03,c04,c11,c12,c13,c14,α1,α2,α3,α4,beta11,beta12,beta13,beta14,beta21,beta22,beta23,beta24,beta31,beta32,beta33,beta34,beta41,beta42,beta43,beta44 = cache.tab
@@ -453,9 +363,9 @@ end
   sqdt = integrator.sqdt
 
   if typeof(W.dW) <: Union{SArray,Number}
-    chi1 = @. (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
-    chi2 = @. (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
-    chi3 = @. (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
+    chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
+    chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   else
     @. chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
     @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h

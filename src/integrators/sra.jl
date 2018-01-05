@@ -1,25 +1,4 @@
-#=
-@inline function perform_step!(integrator,cache::SRA1ConstantCache,f=integrator.f)
-  @unpack t,dt,uprev,u,W = integrator
-  gpdt = integrator.g(t+dt,uprev)
-  chi2 = @. (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
-  k₁ = @. dt*integrator.f(t,uprev)
-  k₂ = @. dt*integrator.f(t+3dt/4,uprev+3k₁/4 + 3chi2*integrator.g(t+dt,uprev)/2)
-  E₁ = @. k₁ + k₂
-  E₂ = @. chi2.*(integrator.g(t,uprev)-gpdt) #Only for additive!
-
-  if integrator.opts.adaptive
-    u = @. uprev + k₁/3 + 2k₂/3 + E₂ + W.dW*gpdt
-    tmp = @. @muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol)
-    integrator.EEst = integrator.opts.internalnorm(tmp)
-  else
-    u = @. uprev + k₁/3 + 2k₂/3 + E₂ + W.dW*gpdt
-  end
-  @pack integrator = t,dt,u
-end
-=#
-
-@inline function perform_step!(integrator,cache::SRA1ConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SRA1ConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
   gpdt = integrator.g(t+dt,uprev)
   chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
@@ -38,7 +17,7 @@ end
 end
 
 #=
-@inline function perform_step!(integrator,cache::SRA1Cache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SRA1Cache,f=integrator.f)
   @unpack chi2,tmp1,E₁,E₂,gt,k₁,k₂,gpdt,tmp = cache
   @unpack t,dt,uprev,u,W = integrator
   integrator.g(t,uprev,gt)
@@ -62,14 +41,14 @@ end
 end
 =#
 
-@inline function perform_step!(integrator,cache::SRA1Cache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SRA1Cache,f=integrator.f)
   @unpack chi2,tmp1,E₁,E₂,gt,k₁,k₂,gpdt,tmp = cache
   @unpack t,dt,uprev,u,W = integrator
   integrator.g(t,uprev,gt)
   integrator.g(t+dt,uprev,gpdt)
   integrator.f(t,uprev,k₁); k₁*=dt
   if typeof(W.dW) <: Union{SArray,Number}
-    chi2 = @. (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   else
     @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   end
@@ -111,7 +90,7 @@ end
   @pack integrator = t,dt,u
 end
 
-@inline function perform_step!(integrator,cache::SRA2ConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SRA2ConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
   @unpack a21,b21,c02,c11,c12,α1,α2,beta12,beta21,beta22 = cache
 
@@ -136,14 +115,14 @@ end
   @pack integrator = t,dt,u
 end
 
-@inline function perform_step!(integrator,cache::SRA2Cache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SRA2Cache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
   @unpack chi2,tab,g1,g2,k1,k2,E₁,E₂,tmp = cache
   @unpack a21,b21,c02,c11,c12,α1,α2,beta12,beta21,beta22 = cache.tab
   H01 = E₁
 
   if typeof(W.dW) <: Union{SArray,Number}
-    chi2 = @. (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   else
     @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   end
@@ -188,7 +167,7 @@ end
   @pack integrator = t,dt,u
 end
 
-@inline function perform_step!(integrator,cache::ThreeStageSRAConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::ThreeStageSRAConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
   @unpack a21,a31,a32,b21,b31,b32,c02,c03,c11,c12,c13,α1,α2,α3,beta11,beta12,beta13,beta21,beta22,beta23 = cache
 
@@ -219,7 +198,7 @@ end
   @pack integrator = t,dt,u
 end
 
-@inline function perform_step!(integrator,cache::ThreeStageSRACache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::ThreeStageSRACache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
   @unpack chi2,tab,g1,g2,g3,k1,k2,k3,E₁,E₂,tmp,gtmp = cache
   @unpack a21,a31,a32,b21,b31,b32,c02,c03,c11,c12,c13,α1,α2,α3,beta11,beta12,beta13,beta21,beta22,beta23 = cache.tab
@@ -227,7 +206,7 @@ end
   H01 = E₁; H02 = E₁
 
   if typeof(W.dW) <: Union{SArray,Number}
-    chi2 = @. (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   else
     @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   end
@@ -288,7 +267,7 @@ end
 end
 
 #=
-@inline function perform_step!(integrator,cache::SRACache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SRACache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
   @unpack H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂,tmp = cache
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages = cache.tab
@@ -331,13 +310,13 @@ end
 end
 =#
 
-@inline function perform_step!(integrator,cache::SRACache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SRACache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
   @unpack H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂,tmp = cache
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages = cache.tab
 
   if typeof(W.dW) <: Union{SArray,Number}
-    chi2 = @. (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   else
     @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   end
@@ -406,47 +385,7 @@ end
   @pack integrator = t,dt,u
 end
 
-#=
-@inline function perform_step!(integrator,cache::SRAConstantCache,f=integrator.f)
-  @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages,H0 = cache
-  @unpack t,dt,uprev,u,W = integrator
-  chi2 = @. .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
-  H0 .= zero(zero(u))
-  for i = 1:stages
-    A0temp = zero(u)
-    B0temp = zero(u)
-    for j = 1:i-1
-      A0temp = @muladd A0temp .+ A₀[j,i].*integrator.f(@muladd(t .+ c₀[j].*dt),H0[j])
-      B0temp = @muladd B0temp .+ B₀[j,i].*integrator.g(@muladd(t .+ c₁[j].*dt),H0[j]) #H0[..,i] argument ignored
-    end
-    H0[i] = @. uprev + A0temp*dt + B0temp.*chi2
-  end
-
-  atemp = zero(u)
-  btemp = zero(u)
-  E₂    = zero(u)
-  E₁temp= zero(u)
-
-  for i = 1:stages
-    ftemp = integrator.f(t+c₀[i]*dt,H0[i])
-    E₁temp =  @. E₁temp +  ftemp
-    atemp  =  @. @muladd atemp  + α[i]*ftemp
-    btemp  =  @muladd btemp  .+ (β₁[i].*W.dW ).* integrator.g(@muladd(t.+c₁[i]*dt),H0[i]) #H0[i] argument ignored
-    E₂     =  @muladd E₂     .+ (β₂[i].*chi2) .* integrator.g(@muladd(t.+c₁[i]*dt),H0[i]) #H0[i] argument ignored
-  end
-
-  u = @. @muladd uprev + dt*atemp + btemp + E₂
-
-  if integrator.opts.adaptive
-    E₁ = @. dt*E₁temp
-    tmp = @. @muladd(integrator.opts.delta*E₁+E₂)/@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol)
-    integrator.EEst = integrator.opts.internalnorm(tmp)
-  end
-  @pack integrator = t,dt,u
-end
-=#
-
-@inline function perform_step!(integrator,cache::SRAConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SRAConstantCache,f=integrator.f)
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages,H0 = cache
   @unpack t,dt,uprev,u,W = integrator
   chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h

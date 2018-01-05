@@ -29,19 +29,19 @@
   gtmp = L.*integrator.W.dW
 
   if typeof(cache) <: ImplicitEulerHeunConstantCache
-    utilde = @. uprev + gtmp
-    gtmp = @. ((integrator.g(t,utilde) + L)/2)*integrator.W.dW
+    utilde = uprev + gtmp
+    gtmp = ((integrator.g(t,utilde) + L)/2)*integrator.W.dW
   end
 
   if typeof(cache) <: ImplicitRKMilConstantCache
     if alg_interpretation(integrator.alg) == :Ito
       K = @muladd uprev .+ dt.*ftmp
-      utilde = @.  K + L*integrator.sqdt
+      utilde =  K + L*integrator.sqdt
       mil_correction = (integrator.g(t,utilde).-L)./(2 .* integrator.sqdt).*
                        (integrator.W.dW.^2 .- dt)
       gtmp += mil_correction
     elseif alg_interpretation(integrator.alg) == :Stratonovich
-      utilde = @. uprev + L*integrator.sqdt
+      utilde = uprev + L*integrator.sqdt
       mil_correction = (integrator.g(t,utilde).-L)./(2 .* integrator.sqdt).*
                        (integrator.W.dW.^2)
       gtmp += mil_correction
@@ -57,9 +57,9 @@
   iter += 1
   if integrator.alg.symplectic
     # u = uprev + z then  u = (uprev+u)/2 = (uprev+uprev+z)/2 = uprev + z/2
-    u = @. uprev + z/2 + gtmp/2
+    u = uprev + z/2 + gtmp/2
   else
-    u = @. uprev + dt*(1-theta)*ftmp + theta*z + gtmp
+    u = uprev + dt*(1-theta)*ftmp + theta*z + gtmp
   end
   b = -z .+ dt.*f(t+a,u)
   dz = W\b
@@ -78,9 +78,9 @@
     iter += 1
     if integrator.alg.symplectic
       # u = uprev + z then  u = (uprev+u)/2 = (uprev+uprev+z)/2 = uprev + z/2
-      u = @. uprev + z/2 + gtmp/2
+      u = uprev + z/2 + gtmp/2
     else
-      u = @. uprev + dt*(1-theta)*ftmp + theta*z + gtmp
+      u = uprev + dt*(1-theta)*ftmp + theta*z + gtmp
     end
     b = -z .+ dt.*f(t+a,u)
     dz = W\b
@@ -97,9 +97,9 @@
   end
 
   if integrator.alg.symplectic
-    u = @. uprev + z + gtmp
+    u = uprev + z + gtmp
   else
-    u = @. uprev + dt*(1-theta)*ftmp + theta*z + gtmp
+    u = uprev + dt*(1-theta)*ftmp + theta*z + gtmp
   end
 
   if (iter >= integrator.alg.max_newton_iter && do_newton) || fail_convergence
@@ -109,7 +109,7 @@
 
   cache.ηold = η
   cache.newton_iters = iter
-  u = @. uprev + dt*(1-theta)*ftmp + theta*z + gtmp
+  u = uprev + dt*(1-theta)*ftmp + theta*z + gtmp
 
   #=
   if integrator.opts.adaptive && integrator.success_iter > 0
@@ -118,7 +118,7 @@
     tprev = integrator.tprev
     DD3 = ((u - uprev)/((dt)*(t+dt-tprev)) + (uprev-uprev2)/((t-tprev)*(t+dt-tprev)))
     dEst = (dt^2)*abs(DD3/6)
-    integrator.EEst = @. dEst/(integrator.opts.abstol+max(abs(uprev),abs(u))*integrator.opts.reltol)
+    integrator.EEst = dEst/(integrator.opts.abstol+max(abs(uprev),abs(u))*integrator.opts.reltol)
   else
     integrator.EEst = 1
   end

@@ -1,8 +1,8 @@
 @inline function perform_step!(integrator,cache::SplitEMConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
-  u = dt.*(integrator.f[1](t,uprev) .+
-           integrator.f[2](t,uprev)) .+
-           integrator.g(t,uprev).*W.dW .+ uprev
+  u = dt*(integrator.f[1](t,uprev) +
+           integrator.f[2](t,uprev)) +
+           integrator.g(t,uprev).*W.dW + uprev
   @pack integrator = t,dt,u
 end
 

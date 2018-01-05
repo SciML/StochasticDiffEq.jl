@@ -32,7 +32,7 @@
     W = 1 - γdt*J
   end
 
-  z₁ = dt.*f(t, uprev)
+  z₁ = dt*f(t, uprev)
 
   ##### Step 2
 
@@ -44,7 +44,7 @@
 
   g1 = g(t,uprev)
 
-  tmp = @. uprev + γ*z₁ + chi2*nb021*g1
+  tmp = uprev + γ*z₁ + chi2*nb021*g1
 
   if typeof(integrator.f) <: SplitFunction
     # This assumes the implicit part is cheaper than the explicit part
@@ -52,11 +52,11 @@
     tmp += ea21*k1
   end
 
-  u = @. tmp + γ*z₂
-  b = dt.*f(tstep,u) .- z₂
+  u = tmp + γ*z₂
+  b = dt*f(tstep,u) - z₂
   dz = W\b
   ndz = integrator.opts.internalnorm(dz)
-  z₂ = z₂ .+ dz
+  z₂ = z₂ + dz
 
   η = max(cache.ηold,eps(eltype(integrator.opts.reltol)))^(0.8)
   do_newton = integrator.success_iter == 0 || η*ndz > κtol
@@ -64,8 +64,8 @@
   fail_convergence = false
   while (do_newton || iter < integrator.alg.min_newton_iter) && iter < integrator.alg.max_newton_iter
     iter += 1
-    u = @. tmp + γ*z₂
-    b = dt.*f(tstep,u) .- z₂
+    u = tmp + γ*z₂
+    b = dt*f(tstep,u) - z₂
     dz = W\b
     ndzprev = ndz
     ndz = integrator.opts.internalnorm(dz)
@@ -76,7 +76,7 @@
     end
     η = θ/(1-θ)
     do_newton = (η*ndz > κtol)
-    z₂ = z₂ .+ dz
+    z₂ = z₂ + dz
   end
 
   if (iter >= integrator.alg.max_newton_iter && do_newton) || fail_convergence
@@ -91,21 +91,21 @@
 
   if typeof(integrator.f) <: SplitFunction
     z₃ = z₂
-    u = @. tmp + γ*z₂
+    u = tmp + γ*z₂
     k2 = dt*f2(t + 2γ*dt, u)
-    tmp = @. uprev + a31*z₁ + a32*z₂ + ea31*k1 + ea32*k2
+    tmp = uprev + a31*z₁ + a32*z₂ + ea31*k1 + ea32*k2
   else
     # Guess is from Hermite derivative on z₁ and z₂
-    #z₃ = @. α31*z₁ + α32*z₂
+    #z₃ = α31*z₁ + α32*z₂
     z₃ = z₂
-    tmp = @. uprev + a31*z₁ + a32*z₂
+    tmp = uprev + a31*z₁ + a32*z₂
   end
 
-  u = @. tmp + γ*z₃
-  b = dt.*f(tstep,u) .- z₃
+  u = tmp + γ*z₃
+  b = dt*f(tstep,u) - z₃
   dz = W\b
   ndz = integrator.opts.internalnorm(dz)
-  z₃ = z₃ .+ dz
+  z₃ = z₃ + dz
 
   η = max(η,eps(eltype(integrator.opts.reltol)))^(0.8)
   do_newton = (η*ndz > κtol)
@@ -113,8 +113,8 @@
   fail_convergence = false
   while (do_newton || iter < integrator.alg.min_newton_iter) && iter < integrator.alg.max_newton_iter
     iter += 1
-    u = @. tmp + γ*z₃
-    b = dt.*f(tstep,u) .- z₃
+    u = tmp + γ*z₃
+    b = dt*f(tstep,u) - z₃
     dz = W\b
     ndzprev = ndz
     ndz = integrator.opts.internalnorm(dz)
@@ -125,7 +125,7 @@
     end
     η = θ/(1-θ)
     do_newton = (η*ndz > κtol)
-    z₃ = z₃ .+ dz
+    z₃ = z₃ + dz
   end
 
   if (iter >= integrator.alg.max_newton_iter && do_newton) || fail_convergence
@@ -142,21 +142,21 @@
 
   if typeof(integrator.f) <: SplitFunction
     z₄ = z₂
-    u = @. tmp + γ*z₃
+    u = tmp + γ*z₃
     k3 = dt*f2(t + c3*dt, u)
-    tmp = @. uprev + a41*z₁ + a42*z₂ + a43*z₃ + ea41*k1 + ea42*k2 + ea43*k3 + chi2*nb043*g1
+    tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + ea41*k1 + ea42*k2 + ea43*k3 + chi2*nb043*g1
   else
     @unpack α41,α42 = cache.tab
-    #z₄ = @. α41*z₁ + α42*z₂
+    #z₄ = α41*z₁ + α42*z₂
     z₄ = z₂
-    tmp = @. uprev + a41*z₁ + a42*z₂ + a43*z₃ + chi2*nb043*g1
+    tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + chi2*nb043*g1
   end
 
-  u = @. tmp + γ*z₄
-  b = dt.*f(tstep,u) .- z₄
+  u = tmp + γ*z₄
+  b = dt*f(tstep,u) - z₄
   dz = W\b
   ndz = integrator.opts.internalnorm(dz)
-  z₄ = z₄ .+ dz
+  z₄ = z₄ + dz
 
   η = max(η,eps(eltype(integrator.opts.reltol)))^(0.8)
   do_newton = (η*ndz > κtol)
@@ -164,8 +164,8 @@
   fail_convergence = false
   while (do_newton || iter < integrator.alg.min_newton_iter) && iter < integrator.alg.max_newton_iter
     iter += 1
-    u = @. tmp + γ*z₄
-    b = dt.*f(tstep,u) .- z₄
+    u = tmp + γ*z₄
+    b = dt*f(tstep,u) - z₄
     dz = W\b
     ndzprev = ndz
     ndz = integrator.opts.internalnorm(dz)
@@ -176,7 +176,7 @@
     end
     η = θ/(1-θ)
     do_newton = (η*ndz > κtol)
-    z₄ = z₄ .+ dz
+    z₄ = z₄ + dz
   end
 
   if (iter >= integrator.alg.max_newton_iter && do_newton) || fail_convergence
@@ -184,16 +184,16 @@
     return
   end
 
-  u = @. tmp + γ*z₄
+  u = tmp + γ*z₄
   g4 = g(t+dt,uprev)
 
   E₂ = chi2*(g1-g4)
 
   if typeof(integrator.f) <: SplitFunction
     k4 = dt*f2(t+dt, u)
-    u = @. uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + eb1*k1 + eb2*k2 + eb3*k3 + eb4*k4 + integrator.W.dW*g4 + E₂
+    u = uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + eb1*k1 + eb2*k2 + eb3*k3 + eb4*k4 + integrator.W.dW*g4 + E₂
   else
-    u = @. uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + integrator.W.dW*g4 + E₂
+    u = uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + integrator.W.dW*g4 + E₂
   end
 
   ################################### Finalize
@@ -205,9 +205,9 @@
 
     #=
     if typeof(integrator.f) <: SplitFunction
-      tmp = @. btilde1*z₁  + btilde2*z₂  + btilde3*z₃ + btilde4*z₄ + ebtilde1*k1 + ebtilde2*k2 + ebtilde3*k3 + ebtilde4*k4 + chi2*(g1-g4)
+      tmp = btilde1*z₁  + btilde2*z₂  + btilde3*z₃ + btilde4*z₄ + ebtilde1*k1 + ebtilde2*k2 + ebtilde3*k3 + ebtilde4*k4 + chi2*(g1-g4)
     else
-      tmp = @. btilde1*z₁ + btilde2*z₂ + btilde3*z₃ + btilde4*z₄ + chi2*(g1-g4)
+      tmp = btilde1*z₁ + btilde2*z₂ + btilde3*z₃ + btilde4*z₄ + chi2*(g1-g4)
     end
     if integrator.alg.smooth_est # From Shampine
       est = W\tmp
@@ -248,7 +248,7 @@ end
   end
 
   if typeof(integrator.W.dW) <: Union{SArray,Number}
-    chi2 = @. (integrator.W.dW + integrator.W.dZ/sqrt(3))/2 #I_(1,0)/h
+    chi2 = (integrator.W.dW + integrator.W.dZ/sqrt(3))/2 #I_(1,0)/h
   else
     @. chi2 = (integrator.W.dW + integrator.W.dZ/sqrt(3))/2 #I_(1,0)/h
   end

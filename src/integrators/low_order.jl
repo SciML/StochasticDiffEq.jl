@@ -5,7 +5,7 @@
   else
     noise = integrator.g(t,uprev)*W.dW
   end
-  u = @muladd uprev .+ dt.*integrator.f(t,uprev) .+ noise
+  u = @muladd uprev + dt*integrator.f(t,uprev) + noise
   @pack integrator = t,dt,u
 end
 
@@ -39,14 +39,14 @@ end
   else
     noise = gtmp*W.dW
   end
-  tmp = @. @muladd uprev + ftmp.*dt + noise
+  tmp = @muladd uprev + ftmp*dt + noise
   gtmp2 = (1/2).*(gtmp.+integrator.g(t+dt,tmp))
   if is_diagonal_noise(integrator.sol.prob)
     noise2 = gtmp2.*W.dW
   else
     noise2 = gtmp2*W.dW
   end
-  u = @muladd uprev .+ (1/2).*dt.*(ftmp.+integrator.f(t+dt,tmp)) .+ noise2
+  u = @muladd uprev + (1/2)*dt*(ftmp+integrator.f(t+dt,tmp)) + noise2
   @pack integrator = t,dt,u
 end
 
@@ -97,7 +97,7 @@ end
 
 @inline function perform_step!(integrator,cache::RandomEMConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
-  u = @muladd uprev .+ dt.*integrator.f(t,uprev,W.dW)
+  u = @muladd uprev + dt*integrator.f(t,uprev,W.dW)
   @pack integrator = t,dt,u
 end
 
@@ -114,19 +114,19 @@ end
 
 @inline function perform_step!(integrator,cache::RKMilConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
-  K = @muladd uprev .+ dt.*integrator.f(t,uprev)
+  K = @muladd uprev + dt*integrator.f(t,uprev)
   L = integrator.g(t,uprev)
   mil_correction = zero(u)
   if alg_interpretation(integrator.alg) == :Ito
-    utilde = @.  K + L*integrator.sqdt
+    utilde =  K + L*integrator.sqdt
     mil_correction = (integrator.g(t,utilde).-L)./(2 .* integrator.sqdt).*(W.dW.^2 .- dt)
   elseif alg_interpretation(integrator.alg) == :Stratonovich
-    utilde = @. uprev + L*integrator.sqdt
+    utilde = uprev + L*integrator.sqdt
     mil_correction = (integrator.g(t,utilde).-L)./(2 .* integrator.sqdt).*(W.dW.^2)
   end
-  u = @. K+L*W.dW+mil_correction
+  u = K+L*W.dW+mil_correction
   if integrator.opts.adaptive
-    integrator.EEst = integrator.opts.internalnorm(@.(mil_correction/(@muladd(integrator.opts.abstol + max.(abs(uprev),abs(u))*integrator.opts.reltol))))
+    integrator.EEst = integrator.opts.internalnorm(mil_correction/(@muladd(integrator.opts.abstol + max.(abs(uprev),abs(u))*integrator.opts.reltol)))
   end
   @pack integrator = t,dt,u
 end

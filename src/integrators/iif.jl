@@ -6,7 +6,7 @@ mutable struct RHS_IIF1M_Scalar{F,CType,tType} <: Function
 end
 
 function (p::RHS_IIF1M_Scalar)(u,resid)
-  resid[1] .= u[1] .- p.tmp .- p.dt.*p.f[2](p.t+p.dt,u[1])[1]
+  resid[1] .= u[1] - p.tmp - p.dt*p.f[2](p.t+p.dt,u[1])[1]
 end
 
 mutable struct RHS_IIF2M_Scalar{F,CType,tType} <: Function
@@ -17,7 +17,7 @@ mutable struct RHS_IIF2M_Scalar{F,CType,tType} <: Function
 end
 
 function (p::RHS_IIF2M_Scalar)(u,resid)
-  resid[1] .= u[1] .- p.tmp .- 0.5p.dt.*p.f[2](p.t+p.dt,u[1])[1]
+  resid[1] = u[1] - p.tmp - 0.5p.dt*p.f[2](p.t+p.dt,u[1])[1]
 end
 
 @inline function initialize!(integrator,cache::Union{IIF1MConstantCache,IIF2MConstantCache,IIF1MilConstantCache},f=integrator.f)
@@ -31,9 +31,9 @@ end
   if typeof(cache) <: IIF1MilConstantCache
     error("Milstein correction does not work.")
   elseif typeof(cache) <: IIF1MConstantCache
-    tmp = expm(A*dt)*(uprev .+ integrator.g(t,uprev).*W.dW)
+    tmp = expm(A*dt)*(uprev + integrator.g(t,uprev)*W.dW)
   elseif typeof(cache) <: IIF2MConstantCache
-    tmp = expm(A*dt)*(uprev .+ 0.5dt.*integrator.f[2](t,uprev) .+ integrator.g(t,uprev).*W.dW)
+    tmp = expm(A*dt)*(uprev + 0.5dt*integrator.f[2](t,uprev) + integrator.g(t,uprev)*W.dW)
   end
 
   if integrator.iter > 1 && !integrator.u_modified
