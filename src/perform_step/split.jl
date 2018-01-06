@@ -3,7 +3,7 @@
   u = dt*(integrator.f[1](t,uprev) +
            integrator.f[2](t,uprev)) +
            integrator.g(t,uprev).*W.dW + uprev
-  @pack integrator = t,dt,u
+  integrator.u = u
 end
 
 @muladd function perform_step!(integrator,cache::SplitEMCache,f=integrator.f)
@@ -27,6 +27,4 @@ end
   @tight_loop_macros for i in eachindex(u)
     @inbounds u[i] = @muladd u[i] + dt*rtmp1[i]
   end
-
-  @pack integrator = t,dt,u
 end

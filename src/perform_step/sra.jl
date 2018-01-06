@@ -13,7 +13,7 @@
   else
     u = uprev + k₁/3 + 2k₂/3 + E₂ + W.dW*gpdt
   end
-  @pack integrator = t,dt,u
+  integrator.u = u
 end
 
 #=
@@ -37,7 +37,7 @@ end
     @. tmp = @muladd(integrator.opts.delta*E₁+E₂)/@muladd(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
-  @pack integrator = t,dt,u
+  integrator.u = u
 end
 =#
 
@@ -87,7 +87,6 @@ end
     end
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
-  @pack integrator = t,dt,u
 end
 
 @muladd function perform_step!(integrator,cache::SRA2ConstantCache,f=integrator.f)
@@ -112,7 +111,7 @@ end
     E₁ = dt*(k1 + k2)
     integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
   end
-  @pack integrator = t,dt,u
+  integrator.u = u
 end
 
 @muladd function perform_step!(integrator,cache::SRA2Cache,f=integrator.f)
@@ -164,7 +163,6 @@ end
     end
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
-  @pack integrator = t,dt,u
 end
 
 @muladd function perform_step!(integrator,cache::ThreeStageSRAConstantCache,f=integrator.f)
@@ -195,7 +193,7 @@ end
     E₁ = dt*(k1 + k2 + k3)
     integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
   end
-  @pack integrator = t,dt,u
+  integrator.u = u
 end
 
 @muladd function perform_step!(integrator,cache::ThreeStageSRACache,f=integrator.f)
@@ -263,7 +261,6 @@ end
     end
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
-  @pack integrator = t,dt,u
 end
 
 #=
@@ -306,7 +303,7 @@ end
     @. tmp = (integrator.opts.delta*E₁+E₂)/(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
-  @pack integrator = t,dt,u
+  integrator.u = u
 end
 =#
 
@@ -382,7 +379,6 @@ end
     end
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
-  @pack integrator = t,dt,u
 end
 
 @muladd function perform_step!(integrator,cache::SRAConstantCache,f=integrator.f)
@@ -421,5 +417,5 @@ end
     E₁ = dt*E₁temp
     integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
   end
-  @pack integrator = t,dt,u
+  integrator.u = u
 end

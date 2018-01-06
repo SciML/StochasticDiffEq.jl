@@ -48,7 +48,7 @@
     @. tmp = @muladd(integrator.opts.delta*E₁+E₂)/@muladd(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
-  @pack integrator = t,dt,u
+  integrator.u = u
 end
 =#
 
@@ -125,7 +125,6 @@ end
     end
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
-  @pack integrator = t,dt,u
 end
 
 #=
@@ -166,7 +165,7 @@ end
     @. tmp = @muladd(integrator.opts.delta*E₁+E₂)/@muladd(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
-  @pack integrator = t,dt,u
+  integrator.u = u
 end
 =#
 
@@ -227,7 +226,6 @@ end
     end
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
-  @pack integrator = t,dt,u
 end
 
 @muladd function perform_step!(integrator,cache::SRIW1ConstantCache,f=integrator.f)
@@ -264,7 +262,7 @@ end
   if integrator.opts.adaptive
     integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta.*E₁.+E₂)./(@muladd(integrator.opts.abstol .+ max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u)).*integrator.opts.reltol)))
   end
-  @pack integrator = t,dt,u
+  integrator.u = u
 end
 
 @muladd function perform_step!(integrator,cache::SRIConstantCache,f=integrator.f)
@@ -311,7 +309,7 @@ end
   if integrator.opts.adaptive
     integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
   end
-  @pack integrator = t,dt,u
+  integrator.u = u
 end
 
 @muladd function perform_step!(integrator,cache::FourStageSRIConstantCache,f=integrator.f)
@@ -352,7 +350,7 @@ end
   if integrator.opts.adaptive
     integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
   end
-  @pack integrator = t,dt,u
+  integrator.u = u
 end
 
 @muladd function perform_step!(integrator,cache::FourStageSRICache,f=integrator.f)
@@ -413,5 +411,4 @@ end
     end
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
-  @pack integrator = t,dt,u
 end

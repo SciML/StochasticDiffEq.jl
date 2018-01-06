@@ -6,7 +6,7 @@
     noise = integrator.g(t,uprev)*W.dW
   end
   u = @muladd uprev + dt*integrator.f(t,uprev) + noise
-  @pack integrator = t,dt,u
+  integrator.u = u
 end
 
 @muladd function perform_step!(integrator,cache::EMCache,f=integrator.f)
@@ -27,7 +27,6 @@ end
   @tight_loop_macros for i in eachindex(u)
     @inbounds u[i] = @muladd uprev[i] + dt*rtmp1[i] + rtmp3[i]
   end
-  @pack integrator = t,dt,u
 end
 
 @muladd function perform_step!(integrator,cache::EulerHeunConstantCache,f=integrator.f)
@@ -47,7 +46,7 @@ end
     noise2 = gtmp2*W.dW
   end
   u = @muladd uprev + (1/2)*dt*(ftmp+integrator.f(t+dt,tmp)) + noise2
-  @pack integrator = t,dt,u
+  integrator.u = u
 end
 
 @muladd function perform_step!(integrator,cache::EulerHeunCache,f=integrator.f)
@@ -92,13 +91,12 @@ end
   @tight_loop_macros for i in eachindex(u)
     @inbounds u[i] = @muladd uprev[i] + dto2*(ftmp1[i]+ftmp2[i]) + nrtmp[i]
   end
-  @pack integrator = t,dt,u
 end
 
 @muladd function perform_step!(integrator,cache::RandomEMConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
   u = @muladd uprev + dt*integrator.f(t,uprev,W.dW)
-  @pack integrator = t,dt,u
+  integrator.u = u
 end
 
 @muladd function perform_step!(integrator,cache::RandomEMCache,f=integrator.f)
@@ -109,7 +107,7 @@ end
   @tight_loop_macros for i in eachindex(u)
     @inbounds u[i] = @muladd uprev[i] + dt*rtmp[i]
   end
-  @pack integrator = t,dt,u
+  integrator.u = u
 end
 
 @muladd function perform_step!(integrator,cache::RKMilConstantCache,f=integrator.f)
@@ -128,7 +126,7 @@ end
   if integrator.opts.adaptive
     integrator.EEst = integrator.opts.internalnorm(mil_correction/(@muladd(integrator.opts.abstol + max.(abs(uprev),abs(u))*integrator.opts.reltol)))
   end
-  @pack integrator = t,dt,u
+  integrator.u = u
 end
 
 #=
@@ -150,7 +148,7 @@ end
     @. tmp = @muladd(tmp)/@muladd(integrator.opts.abstol + max(abs(uprev),abs(u))*integrator.opts.reltol)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
-  @pack integrator = t,dt,u
+  integrator.u = u
 end
 =#
 
@@ -176,7 +174,6 @@ end
     end
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
-  @pack integrator = t,dt,u
 end
 
 @muladd function perform_step!(integrator,cache::RKMilCommuteCache,f=integrator.f)
@@ -207,6 +204,4 @@ end
   end
   A_mul_B!(tmp,L,dW)
   @. u .= uprev + dt*du1 + tmp + mil_correction
-
-  @pack integrator = t,dt,u
 end

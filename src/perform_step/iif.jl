@@ -46,7 +46,7 @@ end
   nlres = integrator.alg.nlsolve(nl_rhs,uhold)
 
   u = nlres[1]
-  @pack integrator = t,dt,u
+  integrator.u = u
 end
 
 mutable struct RHS_IIF1{F,uType,tType,DiffCacheType,SizeType} <: Function
@@ -121,7 +121,6 @@ end
   copy!(uhold,nlres)
 
 
-  @pack integrator = t,dt,u
 end
 
 @muladd function perform_step!(integrator,cache::IIF1MilCache,f=integrator.f)
@@ -188,7 +187,4 @@ end
   nlres = integrator.alg.nlsolve(nl_rhs,uhold)
 
   copy!(uhold,nlres)
-
-
-  @pack integrator = t,dt,u
 end
