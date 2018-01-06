@@ -204,8 +204,12 @@ function init(
   else
     randElType = typeof(recursive_one(u)) # Strip units and type info
     if ND <: Void # noise_dim isn't set, so it's diagonal
-      rand_prototype = similar(Array{randElType},indices(u))
-      fill!(rand_prototype,zero(randElType))
+      if typeof(u) <: SArray
+        rand_prototype = zero(u) # TODO: Array{randElType} for units
+      else
+        rand_prototype = similar(Array{randElType},indices(u))
+        fill!(rand_prototype,zero(randElType))
+      end
     elseif typeof(prob) <: AbstractSDEProblem
       rand_prototype = similar(Vector{randElType},size(noise_rate_prototype,2))
       fill!(rand_prototype,zero(randElType))
