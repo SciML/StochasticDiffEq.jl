@@ -1,4 +1,4 @@
-@inline function perform_step!(integrator,cache::SplitEMConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SplitEMConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
   u = dt*(integrator.f[1](t,uprev) +
            integrator.f[2](t,uprev)) +
@@ -6,7 +6,7 @@
   @pack integrator = t,dt,u
 end
 
-@inline function perform_step!(integrator,cache::SplitEMCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SplitEMCache,f=integrator.f)
   @unpack rtmp1,rtmp2,rtmp3 = cache
   @unpack t,dt,uprev,u,W = integrator
 
