@@ -50,7 +50,7 @@
   end
 
   if integrator.alg.extrapolant == :min_correct
-    z₂ = tmp - uprev
+    z₂ = zero(dz)
   elseif integrator.alg.extrapolant == :trivial
     z₂ = z₁
   end
@@ -101,7 +101,7 @@
   end
 
   if integrator.alg.extrapolant == :min_correct
-    z₃ = tmp - uprev
+    z₃ = zero(dz)
   elseif integrator.alg.extrapolant == :trivial
     z₃ = z₂
   end
@@ -154,7 +154,7 @@
   end
 
   if integrator.alg.extrapolant == :min_correct
-    z₄ = tmp - uprev
+    z₄ = zero(dz)
   elseif integrator.alg.extrapolant == :trivial
     z₄ = z₂
   end
@@ -318,7 +318,7 @@ end
   @. tmp = uprev + γ*z₁ + nb021*z₄
 
   if integrator.alg.extrapolant == :min_correct
-    @. z₂ = tmp - uprev
+    @. z₂ = zero(dz)
   elseif integrator.alg.extrapolant == :trivial
     @. z₂ = z₁
   end
@@ -395,7 +395,7 @@ end
   end
 
   if integrator.alg.extrapolant == :min_correct
-    @. z₃ = tmp - uprev
+    @. z₃ = zero(dz)
   elseif integrator.alg.extrapolant == :trivial
     @. z₃ = z₂
   end
@@ -463,7 +463,7 @@ end
   end
 
   if integrator.alg.extrapolant == :min_correct
-    @. z₄ = tmp - uprev
+    @. z₄ = zero(dz)
   elseif integrator.alg.extrapolant == :trivial
     @. z₄ = z₂
   end
