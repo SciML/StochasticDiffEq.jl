@@ -158,7 +158,7 @@ end
 
 Base.@pure RackKenCarp(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                    linsolve=DEFAULT_LINSOLVE,κ=nothing,tol=nothing,
-                   smooth_est=true,extrapolant=:linear,min_newton_iter=1,
+                   smooth_est=true,extrapolant=:min_correct,min_newton_iter=1,
                    max_newton_iter=7,new_jac_conv_bound = 1e-3,
                    controller = :Predictive) =
  RackKenCarp{chunk_size,autodiff,typeof(linsolve),typeof(diff_type),

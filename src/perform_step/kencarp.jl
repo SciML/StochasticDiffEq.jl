@@ -36,9 +36,6 @@
 
   ##### Step 2
 
-  # TODO: Add extrapolation for guess
-  z₂ = z₁
-
   iter = 1
   tstep = t + 2*γdt
 
@@ -50,6 +47,12 @@
     # This assumes the implicit part is cheaper than the explicit part
     k1 = dt*f2(t,uprev)
     tmp += ea21*k1
+  end
+
+  if integrator.alg.extrapolant == :min_correct
+    z₂ = tmp - uprev
+  elseif integrator.alg.extrapolant == :trivial
+    z₂ = z₁
   end
 
   u = tmp + γ*z₂
@@ -90,15 +93,17 @@
   tstep = t + c3*dt
 
   if typeof(integrator.f) <: SplitFunction
-    z₃ = z₂
     u = tmp + γ*z₂
     k2 = dt*f2(t + 2γ*dt, u)
     tmp = uprev + a31*z₁ + a32*z₂ + ea31*k1 + ea32*k2
   else
-    # Guess is from Hermite derivative on z₁ and z₂
-    #z₃ = α31*z₁ + α32*z₂
-    z₃ = z₂
     tmp = uprev + a31*z₁ + a32*z₂
+  end
+
+  if integrator.alg.extrapolant == :min_correct
+    z₃ = tmp - uprev
+  elseif integrator.alg.extrapolant == :trivial
+    z₃ = z₂
   end
 
   u = tmp + γ*z₃
@@ -141,15 +146,17 @@
   # Note: Can use g1 since c13 = 0 => g3 == g1
 
   if typeof(integrator.f) <: SplitFunction
-    z₄ = z₂
     u = tmp + γ*z₃
     k3 = dt*f2(t + c3*dt, u)
     tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + ea41*k1 + ea42*k2 + ea43*k3 + chi2*nb043*g1
   else
-    @unpack α41,α42 = cache.tab
-    #z₄ = α41*z₁ + α42*z₂
-    z₄ = z₂
     tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + chi2*nb043*g1
+  end
+
+  if integrator.alg.extrapolant == :min_correct
+    z₄ = tmp - uprev
+  elseif integrator.alg.extrapolant == :trivial
+    z₄ = z₂
   end
 
   u = tmp + γ*z₄
@@ -293,9 +300,7 @@ end
 
   ##### Step 2
 
-  # TODO: Add extrapolation for guess
-  @. z₂ = z₁
-  #@. z₂ = zero(u)
+
 
   # initial step of Newton iteration
   iter = 1
@@ -311,6 +316,14 @@ end
   end
 
   @. tmp = uprev + γ*z₁ + nb021*z₄
+
+  if integrator.alg.extrapolant == :min_correct
+    @. z₂ = tmp - uprev
+  elseif integrator.alg.extrapolant == :trivial
+    @. z₂ = z₁
+  end
+
+
 
   if typeof(integrator.f) <: SplitFunction
     # This assumes the implicit part is cheaper than the explicit part
@@ -371,8 +384,6 @@ end
   tstep = t + c3*dt
 
   if typeof(integrator.f) <: SplitFunction
-    z₃ .= z₂
-    #@. z₃ = zero(u)
     @. u = tmp + γ*z₂
     f2(t + 2γ*dt, u, k2); k2 .*= dt
     #@. tmp = uprev + a31*z₁ + a32*z₂ + ea31*k1 + ea32*k2
@@ -380,11 +391,13 @@ end
       @inbounds tmp[i] = uprev[i] + a31*z₁[i] + a32*z₂[i] + ea31*k1[i] + ea32*k2[i]
     end
   else
-    # Guess is from Hermite derivative on z₁ and z₂
-    #@. z₃ = α31*z₁ + α32*z₂
-    z₃ .= z₂
-    #@. z₃ = zero(u)
     @. tmp = uprev + a31*z₁ + a32*z₂
+  end
+
+  if integrator.alg.extrapolant == :min_correct
+    @. z₃ = tmp - uprev
+  elseif integrator.alg.extrapolant == :trivial
+    @. z₃ = z₂
   end
 
   @. u = tmp + γ*z₃
@@ -443,15 +456,16 @@ end
     for i in eachindex(tmp)
       @inbounds tmp[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + ea41*k1[i] + ea42*k2[i] + ea43*k3[i] + nb043*z₄[i]
     end
-    #@. z₄ = zero(u)
-    z₄ .= z₂
   else
     @unpack α41,α42 = cache.tab
     # z₄ is storage for the g1*chi2
     @. tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + nb043*z₄
-    #@. z₄ = zero(u)
-    z₄ .= z₂
-    #@. z₄ = α41*z₁ + α42*z₂
+  end
+
+  if integrator.alg.extrapolant == :min_correct
+    @. z₄ = tmp - uprev
+  elseif integrator.alg.extrapolant == :trivial
+    @. z₄ = z₂
   end
 
   @. u = tmp + γ*z₄
