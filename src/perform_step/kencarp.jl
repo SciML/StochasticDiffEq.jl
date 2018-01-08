@@ -50,7 +50,7 @@
   end
 
   if integrator.alg.extrapolant == :min_correct
-    z₂ = zero(dz)
+    z₂ = zero(z₁)
   elseif integrator.alg.extrapolant == :trivial
     z₂ = z₁
   end

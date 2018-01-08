@@ -72,6 +72,7 @@ sim8 = test_convergence(dts,prob,SOSRA(),numMonte=Int(1e1))
 @test abs(sim8.𝒪est[:final]-2) < 0.3
 sim9 = test_convergence(dts,prob,SOSRA2(),numMonte=Int(1e1))
 @test abs(sim9.𝒪est[:final]-2) < 0.3
+dts = 1./2.^(10:-1:4) #14->7 good plot
 sim10 = test_convergence(dts,prob,RackKenCarp(),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-2) < 0.3
 sim11 = test_convergence(dts,prob,RackKenCarp(min_newton_iter=3),numMonte=Int(1e1))
