@@ -43,7 +43,7 @@ function set_proposed_dt!(integrator::SDEIntegrator,integrator2::SDEIntegrator)
 end
 
 #TODO: Bigger caches for most algorithms
-@inline DiffEqBase.get_tmp_cache(i::SDEIntegrator) = (integrator.cache.tmp,)
+@inline DiffEqBase.get_tmp_cache(integrator::SDEIntegrator) = (integrator.cache.tmp,)
 user_cache(integrator::SDEIntegrator) = user_cache(integrator.cache)
 u_cache(integrator::SDEIntegrator) = u_cache(integrator.cache)
 du_cache(integrator::SDEIntegrator)= du_cache(integrator.cache)
