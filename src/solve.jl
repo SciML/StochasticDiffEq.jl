@@ -185,8 +185,6 @@ function init(
 
   progress ? (prog = Juno.ProgressBar(name=progress_name)) : prog = nothing
 
-  # notsaveat_idxs = Int[1]
-
   # k = rateType[]
 
   if uType <: Array
