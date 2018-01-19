@@ -157,9 +157,12 @@ function init(
     dt == 0 ? steps = length(tstops) : steps = round(Int,(tspan[2]-tspan[1])/dt,RoundUp)
     sizehint!(timeseries,steps+1)
     sizehint!(ts,steps+1)
-  else
-    sizehint!(timeseries,50)
-    sizehint!(ts,50)
+  elseif save_everystep
+    sizehint!(timeseries,10000)
+    sizehint!(ts,10000)
+  else # saveat
+    sizehint!(timeseries,length(saveat)+1)
+    sizehint!(ts,length(saveat)+1)
   end
 
   #ks = convert(Vector{ksEltype},ks_init)
