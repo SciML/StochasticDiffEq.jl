@@ -32,7 +32,7 @@ end
 
 @inline function modify_dt_for_tstops!(integrator)
   tstops = integrator.opts.tstops
-  if !isempty(tstops)
+  @fastmath if !isempty(tstops)
     if integrator.opts.adaptive
       if integrator.tdir > 0
         integrator.dt = min(abs(integrator.dt),abs(top(tstops)-integrator.t)) # step! to the end
@@ -43,7 +43,7 @@ end
       integrator.dt = integrator.tdir*abs(top(tstops)-integrator.t)
     elseif integrator.dtchangeable && !integrator.force_stepfail
       # always try to step! with dtcache, but lower if a tstops
-      integrator.dt = integrator.tdir*min(abs(integrator.dtcache),abs(top(tstops)-integrator.t)) # step! to the end
+      integrator.dt = @fastmath integrator.tdir*min(abs(integrator.dtcache),abs(top(tstops)-integrator.t)) # step! to the end
     end
   end
 end
@@ -119,7 +119,8 @@ end
       end
     end
   end
-  if force_save || (integrator.opts.save_everystep && integrator.iter%integrator.opts.timeseries_steps==0)
+  if force_save || (integrator.opts.save_everystep &&
+     integrator.iter%integrator.opts.timeseries_steps==0)
     integrator.saveiter += 1
     if integrator.opts.save_idxs == nothing
       copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u)
@@ -155,7 +156,7 @@ end
       integrator.tprev = integrator.t
       if typeof(integrator.t)<:AbstractFloat && !isempty(integrator.opts.tstops)
         tstop = top(integrator.opts.tstops)
-        abs(ttmp - tstop) < 10eps(typeof(integrator.EEst)) ? (integrator.t = tstop) : (integrator.t = ttmp)
+        @fastmath abs(ttmp - tstop) < 10eps(typeof(integrator.EEst)) ? (integrator.t = tstop) : (integrator.t = ttmp)
       else
         integrator.t = ttmp
       end
@@ -166,7 +167,9 @@ end
     integrator.tprev = integrator.t
     if typeof(integrator.t)<:AbstractFloat && !isempty(integrator.opts.tstops)
       tstop = top(integrator.opts.tstops)
-      abs(ttmp - tstop) < 10eps(integrator.t) ? (integrator.t = tstop) : (integrator.t = ttmp)
+      # For some reason 10eps(integrator.t) is slow here
+      # TODO: Allow higher precision but profile
+      @fastmath abs(ttmp - tstop) < 1e-15 ? (integrator.t = tstop) : (integrator.t = ttmp)
     else
       integrator.t = ttmp
     end
@@ -260,7 +263,7 @@ end
   modify_dt_for_tstops!(integrator)
   accept_step!(integrator.W,integrator.dt)
   integrator.dt = integrator.W.dt
-  integrator.sqdt = sqrt(abs(integrator.dt)) # It can change dt, like in RSwM1
+  integrator.sqdt = @fastmath sqrt(abs(integrator.dt)) # It can change dt, like in RSwM1
 end
 
 @inline function handle_tstop!(integrator)

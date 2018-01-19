@@ -8,7 +8,7 @@ f2(t,u) = (1.01)/2 * u
 
 prob = SDEProblem{false}((f1,f2),σ,1/2,(0.0,1.0))
 
-sol = solve(prob,SplitEM(),dt=1/10)
+sol = solve(prob,SplitEM(),dt=1/10,save_noise=true)
 
 prob = SDEProblem{false}(f,σ,1/2,(0.0,1.0),noise = NoiseWrapper(sol.W))
 
@@ -19,7 +19,7 @@ sol2 = solve(prob,EM(),dt=1/10)
 u0 = rand(4)
 prob = SDEProblem{false}((f1,f2),σ,u0,(0.0,1.0))
 
-sol = solve(prob,SplitEM(),dt=1/10)
+sol = solve(prob,SplitEM(),dt=1/10,save_noise=true)
 
 prob = SDEProblem{false}(f,σ,u0,(0.0,1.0),noise = NoiseWrapper(sol.W))
 

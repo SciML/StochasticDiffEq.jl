@@ -14,10 +14,11 @@ function init(
   recompile::Type{Val{recompile_flag}}=Val{true};
   dt = tType(0),
   timeseries_steps::Int = 1,
-  save_noise = true,
   saveat = tType[],tstops = tType[],d_discontinuities= tType[],
   save_timeseries = nothing,
   save_everystep = isempty(saveat),
+  save_noise = save_everystep && typeof(prob.f) <: Tuple ?
+               has_analytic(prob.f[1]) : has_analytic(prob.f),
   save_idxs = nothing,
   save_start = true,save_end = true,
   dense = save_everystep,
@@ -151,6 +152,16 @@ function init(
     timeseries = convert(Vector{typeof(u_initial)},timeseries_init)
   end
   ts = convert(Vector{tType},ts_init)
+
+  if !adaptive
+    dt == 0 ? steps = length(tstops) : steps = round(Int,(tspan[2]-tspan[1])/dt,RoundUp)
+    sizehint!(timeseries,steps+1)
+    sizehint!(ts,steps+1)
+  else
+    sizehint!(timeseries,50)
+    sizehint!(ts,50)
+  end
+
   #ks = convert(Vector{ksEltype},ks_init)
   alg_choice = Int[]
 
@@ -220,17 +231,17 @@ function init(
   seed == 0 ? (prob.seed == 0 ? _seed = rand(UInt64) : _seed = prob.seed) : _seed = seed
 
   if typeof(prob.noise) <: Void
+    isadaptive(alg) ? rswm = RSWM(adaptivealg=:RSwM3) : rswm = RSWM(adaptivealg=:RSwM1)
     if isinplace
-      isadaptive(alg) ? rswm = RSWM(adaptivealg=:RSwM3) : rswm = RSWM(adaptivealg=:RSwM1)
       if alg_needs_extra_process(alg)
         W = WienerProcess!(t,rand_prototype,rand_prototype,
-                           save_everystep=save_everystep,
+                           save_everystep=save_noise,
                            timeseries_steps=timeseries_steps,
                            rswm=rswm,
                            rng = Xorshifts.Xoroshiro128Plus(_seed))
       else
         W = WienerProcess!(t,rand_prototype,
-                           save_everystep=save_everystep,
+                           save_everystep=save_noise,
                            timeseries_steps=timeseries_steps,
                            rswm=rswm,
                            rng = Xorshifts.Xoroshiro128Plus(_seed))
@@ -238,13 +249,15 @@ function init(
     else
       if alg_needs_extra_process(alg)
         W = WienerProcess(t,rand_prototype,rand_prototype,
-                           save_everystep=save_everystep,
+                           save_everystep=save_noise,
                            timeseries_steps=timeseries_steps,
+                           rswm=rswm,
                            rng = Xorshifts.Xoroshiro128Plus(_seed))
       else
         W = WienerProcess(t,rand_prototype,
-                           save_everystep=save_everystep,
+                           save_everystep=save_noise,
                            timeseries_steps=timeseries_steps,
+                           rswm=rswm,
                            rng = Xorshifts.Xoroshiro128Plus(_seed))
       end
     end

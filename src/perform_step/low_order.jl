@@ -1,9 +1,9 @@
 @muladd function perform_step!(integrator,cache::EMConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W = integrator
-  if is_diagonal_noise(integrator.sol.prob)
-    noise = integrator.g(t,uprev).*W.dW
-  else
+  if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
     noise = integrator.g(t,uprev)*W.dW
+  else
+    noise = integrator.g(t,uprev).*W.dW
   end
   u = @muladd uprev + dt*integrator.f(t,uprev) + noise
   integrator.u = u
