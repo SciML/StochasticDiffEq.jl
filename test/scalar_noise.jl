@@ -1,7 +1,7 @@
 using StochasticDiffEq, DiffEqNoiseProcess
 
-f(t,u,du) = (du .= u)
-g(t,u,du) = (du .= u)
+f(du,u,p,t) = (du .= u)
+g(du,u,p,t) = (du .= u)
 u0 = rand(4,2)
 
 W = WienerProcess(0.0,0.0,0.0)
@@ -19,7 +19,7 @@ prob = SDEProblem(f,g,u0,(0.0,1.0),noise=W)
 sol = solve(prob,SRI())
 @test_throws ErrorException sol = solve(prob,SRI())
 
-g(t,u,du) = (du .= 1)
+g(du,u,p,t) = (du .= 1)
 
 W = WienerProcess(0.0,0.0,0.0)
 prob = SDEProblem(f,g,u0,(0.0,1.0),noise=W)

@@ -23,7 +23,7 @@ end
 u_cache(c::ImplicitEMCache)    = (c.uprev2,c.z,c.dz)
 du_cache(c::ImplicitEMCache)   = (c.k,c.fsalfirst)
 
-function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
+function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   du1 = zeros(rate_prototype)
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
@@ -33,7 +33,7 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prot
   fsalfirst = zeros(rate_prototype)
   k = zeros(rate_prototype)
 
-  uf = DiffEqDiffTools.UJacobianWrapper(f,t)
+  uf = DiffEqDiffTools.UJacobianWrapper(f,t,p)
   linsolve = alg.linsolve(Val{:init},uf,u)
   jac_config = build_jac_config(alg,f,uf,du1,uprev,u,tmp,dz)
   ηold = one(uEltypeNoUnits)
@@ -68,9 +68,9 @@ mutable struct ImplicitEMConstantCache{F,uEltypeNoUnits} <: StochasticDiffEqCons
   newton_iters::Int
 end
 
-function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
+function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  uf = DiffEqDiffTools.UDerivativeWrapper(f,t)
+  uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
   ηold = one(uEltypeNoUnits)
 
   if alg.κ != nothing
@@ -113,7 +113,7 @@ end
 u_cache(c::ImplicitEulerHeunCache)    = (c.uprev2,c.z,c.dz)
 du_cache(c::ImplicitEulerHeunCache)   = (c.k,c.fsalfirst)
 
-function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
+function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   du1 = zeros(rate_prototype)
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
@@ -123,7 +123,7 @@ function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,rate_prototype,noise_ra
   fsalfirst = zeros(rate_prototype)
   k = zeros(rate_prototype)
 
-  uf = DiffEqDiffTools.UJacobianWrapper(f,t)
+  uf = DiffEqDiffTools.UJacobianWrapper(f,t,p)
   linsolve = alg.linsolve(Val{:init},uf,u)
   jac_config = build_jac_config(alg,f,uf,du1,uprev,u,tmp,dz)
   ηold = one(uEltypeNoUnits)
@@ -154,9 +154,9 @@ mutable struct ImplicitEulerHeunConstantCache{F,uEltypeNoUnits} <: StochasticDif
   newton_iters::Int
 end
 
-function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
+function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  uf = DiffEqDiffTools.UDerivativeWrapper(f,t)
+  uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
   ηold = one(uEltypeNoUnits)
 
   if alg.κ != nothing
@@ -200,7 +200,7 @@ end
 u_cache(c::ImplicitRKMilCache)    = (c.uprev2,c.z,c.dz)
 du_cache(c::ImplicitRKMilCache)   = (c.k,c.fsalfirst)
 
-function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
+function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   du1 = zeros(rate_prototype)
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
@@ -210,7 +210,7 @@ function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_p
   fsalfirst = zeros(rate_prototype)
   k = zeros(rate_prototype)
 
-  uf = DiffEqDiffTools.UJacobianWrapper(f,t)
+  uf = DiffEqDiffTools.UJacobianWrapper(f,t,p)
   linsolve = alg.linsolve(Val{:init},uf,u)
   jac_config = build_jac_config(alg,f,uf,du1,uprev,u,tmp,dz)
   ηold = one(uEltypeNoUnits)
@@ -242,9 +242,9 @@ mutable struct ImplicitRKMilConstantCache{F,uEltypeNoUnits} <: StochasticDiffEqC
   newton_iters::Int
 end
 
-function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
+function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  uf = DiffEqDiffTools.UDerivativeWrapper(f,t)
+  uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
   ηold = one(uEltypeNoUnits)
 
   if alg.κ != nothing

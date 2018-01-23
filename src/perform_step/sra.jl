@@ -1,15 +1,15 @@
 @muladd function perform_step!(integrator,cache::SRA1ConstantCache,f=integrator.f)
-  @unpack t,dt,uprev,u,W = integrator
-  gpdt = integrator.g(t+dt,uprev)
+  @unpack t,dt,uprev,u,W,p = integrator
+  gpdt = integrator.g(uprev,p,t+dt)
   chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
-  k₁ = dt*integrator.f(t,uprev)
-  k₂ = dt*integrator.f(t+3dt/4,uprev+3k₁/4 + 3chi2*gpdt/2)
+  k₁ = dt*integrator.f(uprev,p,t)
+  k₂ = dt*integrator.f(uprev+3k₁/4 + 3chi2*gpdt/2,p,t+3dt/4)
   E₁ = k₁ + k₂
-  E₂ = chi2.*(integrator.g(t,uprev)-gpdt) #Only for additive!
+  E₂ = chi2.*(integrator.g(uprev,p,t)-gpdt) #Only for additive!
 
   if integrator.opts.adaptive
     u = uprev + k₁/3 + 2k₂/3 + E₂ + W.dW*gpdt
-    integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
+    integrator.EEst = integrator.opts.internalnorm((integrator.opts.delta*E₁+E₂)./(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
   else
     u = uprev + k₁/3 + 2k₂/3 + E₂ + W.dW*gpdt
   end
@@ -19,7 +19,7 @@ end
 #=
 @muladd function perform_step!(integrator,cache::SRA1Cache,f=integrator.f)
   @unpack chi2,tmp1,E₁,E₂,gt,k₁,k₂,gpdt,tmp = cache
-  @unpack t,dt,uprev,u,W = integrator
+  @unpack t,dt,uprev,u,W,p = integrator
   integrator.g(t,uprev,gt)
   integrator.g(t+dt,uprev,gpdt)
   integrator.f(t,uprev,k₁); k₁*=dt
@@ -34,7 +34,7 @@ end
   @. u = uprev + k₁/3 + 2k₂/3 + E₂ + W.dW*gpdt
 
   if integrator.opts.adaptive
-    @. tmp = @muladd(integrator.opts.delta*E₁+E₂)/@muladd(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol)
+    @. tmp = (integrator.opts.delta*E₁+E₂)/(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
   integrator.u = u
@@ -43,10 +43,10 @@ end
 
 @muladd function perform_step!(integrator,cache::SRA1Cache,f=integrator.f)
   @unpack chi2,tmp1,E₁,E₂,gt,k₁,k₂,gpdt,tmp = cache
-  @unpack t,dt,uprev,u,W = integrator
-  integrator.g(t,uprev,gt)
-  integrator.g(t+dt,uprev,gpdt)
-  integrator.f(t,uprev,k₁); k₁*=dt
+  @unpack t,dt,uprev,u,W,p = integrator
+  integrator.g(gt,uprev,p,t)
+  integrator.g(gpdt,uprev,p,t+dt)
+  integrator.f(k₁,uprev,p,t); k₁*=dt
   if typeof(W.dW) <: Union{SArray,Number}
     chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   else
@@ -63,7 +63,7 @@ end
     @inbounds tmp1[i] = uprev[i]+3k₁[i]/4 + 3E₁[i]/2
   end
 
-  integrator.f(t+3dt/4,tmp1,k₂); k₂*=dt
+  integrator.f(k₂,tmp1,p,t+3dt/4); k₂*=dt
 
   for i in eachindex(u)
     @inbounds E₁[i] = k₁[i] + k₂[i]
@@ -83,24 +83,24 @@ end
   if integrator.opts.adaptive
     @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
 						  Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
-      @inbounds tmp[i] = @muladd(δ*E₁[i]+E₂[i])/@muladd(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
+      @inbounds tmp[i] = (δ*E₁[i]+E₂[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
     end
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
 end
 
 @muladd function perform_step!(integrator,cache::SRA2ConstantCache,f=integrator.f)
-  @unpack t,dt,uprev,u,W = integrator
+  @unpack t,dt,uprev,u,W,p = integrator
   @unpack a21,b21,c02,c11,c12,α1,α2,beta12,beta21,beta22 = cache
 
   chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
 
-  g1 = integrator.g(t+c11*dt,uprev)
-  k1 = integrator.f(t,uprev)
+  g1 = integrator.g(uprev,p,t+c11*dt)
+  k1 = integrator.f(uprev,p,t)
   H01 = uprev + dt*a21*k1 + chi2*b21*g1
 
-  g2 = integrator.g(t+c12*dt,H01)
-  k2 = integrator.f(t+c02*dt,H01)
+  g2 = integrator.g(H01,p,t+c12*dt)
+  k2 = integrator.f(H01,p,t+c02*dt)
 
   E₁ = dt*(α1*k1 + α2*k2)
   E₂ = chi2*(beta21*g1 + beta22*g2)
@@ -109,13 +109,13 @@ end
 
   if integrator.opts.adaptive
     E₁ = dt*(k1 + k2)
-    integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
+    integrator.EEst = integrator.opts.internalnorm((integrator.opts.delta*E₁+E₂)./(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
   end
   integrator.u = u
 end
 
 @muladd function perform_step!(integrator,cache::SRA2Cache,f=integrator.f)
-  @unpack t,dt,uprev,u,W = integrator
+  @unpack t,dt,uprev,u,W,p = integrator
   @unpack chi2,tab,g1,g2,k1,k2,E₁,E₂,tmp = cache
   @unpack a21,b21,c02,c11,c12,α1,α2,beta12,beta21,beta22 = cache.tab
   H01 = E₁
@@ -126,8 +126,8 @@ end
     @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   end
 
-  integrator.g(t+c11*dt,uprev,g1)
-  integrator.f(t,uprev,k1)
+  integrator.g(g1,uprev,p,t+c11*dt)
+  integrator.f(k1,uprev,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
     @. H01 = uprev + dt*a21*k1 + chi2*b21*g1
@@ -136,8 +136,8 @@ end
     @. H01 = uprev + dt*a21*k1 + b21*E₁
   end
 
-  integrator.g(t+c12*dt,H01,g2)
-  integrator.f(t+c02*dt,H01,k2)
+  integrator.g(g2,H01,p,t+c12*dt)
+  integrator.f(k2,H01,p,t+c02*dt)
 
   if is_diagonal_noise(integrator.sol.prob)
     @. E₂ = chi2*(beta21*g1 + beta22*g2)
@@ -159,30 +159,30 @@ end
     @. E₁ = dt*(k1 + k2)
     @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
 						  Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
-      @inbounds tmp[i] = @muladd(δ*E₁[i]+E₂[i])/@muladd(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
+      @inbounds tmp[i] = (δ*E₁[i]+E₂[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
     end
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
 end
 
 @muladd function perform_step!(integrator,cache::ThreeStageSRAConstantCache,f=integrator.f)
-  @unpack t,dt,uprev,u,W = integrator
+  @unpack t,dt,uprev,u,W,p = integrator
   @unpack a21,a31,a32,b21,b31,b32,c02,c03,c11,c12,c13,α1,α2,α3,beta11,beta12,beta13,beta21,beta22,beta23 = cache
 
   chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
 
-  g1 = integrator.g(t+c11*dt,uprev)
-  k1 = integrator.f(t,uprev)
+  g1 = integrator.g(uprev,p,t+c11*dt)
+  k1 = integrator.f(uprev,p,t)
 
   H01 = uprev + dt*a21*k1 + chi2*b21*g1
 
-  g2 = integrator.g(t+c12*dt,H01)
-  k2 = integrator.f(t+c02*dt,H01)
+  g2 = integrator.g(H01,p,t+c12*dt)
+  k2 = integrator.f(H01,p,t+c02*dt)
 
   H02 = uprev + dt*(a31*k1 + a32*k2) + chi2*(b31*g1 + b32*g2)
 
-  g3 = integrator.g(t+c13*dt,H02)
-  k3 = integrator.f(t+c03*dt,H02)
+  g3 = integrator.g(H02,p,t+c13*dt)
+  k3 = integrator.f(H02,p,t+c03*dt)
 
   E₁ = dt*(α1*k1 + α2*k2 + α3*k3)
   E₂ = chi2*(beta21*g1 + beta22*g2 + beta23*g3)
@@ -191,13 +191,13 @@ end
 
   if integrator.opts.adaptive
     E₁ = dt*(k1 + k2 + k3)
-    integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)/@muladd(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol))
+    integrator.EEst = integrator.opts.internalnorm((integrator.opts.delta*E₁+E₂)/(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol))
   end
   integrator.u = u
 end
 
 @muladd function perform_step!(integrator,cache::ThreeStageSRACache,f=integrator.f)
-  @unpack t,dt,uprev,u,W = integrator
+  @unpack t,dt,uprev,u,W,p = integrator
   @unpack chi2,tab,g1,g2,g3,k1,k2,k3,E₁,E₂,tmp,gtmp = cache
   @unpack a21,a31,a32,b21,b31,b32,c02,c03,c11,c12,c13,α1,α2,α3,beta11,beta12,beta13,beta21,beta22,beta23 = cache.tab
 
@@ -209,8 +209,8 @@ end
     @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   end
 
-  integrator.g(t+c11*dt,uprev,g1)
-  integrator.f(t,uprev,k1)
+  integrator.g(g1,uprev,p,t+c11*dt)
+  integrator.f(k1,uprev,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
     @. H01 = uprev + dt*a21*k1 + chi2*b21*g1
@@ -219,8 +219,8 @@ end
     @. H01 = uprev + dt*a21*k1 + b21*E₁
   end
 
-  integrator.g(t+c12*dt,H01,g2)
-  integrator.f(t+c02*dt,H01,k2)
+  integrator.g(g2,H01,p,t+c12*dt)
+  integrator.f(k2,H01,p,t+c02*dt)
 
   if is_diagonal_noise(integrator.sol.prob)
     for i in eachindex(u)
@@ -234,8 +234,8 @@ end
     end
   end
 
-  integrator.g(t+c13*dt,H02,g3)
-  integrator.f(t+c03*dt,H02,k3)
+  integrator.g(g3,H02,p,t+c13*dt)
+  integrator.f(k3,H02,p,t+c03*dt)
 
   if is_diagonal_noise(integrator.sol.prob)
     @. E₂ = chi2*(beta21*g1 + beta22*g2 + beta23*g3)
@@ -257,7 +257,7 @@ end
     @. E₁ = dt*(k1 + k2 + k3)
     @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
 						  Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
-      @inbounds tmp[i] = @muladd(δ*E₁[i]+E₂[i])/@muladd(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
+      @inbounds tmp[i] = (δ*E₁[i]+E₂[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
     end
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
@@ -265,7 +265,7 @@ end
 
 #=
 @muladd function perform_step!(integrator,cache::SRACache,f=integrator.f)
-  @unpack t,dt,uprev,u,W = integrator
+  @unpack t,dt,uprev,u,W,p = integrator
   @unpack H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂,tmp = cache
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages = cache.tab
   @. chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
@@ -276,8 +276,8 @@ end
     fill!(A0temp,zero(eltype(integrator.u)))
     fill!(B0temp,zero(eltype(integrator.u)))
     for j = 1:i-1
-      integrator.f(@muladd(t + c₀[j]*dt),H0[j],ftmp)
-      integrator.g(@muladd(t + c₁[j]*dt),H0[j],gtmp)
+      integrator.f((t + c₀[j]*dt),H0[j],ftmp)
+      integrator.g((t + c₁[j]*dt),H0[j],gtmp)
       @. A0temp = @muladd A0temp + A₀[j,i]*ftmp
       @. B0temp = @muladd B0temp + B₀[j,i]*gtmp
     end
@@ -289,8 +289,8 @@ end
   fill!(E₁temp,zero(eltype(integrator.u)))
 
   for i = 1:stages
-    integrator.f(@muladd(t+c₀[i]*dt),H0[i],ftmp)
-    integrator.g(@muladd(t+c₁[i]*dt),H0[i],gtmp)
+    integrator.f((t+c₀[i]*dt),H0[i],ftmp)
+    integrator.g((t+c₁[i]*dt),H0[i],gtmp)
     @. atemp  =  @muladd atemp  + α[i]*ftmp
     @. btemp  =  @muladd btemp  + (β₁[i]*W.dW)*gtmp
     @. E₂     =  @muladd E₂     + (β₂[i]*chi2)*gtmp
@@ -308,7 +308,7 @@ end
 =#
 
 @muladd function perform_step!(integrator,cache::SRACache,f=integrator.f)
-  @unpack t,dt,uprev,u,W = integrator
+  @unpack t,dt,uprev,u,W,p = integrator
   @unpack H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂,tmp = cache
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages = cache.tab
 
@@ -325,8 +325,8 @@ end
     fill!(A0temp,zero(eltype(integrator.u)))
     fill!(B0temp,zero(eltype(integrator.u)))
     for j = 1:i-1
-      integrator.f(@muladd(t + c₀[j]*dt),H0[j],ftmp)
-      integrator.g(@muladd(t + c₁[j]*dt),H0[j],gtmp)
+      integrator.f(ftmp,H0[j],p,t + c₀[j]*dt)
+      integrator.g(gtmp,H0[j],p,t + c₁[j]*dt)
       @. A0temp = @muladd A0temp + A₀[j,i]*ftmp
       if is_diagonal_noise(integrator.sol.prob)
         @. B0temp = @muladd B0temp + B₀[j,i]*gtmp*chi2
@@ -345,8 +345,8 @@ end
   fill!(E₁temp,zero(eltype(integrator.u)))
 
   for i = 1:stages
-    integrator.f(@muladd(t+c₀[i]*dt),H0[i],ftmp)
-    integrator.g(@muladd(t+c₁[i]*dt),H0[i],gtmp)
+    integrator.f(ftmp,H0[i],p,t+c₀[i]*dt)
+    integrator.g(gtmp,H0[i],p,t+c₁[i]*dt)
     if is_diagonal_noise(integrator.sol.prob)
       @. btemp = @muladd btemp + β₁[i]*W.dW*gtmp
     else
@@ -375,7 +375,7 @@ end
   if integrator.opts.adaptive
     @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
 						  Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
-      @inbounds tmp[i] = @muladd(δ*E₁[i]+E₂[i])/@muladd(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
+      @inbounds tmp[i] = (δ*E₁[i]+E₂[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
     end
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
@@ -383,7 +383,7 @@ end
 
 @muladd function perform_step!(integrator,cache::SRAConstantCache,f=integrator.f)
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages,H0 = cache
-  @unpack t,dt,uprev,u,W = integrator
+  @unpack t,dt,uprev,u,W,p = integrator
   chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
   H0[:]=zeros(stages)
 
@@ -391,8 +391,8 @@ end
     A0temp = zero(u)
     B0temp = zero(u)
     for j = 1:i-1
-      A0temp = @muladd A0temp + A₀[j,i]*integrator.f(@muladd(t + c₀[j]*dt),H0[j])
-      B0temp = @muladd B0temp + B₀[j,i]*integrator.g(@muladd(t + c₁[j]*dt),H0[j]) #H0[..,i] argument ignored
+      A0temp = @muladd A0temp + A₀[j,i]*integrator.f(H0[j],p,t + c₀[j]*dt)
+      B0temp = @muladd B0temp + B₀[j,i]*integrator.g(H0[j],p,t + c₁[j]*dt) #H0[..,i] argument ignored
     end
 
     H0[i] = uprev + A0temp*dt + B0temp.*chi2
@@ -404,18 +404,18 @@ end
   E₁temp= zero(u)
 
   for i = 1:stages
-    ftemp = integrator.f(t+c₀[i]*dt,H0[i])
+    ftemp = integrator.f(H0[i],p,t+c₀[i]*dt)
     E₁temp =  E₁temp +  ftemp
     atemp  =  @muladd atemp  + α[i]*ftemp
-    btemp  =  @muladd btemp  + (β₁[i]*W.dW ).* integrator.g(@muladd(t+c₁[i]*dt),H0[i]) #H0[i] argument ignored
-    E₂     =  @muladd E₂     + (β₂[i]*chi2).*integrator.g(@muladd(t+c₁[i]*dt),H0[i]) #H0[i] argument ignored
+    btemp  =  @muladd btemp  + (β₁[i]*W.dW ).* integrator.g(H0[i],p,t+c₁[i]*dt) #H0[i] argument ignored
+    E₂     =  @muladd E₂     + (β₂[i]*chi2).*  integrator.g(H0[i],p,t+c₁[i]*dt) #H0[i] argument ignored
   end
 
   u = @muladd uprev + dt*atemp + btemp + E₂
 
   if integrator.opts.adaptive
     E₁ = dt*E₁temp
-    integrator.EEst = integrator.opts.internalnorm(@muladd(integrator.opts.delta*E₁+E₂)./@muladd(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
+    integrator.EEst = integrator.opts.internalnorm((integrator.opts.delta*E₁+E₂)./(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
   end
   integrator.u = u
 end

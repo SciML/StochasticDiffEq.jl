@@ -1,23 +1,25 @@
-mutable struct RHS_IIF1M_Scalar{F,CType,tType} <: Function
+mutable struct RHS_IIF1M_Scalar{F,CType,tType,P} <: Function
   f::F
   t::tType
   dt::tType
   tmp::CType
+  p::P
 end
 
-function (p::RHS_IIF1M_Scalar)(u,resid)
-  resid[1] .= u[1] - p.tmp - p.dt*p.f[2](p.t+p.dt,u[1])[1]
+function (f::RHS_IIF1M_Scalar)(u,resid)
+  resid[1] .= u[1] - f.tmp - f.dt*p.f[2](u[1],f.p,f.t+f.dt)[1]
 end
 
-mutable struct RHS_IIF2M_Scalar{F,CType,tType} <: Function
+mutable struct RHS_IIF2M_Scalar{F,CType,tType,P} <: Function
   f::F
   t::tType
   dt::tType
   tmp::CType
+  p::P
 end
 
-function (p::RHS_IIF2M_Scalar)(u,resid)
-  resid[1] = u[1] - p.tmp - 0.5p.dt*p.f[2](p.t+p.dt,u[1])[1]
+function (f::RHS_IIF2M_Scalar)(u,resid)
+  resid[1] = u[1] - f.tmp - 0.5f.dt*f.f[2](u[1],f.p,f.t+f.dt)[1]
 end
 
 @muladd function initialize!(integrator,cache::Union{IIF1MConstantCache,IIF2MConstantCache,IIF1MilConstantCache},f=integrator.f)
@@ -25,15 +27,15 @@ end
 end
 
 @muladd function perform_step!(integrator,cache::Union{IIF1MConstantCache,IIF2MConstantCache,IIF1MilConstantCache},f=integrator.f)
-  @unpack t,dt,uprev,u,W = integrator
+  @unpack t,dt,uprev,u,W,p = integrator
   @unpack uhold,rhs,nl_rhs = cache
   A = integrator.f[1](t,u)
   if typeof(cache) <: IIF1MilConstantCache
     error("Milstein correction does not work.")
   elseif typeof(cache) <: IIF1MConstantCache
-    tmp = expm(A*dt)*(uprev + integrator.g(t,uprev)*W.dW)
+    tmp = expm(A*dt)*(uprev + integrator.g(uprev,p,t)*W.dW)
   elseif typeof(cache) <: IIF2MConstantCache
-    tmp = expm(A*dt)*(uprev + 0.5dt*integrator.f[2](t,uprev) + integrator.g(t,uprev)*W.dW)
+    tmp = expm(A*dt)*(uprev + 0.5dt*integrator.f[2](t,uprev) + integrator.g(uprev,p,t)*W.dW)
   end
 
   if integrator.iter > 1 && !integrator.u_modified
@@ -49,47 +51,49 @@ end
   integrator.u = u
 end
 
-mutable struct RHS_IIF1{F,uType,tType,DiffCacheType,SizeType} <: Function
+mutable struct RHS_IIF1{F,uType,tType,DiffCacheType,SizeType,P} <: Function
   f::F
   tmp::uType
   t::tType
   dt::tType
   dual_cache::DiffCacheType
   sizeu::SizeType
+  p::P
 end
-function (p::RHS_IIF1)(u,resid)
-  du = get_du(p.dual_cache, eltype(u))
-  p.f[2](p.t+p.dt,reshape(u,p.sizeu),du)
+function (f::RHS_IIF1)(u,resid)
+  du = get_du(f.dual_cache, eltype(u))
+  f.f[2](du,reshape(u,f.sizeu),f.p,f.t+f.dt)
   #@. resid = u - p.tmp - p.dt*du
   @tight_loop_macros for i in eachindex(u)
-    @inbounds resid[i] = u[i] - p.tmp[i] - p.dt*du[i]
+    @inbounds resid[i] = u[i] - f.tmp[i] - f.dt*du[i]
   end
 end
 
-mutable struct RHS_IIF2{F,uType,tType,DiffCacheType,SizeType} <: Function
+mutable struct RHS_IIF2{F,uType,tType,DiffCacheType,SizeType,P} <: Function
   f::F
   tmp::uType
   t::tType
   dt::tType
   dual_cache::DiffCacheType
   sizeu::SizeType
+  p::P
 end
-function (p::RHS_IIF2)(u,resid)
-  du = get_du(p.dual_cache, eltype(u))
-  p.f[2](p.t+p.dt,reshape(u,p.sizeu),du)
+function (f::RHS_IIF2)(u,resid)
+  du = get_du(f.dual_cache, eltype(u))
+  f.f[2](du,reshape(u,f.sizeu),f.p,f.t+f.dt)
   #@. resid = u - p.tmp - 0.5p.dt*du
   @tight_loop_macros for i in eachindex(u)
-    @inbounds resid[i] = u[i] - p.tmp[i] - 0.5p.dt*du[i]
+    @inbounds resid[i] = u[i] - f.tmp[i] - 0.5f.dt*du[i]
   end
 end
 
 @muladd function perform_step!(integrator,cache::Union{IIF1MCache,IIF2MCache},f=integrator.f)
   @unpack rtmp1,rtmp2,rtmp3,tmp,noise_tmp = cache
   @unpack uhold,rhs,nl_rhs = cache
-  @unpack t,dt,uprev,u,W = integrator
+  @unpack t,dt,uprev,u,W,p = integrator
   uidx = eachindex(u)
 
-  integrator.g(t,uprev,rtmp2)
+  integrator.g(rtmp2,uprev,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
     scale!(rtmp2,W.dW) # rtmp2 === rtmp3
@@ -126,7 +130,7 @@ end
 @muladd function perform_step!(integrator,cache::IIF1MilCache,f=integrator.f)
   @unpack rtmp1,rtmp2,rtmp3,tmp,noise_tmp = cache
   @unpack uhold,rhs,nl_rhs = cache
-  @unpack t,dt,uprev,u,W = integrator
+  @unpack t,dt,uprev,u,W,p = integrator
 
   dW = W.dW; sqdt = integrator.sqdt
   f = integrator.f; g = integrator.g
@@ -135,7 +139,7 @@ end
   M = expm(A*dt)
 
   uidx = eachindex(u)
-  integrator.g(t,uprev,rtmp2)
+  integrator.g(rtmp2,uprev,p,t)
   if typeof(cache) <: Union{IIF1MCache,IIF2MCache}
     if is_diagonal_noise(integrator.sol.prob)
       scale!(rtmp2,W.dW) # rtmp2 === rtmp3
@@ -157,7 +161,7 @@ end
     for j = 1:length(uprev)
       #Kj = uprev .+ dt.*du1 + sqdt*rtmp2[:,j] # This works too
       Kj = uprev .+ sqdt*rtmp2[:,j]
-      g(t,Kj,gtmp); A_mul_B!(gtmp2,M,gtmp)
+      g(gtmp,Kj,p,t); A_mul_B!(gtmp2,M,gtmp)
       Dgj = (gtmp2 - rtmp2)/sqdt
       mil_correction .+= Dgj*I[:,j]
     end

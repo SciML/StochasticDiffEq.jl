@@ -1,18 +1,18 @@
 using StochasticDiffEq, DiffEqBase
 
-function f(t,u,du)
+function f(du,u,p,t)
   for i in 1:length(u)
     du[i] = (0.5/length(u))*u[i]
   end
 end
 
-function g(t,u,du)
+function g(du,u,p,t)
   for i in 1:length(u)
     du[i] = (0.5/length(u))*u[i]
   end
 end
 
-function condition(t,u,integrator)
+function condition(u,p,t,integrator)
   1-maximum(u)
 end
 
@@ -48,7 +48,7 @@ sol = solve(prob,EM(),callback=callback,dt=1/4)
 sol = solve(prob,RKMil(),callback=callback,dt=1/4)
 sol = solve(prob,SRI(),callback=callback)
 
-function g(t,u,du)
+function g(du,u,p,t)
   for i in 1:length(u)
     du[i] = (0.3/length(u))
   end

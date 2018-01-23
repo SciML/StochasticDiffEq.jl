@@ -30,7 +30,7 @@ reinit!(integrator)
 solve!(integrator)
 
 # test reinit
-prob2 = SDEProblem((t,u)->prob.f(t,u),prob.g,prob.u0,prob.tspan)
+prob2 = SDEProblem((u,p,t)->prob.f(u,p,t),prob.g,prob.u0,prob.tspan)
 integrator = init(prob2,EM(),dt=1//2^(4), tstops = [1//2], saveat = [1//3])
 solve!(integrator)
 reinit!(integrator)

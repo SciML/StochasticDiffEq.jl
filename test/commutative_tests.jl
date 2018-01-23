@@ -10,15 +10,15 @@ u0 = rand(2)
 A = full(Strang(2))
 B = Diagonal([σ_const for i in 1:2])
 
-function f_commute(t,u,du)
+function f_commute(du,u,p,t)
   A_mul_B!(du,A,u)
   du .+= 1.01u
 end
-function (p::typeof(f_commute))(::Type{Val{:analytic}},t,u0,W)
+function (p::typeof(f_commute))(::Type{Val{:analytic}},u,p,t0,W)
  tmp = (A+1.01I-(B^2))*t + B*sum(W)
  expm(tmp)*u0
 end
-function σ(t,u,du)
+function σ(du,u,p,t)
   du[1,1] = σ_const*u[1]
   du[1,2] = σ_const*u[1]
   du[2,1] = σ_const*u[2]

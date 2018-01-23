@@ -24,7 +24,7 @@ function SRIConstantCache(tableau,rate_prototype,error_terms)
   SRIConstantCache(c₀,c₁,A₀',A₁',B₀',B₁',α,β₁,β₂,β₃,β₄,stages,H0,H1,error_terms)
 end
 
-function alg_cache(alg::SRI,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
+function alg_cache(alg::SRI,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   SRIConstantCache(alg.tableau,rate_prototype,alg.error_terms)
 end
 
@@ -61,7 +61,7 @@ du_cache(c::SRICache) = (c.A0temp,c.A1temp,c.B0temp,c.B1temp,c.A0temp2,c.A1temp2
                           c.ftemp,c.gtemp,c.chi1,c.chi2,c.chi3)
 user_cache(c::SRICache) = (c.u,c.uprev,c.tmp,c.H0...,c.H1...)
 
-function alg_cache(alg::SRI,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+function alg_cache(alg::SRI,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   H0 = Vector{typeof(u)}(0)
   H1 = Vector{typeof(u)}(0)
   tab = SRIConstantCache(alg.tableau,rate_prototype,alg.error_terms)
@@ -93,7 +93,7 @@ function alg_cache(alg::SRI,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,u
 end
 
 struct SRIW1ConstantCache <: StochasticDiffEqConstantCache end
-alg_cache(alg::SRIW1,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = SRIW1ConstantCache()
+alg_cache(alg::SRIW1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = SRIW1ConstantCache()
 
 struct SRIW1Cache{randType,uType,rateType} <: StochasticDiffEqMutableCache
   u::uType
@@ -128,7 +128,7 @@ du_cache(c::SRIW1Cache) = (c.chi1,c.chi2,c.chi3,c.fH01o4,c.g₁o2,c.g₂o3,c.Fg�
                           c.E₁,c.E₂,c.fH01,c.fH02,c.g₁,c.g₂,c.g₃,c.g₄)
 user_cache(c::SRIW1Cache) = (c.u,c.uprev,c.tmp,c.H0,c.H11,c.H12,c.H13)
 
-function alg_cache(alg::SRIW1,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+function alg_cache(alg::SRIW1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   if typeof(ΔW) <: Union{SArray,Number}
     chi1 = copy(ΔW)
     chi2 = copy(ΔW)
@@ -269,7 +269,7 @@ function SRIW2ConstantCache(uBottomEltype)
   beta23,beta24,beta31,beta32,beta33,beta34,beta41,beta42,beta43,beta44)
 end
 
-function alg_cache(alg::SRIW2,prob,u,ΔW,ΔZ,rate_prototype,
+function alg_cache(alg::SRIW2,prob,u,ΔW,ΔZ,p,rate_prototype,
                    noise_rate_prototype,uEltypeNoUnits,
                    uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   SRIW2ConstantCache(uBottomEltype)
@@ -333,7 +333,7 @@ function SOSRIConstantCache(uBottomEltype)
   beta23,beta24,beta31,beta32,beta33,beta34,beta41,beta42,beta43,beta44)
 end
 
-function alg_cache(alg::SOSRI,prob,u,ΔW,ΔZ,rate_prototype,
+function alg_cache(alg::SOSRI,prob,u,ΔW,ΔZ,p,rate_prototype,
                    noise_rate_prototype,uEltypeNoUnits,
                    uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   SOSRIConstantCache(uBottomEltype)
@@ -397,7 +397,7 @@ function SOSRI2ConstantCache(uBottomEltype)
   beta23,beta24,beta31,beta32,beta33,beta34,beta41,beta42,beta43,beta44)
 end
 
-function alg_cache(alg::SOSRI2,prob,u,ΔW,ΔZ,rate_prototype,
+function alg_cache(alg::SOSRI2,prob,u,ΔW,ΔZ,p,rate_prototype,
                    noise_rate_prototype,uEltypeNoUnits,
                    uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   SOSRI2ConstantCache(uBottomEltype)
@@ -423,7 +423,7 @@ struct FourStageSRICache{uType,randType,tabType,NT,T} <: StochasticDiffEqMutable
   tmp::T
 end
 
-function alg_cache(alg::SRIW2,prob,u,ΔW,ΔZ,rate_prototype,
+function alg_cache(alg::SRIW2,prob,u,ΔW,ΔZ,p,rate_prototype,
                    noise_rate_prototype,uEltypeNoUnits,
                    uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   if typeof(ΔW) <: Union{SArray,Number}
@@ -445,7 +445,7 @@ function alg_cache(alg::SRIW2,prob,u,ΔW,ΔZ,rate_prototype,
   FourStageSRICache(u,uprev,chi1,chi2,chi3,tab,g1,g2,g3,g4,k1,k2,k3,k4,E₁,E₂,tmp)
 end
 
-function alg_cache(alg::SOSRI,prob,u,ΔW,ΔZ,rate_prototype,
+function alg_cache(alg::SOSRI,prob,u,ΔW,ΔZ,p,rate_prototype,
                    noise_rate_prototype,uEltypeNoUnits,
                    uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   if typeof(ΔW) <: Union{SArray,Number}
@@ -467,7 +467,7 @@ function alg_cache(alg::SOSRI,prob,u,ΔW,ΔZ,rate_prototype,
   FourStageSRICache(u,uprev,chi1,chi2,chi3,tab,g1,g2,g3,g4,k1,k2,k3,k4,E₁,E₂,tmp)
 end
 
-function alg_cache(alg::SOSRI2,prob,u,ΔW,ΔZ,rate_prototype,
+function alg_cache(alg::SOSRI2,prob,u,ΔW,ΔZ,p,rate_prototype,
                    noise_rate_prototype,uEltypeNoUnits,
                    uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   if typeof(ΔW) <: Union{SArray,Number}

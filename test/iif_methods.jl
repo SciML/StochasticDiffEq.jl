@@ -3,14 +3,14 @@ using DiffEqBase, StochasticDiffEq, DiffEqNoiseProcess,
 const μ = 1.01
 const σ_const = 0.87
 
-f(t,u) = μ * u + μ * u
-f1_μ(t,u) = μ
-(p::typeof(f1_μ))(::Type{Val{:analytic}},t,u0,W) = u0.*exp.((2μ-(σ_const^2)/2)t+σ_const*W)
-f2(t,u) = μ * u
-σ(t,u) = σ_const*u
-no_noise(t,u) = 0.0
-f1_no_noise(t,u) = μ
-(p::typeof(f1_no_noise))(::Type{Val{:analytic}},t,u0,W) = u0.*exp.(2μ*t)
+f(u,p,t) = μ * u + μ * u
+f1_μ(u,p,t) = μ
+(p::typeof(f1_μ))(::Type{Val{:analytic}},u,p,t0,W) = u0.*exp.((2μ-(σ_const^2)/2)t+σ_const*W)
+f2(u,p,t) = μ * u
+σ(u,p,t) = σ_const*u
+no_noise(u,p,t) = 0.0
+f1_no_noise(u,p,t) = μ
+(p::typeof(f1_no_noise))(::Type{Val{:analytic}},u,p,t0,W) = u0.*exp.(2μ*t)
 
 prob = SDEProblem{false}((f1_μ,f2),σ,1/2,(0.0,1.0))
 no_noise_prob = SDEProblem{false}((f1_no_noise,f2),no_noise,1/2,(0.0,1.0))
@@ -49,35 +49,35 @@ A = full(Strang(2))
 B = [σ_const 0
     0 σ_const]
 
-function f(t,u,du)
+function f(du,u,p,t)
   A_mul_B!(du,A,u)
   du .+= 1.01u
 end
-function σ(t,u,du)
+function σ(du,u,p,t)
   A_mul_B!(@view(du[:,1]),B,u)
   A_mul_B!(@view(du[:,2]),B,u)
 end
 
-function (p::typeof(f))(::Type{Val{:analytic}},t,u0,W)
+function (p::typeof(f))(::Type{Val{:analytic}},u,p,t0,W)
  tmp = (A+1.01I-(B^2))*t + B*sum(W)
  expm(tmp)*u0
 end
 
-f1_A(t,u,du) = A
-function (p::typeof(f1_A))(::Type{Val{:analytic}},t,u0,W)
+f1_A(du,u,p,t) = A
+function (p::typeof(f1_A))(::Type{Val{:analytic}},u,p,t0,W)
  tmp = (A+1.01I-(B^2))*t + B*sum(W)
  expm(tmp)*u0
 end
-f2(t,u,du) = du .= μ .* u
+f2(du,u,p,t) = du .= μ .* u
 
 prob = SDEProblem((f1_A,f2),σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
 
-f1_no_noise(t,u,du) = A
-f2(t,u,du) = (du .= μ .* u)
-function σ22(t,u,du)
+f1_no_noise(du,u,p,t) = A
+f2(du,u,p,t) = (du .= μ .* u)
+function σ22(du,u,p,t)
   du .= 0
 end
-function (p::typeof(f1_no_noise))(::Type{Val{:analytic}},t,u0,W)
+function (p::typeof(f1_no_noise))(::Type{Val{:analytic}},u,p,t0,W)
  tmp = (A+1.01I)*t
  expm(tmp)*u0
 end

@@ -71,6 +71,7 @@ function init(
 
   noise = prob.noise
   tspan = prob.tspan
+  p = prob.p
   tdir = sign(tspan[end]-tspan[1])
 
   T = tType(tspan[2])
@@ -294,7 +295,7 @@ function init(
 
   rateType = typeof(u/t) ## Can be different if united
 
-  cache = alg_cache(alg,prob,u,W.dW,W.dZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,Val{isinplace})
+  cache = alg_cache(alg,prob,u,W.dW,W.dZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,Val{isinplace})
 
   id = LinearInterpolationData(timeseries,ts)
 
@@ -314,10 +315,11 @@ function init(
     cacheType =  OrdinaryDiffEqCache
   end
 
-  integrator =    SDEIntegrator{typeof(alg),uType,uBottomEltype,tType,tTypeNoUnits,
+  integrator =    SDEIntegrator{typeof(alg),uType,uBottomEltype,tType,typeof(p),
+                  tTypeNoUnits,
                   uEltypeNoUnits,typeof(W),rateType,typeof(sol),typeof(cache),
                   typeof(prog),FType,GType,typeof(opts),typeof(noise)}(
-                  f,g,noise,uprev,tprev,t,u,tType(dt),tType(dt),tType(dt),dtcache,T,tdir,
+                  f,g,noise,uprev,tprev,t,u,p,tType(dt),tType(dt),tType(dt),dtcache,T,tdir,
                   just_hit_tstop,isout,accept_step,last_stepfail,force_stepfail,
                   dtchangeable,u_modified,
                   saveiter,

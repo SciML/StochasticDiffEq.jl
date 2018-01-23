@@ -1,19 +1,19 @@
 @muladd function perform_step!(integrator,cache::EMConstantCache,f=integrator.f)
-  @unpack t,dt,uprev,u,W = integrator
+  @unpack t,dt,uprev,u,W,p = integrator
   if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
-    noise = integrator.g(t,uprev)*W.dW
+    noise = integrator.g(uprev,p,t)*W.dW
   else
-    noise = integrator.g(t,uprev).*W.dW
+    noise = integrator.g(uprev,p,t).*W.dW
   end
-  u = @muladd uprev + dt*integrator.f(t,uprev) + noise
+  u = @muladd uprev + dt*integrator.f(uprev,p,t) + noise
   integrator.u = u
 end
 
 @muladd function perform_step!(integrator,cache::EMCache,f=integrator.f)
   @unpack rtmp1,rtmp2,rtmp3 = cache
-  @unpack t,dt,uprev,u,W = integrator
-  integrator.f(t,uprev,rtmp1)
-  integrator.g(t,uprev,rtmp2)
+  @unpack t,dt,uprev,u,W,p = integrator
+  integrator.f(rtmp1,uprev,p,t)
+  integrator.g(rtmp2,uprev,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
     @tight_loop_macros for i in eachindex(u)
@@ -30,30 +30,30 @@ end
 end
 
 @muladd function perform_step!(integrator,cache::EulerHeunConstantCache,f=integrator.f)
-  @unpack t,dt,uprev,u,W = integrator
-  ftmp = integrator.f(t,uprev)
-  gtmp = integrator.g(t,uprev)
+  @unpack t,dt,uprev,u,W,p = integrator
+  ftmp = integrator.f(uprev,p,t)
+  gtmp = integrator.g(uprev,p,t)
   if is_diagonal_noise(integrator.sol.prob)
     noise = gtmp.*W.dW
   else
     noise = gtmp*W.dW
   end
   tmp = @muladd uprev + ftmp*dt + noise
-  gtmp2 = (1/2).*(gtmp.+integrator.g(t+dt,tmp))
+  gtmp2 = (1/2).*(gtmp.+integrator.g(tmp,p,t+dt))
   if is_diagonal_noise(integrator.sol.prob)
     noise2 = gtmp2.*W.dW
   else
     noise2 = gtmp2*W.dW
   end
-  u = @muladd uprev + (1/2)*dt*(ftmp+integrator.f(t+dt,tmp)) + noise2
+  u = @muladd uprev + (1/2)*dt*(ftmp+integrator.f(tmp,p,t+dt)) + noise2
   integrator.u = u
 end
 
 @muladd function perform_step!(integrator,cache::EulerHeunCache,f=integrator.f)
   @unpack ftmp1,ftmp2,gtmp1,gtmp2,tmp,nrtmp = cache
-  @unpack t,dt,uprev,u,W = integrator
-  integrator.f(t,uprev,ftmp1)
-  integrator.g(t,uprev,gtmp1)
+  @unpack t,dt,uprev,u,W,p = integrator
+  integrator.f(ftmp1,uprev,p,t)
+  integrator.g(gtmp1,uprev,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
     #@. nrtmp=gtmp1*W.dW
@@ -69,8 +69,8 @@ end
     @inbounds tmp[i] = @muladd uprev[i] + ftmp1[i]*dt + nrtmp[i]
   end
 
-  integrator.f(t+dt,tmp,ftmp2)
-  integrator.g(t+dt,tmp,gtmp2)
+  integrator.f(ftmp2,tmp,p,t+dt)
+  integrator.g(gtmp2,tmp,p,t+dt)
 
   if is_diagonal_noise(integrator.sol.prob)
     #@. nrtmp=(1/2)*W.dW*(gtmp1+gtmp2)
@@ -94,15 +94,15 @@ end
 end
 
 @muladd function perform_step!(integrator,cache::RandomEMConstantCache,f=integrator.f)
-  @unpack t,dt,uprev,u,W = integrator
-  u = @muladd uprev + dt*integrator.f(t,uprev,W.dW)
+  @unpack t,dt,uprev,u,W,p = integrator
+  u = @muladd uprev + dt*integrator.f(uprev,p,t,W.dW)
   integrator.u = u
 end
 
 @muladd function perform_step!(integrator,cache::RandomEMCache,f=integrator.f)
   @unpack rtmp = cache
-  @unpack t,dt,uprev,u,W = integrator
-  integrator.f(t,uprev,W.dW,rtmp)
+  @unpack t,dt,uprev,u,W,p = integrator
+  integrator.f(rtmp,uprev,p,t,W.dW)
   #@. u = @muladd uprev + dt*rtmp
   @tight_loop_macros for i in eachindex(u)
     @inbounds u[i] = @muladd uprev[i] + dt*rtmp[i]
@@ -111,20 +111,20 @@ end
 end
 
 @muladd function perform_step!(integrator,cache::RKMilConstantCache,f=integrator.f)
-  @unpack t,dt,uprev,u,W = integrator
-  K = @muladd uprev + dt*integrator.f(t,uprev)
-  L = integrator.g(t,uprev)
+  @unpack t,dt,uprev,u,W,p = integrator
+  K = @muladd uprev + dt*integrator.f(uprev,p,t)
+  L = integrator.g(uprev,p,t)
   mil_correction = zero(u)
   if alg_interpretation(integrator.alg) == :Ito
     utilde =  K + L*integrator.sqdt
-    mil_correction = (integrator.g(t,utilde).-L)./(2 .* integrator.sqdt).*(W.dW.^2 .- dt)
+    mil_correction = (integrator.g(utilde,p,t).-L)./(2 .* integrator.sqdt).*(W.dW.^2 .- dt)
   elseif alg_interpretation(integrator.alg) == :Stratonovich
     utilde = uprev + L*integrator.sqdt
-    mil_correction = (integrator.g(t,utilde).-L)./(2 .* integrator.sqdt).*(W.dW.^2)
+    mil_correction = (integrator.g(utilde,p,t).-L)./(2 .* integrator.sqdt).*(W.dW.^2)
   end
   u = K+L*W.dW+mil_correction
   if integrator.opts.adaptive
-    integrator.EEst = integrator.opts.internalnorm(mil_correction/(@muladd(integrator.opts.abstol + max.(abs(uprev),abs(u))*integrator.opts.reltol)))
+    integrator.EEst = integrator.opts.internalnorm(mil_correction/((integrator.opts.abstol + max.(abs(uprev),abs(u))*integrator.opts.reltol)))
   end
   integrator.u = u
 end
@@ -132,12 +132,12 @@ end
 #=
 @muladd function perform_step!(integrator,cache::RKMilCache,f=integrator.f)
   @unpack du1,du2,K,tmp,L = cache
-  @unpack t,dt,uprev,u,W = integrator
-  integrator.f(t,uprev,du1)
-  integrator.g(t,uprev,L)
+  @unpack t,dt,uprev,u,W,p = integrator
+  integrator.f(du1,uprev,p,t)
+  integrator.g(L,uprev,p,t)
   @. K = @muladd uprev + dt*du1
   @. tmp = @muladd K + L*integrator.sqdt
-  integrator.g(t,tmp,du2)
+  integrator.g(du2,tmp,p,t)
   if alg_interpretation(integrator.alg) == :Ito
     @. tmp = (du2-L)/(2integrator.sqdt)*(W.dW^2 - dt)
   elseif alg_interpretation(integrator.alg) == :Stratonovich
@@ -145,7 +145,7 @@ end
   end
   @. u = K+L*W.dW + tmp
   if integrator.opts.adaptive
-    @. tmp = @muladd(tmp)/@muladd(integrator.opts.abstol + max(abs(uprev),abs(u))*integrator.opts.reltol)
+    @. tmp = (tmp)/(integrator.opts.abstol + max(abs(uprev),abs(u))*integrator.opts.reltol)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
   integrator.u = u
@@ -154,23 +154,23 @@ end
 
 @muladd function perform_step!(integrator,cache::RKMilCache,f=integrator.f)
   @unpack du1,du2,K,tmp,L = cache
-  @unpack t,dt,uprev,u,W = integrator
-  integrator.f(t,uprev,du1)
-  integrator.g(t,uprev,L)
+  @unpack t,dt,uprev,u,W,p = integrator
+  integrator.f(du1,uprev,p,t)
+  integrator.g(L,uprev,p,t)
   @. K = @muladd uprev + dt*du1
   if alg_interpretation(integrator.alg) == :Ito
     @. tmp = @muladd K + L*integrator.sqdt
-    integrator.g(t,tmp,du2)
+    integrator.g(du2,tmp,p,t)
     @. tmp = (du2-L)/(2integrator.sqdt)*(W.dW.^2 - dt)
   elseif alg_interpretation(integrator.alg) == :Stratonovich
     @. tmp = @muladd uprev + L*integrator.sqdt
-    integrator.g(t,tmp,du2)
+    integrator.g(du2,tmp,p,t)
     @. tmp = (du2-L)/(2integrator.sqdt)*(W.dW.^2)
   end
   @. u = K+L*W.dW + tmp
   if integrator.opts.adaptive
     @tight_loop_macros for (i,atol,rtol) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),Iterators.cycle(integrator.opts.reltol))
-      @inbounds tmp[i] = @muladd(tmp[i])/@muladd(atol + max(abs(uprev[i]),abs(u[i]))*rtol)
+      @inbounds tmp[i] = (tmp[i])/(atol + max(abs(uprev[i]),abs(u[i]))*rtol)
     end
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
@@ -178,7 +178,7 @@ end
 
 @muladd function perform_step!(integrator,cache::RKMilCommuteCache,f=integrator.f)
   @unpack du1,du2,K,gtmp,L = cache
-  @unpack t,dt,uprev,u,W = integrator
+  @unpack t,dt,uprev,u,W,p = integrator
   @unpack I,mil_correction,Kj,Dgj,tmp = cache
   dW = W.dW; sqdt = integrator.sqdt
   f = integrator.f; g = integrator.g
@@ -191,13 +191,13 @@ end
       end
   end
 
-  integrator.f(t,uprev,du1)
-  integrator.g(t,uprev,L)
+  integrator.f(du1,uprev,p,t)
+  integrator.g(L,uprev,p,t)
 
   for j = 1:length(uprev)
     @. Kj = uprev + dt*du1 + sqdt*@view(L[:,j]) # This works too
     #Kj .= uprev .+ sqdt*L[:,j]
-    g(t,Kj,gtmp)
+    g(gtmp,Kj,p,t)
     @. Dgj = (gtmp - L)/sqdt
     A_mul_B!(tmp,Dgj,@view(I[:,j]))
     mil_correction .+= tmp

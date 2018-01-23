@@ -4,8 +4,8 @@ prob = prob_sde_linear
 
 integrator = init(prob,EM(),dt=1//2^(4),tstops = [0.33])
 
-for (t,u) in tuples(integrator)
-  @show t,u
+for (u,p,t) in tuples(integrator)
+  @show u,p,t
 end
 
 sol = solve(prob,EM(),dt=1//2^(4),tstops = [0.33])

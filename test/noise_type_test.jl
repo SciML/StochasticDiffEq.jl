@@ -1,7 +1,7 @@
 using StochasticDiffEq, DiffEqBase, Base.Test
 
-f(t,u,du) = (du.=1.01u)
-function g(t,u,du)
+f(du,u,p,t) = (du.=1.01u)
+function g(du,u,p,t)
   du[1,1] = 0.3u[1]
   du[1,2] = 0.6u[1]
   du[1,3] = 0.9u[1]
@@ -15,8 +15,8 @@ prob = SDEProblem(f,g,ones(2),(0.0,1.0),noise_rate_prototype=zeros(2,4))
 
 sol = solve(prob,EM(),dt=1/1000)
 
-f(t,u,du) = (du.=1.01u)
-function g(t,u,du)
+f(du,u,p,t) = (du.=1.01u)
+function g(du,u,p,t)
   du[1,1] = 0.3
   du[1,2] = 0.6
   du[1,3] = 0.9
@@ -37,7 +37,7 @@ sol = solve(prob,SRA())
 
 @test length(sol.W[1]) == 4
 
-function g(t,u,du)
+function g(du,u,p,t)
   @test typeof(du) <: SparseMatrixCSC
   du[1,1] = 0.3u[1]
   du[1,2] = 0.6u[1]

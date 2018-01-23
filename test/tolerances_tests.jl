@@ -1,14 +1,14 @@
 using StochasticDiffEq, DiffEqProblemLibrary, Base.Test
 
 #=
-function f(t,u)
+function f(u,p,t)
   du = similar(u)
-  prob_sde_2Dlinear.f(t,u,du)
+  prob_sde_2Dlinear.f(du,u,p,t)
   return du
 end
-function σ(t,u)
+function σ(u,p,t)
   du = similar(u)
-  prob_sde_2Dlinear.g(t,u,du)
+  prob_sde_2Dlinear.g(du,u,p,t)
   return du
 end
 

@@ -1,5 +1,5 @@
 struct SRA1ConstantCache <: StochasticDiffEqConstantCache end
-alg_cache(alg::SRA1,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = SRA1ConstantCache()
+alg_cache(alg::SRA1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = SRA1ConstantCache()
 
 struct SRA1Cache{randType,rateType,uType,rateNoiseType} <: StochasticDiffEqMutableCache
   u::uType
@@ -19,7 +19,7 @@ u_cache(c::SRA1Cache) = ()
 du_cache(c::SRA1Cache) = (c.chi2,c.E₁,c.E₂,c.gt,c.k₁,c.k₂,c.gpdt)
 user_cache(c::SRA1Cache) = (c.u,c.uprev,c.tmp,c.tmp1)
 
-function alg_cache(alg::SRA1,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+function alg_cache(alg::SRA1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   if typeof(ΔW) <: Union{SArray,Number}
     chi2 = copy(ΔW)
   else
@@ -59,7 +59,7 @@ function SRA2ConstantCache(uBottomEltype)
   SRA2ConstantCache(a21,b21,c02,c11,c12,α1,α2,beta12,beta21,beta22)
 end
 
-function alg_cache(alg::SRA2,prob,u,ΔW,ΔZ,rate_prototype,
+function alg_cache(alg::SRA2,prob,u,ΔW,ΔZ,p,rate_prototype,
                    noise_rate_prototype,uEltypeNoUnits,
                    uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   SRA2ConstantCache(uBottomEltype)
@@ -79,7 +79,7 @@ struct SRA2Cache{uType,randType,tabType,NT,T} <: StochasticDiffEqMutableCache
   tmp::T
 end
 
-function alg_cache(alg::SRA2,prob,u,ΔW,ΔZ,rate_prototype,
+function alg_cache(alg::SRA2,prob,u,ΔW,ΔZ,p,rate_prototype,
                    noise_rate_prototype,uEltypeNoUnits,
                    uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   if typeof(ΔW) <: Union{SArray,Number}
@@ -193,19 +193,19 @@ function SOSRA2ConstantCache(uBottomEltype)
                              α1,α2,α3,beta11,beta12,beta13,beta21,beta22,beta23)
 end
 
-function alg_cache(alg::SRA3,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
+function alg_cache(alg::SRA3,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,
                    f,t,::Type{Val{false}})
   SRA3ConstantCache(uBottomEltype)
 end
 
-function alg_cache(alg::SOSRA,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
+function alg_cache(alg::SOSRA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,
                    f,t,::Type{Val{false}})
   SOSRAConstantCache(uBottomEltype)
 end
 
-function alg_cache(alg::SOSRA2,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,
+function alg_cache(alg::SOSRA2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,
                    f,t,::Type{Val{false}})
   SOSRA2ConstantCache(uBottomEltype)
@@ -228,7 +228,7 @@ struct ThreeStageSRACache{uType,randType,tabType,NT,T,GT} <: StochasticDiffEqMut
   gtmp::GT
 end
 
-function alg_cache(alg::SRA3,prob,u,ΔW,ΔZ,rate_prototype,
+function alg_cache(alg::SRA3,prob,u,ΔW,ΔZ,p,rate_prototype,
                    noise_rate_prototype,uEltypeNoUnits,
                    uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   if typeof(ΔW) <: Union{SArray,Number}
@@ -251,7 +251,7 @@ function alg_cache(alg::SRA3,prob,u,ΔW,ΔZ,rate_prototype,
   ThreeStageSRACache(u,uprev,chi2,tab,g1,g2,g3,k1,k2,k3,E₁,E₂,tmp,gtmp)
 end
 
-function alg_cache(alg::SOSRA,prob,u,ΔW,ΔZ,rate_prototype,
+function alg_cache(alg::SOSRA,prob,u,ΔW,ΔZ,p,rate_prototype,
                    noise_rate_prototype,uEltypeNoUnits,
                    uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   if typeof(ΔW) <: Union{SArray,Number}
@@ -274,7 +274,7 @@ function alg_cache(alg::SOSRA,prob,u,ΔW,ΔZ,rate_prototype,
   ThreeStageSRACache(u,uprev,chi2,tab,g1,g2,g3,k1,k2,k3,E₁,E₂,tmp,gtmp)
 end
 
-function alg_cache(alg::SOSRA2,prob,u,ΔW,ΔZ,rate_prototype,
+function alg_cache(alg::SOSRA2,prob,u,ΔW,ΔZ,p,rate_prototype,
                    noise_rate_prototype,uEltypeNoUnits,
                    uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   if typeof(ΔW) <: Union{SArray,Number}
@@ -316,7 +316,7 @@ function SRAConstantCache(tableau,rate_prototype)
   SRAConstantCache(c₀,c₁,A₀',B₀',α,β₁,β₂,stages,H0)
 end
 
-function alg_cache(alg::SRA,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
+function alg_cache(alg::SRA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   SRAConstantCache(alg.tableau,rate_prototype)
 end
 
@@ -343,7 +343,7 @@ du_cache(c::SRACache) = (c.A0temp,c.B0temp,c.ftmp,c.gtmp,c.chi2,c.chi2,c.atemp,
                           c.btemp,c.E₁,c.E₁temp,c.E₂)
 user_cache(c::SRACache) = (c.u,c.uprev,c.tmp,c.H0...)
 
-function alg_cache(alg::SRA,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+function alg_cache(alg::SRA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   H0 = Vector{typeof(u)}(0)
   tab = SRAConstantCache(alg.tableau,rate_prototype)
   for i = 1:tab.stages

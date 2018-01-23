@@ -6,15 +6,15 @@ A = [-3/2 1/20
 B = [1/5 1/100
     1/100 1/5]
 
-function f(t,u,du)
+function f(du,u,p,t)
   A_mul_B!(du,A,u)
 end
-function σ(t,u,du)
+function σ(du,u,p,t)
   A_mul_B!(@view(du[:,1]),B,u)
   A_mul_B!(@view(du[:,2]),B,u)
 end
 
-function (p::typeof(f))(::Type{Val{:analytic}},t,u0,W)
+function (p::typeof(f))(::Type{Val{:analytic}},u,p,t0,W)
   tmp = (A-(B^2))*t + B*W[1] + B*W[2]
   expm(tmp)*u0
 end
@@ -38,16 +38,16 @@ A = Strang(2)
 B = [1/5 1/100
     1/100 1/5]
 
-function f(t,u,du)
+function f(du,u,p,t)
   A_mul_B!(du,A,u)
   du .+= 1.01u
 end
-function σ(t,u,du)
+function σ(du,u,p,t)
   A_mul_B!(@view(du[:,1]),B,u)
   A_mul_B!(@view(du[:,2]),B,u)
 end
 
-function (p::typeof(f))(::Type{Val{:analytic}},t,u0,W)
+function (p::typeof(f))(::Type{Val{:analytic}},u,p,t0,W)
  tmp = (A+1.01I-(B^2))*t + B*sum(W)
  expm(tmp)*u0
 end

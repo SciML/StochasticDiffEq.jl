@@ -4,18 +4,18 @@ const mm_A = [-2.0 1 4
             4 -2 1
             2 1 3]
 const mm_b = mm_A*ones(3)
-function mm_f(t,u,du)
+function mm_f(du,u,p,t)
       A_mul_B!(du,mm_A,u)
       tmp = t*mm_b
       du .+= tmp
 end
-function mm_f(::Type{Val{:analytic}},t,u0,W)
+function mm_f(::Type{Val{:analytic}},u,p,t0,W)
       @. 2ones(3)*exp(t) - t - 1
 end
-function mm_g(t,u,du)
+function mm_g(du,u,p,t)
       du .= u + t
 end
-function mm_g(::Type{Val{:analytic}},t,u0,W)
+function mm_g(::Type{Val{:analytic}},u,p,t0,W)
       @. 2ones(3)*exp(t) - t - 1
 end
 function g!(t, u, du)
@@ -44,13 +44,13 @@ sol2 = solve(prob2, ImplicitEM(symplectic=true), dt = 0.01)
 
 @test norm(sol .- sol2) ≈ 0 atol=1e-11
 
-function mm_f2(t,u,du)
+function mm_f2(du,u,p,t)
       A_mul_B!(du,mm_A,u)
 end
-function no_mm_f2(t,u,du)
+function no_mm_f2(du,u,p,t)
       du .= u
 end
-function no_mm_g2(t,u,du)
+function no_mm_g2(du,u,p,t)
       du .= u
 end
 function mm_g2(t, u, du)

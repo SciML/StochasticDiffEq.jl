@@ -1,14 +1,14 @@
 using StochasticDiffEq, RecursiveArrayTools, DiffEqBase, Base.Test#, ParameterizedFunctions
-function f(t,u,du)
+function f(du,u,p,t)
   du[1] = u[2]
   du[2] = -9.81
 end
 
-function g(t,u,du)
+function g(du,u,p,t)
   nothing
 end
 
-function condtion(t,u,integrator) # Event when event_f(t,u,k) == 0
+function condtion(u,p,t,integrator) # Event when event_f(u,p,t,k) == 0
   u[1]
 end
 
@@ -27,7 +27,7 @@ sol = solve(prob,SRIW1(),callback=callback,adaptive=false,dt=3/4)
 
 @test minimum(sol[1,:]) > -1e-12 && minimum(sol[1,:]) < 1e-12
 
-function g(t,u,du)
+function g(du,u,p,t)
   du[2] = .125*u[2]
 end
 

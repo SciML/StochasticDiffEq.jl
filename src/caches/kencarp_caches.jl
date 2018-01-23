@@ -7,11 +7,11 @@ mutable struct RackKenCarpConstantCache{F,uEltypeNoUnits,Tab} <: StochasticDiffE
   tab::Tab
 end
 
-function alg_cache(alg::RackKenCarp,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
+function alg_cache(alg::RackKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   if typeof(f) <: SplitFunction
-    uf = DiffEqDiffTools.UDerivativeWrapper(f.f1,t)
+    uf = DiffEqDiffTools.UDerivativeWrapper(f.f1,t,p)
   else
-    uf = DiffEqDiffTools.UDerivativeWrapper(f,t)
+    uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
   end
   ηold = one(uEltypeNoUnits)
 
@@ -68,7 +68,7 @@ end
 u_cache(c::RackKenCarpCache)    = (c.z₁,c.z₂,c.z₃,c.z₄,c.dz)
 du_cache(c::RackKenCarpCache)   = (c.k,c.fsalfirst)
 
-function alg_cache(alg::RackKenCarp,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+function alg_cache(alg::RackKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
 
   du1 = zeros(rate_prototype)
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
@@ -84,11 +84,11 @@ function alg_cache(alg::RackKenCarp,prob,u,ΔW,ΔZ,rate_prototype,noise_rate_pro
   if typeof(f) <: SplitFunction
     k1 = similar(u,indices(u)); k2 = similar(u,indices(u))
     k3 = similar(u,indices(u)); k4 = similar(u,indices(u))
-    uf = DiffEqDiffTools.UJacobianWrapper(f.f1,t)
+    uf = DiffEqDiffTools.UJacobianWrapper(f.f1,t,p)
   else
     k1 = nothing; k2 = nothing
     k3 = nothing; k4 = nothing
-    uf = DiffEqDiffTools.UJacobianWrapper(f,t)
+    uf = DiffEqDiffTools.UJacobianWrapper(f,t,p)
   end
   linsolve = alg.linsolve(Val{:init},uf,u)
   jac_config = build_jac_config(alg,f,uf,du1,uprev,u,tmp,dz)

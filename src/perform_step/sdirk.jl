@@ -3,7 +3,7 @@
                                             ImplicitEulerHeunConstantCache,
                                             ImplicitRKMilConstantCache},
                                             f=integrator.f)
-  @unpack t,dt,uprev,u = integrator
+  @unpack t,dt,uprev,u,p = integrator
   @unpack uf = cache
   theta = integrator.alg.theta
   integrator.alg.symplectic ? a = dt/2 : a = dt
@@ -24,25 +24,25 @@
   κ = cache.κ
   tol = cache.tol
 
-  L = integrator.g(t,uprev)
-  ftmp = integrator.f(t,uprev)
+  L = integrator.g(uprev,p,t)
+  ftmp = integrator.f(uprev,p,t)
   gtmp = L.*integrator.W.dW
 
   if typeof(cache) <: ImplicitEulerHeunConstantCache
     utilde = uprev + gtmp
-    gtmp = ((integrator.g(t,utilde) + L)/2)*integrator.W.dW
+    gtmp = ((integrator.g(utilde,p,t) + L)/2)*integrator.W.dW
   end
 
   if typeof(cache) <: ImplicitRKMilConstantCache
     if alg_interpretation(integrator.alg) == :Ito
       K = @muladd uprev .+ dt.*ftmp
       utilde =  K + L*integrator.sqdt
-      mil_correction = (integrator.g(t,utilde).-L)./(2 .* integrator.sqdt).*
+      mil_correction = (integrator.g(utilde,p,t).-L)./(2 .* integrator.sqdt).*
                        (integrator.W.dW.^2 .- dt)
       gtmp += mil_correction
     elseif alg_interpretation(integrator.alg) == :Stratonovich
       utilde = uprev + L*integrator.sqdt
-      mil_correction = (integrator.g(t,utilde).-L)./(2 .* integrator.sqdt).*
+      mil_correction = (integrator.g(utilde,p,t).-L)./(2 .* integrator.sqdt).*
                        (integrator.W.dW.^2)
       gtmp += mil_correction
     end
@@ -61,7 +61,7 @@
   else
     u = uprev + dt*(1-theta)*ftmp + theta*z + gtmp
   end
-  b = -z .+ dt.*f(t+a,u)
+  b = -z .+ dt.*f(u,p,t+a)
   dz = W\b
   ndz = integrator.opts.internalnorm(dz)
   z = z + dz
@@ -82,7 +82,7 @@
     else
       u = uprev + dt*(1-theta)*ftmp + theta*z + gtmp
     end
-    b = -z .+ dt.*f(t+a,u)
+    b = -z .+ dt.*f(u,p,t+a)
     dz = W\b
     ndzprev = ndz
     ndz = integrator.opts.internalnorm(dz)
@@ -131,7 +131,7 @@ end
                                             ImplicitEulerHeunCache,
                                             ImplicitRKMilCache},
                                f=integrator.f)
-  @unpack t,dt,uprev,u = integrator
+  @unpack t,dt,uprev,u,p = integrator
   @unpack uf,du1,dz,z,k,J,W,jac_config,gtmp,gtmp2,tmp = cache
   integrator.alg.symplectic ? a = dt/2 : a = dt
   dW = integrator.W.dW
@@ -175,8 +175,8 @@ end
 
   # Handle noise computations
 
-  integrator.g(t,uprev,gtmp)
-  integrator.f(t,uprev,tmp)
+  integrator.g(gtmp,uprev,p,t)
+  integrator.f(tmp,uprev,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
     @tight_loop_macros for i in eachindex(u)
@@ -188,7 +188,7 @@ end
 
   if typeof(cache) <: ImplicitEulerHeunCache
     @. z = uprev + gtmp2
-    integrator.g(t,z,gtmp2)
+    integrator.g(gtmp2,z,p,t)
     @. gtmp = (gtmp2 + gtmp)/2
     if is_diagonal_noise(integrator.sol.prob)
       @tight_loop_macros for i in eachindex(u)
@@ -203,11 +203,11 @@ end
     gtmp3 = cache.gtmp3
     if alg_interpretation(integrator.alg) == :Ito
       @. z = @muladd uprev + dt*tmp + gtmp*integrator.sqdt
-      integrator.g(t,z,gtmp3)
+      integrator.g(gtmp3,z,p,t)
       @. gtmp2 += (gtmp3-gtmp)/(2integrator.sqdt)*(dW.^2 - dt)
     elseif alg_interpretation(integrator.alg) == :Stratonovich
       @. z = @muladd uprev + gtmp*integrator.sqdt
-      integrator.g(t,z,gtmp3)
+      integrator.g(gtmp3,z,p,t)
       @. gtmp2 += (gtmp3-gtmp)/(2integrator.sqdt)*(dW.^2)
     end
   end
@@ -229,7 +229,7 @@ end
     @. u = uprev + dt*(1-theta)*tmp + theta*z + gtmp2
   end
   iter += 1
-  f(t+a,u,k)
+  f(k,u,p,t+a)
   scale!(k,dt)
   if mass_matrix == I
     k .-= z
@@ -260,7 +260,7 @@ end
     else
       @. u = uprev + dt*(1-theta)*tmp + theta*z + gtmp2
     end
-    f(t+a,u,k)
+    f(k,u,p,t+a)
     scale!(k,dt)
     if mass_matrix == I
       k .-= z
