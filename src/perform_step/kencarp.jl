@@ -94,7 +94,7 @@
 
   if typeof(integrator.f) <: SplitFunction
     u = tmp + γ*z₂
-    k2 = dt*f2(t + 2γ*dt, u)
+    k2 = dt*f2(u,p,t + 2γ*dt)
     tmp = uprev + a31*z₁ + a32*z₂ + ea31*k1 + ea32*k2
   else
     tmp = uprev + a31*z₁ + a32*z₂
@@ -147,7 +147,7 @@
 
   if typeof(integrator.f) <: SplitFunction
     u = tmp + γ*z₃
-    k3 = dt*f2(t + c3*dt, u)
+    k3 = dt*f2(u,p,t + c3*dt)
     tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + ea41*k1 + ea42*k2 + ea43*k3 + chi2*nb043*g1
   else
     tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + chi2*nb043*g1
@@ -197,7 +197,7 @@
   E₂ = chi2*(g1-g4)
 
   if typeof(integrator.f) <: SplitFunction
-    k4 = dt*f2(t+dt, u)
+    k4 = dt*f2(u,p,t+dt)
     u = uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + eb1*k1 + eb2*k2 + eb3*k3 + eb4*k4 + integrator.W.dW*g4 + E₂
   else
     u = uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + integrator.W.dW*g4 + E₂
@@ -328,7 +328,7 @@ end
   if typeof(integrator.f) <: SplitFunction
     # This assumes the implicit part is cheaper than the explicit part
     if !repeat_step && !integrator.last_stepfail
-      f2(integrator.t, integrator.uprev, k1)
+      f2(k1,integrator.uprev,integrator.p,integrator.t)
       k1 .*= dt
     end
     @. tmp += ea21*k1
@@ -385,7 +385,7 @@ end
 
   if typeof(integrator.f) <: SplitFunction
     @. u = tmp + γ*z₂
-    f2(t + 2γ*dt, u, k2); k2 .*= dt
+    f2(k2,u,p,t + 2γ*dt); k2 .*= dt
     #@. tmp = uprev + a31*z₁ + a32*z₂ + ea31*k1 + ea32*k2
     for i in eachindex(tmp)
       @inbounds tmp[i] = uprev[i] + a31*z₁[i] + a32*z₂[i] + ea31*k1[i] + ea32*k2[i]
@@ -450,7 +450,7 @@ end
 
   if typeof(integrator.f) <: SplitFunction
     @. u = tmp + γ*z₃
-    f2(t + c3*dt, u, k3); k3 .*= dt
+    f2(k3,u,p,t + c3*dt); k3 .*= dt
     # z₄ is storage for the g1*chi2 from earlier
     #@. tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + ea41*k1 + ea42*k2 + ea43*k3
     for i in eachindex(tmp)
@@ -516,7 +516,7 @@ end
 
   if typeof(integrator.f) <: SplitFunction
     @. u = tmp + γ*z₄
-    f2(t+dt, u, k4); k4 .*= dt
+    f2(k4,u,p,t+dt); k4 .*= dt
     if is_diagonal_noise(integrator.sol.prob)
       @. E₂ = chi2*(g1-g4)
       #@. u = uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + eb1*k1 + eb2*k2 + eb3*k3 + eb4*k4 + integrator.W.dW*g4 + chi2*(g1-g4)

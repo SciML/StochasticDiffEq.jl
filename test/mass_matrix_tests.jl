@@ -9,13 +9,13 @@ function mm_f(du,u,p,t)
       tmp = t*mm_b
       du .+= tmp
 end
-function mm_f(::Type{Val{:analytic}},u,p,t0,W)
+function mm_f(::Type{Val{:analytic}},u0,p,t,W)
       @. 2ones(3)*exp(t) - t - 1
 end
 function mm_g(du,u,p,t)
       du .= u + t
 end
-function mm_g(::Type{Val{:analytic}},u,p,t0,W)
+function mm_g(::Type{Val{:analytic}},u0,p,t,W)
       @. 2ones(3)*exp(t) - t - 1
 end
 function g!(t, u, du)

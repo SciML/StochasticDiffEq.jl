@@ -2,7 +2,7 @@ using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Base.Test
 srand(100)
 
 f_bm(u,p,t) = 0.0
-f_bm(::Type{Val{:analytic}},u,p,t0,W) = W
+f_bm(::Type{Val{:analytic}},u0,p,t,W) = W
 g_bm(u,p,t) = 1.0
 prob = SDEProblem(f_bm,g_bm,0.0,(0.0,1.0))
 sol1 = solve(prob,SRA1(),dt=1/2^(3),adaptive=false)

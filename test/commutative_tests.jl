@@ -14,7 +14,7 @@ function f_commute(du,u,p,t)
   A_mul_B!(du,A,u)
   du .+= 1.01u
 end
-function (p::typeof(f_commute))(::Type{Val{:analytic}},u,p,t0,W)
+function (::typeof(f_commute))(::Type{Val{:analytic}},u0,p,t,W)
  tmp = (A+1.01I-(B^2))*t + B*sum(W)
  expm(tmp)*u0
 end

@@ -5,12 +5,12 @@ const σ_const = 0.87
 
 f(u,p,t) = μ * u + μ * u
 f1_μ(u,p,t) = μ
-(p::typeof(f1_μ))(::Type{Val{:analytic}},u,p,t0,W) = u0.*exp.((2μ-(σ_const^2)/2)t+σ_const*W)
+(::typeof(f1_μ))(::Type{Val{:analytic}},u0,p,t,W) = u0.*exp.((2μ-(σ_const^2)/2)t+σ_const*W)
 f2(u,p,t) = μ * u
 σ(u,p,t) = σ_const*u
 no_noise(u,p,t) = 0.0
 f1_no_noise(u,p,t) = μ
-(p::typeof(f1_no_noise))(::Type{Val{:analytic}},u,p,t0,W) = u0.*exp.(2μ*t)
+(::typeof(f1_no_noise))(::Type{Val{:analytic}},u0,p,t,W) = u0.*exp.(2μ*t)
 
 prob = SDEProblem{false}((f1_μ,f2),σ,1/2,(0.0,1.0))
 no_noise_prob = SDEProblem{false}((f1_no_noise,f2),no_noise,1/2,(0.0,1.0))
@@ -58,13 +58,13 @@ function σ(du,u,p,t)
   A_mul_B!(@view(du[:,2]),B,u)
 end
 
-function (p::typeof(f))(::Type{Val{:analytic}},u,p,t0,W)
+function (::typeof(f))(::Type{Val{:analytic}},u0,p,t,W)
  tmp = (A+1.01I-(B^2))*t + B*sum(W)
  expm(tmp)*u0
 end
 
 f1_A(du,u,p,t) = A
-function (p::typeof(f1_A))(::Type{Val{:analytic}},u,p,t0,W)
+function (::typeof(f1_A))(::Type{Val{:analytic}},u0,p,t,W)
  tmp = (A+1.01I-(B^2))*t + B*sum(W)
  expm(tmp)*u0
 end
@@ -77,7 +77,7 @@ f2(du,u,p,t) = (du .= μ .* u)
 function σ22(du,u,p,t)
   du .= 0
 end
-function (p::typeof(f1_no_noise))(::Type{Val{:analytic}},u,p,t0,W)
+function (::typeof(f1_no_noise))(::Type{Val{:analytic}},u0,p,t,W)
  tmp = (A+1.01I)*t
  expm(tmp)*u0
 end

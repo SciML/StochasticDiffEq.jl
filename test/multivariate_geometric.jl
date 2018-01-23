@@ -14,7 +14,7 @@ function σ(du,u,p,t)
   A_mul_B!(@view(du[:,2]),B,u)
 end
 
-function (p::typeof(f))(::Type{Val{:analytic}},u,p,t0,W)
+function (::typeof(f))(::Type{Val{:analytic}},u0,p,t,W)
   tmp = (A-(B^2))*t + B*W[1] + B*W[2]
   expm(tmp)*u0
 end
@@ -47,7 +47,7 @@ function σ(du,u,p,t)
   A_mul_B!(@view(du[:,2]),B,u)
 end
 
-function (p::typeof(f))(::Type{Val{:analytic}},u,p,t0,W)
+function (::typeof(f))(::Type{Val{:analytic}},u0,p,t,W)
  tmp = (A+1.01I-(B^2))*t + B*sum(W)
  expm(tmp)*u0
 end
