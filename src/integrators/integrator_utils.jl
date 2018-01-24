@@ -76,7 +76,7 @@ end
     integrator.sol = solution_new_retcode(integrator.sol,:DtLessThanMin)
     return integrator.sol
   end
-  if integrator.opts.unstable_check(integrator.dt,integrator.t,integrator.u)
+  if integrator.opts.unstable_check(integrator.dt,integrator.u,integrator.p,integrator.t)
     if integrator.opts.verbose
       warn("Instability detected. Aborting")
     end
@@ -149,7 +149,7 @@ end
     @fastmath integrator.q = integrator.q11/(integrator.qold^integrator.opts.beta2)
     @fastmath integrator.q = max(inv(integrator.opts.qmax),min(inv(integrator.opts.qmin),integrator.q/integrator.opts.gamma))
     @fastmath integrator.dtnew = integrator.dt/integrator.q
-    integrator.isout = integrator.opts.isoutofdomain(ttmp,integrator.u)
+    integrator.isout = integrator.opts.isoutofdomain(integrator.u,integrator.p,ttmp)
     integrator.accept_step = (!integrator.isout && integrator.EEst <= 1.0) || (integrator.opts.force_dtmin && integrator.dt <= integrator.opts.dtmin)
     if integrator.accept_step # Accepted
       integrator.last_stepfail = false
@@ -179,7 +179,7 @@ end
     handle_callbacks!(integrator)
   end
   if integrator.opts.progress && integrator.iter%integrator.opts.progress_steps==0
-    Juno.msg(integrator.prog,integrator.opts.progress_message(integrator.dt,integrator.t,integrator.u))
+    Juno.msg(integrator.prog,integrator.opts.progress_message(integrator.dt,integrator.u,integrator.p,integrator.t))
     Juno.progress(integrator.prog,integrator.t/integrator.T)
   end
 end

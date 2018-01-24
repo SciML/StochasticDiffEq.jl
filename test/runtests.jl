@@ -30,7 +30,7 @@ LONGER_TESTS && @time @testset "Weak Convergence Tests" begin include("weak_conv
 @time @testset "Events Tests" begin include("events_test.jl") end
 @time @testset "Cache Tests" begin include("cache_test.jl") end
 @time @testset "Element-wise Tolerances Tests" begin include("tolerances_tests.jl") end
-# @time @testset "Scalar Tests" begin include("scalar_noise.jl") end # Fails because of bounds checks
+#@time @testset "Scalar Tests" begin include("scalar_noise.jl") end # Fails because of bounds checks
 
 #Adaptive SDE
 @time @testset "Adaptive SDE Linear Tests" begin include("adaptive/sde_linearadaptive_tests.jl") end

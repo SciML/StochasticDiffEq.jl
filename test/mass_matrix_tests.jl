@@ -18,7 +18,7 @@ end
 function mm_g(::Type{Val{:analytic}},u0,p,t,W)
       @. 2ones(3)*exp(t) - t - 1
 end
-function g!(t, u, du)
+function g!(du,u,p,t)
     du .= 0.0
 end
 prob2 = SDEProblem(mm_g,g!,ones(3),(0.0,1.0))
@@ -53,7 +53,7 @@ end
 function no_mm_g2(du,u,p,t)
       du .= u
 end
-function mm_g2(t, u, du)
+function mm_g2(du,u,p,t)
     A_mul_B!(du,mm_A,u)
 end
 prob2 = SDEProblem(no_mm_f2,no_mm_g2,ones(3),(0.0,1.0))

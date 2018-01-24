@@ -1,13 +1,14 @@
 function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,internalnorm,prob,order) where {tType,uType}
   f = prob.f
   g = prob.g
+  p = prob.p
   d₀ = internalnorm(u0./(abstol.+internalnorm.(u0).*reltol))
   if !isinplace(prob)
-    f₀ = f(t,u0)
+    f₀ = f(u0,p,t)
     if any(isnan.(f₀))
       warn("First function call for f produced NaNs. Exiting.")
     end
-    g₀ = 3g(t,u0)
+    g₀ = 3g(u0,p,t)
     if any(isnan.(g₀))
       warn("First function call for g produced NaNs. Exiting.")
     end
@@ -18,11 +19,11 @@ function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,intern
     else
       g₀ = zeros(u0)
     end
-    f(t,u0,f₀)
+    f(f₀,u0,p,t)
     if any((isnan(x) for x in f₀))
       warn("First function call for f produced NaNs. Exiting.")
     end
-    g(t,u0,g₀); g₀.*=3
+    g(g₀,u0,p,t); g₀.*=3
     if any((isnan(x) for x in g₀))
       warn("First function call for g produced NaNs. Exiting.")
     end
@@ -39,8 +40,8 @@ function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,intern
   dt₀ = min(dt₀,tdir*dtmax)
   u₁ = u0 .+ tdir.*dt₀.*f₀
   if !isinplace(prob)
-    f₁ = f(t+tdir*dt₀,u₁)
-    g₁ = 3g(t+tdir*dt₀,u₁)
+    f₁ = f(u₁,p,t+tdir*dt₀)
+    g₁ = 3g(u₁,p,t+tdir*dt₀)
   else
     f₁ = zeros(u0)
     if prob.noise_rate_prototype != nothing
@@ -48,8 +49,8 @@ function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,intern
     else
       g₁ = zeros(u0)
     end
-    f(t,u0,f₁)
-    g(t,u0,g₁); g₁.*=3
+    f(f₁,u0,p,t)
+    g(g₁,u0,p,t); g₁.*=3
   end
   ΔgMax = max.(internalnorm.(g₀.-g₁),internalnorm.(g₀.+g₁))
   d₂ = internalnorm(max.(internalnorm.(f₁.-f₀.+ΔgMax),internalnorm.(f₁.-f₀.-ΔgMax))./(abstol.+internalnorm.(u0).*reltol))./dt₀

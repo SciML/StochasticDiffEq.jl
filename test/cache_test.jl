@@ -12,7 +12,7 @@ function g(du,u,p,t)
   end
 end
 
-function condition(u,p,t,integrator)
+function condition(u,t,integrator)
   1-maximum(u)
 end
 

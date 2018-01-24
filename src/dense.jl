@@ -134,7 +134,7 @@ sde_interpolation(tvals,ts,timeseries,ks)
 Get the value at tvals where the solution is known at the
 times ts (sorted), with values timeseries and derivatives ks
 """
-@inline function sde_interpolation(tvals,id,idxs,deriv)
+@inline function sde_interpolation(tvals,id,idxs,deriv,p)
   @unpack ts,timeseries = id
   tdir = sign(ts[end]-ts[1])
   idx = sortperm(tvals,rev=tdir<0)
@@ -178,7 +178,7 @@ sde_interpolation(tval::Number,ts,timeseries,ks)
 Get the value at tval where the solution is known at the
 times ts (sorted), with values timeseries and derivatives ks
 """
-@inline function sde_interpolation(tval::Number,id,idxs,deriv)
+@inline function sde_interpolation(tval::Number,id,idxs,deriv,p)
   @unpack ts,timeseries = id
   tdir = sign(ts[end]-ts[1])
   tdir*tval > tdir*ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
@@ -204,7 +204,7 @@ times ts (sorted), with values timeseries and derivatives ks
   val
 end
 
-@inline function sde_interpolation!(out,tval::Number,id,idxs,deriv)
+@inline function sde_interpolation!(out,tval::Number,id,idxs,deriv,p)
   @unpack ts,timeseries = id
   tdir = sign(ts[end]-ts[1])
   tdir*tval > tdir*ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
@@ -229,7 +229,7 @@ end
   end
 end
 
-@inline function sde_interpolation!(vals,tvals,id,idxs,deriv)
+@inline function sde_interpolation!(vals,tvals,id,idxs,deriv,p)
   @unpack ts,timeseries = id
   tdir = sign(ts[end]-ts[1])
   idx = sortperm(tvals,rev=tdir<0)

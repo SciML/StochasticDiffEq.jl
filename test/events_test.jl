@@ -8,7 +8,7 @@ function g(du,u,p,t)
   nothing
 end
 
-function condtion(u,p,t,integrator) # Event when event_f(u,p,t,k) == 0
+function condtion(u,t,integrator) # Event when event_f(u,p,t,k) == 0
   u[1]
 end
 
