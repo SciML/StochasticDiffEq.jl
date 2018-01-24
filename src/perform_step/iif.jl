@@ -6,7 +6,7 @@ mutable struct RHS_IIF1M_Scalar{F,CType,tType,P} <: Function
   p::P
 end
 
-function (f::RHS_IIF1M_Scalar)(u,resid)
+function (f::RHS_IIF1M_Scalar)(resid,u)
   resid[1] .= u[1] - f.tmp - f.dt*f.f[2](u[1],f.p,f.t+f.dt)[1]
 end
 
@@ -18,7 +18,7 @@ mutable struct RHS_IIF2M_Scalar{F,CType,tType,P} <: Function
   p::P
 end
 
-function (f::RHS_IIF2M_Scalar)(u,resid)
+function (f::RHS_IIF2M_Scalar)(resid,u)
   resid[1] = u[1] - f.tmp - 0.5f.dt*f.f[2](u[1],f.p,f.t+f.dt)[1]
 end
 
@@ -60,7 +60,7 @@ mutable struct RHS_IIF1{F,uType,tType,DiffCacheType,SizeType,P} <: Function
   sizeu::SizeType
   p::P
 end
-function (f::RHS_IIF1)(u,resid)
+function (f::RHS_IIF1)(resid,u)
   du = get_du(f.dual_cache, eltype(u))
   f.f[2](du,reshape(u,f.sizeu),f.p,f.t+f.dt)
   #@. resid = u - p.tmp - p.dt*du
@@ -78,7 +78,7 @@ mutable struct RHS_IIF2{F,uType,tType,DiffCacheType,SizeType,P} <: Function
   sizeu::SizeType
   p::P
 end
-function (f::RHS_IIF2)(u,resid)
+function (f::RHS_IIF2)(resid,u)
   du = get_du(f.dual_cache, eltype(u))
   f.f[2](du,reshape(u,f.sizeu),f.p,f.t+f.dt)
   #@. resid = u - p.tmp - 0.5p.dt*du
