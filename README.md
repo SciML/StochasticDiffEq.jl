@@ -22,8 +22,8 @@ using StochasticDiffEq
 α=1
 β=1
 u₀=1/2
-f(t,u) = α*u
-g(t,u) = β*u
+f(u,p,t) = α*u
+g(u,p,t) = β*u
 dt = 1//2^(4)
 tspan = (0.0,1.0)
 prob = SDEProblem(f,g,u₀,(0.0,1.0))
@@ -35,13 +35,13 @@ The options for `solve` are defined in the [common solver options page](http://d
 That example uses the out-of-place syntax `f(t,u)`, while the inplace syntax (more efficient for systems of equations) is shown in the Lorenz example:
 
 ```julia
-function lorenz(t,u,du)
+function lorenz(du,u,p,t)
  du[1] = 10.0(u[2]-u[1])
  du[2] = u[1]*(28.0-u[3]) - u[2]
  du[3] = u[1]*u[2] - (8/3)*u[3]
 end
 
-function σ_lorenz(t,u,du)
+function σ_lorenz(du,u,p,t)
  du[1] = 3.0
  du[2] = 3.0
  du[3] = 3.0
@@ -56,8 +56,8 @@ The problems default to diagonal noise. Non-diagonal noise can be added by setti
 the `noise_prototype`:
 
 ```julia
-f = (t,u,du) -> du.=1.01u
-g = function (t,u,du)
+f = (du,u,p,t) -> du.=1.01u
+g = function (du,u,p,t)
   du[1,1] = 0.3u[1]
   du[1,2] = 0.6u[1]
   du[1,3] = 0.9u[1]
@@ -82,11 +82,11 @@ W = GeometricBrownianMotionProcess(μ,σ,0.0,1.0,1.0)
 prob = SDEProblem(f,g,u0,tspan,noise=W)
 ```
 
-StochasticDiffEq.jl also handles solving random ordinary differential equations. This is shown [in the RODE tutorial](http://docs.juliadiffeq.org/latest/tutorials/rode_example.html). 
+StochasticDiffEq.jl also handles solving random ordinary differential equations. This is shown [in the RODE tutorial](http://docs.juliadiffeq.org/latest/tutorials/rode_example.html).
 
-```julia 
+```julia
 using StochasticDiffEq
-function f(t,u,W)
+function f(u,p,t,W)
   2u*sin(W)
 end
 u0 = 1.00
