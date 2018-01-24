@@ -7,7 +7,7 @@ Juno 0.2.5
 Roots
 Compat 0.17.0
 DiffEqNoiseProcess 0.8.0
-NLsolve 0.15.0
+NLsolve 0.14.1
 ForwardDiff 0.7.0
 StaticArrays
 Reexport
