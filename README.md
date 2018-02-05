@@ -5,7 +5,6 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/k01khnd8waktsg1q?svg=true)](https://ci.appveyor.com/project/ChrisRackauckas/stochasticdiffeq-jl)
 [![Coverage Status](https://coveralls.io/repos/github/JuliaDiffEq/StochasticDiffEq.jl/badge.svg)](https://coveralls.io/github/JuliaDiffEq/StochasticDiffEq.jl)
 [![codecov](https://codecov.io/gh/JuliaDiffEq/StochasticDiffEq.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaDiffEq/StochasticDiffEq.jl)
-[![StochasticDiffEq](http://pkg.julialang.org/badges/StochasticDiffEq_0.5.svg)](http://pkg.julialang.org/?pkg=StochasticDiffEq)
 [![StochasticDiffEq](http://pkg.julialang.org/badges/StochasticDiffEq_0.6.svg)](http://pkg.julialang.org/?pkg=StochasticDiffEq)
 
 StochasticDiffEq.jl is a component package in the DifferentialEquations ecosystem. It holds the
