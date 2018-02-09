@@ -21,6 +21,7 @@ Base.@pure RKMil(;interpretation=:Ito) = RKMil{interpretation}()
 
 struct RKMilCommute{interpretation} <: StochasticDiffEqAlgorithm end
 Base.@pure RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
+struct PCEuler <: StochastDiffEqAlgorithm end
 
 ################################################################################
 
