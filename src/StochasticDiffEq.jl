@@ -44,6 +44,7 @@ module StochasticDiffEq
   include("options_type.jl")
   include("derivative_wrappers.jl")
   include("interp_func.jl")
+  include("caches/cache_types.jl")
   include("caches/basic_method_caches.jl")
   include("caches/iif_caches.jl")
   include("caches/sdirk_caches.jl")
@@ -72,7 +73,7 @@ module StochasticDiffEq
    export StochasticDiffEqAlgorithm, StochasticDiffEqAdaptiveAlgorithm,
           StochasticCompositeAlgorithm
 
-  export EM, RKMil, SRA, SRI, SRIW1, SRA1, SRA2, SRA3, SOSRA, SOSRA2, RKMilCommute,
+  export EM, PCEuler, RKMil, SRA, SRI, SRIW1, SRA1, SRA2, SRA3, SOSRA, SOSRA2, RKMilCommute,
          SRIW2, SOSRI, SOSRI2, RackKenCarp
 
   export EulerHeun
