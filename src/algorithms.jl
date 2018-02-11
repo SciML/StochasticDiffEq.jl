@@ -21,7 +21,22 @@ Base.@pure RKMil(;interpretation=:Ito) = RKMil{interpretation}()
 
 struct RKMilCommute{interpretation} <: StochasticDiffEqAlgorithm end
 Base.@pure RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
-struct PCEuler <: StochasticDiffEqAlgorithm end
+
+###############################################################################
+
+# Predictor Corrector
+struct PCEuler{T} <: StochasticDiffEqAlgorithm
+  theta::T
+  eta::T
+  bbprime::Function
+end
+
+# TODO: Check if this can be implemented with @pure.
+# Did not make bbprime a keyword argument to form user to supply one.
+# If problem is in place - a in place bbprime should be supplied - and vice versa for not in place speicification of problem.
+PCEuler(bbprime::Function; theta=1/2, eta=1/2) =
+                          PCEuler{typeof(theta)}(theta,eta,bbprime)
+
 
 ################################################################################
 
