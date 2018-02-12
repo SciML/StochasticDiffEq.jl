@@ -154,16 +154,19 @@ function init(
   end
   ts = convert(Vector{tType},ts_init)
 
-  if !adaptive
+  if !adaptive && save_everystep
     dt == 0 ? steps = length(tstops) : steps = round(Int,(tspan[2]-tspan[1])/dt,RoundUp)
     sizehint!(timeseries,steps+1)
     sizehint!(ts,steps+1)
   elseif save_everystep
     sizehint!(timeseries,10000)
     sizehint!(ts,10000)
-  else # saveat
-    sizehint!(timeseries,length(saveat)+1)
-    sizehint!(ts,length(saveat)+1)
+  elseif !isempty(saveat_internal)
+    sizehint!(timeseries,length(saveat_internal)+1)
+    sizehint!(ts,length(saveat_internal)+1)
+  else
+    sizehint!(timeseries,2)
+    sizehint!(ts,2)
   end
 
   #ks = convert(Vector{ksEltype},ks_init)
