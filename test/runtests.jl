@@ -10,6 +10,7 @@ const LONGER_TESTS = false
 @time @testset "Linear RODE Tests" begin include("rode_linear_tests.jl") end
 @time @testset "Two-dimensional Linear SDE Tests" begin include("sde/sde_twodimlinear_tests.jl") end
 @time @testset "Additive SDE Tests" begin include("sde/sde_additive_tests.jl") end
+@time @testset "Predictor Corrector Tests" begin include("predcorr_test.jl") end
 @time @testset "Rossler Order Tests" begin include("sde/sde_rosslerorder_tests.jl") end
 @time @testset "Convergence Tests" begin include("sde/sde_convergence_tests.jl") end
 @time @testset "Split Tests" begin include("split_tests.jl") end

@@ -25,18 +25,31 @@ Base.@pure RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
 ###############################################################################
 
 # Predictor Corrector
-struct PCEuler{T} <: StochasticDiffEqAlgorithm
+struct PCEuler{T<:Real} <: StochasticDiffEqAlgorithm
   theta::T
   eta::T
   bbprime::Function
 end
 
-# TODO: Check if this can be implemented with @pure.
-# Did not make bbprime a keyword argument to form user to supply one.
-# If problem is in place - a in place bbprime should be supplied - and vice versa for not in place speicification of problem.
-PCEuler(bbprime::Function; theta=1/2, eta=1/2) =
-                          PCEuler{typeof(theta)}(theta,eta,bbprime)
+"""
+Predictor Corrector Euler -
+args: bbprime::Function
+        For scalar problems, bbprime = b*\partial_x(b)
+        For multi-dimensional problems
+        bbprime_k = sum_{j=1...M, i=1...D} b^(j)_i \paritial_i b^(j)_k
+        where b^(j) correspond to the noise vector due to the j'th noise channel.
+        If problem is in place - a in place bbprime should be supplied - and vice versa for not in place speicification of problem.
+kwargs: theta::Real
+          Degree of implicitness in the drift term. Set to 0.5 by default.
+        eta::Real
+          Degree of implicitness in the diffusion term. Set to 0.5 by default.
 
+Reference: Stochastics and Dynamics, Vol. 8, No. 3 (2008) 561–581
+Note that the original paper has a typo in the definition of bbprime...
+"""
+# TODO: Check if this can be implemented with @pure.
+PCEuler(bbprime::Function; theta::T=1/2, eta::T=1/2) where {T<:Real} =
+                          PCEuler{T}(theta,eta,bbprime)
 
 ################################################################################
 
