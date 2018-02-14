@@ -40,11 +40,11 @@ function g_nondiag(du,u,p,t)
 end
 
 coeff = 2*σ_const^2 #To not compute the same coefficient in the sde.
-function bbprime(u, p, t)
+function ggprime(u, p, t)
   return coeff*u
 end
 
-function bbprime(du, u, p, t)
+function ggprime(du, u, p, t)
   du .= coeff*u
 end
 
@@ -56,8 +56,8 @@ dt = 0.002
 seed = 1
 # solEMiip = solve(probiip, EM(), dt=dt, seed=seed)
 # solRKMil = solve(probiip, RKMilCommute(), dt=dt, seed=seed)
-solPCEuler = solve(prob, PCEuler(bbprime), dt=dt, seed=seed)
-solPCEuleriip = solve(probiip, PCEuler(bbprime), dt=dt, seed=seed)
+solPCEuler = solve(prob, PCEuler(ggprime), dt=dt, seed=seed)
+solPCEuleriip = solve(probiip, PCEuler(ggprime), dt=dt, seed=seed)
 
 @test solPCEuler.u ≈ solPCEuleriip.u atol=1e-10
 
@@ -75,7 +75,7 @@ solPCEuleriip = solve(probiip, PCEuler(bbprime), dt=dt, seed=seed)
 dts = 1./2.^(10:-1:5) #14->7 good plot
 numMonte = 50
 simEM = test_convergence(dts,probiip,EM(),numMonte=numMonte)
-simPCEuler = test_convergence(dts,probiip,PCEuler(bbprime),numMonte=numMonte)
+simPCEuler = test_convergence(dts,probiip,PCEuler(ggprime),numMonte=numMonte)
 #simRKMil = test_convergence(dts,probiip,RKMilCommute(),numMonte=numMonte)
 @test all(simPCEuler.errors[:l2] .< simEM.errors[:l2])
 
