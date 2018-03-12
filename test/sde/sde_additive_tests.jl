@@ -7,7 +7,7 @@ g_bm(u,p,t) = 1.0
 prob = SDEProblem(f_bm,g_bm,0.0,(0.0,1.0))
 sol1 = solve(prob,SRA1(),dt=1/2^(3),adaptive=false)
 sol2 = solve(prob,SOSRA(),dt=1/2^(3),adaptive=false)
-sol3 = solve(prob,RackKenCarp(),dt=1/2^(3),adaptive=false)
+sol3 = solve(prob,SKenCarp(),dt=1/2^(3),adaptive=false)
 @test sol1.errors[:l2] ≈ 0.0 atol = 1e-14
 @test sol2.errors[:l2] ≈ 0.0 atol = 1e-14
 @test sol3.errors[:l2] ≈ 0.0 atol = 1e-14
@@ -24,8 +24,8 @@ sol =solve(prob,SRA2(),dt=1/2^(3))
 sol =solve(prob,SRA3(),dt=1/2^(3))
 sol =solve(prob,SOSRA(),dt=1/2^(3))
 sol =solve(prob,SOSRA2(),dt=1/2^(3))
-sol =solve(prob,RackKenCarp(),dt=1/2^(3))
-sol =solve(prob,RackKenCarp(min_newton_iter=5),dt=1/2^(3))
+sol =solve(prob,SKenCarp(),dt=1/2^(3))
+sol =solve(prob,SKenCarp(min_newton_iter=5),dt=1/2^(3))
 
 prob = prob_sde_additivesystem
 
@@ -35,7 +35,7 @@ sol =solve(prob,SRA2(),dt=1/2^(3))
 sol =solve(prob,SRA3(),dt=1/2^(3))
 sol =solve(prob,SOSRA(),dt=1/2^(3))
 sol =solve(prob,SOSRA2(),dt=1/2^(3))
-sol =solve(prob,RackKenCarp(),dt=1/2^(3))
+sol =solve(prob,SKenCarp(),dt=1/2^(3))
 
 ## Convergence Testing
 println("Convergence Test on MultiDimAdditive")
@@ -54,7 +54,7 @@ sim2 = test_convergence(dts,prob,SOSRA(),numMonte=10)
 sim2 = test_convergence(dts,prob,SOSRA2(),numMonte=5)
 @test abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!
 dts = 1./2.^(11:-1:7) #14->7 good plot
-sim2 = test_convergence(dts,prob,RackKenCarp(),numMonte=20)
+sim2 = test_convergence(dts,prob,SKenCarp(),numMonte=20)
 @test abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!
-sim2 = test_convergence(dts,prob,RackKenCarp(min_newton_iter=3),numMonte=20)
+sim2 = test_convergence(dts,prob,SKenCarp(min_newton_iter=3),numMonte=20)
 @test abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!

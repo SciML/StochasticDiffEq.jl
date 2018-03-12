@@ -1,4 +1,4 @@
-@muladd function perform_step!(integrator, cache::RackKenCarpConstantCache)
+@muladd function perform_step!(integrator, cache::SKenCarpConstantCache)
 
   repeat_step=false
 
@@ -232,7 +232,7 @@
   integrator.u = u
 end
 
-@muladd function perform_step!(integrator, cache::RackKenCarpCache)
+@muladd function perform_step!(integrator, cache::SKenCarpCache)
   repeat_step=false
   @unpack t,dt,uprev,u,g,p = integrator
   @unpack uf,du1,dz,z₁,z₂,z₃,z₄,k1,k2,k3,k4,k,b,J,W,jac_config,tmp,atmp,κ,tol = cache

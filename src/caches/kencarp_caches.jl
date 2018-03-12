@@ -1,4 +1,4 @@
-mutable struct RackKenCarpConstantCache{F,uEltypeNoUnits,Tab} <: StochasticDiffEqConstantCache
+mutable struct SKenCarpConstantCache{F,uEltypeNoUnits,Tab} <: StochasticDiffEqConstantCache
   uf::F
   ηold::uEltypeNoUnits
   κ::uEltypeNoUnits
@@ -7,7 +7,7 @@ mutable struct RackKenCarpConstantCache{F,uEltypeNoUnits,Tab} <: StochasticDiffE
   tab::Tab
 end
 
-function alg_cache(alg::RackKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
+function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   if typeof(f) <: SplitFunction
     uf = DiffEqDiffTools.UDerivativeWrapper(f.f1,t,p)
   else
@@ -27,12 +27,12 @@ function alg_cache(alg::RackKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_p
     tol = min(0.03,first(reltol)^(0.5))
   end
 
-  tab = RackKenCarpTableau(real(uBottomEltype),real(tTypeNoUnits))
+  tab = SKenCarpTableau(real(uBottomEltype),real(tTypeNoUnits))
 
-  RackKenCarpConstantCache(uf,ηold,κ,tol,10000,tab)
+  SKenCarpConstantCache(uf,ηold,κ,tol,10000,tab)
 end
 
-mutable struct RackKenCarpCache{uType,rateType,uNoUnitsType,J,UF,JC,uEltypeNoUnits,Tab,F,kType,randType,rateNoiseType} <: StochasticDiffEqMutableCache
+mutable struct SKenCarpCache{uType,rateType,uNoUnitsType,J,UF,JC,uEltypeNoUnits,Tab,F,kType,randType,rateNoiseType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   du1::rateType
@@ -65,10 +65,10 @@ mutable struct RackKenCarpCache{uType,rateType,uNoUnitsType,J,UF,JC,uEltypeNoUni
   g4::rateNoiseType
 end
 
-u_cache(c::RackKenCarpCache)    = (c.z₁,c.z₂,c.z₃,c.z₄,c.dz)
-du_cache(c::RackKenCarpCache)   = (c.k,c.fsalfirst)
+u_cache(c::SKenCarpCache)    = (c.z₁,c.z₂,c.z₃,c.z₄,c.dz)
+du_cache(c::SKenCarpCache)   = (c.k,c.fsalfirst)
 
-function alg_cache(alg::RackKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
 
   du1 = zeros(rate_prototype)
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
@@ -113,11 +113,11 @@ function alg_cache(alg::RackKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_p
 
   g1 = zeros(noise_rate_prototype); g4 = zeros(noise_rate_prototype)
 
-  tab = RackKenCarpTableau(real(uBottomEltype),real(tTypeNoUnits))
+  tab = SKenCarpTableau(real(uBottomEltype),real(tTypeNoUnits))
 
   ηold = one(uEltypeNoUnits)
 
-  RackKenCarpCache{typeof(u),typeof(rate_prototype),typeof(atmp),typeof(J),typeof(uf),
+  SKenCarpCache{typeof(u),typeof(rate_prototype),typeof(atmp),typeof(J),typeof(uf),
               typeof(jac_config),uEltypeNoUnits,typeof(tab),typeof(linsolve),typeof(k1),
               typeof(chi2),typeof(g1)}(
               u,uprev,du1,fsalfirst,k,z₁,z₂,z₃,z₄,k1,k2,k3,k4,dz,b,tmp,atmp,J,

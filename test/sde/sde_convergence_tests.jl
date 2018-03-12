@@ -73,9 +73,9 @@ sim8 = test_convergence(dts,prob,SOSRA(),numMonte=Int(1e1))
 sim9 = test_convergence(dts,prob,SOSRA2(),numMonte=Int(1e1))
 @test abs(sim9.𝒪est[:final]-2) < 0.3
 dts = 1./2.^(10:-1:4) #14->7 good plot
-sim10 = test_convergence(dts,prob,RackKenCarp(),numMonte=Int(1e1))
+sim10 = test_convergence(dts,prob,SKenCarp(),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-2) < 0.3
-sim11 = test_convergence(dts,prob,RackKenCarp(min_newton_iter=3),numMonte=Int(1e1))
+sim11 = test_convergence(dts,prob,SKenCarp(min_newton_iter=3),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-2) < 0.3
 
 sim2 = test_convergence(dts,prob,SRA(tableau=StochasticDiffEq.constructSRA2()),numMonte=Int(1e1))
@@ -84,5 +84,5 @@ sim3 = test_convergence(dts,prob,SRA(tableau=StochasticDiffEq.constructSRA3()),n
 @test abs(sim3.𝒪est[:final]-2.5) < 0.3
 sim6 = test_convergence(dts,prob,SRIW1(),numMonte=Int(1e1))
 @test abs(sim6.𝒪est[:final]-2) < 0.3
-sim2 = test_convergence(dts,prob,SRA(tableau=StochasticDiffEq.constructExplicitRackKenCarp()),numMonte=Int(1e1))
+sim2 = test_convergence(dts,prob,SRA(tableau=StochasticDiffEq.constructExplicitSKenCarp()),numMonte=Int(1e1))
 @test abs(sim2.𝒪est[:final]-2) < 0.3
