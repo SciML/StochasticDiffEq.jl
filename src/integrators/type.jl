@@ -15,6 +15,7 @@ mutable struct SDEIntegrator{T1,uType,uEltype,tType,P,tTypeNoUnits,uEltypeNoUnit
   tdir::Int
   just_hit_tstop::Bool
   isout::Bool
+  event_last_time::Bool
   accept_step::Bool
   last_stepfail::Bool
   force_stepfail::Bool

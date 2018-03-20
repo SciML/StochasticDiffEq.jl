@@ -1,28 +1,30 @@
 # Use Recursion to find the first callback for type-stability
 
 # Base Case: Only one callback
-function find_first_continuous_callback(integrator,callback::ContinuousCallback)
+function find_first_continuous_callback(integrator, callback::AbstractContinuousCallback)
   (find_callback_time(integrator,callback)...,1,1)
 end
 
 # Starting Case: Compute on the first callback
-function find_first_continuous_callback(integrator,callback::ContinuousCallback,args...)
+function find_first_continuous_callback(integrator, callback::AbstractContinuousCallback, args...)
   find_first_continuous_callback(integrator,find_callback_time(integrator,callback)...,1,1,args...)
 end
 
-function find_first_continuous_callback(integrator,tmin::Number,upcrossing::Float64,idx::Int,counter::Int,callback2)
+function find_first_continuous_callback(integrator,tmin::Number,upcrossing::Float64,
+                                        event_occured::Bool,idx::Int,counter::Int,
+                                        callback2)
   counter += 1 # counter is idx for callback2.
-  tmin2,upcrossing2 = find_callback_time(integrator,callback2)
+  tmin2,upcrossing2,event_occurred2 = find_callback_time(integrator,callback2)
 
-  if (tmin2 < tmin && tmin2 != zero(typeof(tmin))) || tmin == zero(typeof(tmin))
-    return tmin2,upcrossing2,counter,counter
+  if event_occurred2 && (tmin2 < tmin || !event_occured)
+    return tmin2,upcrossing2,true,counter,counter
   else
-    return tmin,upcrossing,idx,counter
+    return tmin,upcrossing,event_occured,idx,counter
   end
 end
 
-function find_first_continuous_callback(integrator,tmin::Number,upcrossing::Float64,idx::Int,counter::Int,callback2,args...)
-  find_first_continuous_callback(integrator,find_first_continuous_callback(integrator,tmin,upcrossing,idx,counter,callback2)...,args...)
+function find_first_continuous_callback(integrator,tmin::Number,upcrossing::Float64,event_occured::Bool,idx::Int,counter::Int,callback2,args...)
+  find_first_continuous_callback(integrator,find_first_continuous_callback(integrator,tmin,upcrossing,event_occured,idx,counter,callback2)...,args...)
 end
 
 @inline function determine_event_occurance(integrator,callback)
@@ -37,7 +39,7 @@ end
   else
     previous_condition = callback.condition(@view(integrator.uprev[callback.idxs]),integrator.tprev,integrator)
   end
-  if isapprox(previous_condition,0,rtol=callback.reltol,atol=callback.abstol)
+  if integrator.event_last_time
     prev_sign = 0.0
   else
     prev_sign = sign(previous_condition)
@@ -69,7 +71,7 @@ end
       end
       new_sign = callback.condition(tmp,integrator.tprev+integrator.dt*Θs[i],integrator)
       if prev_sign == 0
-        prev_sign = new_sign
+        prev_sign = sign(new_sign)
         prev_sign_index = i
       end
       if ((prev_sign<0 && !(typeof(callback.affect!)<:Void)) || (prev_sign>0 && !(typeof(callback.affect_neg!)<:Void))) && prev_sign*new_sign<0
@@ -131,7 +133,7 @@ function find_callback_time(integrator,callback)
   else
     new_t = zero(typeof(integrator.t))
   end
-  new_t,prev_sign
+  new_t,prev_sign,event_occurred
 end
 
 function apply_callback!(integrator,callback::ContinuousCallback,cb_time,prev_sign)

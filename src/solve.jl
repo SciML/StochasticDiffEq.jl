@@ -291,6 +291,7 @@ function init(
   u_modified = false
   last_stepfail = false
   force_stepfail = false
+  event_last_time = false
   tprev = t
   iter = 0
   success_iter = 0
@@ -323,7 +324,8 @@ function init(
                   uEltypeNoUnits,typeof(W),rateType,typeof(sol),typeof(cache),
                   typeof(prog),FType,GType,typeof(opts),typeof(noise)}(
                   f,g,noise,uprev,tprev,t,u,p,tType(dt),tType(dt),tType(dt),dtcache,T,tdir,
-                  just_hit_tstop,isout,accept_step,last_stepfail,force_stepfail,
+                  just_hit_tstop,isout,event_last_time,accept_step,
+                  last_stepfail,force_stepfail,
                   dtchangeable,u_modified,
                   saveiter,
                   alg,sol,
