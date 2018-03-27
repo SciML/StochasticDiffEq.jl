@@ -332,3 +332,28 @@ end
 @inline function DiffEqBase.get_du!(out,integrator::SDEIntegrator)
   @. out = (integrator.u - integrator.uprev) / integrator.dt
 end
+
+function DiffEqBase.set_t!(integrator::SDEIntegrator, t::Real)
+  if integrator.opts.save_everystep
+    error("Integrator time cannot be reset unless it is initialized",
+          " with save_everystep=false")
+  end
+  if !isdtchangeable(integrator.alg)
+    reinit!(integrator, integrator.u;
+            t0 = t,
+            reset_dt = false,
+            reinit_callbacks = false,
+            reinit_cache = false)
+  else
+    integrator.t = t
+  end
+end
+
+function DiffEqBase.set_u!(integrator::SDEIntegrator, u)
+  if integrator.opts.save_everystep
+    error("Integrator state cannot be reset unless it is initialized",
+          " with save_everystep=false")
+  end
+  integrator.u = u
+  u_modified!(integrator, true)
+end
