@@ -267,7 +267,7 @@ end
 
   if has_invW(f)
     # skip calculation of inv(W) if step is repeated
-    !repeat_step && f(Val{:invW},t,uprev,γdt,W) # W == inverse W
+    !repeat_step && f(Val{:invW},W,uprev,p,γdt,t) # W == inverse W
   else
     # skip calculation of J if step is repeated
     if repeat_step || (!integrator.last_stepfail && cache.newton_iters == 1 && cache.ηold < integrator.alg.new_jac_conv_bound)
