@@ -310,7 +310,7 @@ end
         end
 
         A_mul_B!(vec(z),J,vec(tmp))
-        @. k = dt*z/2
+        @. k = dt*dt*z/2
 
         if alg_interpretation(integrator.alg) == :Ito
           @. z = @muladd uprev + dt*tmp + gtmp*integrator.sqdt
