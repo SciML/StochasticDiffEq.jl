@@ -312,19 +312,41 @@ end
         A_mul_B!(vec(z),J,vec(tmp))
         @. k = dt*dt*z/2
 
+        if !is_diagonal_noise(integrator.sol.prob)
+            g_sized = norm(gtmp,2)
+        else
+            g_sized = gtmp
+        end
+
         if alg_interpretation(integrator.alg) == :Ito
-          @. z = @muladd uprev + dt*tmp + gtmp*integrator.sqdt
-          integrator.g(gtmp2,z,p,t)
-          @. gtmp2 = (gtmp2-gtmp)/(2integrator.sqdt)*(dW.^2 - dt)
+          @. z = @muladd uprev + dt*tmp + g_sized*integrator.sqdt
+
+          if !is_diagonal_noise(integrator.sol.prob)
+              integrator.g(gtmp,z,p,t)
+              g_sized2 = norm(gtmp,2)
+          else
+              integrator.g(gtmp2,z,p,t)
+              g_sized2 = gtmp2
+          end
+
+          @. dz = (g_sized2-g_sized)/(2integrator.sqdt)*(dW.^2 - dt)
         elseif alg_interpretation(integrator.alg) == :Stratonovich
-          @. z = @muladd uprev + gtmp*integrator.sqdt
-          integrator.g(gtmp2,z,p,t)
-          @. gtmp2 = (gtmp2-gtmp)/(2integrator.sqdt)*(dW.^2)
+          @. z = @muladd uprev + g_sized*integrator.sqdt
+
+          if !is_diagonal_noise(integrator.sol.prob)
+              integrator.g(gtmp,z,p,t)
+              g_sized2 = norm(gtmp,2)
+          else
+              integrator.g(gtmp2,z,p,t)
+              g_sized2 = gtmp2
+          end
+
+          @. dz = (gtmp2-gtmp)/(2integrator.sqdt)*(dW.^2)
         end
 
         @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
                               Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
-          @inbounds tmp[i] = (k[i]+gtmp2[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
+          @inbounds tmp[i] = (k[i]+dz[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
         end
         integrator.EEst = integrator.opts.internalnorm(tmp)
 

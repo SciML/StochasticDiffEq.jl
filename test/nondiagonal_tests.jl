@@ -51,6 +51,9 @@ end
 prob = SDEProblem{false}(f_nondiag,g_nondiag,u0,(0.0,1.0),noise_rate_prototype=zeros(2,2))
 probiip = SDEProblem{true}(f_nondiag,g_nondiag,u0,(0.0,1.0),noise_rate_prototype=zeros(2,2))
 
+## Just solve to test compatibility
+IEM = solve(probiip,ImplicitEM())
+
 ## use BenchmarkTools to benchmark speed here if desired.
 dt = 0.002
 seed = 1
