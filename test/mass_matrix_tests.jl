@@ -1,4 +1,4 @@
-using StochasticDiffEq
+using StochasticDiffEq, Base.Test
 
 const mm_A = [-2.0 1 4
             4 -2 1
@@ -29,8 +29,8 @@ sol2 = solve(prob2, ImplicitRKMil(theta=1), dt = 0.01)
 
 @test norm(sol .- sol2) ≈ 0 atol=1e-11
 
-sol = solve(prob, ImplicitEM(theta=1), dt = 0.01)
-sol2 = solve(prob2, ImplicitEM(theta=1), dt = 0.01)
+sol = solve(prob, ImplicitEM(theta=1), dt = 0.01, adaptive = false)
+sol2 = solve(prob2, ImplicitEM(theta=1), dt = 0.01, adaptive = false)
 
 @test norm(sol .- sol2) ≈ 0 atol=1e-11
 
@@ -39,8 +39,8 @@ sol2 = solve(prob2, ImplicitRKMil(symplectic=true), dt = 0.01)
 
 @test norm(sol .- sol2) ≈ 0 atol=1e-11
 
-sol = solve(prob, ImplicitEM(symplectic=true), dt = 0.01)
-sol2 = solve(prob2, ImplicitEM(symplectic=true), dt = 0.01)
+sol = solve(prob, ImplicitEM(symplectic=true), dt = 0.01, adaptive = false)
+sol2 = solve(prob2, ImplicitEM(symplectic=true), dt = 0.01, adaptive = false)
 
 @test norm(sol .- sol2) ≈ 0 atol=1e-11
 
@@ -60,8 +60,8 @@ prob2 = SDEProblem(no_mm_f2,no_mm_g2,ones(3),(0.0,1.0))
 prob = SDEProblem(mm_f2,no_mm_g2,ones(3),(0.0,1.0),mass_matrix=mm_A)
 
 srand(1)
-sol = solve(prob, ImplicitEM(theta=1), dt = 0.01)
+sol = solve(prob, ImplicitEM(theta=1), dt = 0.01, adaptive = false)
 srand(1)
-sol2 = solve(prob2, ImplicitEM(theta=1), dt = 0.01)
+sol2 = solve(prob2, ImplicitEM(theta=1), dt = 0.01, adaptive = false)
 
 @test norm(sol .- sol2) ≈ 0 atol=1e-11

@@ -236,7 +236,7 @@ end
   if mass_matrix == I
     k .-= z
   else
-    A_mul_B!(du1,mass_matrix,z)
+    A_mul_B!(vec(du1),mass_matrix,vec(z))
     k .-= du1
   end
   if has_invW(f)
@@ -302,9 +302,14 @@ end
   cache.newton_iters = iter
 
   if integrator.opts.adaptive
-      if typeof(cache) <: ImplicitEMConstantCache
+      if typeof(cache) <: ImplicitEMCache
 
-        A_mul_B!(z,J,tmp)
+        if has_invW(f)
+            # This means the Jacobian was never computed!
+            f(Val{:jac},J,uprev,p,t)
+        end
+
+        A_mul_B!(vec(z),J,vec(tmp))
         @. k = dt*z/2
 
         if alg_interpretation(integrator.alg) == :Ito
