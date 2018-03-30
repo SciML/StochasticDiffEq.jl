@@ -275,7 +275,7 @@ end
     else # Compute a new Jacobian
       new_jac = true
       if has_jac(f)
-        f(Val{:jac},t,uprev,J)
+        f(Val{:jac},J,uprev,p,t)
       else
         uf.t = t
         jacobian!(J, uf, uprev, du1, integrator, jac_config)

@@ -147,14 +147,14 @@ end
   end
 
   if has_invW(f)
-    f(Val{:invW},t,uprev,dt,W) # W == inverse W
+    f(Val{:invW},W,uprev,p,dt,t) # W == inverse W
   else
     if !integrator.last_stepfail && cache.newton_iters == 1 && cache.ηold < integrator.alg.new_jac_conv_bound
       new_jac = false
     else # Compute a new Jacobian
       new_jac = true
       if has_jac(f)
-        f(Val{:jac},t,uprev,J)
+        f(Val{:jac},J,uprev,p,t)
       else
         uf.t = t
         jacobian!(J, uf, uprev, du1, integrator, jac_config)
