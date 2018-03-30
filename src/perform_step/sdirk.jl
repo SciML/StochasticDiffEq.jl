@@ -33,7 +33,8 @@
     gtmp = ((integrator.g(utilde,p,t) + L)/2)*integrator.W.dW
   end
 
-  if typeof(cache) <: ImplicitRKMilConstantCache
+  if typeof(cache) <: ImplicitRKMilConstantCache ||
+     (typeof(cache) <: ImplicitEMConstantCache && integrator.opts.adaptive == true)
     if alg_interpretation(integrator.alg) == :Ito
       K = @muladd uprev .+ dt.*ftmp
       utilde =  K + L*integrator.sqdt
@@ -111,18 +112,19 @@
   cache.newton_iters = iter
   u = uprev + dt*(1-theta)*ftmp + theta*z + gtmp
 
-  #=
-  if integrator.opts.adaptive && integrator.success_iter > 0
-    # Use 2rd divided differences a la SPICE and Shampine
-    uprev2 = integrator.uprev2
-    tprev = integrator.tprev
-    DD3 = ((u - uprev)/((dt)*(t+dt-tprev)) + (uprev-uprev2)/((t-tprev)*(t+dt-tprev)))
-    dEst = (dt^2)*abs(DD3/6)
-    integrator.EEst = dEst/(integrator.opts.abstol+max(abs(uprev),abs(u))*integrator.opts.reltol)
-  else
-    integrator.EEst = 1
+  if integrator.opts.adaptive
+
+    if typeof(cache) <: ImplicitEMConstantCache
+        Ed = dt*J*ftmp/2
+        En = mil_correction
+    else
+        error("This algorithm cannot be adaptive")
+    end
+
+    tmp = Ed+En
+    integrator.EEst = integrator.opts.internalnorm(tmp./(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
   end
-  =#
+
   integrator.u = u
 end
 
@@ -298,21 +300,32 @@ end
 
   cache.ηold = η
   cache.newton_iters = iter
-  #=
-  if integrator.opts.adaptive && integrator.success_iter > 0
-    # Use 2rd divided differences a la SPICE and Shampine
-    uprev2 = integrator.uprev2
-    tprev = integrator.tprev
-    dt1 = (dt)*(t+dt-tprev)
-    dt2 = (t-tprev)*(t+dt-tprev)
-    @tight_loop_macros for (i,atol,rtol) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),Iterators.cycle(integrator.opts.reltol))
-      @inbounds DD3 = (u[i] - uprev[i])/dt1 + (uprev[i]-uprev2[i])/dt2
-      dEst = (dt^2)*abs(DD3)/6
-      @inbounds k[i] = dEst/(atol+max(abs(uprev[i]),abs(u[i]))*rtol)
-    end
-    integrator.EEst = integrator.opts.internalnorm(k)
-  else
-    integrator.EEst = 1
+
+  if integrator.opts.adaptive
+      if typeof(cache) <: ImplicitEMConstantCache
+
+        A_mul_B!(z,J,tmp)
+        @. k = dt*z/2
+
+        if alg_interpretation(integrator.alg) == :Ito
+          @. z = @muladd uprev + dt*tmp + gtmp*integrator.sqdt
+          integrator.g(gtmp2,z,p,t)
+          @. gtmp2 = (gtmp2-gtmp)/(2integrator.sqdt)*(dW.^2 - dt)
+        elseif alg_interpretation(integrator.alg) == :Stratonovich
+          @. z = @muladd uprev + gtmp*integrator.sqdt
+          integrator.g(gtmp2,z,p,t)
+          @. gtmp2 = (gtmp2-gtmp)/(2integrator.sqdt)*(dW.^2)
+        end
+
+        @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
+                              Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
+          @inbounds tmp[i] = (k[i]+gtmp2[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
+        end
+        integrator.EEst = integrator.opts.internalnorm(tmp)
+
+      else
+        error("This algorithm is not adaptive")
+      end
   end
-  =#
+
 end
