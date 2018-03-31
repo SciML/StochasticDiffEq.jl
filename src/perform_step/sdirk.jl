@@ -332,24 +332,32 @@ end
         if !is_diagonal_noise(integrator.sol.prob)
           integrator.g(gtmp,z,p,t)
           g_sized2 = norm(gtmp,2)
+          @. dz = dW.^2 - dt
+          diff_tmp = integrator.opts.internalnorm(dz)
+          En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
+          @. dz = En
         else
           integrator.g(gtmp2,z,p,t)
           g_sized2 = gtmp2
+          @. dz = (g_sized2-g_sized)/(2integrator.sqdt)*(dW.^2 - dt)
         end
 
-        @. dz = (g_sized2-g_sized)/(2integrator.sqdt)*(dW.^2 - dt)
       elseif typeof(cache) <: ImplicitEulerHeunCache
         @. z = @muladd uprev + g_sized*integrator.sqdt
 
         if !is_diagonal_noise(integrator.sol.prob)
           integrator.g(gtmp,z,p,t)
           g_sized2 = norm(gtmp,2)
+          @. dz = dW.^2
+          diff_tmp = integrator.opts.internalnorm(dz)
+          En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
+          @. dz = En
         else
           integrator.g(gtmp2,z,p,t)
           g_sized2 = gtmp2
+          @. dz = (g_sized2-g_sized)/(2integrator.sqdt)*(dW.^2)
         end
 
-        @. dz = (g_sized2-g_sized)/(2integrator.sqdt)*(dW.^2)
       end
 
     elseif typeof(cache) <: ImplicitRKMilCache

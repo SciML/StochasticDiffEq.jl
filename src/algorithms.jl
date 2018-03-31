@@ -16,10 +16,10 @@
 struct EM <: StochasticDiffEqAlgorithm end
 struct SplitEM <: StochasticDiffEqAlgorithm end
 struct EulerHeun <: StochasticDiffEqAlgorithm end
-struct RKMil{interpretation} <: StochasticDiffEqAlgorithm end
+struct RKMil{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
 Base.@pure RKMil(;interpretation=:Ito) = RKMil{interpretation}()
 
-struct RKMilCommute{interpretation} <: StochasticDiffEqAlgorithm end
+struct RKMilCommute{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
 Base.@pure RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
 
 ###############################################################################

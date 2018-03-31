@@ -112,19 +112,25 @@ end
 
 @muladd function perform_step!(integrator,cache::RKMilConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
-  K = @muladd uprev + dt*integrator.f(uprev,p,t)
+  du1 = integrator.f(uprev,p,t)
+  K = @muladd uprev + dt*du1
   L = integrator.g(uprev,p,t)
   mil_correction = zero(u)
   if alg_interpretation(integrator.alg) == :Ito
     utilde =  K + L*integrator.sqdt
-    mil_correction = (integrator.g(utilde,p,t).-L)./(2 .* integrator.sqdt).*(W.dW.^2 .- dt)
+    ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
+    mil_correction = ggprime.*(W.dW.^2 .- dt)./2
   elseif alg_interpretation(integrator.alg) == :Stratonovich
     utilde = uprev + L*integrator.sqdt
-    mil_correction = (integrator.g(utilde,p,t).-L)./(2 .* integrator.sqdt).*(W.dW.^2)
+    ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
+    mil_correction = ggprime.*(W.dW.^2)./2
   end
   u = K+L*W.dW+mil_correction
   if integrator.opts.adaptive
-    integrator.EEst = integrator.opts.internalnorm(mil_correction/((integrator.opts.abstol + max.(abs(uprev),abs(u))*integrator.opts.reltol)))
+    du2 = integrator.f(K,p,t+dt)
+    Ed = dt*(du2 - du1)/2
+    En = W.dW^3 .* ((du2-L)/(integrator.sqdt))^2 / 6
+    integrator.EEst = integrator.opts.internalnorm((Ed + En)/((integrator.opts.abstol + max.(abs(uprev),abs(u))*integrator.opts.reltol)))
   end
   integrator.u = u
 end
@@ -169,6 +175,10 @@ end
   end
   @. u = K+L*W.dW + tmp
   if integrator.opts.adaptive
+    @. tmp = integrator.opts.internalnorm(W.dW^3)*
+             integrator.opts.internalnorm((du2-L)/(integrator.sqdt))^2 / 6
+    integrator.f(du2,K,p,t+dt)
+    @. tmp += integrator.opts.internalnorm(dt*(du2 - du1)/2)
     @tight_loop_macros for (i,atol,rtol) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),Iterators.cycle(integrator.opts.reltol))
       @inbounds tmp[i] = (tmp[i])/(atol + max(abs(uprev[i]),abs(u[i]))*rtol)
     end
@@ -182,6 +192,8 @@ end
   @unpack I,mil_correction,Kj,Dgj,tmp = cache
   dW = W.dW; sqdt = integrator.sqdt
   f = integrator.f; g = integrator.g
+
+  ggprime_norm = 0.0
 
   @. mil_correction = zero(u)
   for i=1:length(dW),j=1:length(dW)
@@ -199,9 +211,24 @@ end
     #Kj .= uprev .+ sqdt*L[:,j]
     g(gtmp,Kj,p,t)
     @. Dgj = (gtmp - L)/sqdt
+    if integrator.opts.adaptive
+        ggprime_norm += integrator.opts.internalnorm(Dgj)
+    end
     A_mul_B!(tmp,Dgj,@view(I[:,j]))
     mil_correction .+= tmp
   end
   A_mul_B!(tmp,L,dW)
   @. u .= uprev + dt*du1 + tmp + mil_correction
+
+  if integrator.opts.adaptive
+      En = integrator.opts.internalnorm(W.dW)^3*ggprime_norm^2 / 6
+      integrator.f(du2,K,p,t+dt)
+      @. tmp = integrator.opts.internalnorm(dt*(du2 - du1)/2) + En
+
+      @tight_loop_macros for (i,atol,rtol) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),Iterators.cycle(integrator.opts.reltol))
+        @inbounds tmp[i] = (tmp[i])/(atol + max(abs(uprev[i]),abs(u[i]))*rtol)
+      end
+      integrator.EEst = integrator.opts.internalnorm(tmp)
+      
+  end
 end
