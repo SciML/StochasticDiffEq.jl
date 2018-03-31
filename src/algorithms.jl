@@ -120,7 +120,7 @@ Base.@pure ImplicitEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           min_newton_iter,
                           max_newton_iter,new_jac_conv_bound,symplectic)
 
-struct ImplicitEulerHeun{CS,AD,F,S,K,T,T2,Controller} <: StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}
+struct ImplicitEulerHeun{CS,AD,F,S,K,T,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}
   linsolve::F
   diff_type::S
   κ::K
@@ -145,7 +145,7 @@ Base.@pure ImplicitEulerHeun(;chunk_size=0,autodiff=true,diff_type=Val{:central}
                           extrapolant,min_newton_iter,
                           max_newton_iter,new_jac_conv_bound,symplectic)
 
-struct ImplicitRKMil{CS,AD,F,S,K,T,T2,Controller,interpretation} <: StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}
+struct ImplicitRKMil{CS,AD,F,S,K,T,T2,Controller,interpretation} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}
   linsolve::F
   diff_type::S
   κ::K

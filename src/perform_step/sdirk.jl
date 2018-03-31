@@ -33,18 +33,19 @@
     gtmp = ((integrator.g(utilde,p,t) + L)/2)*integrator.W.dW
   end
 
-  if typeof(cache) <: ImplicitRKMilConstantCache ||
-     (typeof(cache) <: ImplicitEMConstantCache && integrator.opts.adaptive == true)
-    if alg_interpretation(integrator.alg) == :Ito
+  if typeof(cache) <: ImplicitRKMilConstantCache || integrator.opts.adaptive == true
+    if alg_interpretation(integrator.alg) == :Ito ||
+       typeof(cache) <: ImplicitEMConstantCache
       K = @muladd uprev .+ dt.*ftmp
       utilde =  K + L*integrator.sqdt
-      mil_correction = (integrator.g(utilde,p,t).-L)./(2 .* integrator.sqdt).*
-                       (integrator.W.dW.^2 .- dt)
+      ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
+      mil_correction = ggprime .* (integrator.W.dW.^2 .- dt)./2
       gtmp += mil_correction
-    elseif alg_interpretation(integrator.alg) == :Stratonovich
+    elseif alg_interpretation(integrator.alg) == :Stratonovich ||
+           typeof(cache) <: ImplicitEulerHeunConstantCache
       utilde = uprev + L*integrator.sqdt
-      mil_correction = (integrator.g(utilde,p,t).-L)./(2 .* integrator.sqdt).*
-                       (integrator.W.dW.^2)
+      ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
+      mil_correction = ggprime.*(integrator.W.dW.^2)./2
       gtmp += mil_correction
     end
   end
@@ -114,11 +115,12 @@
 
   if integrator.opts.adaptive
 
-    if typeof(cache) <: ImplicitEMConstantCache
-        Ed = dt*J*ftmp/2
+    Ed = dt*J*ftmp/2
+    if typeof(cache) <: Union{ImplicitEMConstantCache,ImplicitEulerHeunConstantCache}
         En = mil_correction
     else
-        error("This algorithm cannot be adaptive")
+        En = integrator.opts.internalnorm.(dW.^3) .*
+             integrator.opts.internalnorm.(ggprime).^2 ./ 6
     end
 
     tmp = Ed+En
@@ -189,9 +191,10 @@ end
   end
 
   if typeof(cache) <: ImplicitEulerHeunCache
+    gtmp3 = cache.gtmp3
     @. z = uprev + gtmp2
-    integrator.g(gtmp2,z,p,t)
-    @. gtmp = (gtmp2 + gtmp)/2
+    integrator.g(gtmp3,z,p,t)
+    @. gtmp = (gtmp3 + gtmp)/2
     if is_diagonal_noise(integrator.sol.prob)
       @tight_loop_macros for i in eachindex(u)
         @inbounds gtmp2[i]=gtmp[i]*dW[i]
@@ -206,11 +209,13 @@ end
     if alg_interpretation(integrator.alg) == :Ito
       @. z = @muladd uprev + dt*tmp + gtmp*integrator.sqdt
       integrator.g(gtmp3,z,p,t)
-      @. gtmp2 += (gtmp3-gtmp)/(2integrator.sqdt)*(dW.^2 - dt)
+      @. gtmp3 = (gtmp3-gtmp)/(integrator.sqdt) # ggprime approximation
+      @. gtmp2 += gtmp3*(dW.^2 - dt)/2
     elseif alg_interpretation(integrator.alg) == :Stratonovich
       @. z = @muladd uprev + gtmp*integrator.sqdt
       integrator.g(gtmp3,z,p,t)
-      @. gtmp2 += (gtmp3-gtmp)/(2integrator.sqdt)*(dW.^2)
+      @. gtmp3 = (gtmp3-gtmp)/(integrator.sqdt) # ggprime approximation
+      @. gtmp2 += gtmp3*(dW.^2)/2
     end
   end
 
@@ -302,57 +307,62 @@ end
   cache.newton_iters = iter
 
   if integrator.opts.adaptive
+
+    if has_invW(f)
+      # This means the Jacobian was never computed!
+      f(Val{:jac},J,uprev,p,t)
+    end
+
+    A_mul_B!(vec(z),J,vec(tmp))
+    @. k = dt*dt*z/2
+
+    # k is Ed
+    # dz is En
+    if typeof(cache) <: Union{ImplicitEMCache,ImplicitEulerHeunCache}
+
+      if !is_diagonal_noise(integrator.sol.prob)
+        g_sized = norm(gtmp,2)
+      else
+        g_sized = gtmp
+      end
+
       if typeof(cache) <: ImplicitEMCache
-
-        if has_invW(f)
-            # This means the Jacobian was never computed!
-            f(Val{:jac},J,uprev,p,t)
-        end
-
-        A_mul_B!(vec(z),J,vec(tmp))
-        @. k = dt*dt*z/2
+        @. z = @muladd uprev + dt*tmp + g_sized*integrator.sqdt
 
         if !is_diagonal_noise(integrator.sol.prob)
-            g_sized = norm(gtmp,2)
+          integrator.g(gtmp,z,p,t)
+          g_sized2 = norm(gtmp,2)
         else
-            g_sized = gtmp
+          integrator.g(gtmp2,z,p,t)
+          g_sized2 = gtmp2
         end
 
-        if alg_interpretation(integrator.alg) == :Ito
-          @. z = @muladd uprev + dt*tmp + g_sized*integrator.sqdt
+        @. dz = (g_sized2-g_sized)/(2integrator.sqdt)*(dW.^2 - dt)
+      elseif typeof(cache) <: ImplicitEulerHeunCache
+        @. z = @muladd uprev + g_sized*integrator.sqdt
 
-          if !is_diagonal_noise(integrator.sol.prob)
-              integrator.g(gtmp,z,p,t)
-              g_sized2 = norm(gtmp,2)
-          else
-              integrator.g(gtmp2,z,p,t)
-              g_sized2 = gtmp2
-          end
-
-          @. dz = (g_sized2-g_sized)/(2integrator.sqdt)*(dW.^2 - dt)
-        elseif alg_interpretation(integrator.alg) == :Stratonovich
-          @. z = @muladd uprev + g_sized*integrator.sqdt
-
-          if !is_diagonal_noise(integrator.sol.prob)
-              integrator.g(gtmp,z,p,t)
-              g_sized2 = norm(gtmp,2)
-          else
-              integrator.g(gtmp2,z,p,t)
-              g_sized2 = gtmp2
-          end
-
-          @. dz = (gtmp2-gtmp)/(2integrator.sqdt)*(dW.^2)
+        if !is_diagonal_noise(integrator.sol.prob)
+          integrator.g(gtmp,z,p,t)
+          g_sized2 = norm(gtmp,2)
+        else
+          integrator.g(gtmp2,z,p,t)
+          g_sized2 = gtmp2
         end
 
-        @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
-                              Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
-          @inbounds tmp[i] = (k[i]+dz[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
-        end
-        integrator.EEst = integrator.opts.internalnorm(tmp)
-
-      else
-        error("This algorithm is not adaptive")
+        @. dz = (g_sized2-g_sized)/(2integrator.sqdt)*(dW.^2)
       end
+
+    elseif typeof(cache) <: ImplicitRKMilCache
+      # gtmp3 is ggprime
+      @. dz = abs(dW^3)*integrator.opts.internalnorm(gtmp3)^2 / 6
+    end
+
+    @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
+                            Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
+      @inbounds tmp[i] = (k[i]+dz[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
+    end
+    integrator.EEst = integrator.opts.internalnorm(tmp)
+
   end
 
 end

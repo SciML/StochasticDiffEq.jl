@@ -24,8 +24,8 @@ end
 prob2 = SDEProblem(mm_g,g!,ones(3),(0.0,1.0))
 prob = SDEProblem(mm_f,g!,ones(3),(0.0,1.0),mass_matrix=mm_A)
 
-sol = solve(prob, ImplicitRKMil(theta=1), dt = 0.01)
-sol2 = solve(prob2, ImplicitRKMil(theta=1), dt = 0.01)
+sol = solve(prob, ImplicitRKMil(theta=1), dt = 0.01, adaptive = false)
+sol2 = solve(prob2, ImplicitRKMil(theta=1), dt = 0.01, adaptive = false)
 
 @test norm(sol .- sol2) ≈ 0 atol=1e-11
 
@@ -34,8 +34,8 @@ sol2 = solve(prob2, ImplicitEM(theta=1), dt = 0.01, adaptive = false)
 
 @test norm(sol .- sol2) ≈ 0 atol=1e-11
 
-sol = solve(prob, ImplicitRKMil(symplectic=true), dt = 0.01)
-sol2 = solve(prob2, ImplicitRKMil(symplectic=true), dt = 0.01)
+sol = solve(prob, ImplicitRKMil(symplectic=true), dt = 0.01, adaptive = false)
+sol2 = solve(prob2, ImplicitRKMil(symplectic=true), dt = 0.01, adaptive = false)
 
 @test norm(sol .- sol2) ≈ 0 atol=1e-11
 
