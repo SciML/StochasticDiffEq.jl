@@ -38,14 +38,14 @@
        typeof(cache) <: ImplicitEMConstantCache
       K = @muladd uprev .+ dt.*ftmp
       utilde =  K + L*integrator.sqdt
-      mil_correction = (integrator.g(utilde,p,t).-L)./(2 .* integrator.sqdt).*
-                       (integrator.W.dW.^2 .- dt)
+      ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
+      mil_correction = ggprime .* (integrator.W.dW.^2 .- dt)./2
       gtmp += mil_correction
     elseif alg_interpretation(integrator.alg) == :Stratonovich ||
            typeof(cache) <: ImplicitEulerHeunConstantCache
       utilde = uprev + L*integrator.sqdt
-      mil_correction = (integrator.g(utilde,p,t).-L)./(2 .* integrator.sqdt).*
-                       (integrator.W.dW.^2)
+      ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
+      mil_correction = ggprime.*(integrator.W.dW.^2)./2
       gtmp += mil_correction
     end
   end
@@ -119,7 +119,8 @@
     if typeof(cache) <: Union{ImplicitEMConstantCache,ImplicitEulerHeunConstantCache}
         En = mil_correction
     else
-        error("This algorithm cannot be adaptive")
+        En = integrator.opts.internalnorm.(dW.^3) .*
+             integrator.opts.internalnorm.(ggprime).^2 ./ 6
     end
 
     tmp = Ed+En
@@ -208,11 +209,13 @@ end
     if alg_interpretation(integrator.alg) == :Ito
       @. z = @muladd uprev + dt*tmp + gtmp*integrator.sqdt
       integrator.g(gtmp3,z,p,t)
-      @. gtmp2 += (gtmp3-gtmp)/(2integrator.sqdt)*(dW.^2 - dt)
+      @. gtmp3 = (gtmp3-gtmp)/(integrator.sqdt) # ggprime approximation
+      @. gtmp2 += gtmp3*(dW.^2 - dt)/2
     elseif alg_interpretation(integrator.alg) == :Stratonovich
       @. z = @muladd uprev + gtmp*integrator.sqdt
       integrator.g(gtmp3,z,p,t)
-      @. gtmp2 += (gtmp3-gtmp)/(2integrator.sqdt)*(dW.^2)
+      @. gtmp3 = (gtmp3-gtmp)/(integrator.sqdt) # ggprime approximation
+      @. gtmp2 += gtmp3*(dW.^2)/2
     end
   end
 
@@ -313,6 +316,8 @@ end
     A_mul_B!(vec(z),J,vec(tmp))
     @. k = dt*dt*z/2
 
+    # k is Ed
+    # dz is En
     if typeof(cache) <: Union{ImplicitEMCache,ImplicitEulerHeunCache}
 
       if !is_diagonal_noise(integrator.sol.prob)
@@ -345,16 +350,19 @@ end
         end
 
         @. dz = (g_sized2-g_sized)/(2integrator.sqdt)*(dW.^2)
-      else
-        error("This algorithm is not adaptive")
       end
 
-      @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
-                              Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
-        @inbounds tmp[i] = (k[i]+dz[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
-      end
-      integrator.EEst = integrator.opts.internalnorm(tmp)
+    elseif typeof(cache) <: ImplicitRKMilCache
+      # gtmp3 is ggprime
+      @. dz = abs(dW^3)*integrator.opts.internalnorm(gtmp3)^2 / 6
     end
+
+    @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
+                            Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
+      @inbounds tmp[i] = (k[i]+dz[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
+    end
+    integrator.EEst = integrator.opts.internalnorm(tmp)
+
   end
 
 end
