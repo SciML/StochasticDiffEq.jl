@@ -99,6 +99,7 @@ mutable struct ImplicitEulerHeunCache{uType,rateType,J,JC,UF,uEltypeNoUnits,nois
   tmp::uType
   gtmp::noiseRateType
   gtmp2::rateType
+  gtmp3::noiseRateType
   J::J
   W::J
   jac_config::JC
@@ -142,8 +143,14 @@ function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_
 
   gtmp2 = similar(rate_prototype)
 
-  ImplicitEulerHeunCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,J,W,jac_config,linsolve,uf,
-                  ηold,κ,tol,10000)
+  if is_diagonal_noise(prob)
+      gtmp3 = gtmp2
+  else
+      gtmp3 = similar(noise_rate_prototype)
+  end
+
+  ImplicitEulerHeunCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,gtmp3,
+                         J,W,jac_config,linsolve,uf,ηold,κ,tol,10000)
 end
 
 mutable struct ImplicitEulerHeunConstantCache{F,uEltypeNoUnits} <: StochasticDiffEqConstantCache
