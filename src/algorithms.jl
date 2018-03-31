@@ -16,6 +16,9 @@
 struct EM <: StochasticDiffEqAlgorithm end
 struct SplitEM <: StochasticDiffEqAlgorithm end
 struct EulerHeun <: StochasticDiffEqAlgorithm end
+
+struct LambaEM <: StochasticDiffEqAdaptiveAlgorithm end
+struct LambaEulerHeun <: StochasticDiffEqAdaptiveAlgorithm end
 struct RKMil{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
 Base.@pure RKMil(;interpretation=:Ito) = RKMil{interpretation}()
 

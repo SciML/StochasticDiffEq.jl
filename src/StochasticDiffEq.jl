@@ -75,10 +75,12 @@ module StochasticDiffEq
    export StochasticDiffEqAlgorithm, StochasticDiffEqAdaptiveAlgorithm,
           StochasticCompositeAlgorithm
 
-  export EM, PCEuler, RKMil, SRA, SRI, SRIW1, SRA1, SRA2, SRA3, SOSRA, SOSRA2, RKMilCommute,
+  export EM, LambaEM, PCEuler, RKMil, SRA, SRI, SRIW1,
+         SRA1, SRA2, SRA3,
+         SOSRA, SOSRA2, RKMilCommute,
          SRIW2, SOSRI, SOSRI2, SKenCarp
 
-  export EulerHeun
+  export EulerHeun, LambaEulerHeun
 
   export SplitEM, IIF1M, IIF2M, IIF1Mil
 
