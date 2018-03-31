@@ -5,6 +5,8 @@ prob = prob_sde_2Dlinear
 ## Solve and plot
 println("Solve and Plot")
 sol = solve(prob,EM(),dt=1/2^(3))
+sol = solve(prob,LambaEM(),dt=1/2^(3))
+sol = solve(prob,LambaEulerHeun(),dt=1/2^(3))
 sol = solve(prob,RKMil(),dt=1/2^(3))
 sol = solve(prob,SRI(),dt=1/2^(3))
 sol = solve(prob,SRIW1(),dt=1/2^(3))
@@ -31,6 +33,9 @@ println("Convergence Test on 2D Linear")
 dts = 1./2.^(7:-1:4) #14->7 good plot
 
 sim = test_convergence(dts,prob,EM(),numMonte=1000)
+@test abs(sim.𝒪est[:l2]-.5) < 0.1
+
+sim = test_convergence(dts,prob,LambaEM(),numMonte=1000)
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
 
 sim = test_convergence(dts,prob,ImplicitEM(),numMonte=100)

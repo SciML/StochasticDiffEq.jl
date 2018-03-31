@@ -6,6 +6,7 @@ isadaptive(alg::Union{StochasticDiffEqAdaptiveAlgorithm,StochasticDiffEqRODEAdap
 isadaptive(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = isadaptive(alg.algs[1])
 
 alg_order(alg::EM) = 1//2
+alg_order(alg::LambaEM) = 1//2
 alg_order(alg::ImplicitEM) = 1//2
 alg_order(alg::ImplicitEulerHeun) = 1//2
 alg_order(alg::ImplicitRKMil) = 1//1
@@ -15,6 +16,7 @@ alg_order(alg::IIF1M) = 1//2
 alg_order(alg::IIF2M) = 1//2
 alg_order(alg::IIF1Mil) = 1//1
 alg_order(alg::EulerHeun) = 1//2
+alg_order(alg::LambaEulerHeun) = 1//2
 alg_order(alg::RandomEM) = 1//2
 alg_order(alg::RKMil) = 1//1
 alg_order(alg::RKMilCommute) = 1//1
@@ -39,6 +41,7 @@ isdtchangeable(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorith
 
 alg_interpretation(alg::StochasticDiffEqAlgorithm) = :Ito
 alg_interpretation(alg::EulerHeun) = :Stratonovich
+alg_interpretation(alg::LambaEulerHeun) = :Stratonovich
 alg_interpretation(alg::RKMil{interpretation}) where {interpretation} = interpretation
 alg_interpretation(alg::RKMilCommute{interpretation}) where {interpretation} = interpretation
 alg_interpretation(alg::ImplicitRKMil{CS,AD,F,S,K,T,T2,Controller,interpretation}) where {CS,AD,F,S,K,T,T2,Controller,interpretation} = interpretation
@@ -59,7 +62,9 @@ alg_compatible(prob,alg::SOSRA) = true
 alg_compatible(prob,alg::SOSRA2) = true
 alg_compatible(prob,alg::SKenCarp) = true
 alg_compatible(prob,alg::EM) = true
+alg_compatible(prob,alg::LambaEM) = true
 alg_compatible(prob,alg::EulerHeun) = true
+alg_compatible(prob,alg::LambaEulerHeun) = true
 alg_compatible(prob,alg::SplitEM) = true
 alg_compatible(prob,alg::PCEuler) = true
 alg_compatible(prob,alg::ImplicitEM) = true
