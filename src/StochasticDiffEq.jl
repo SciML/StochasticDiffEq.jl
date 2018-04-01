@@ -49,6 +49,7 @@ module StochasticDiffEq
   include("caches/lamba_caches.jl")
   include("caches/iif_caches.jl")
   include("caches/sdirk_caches.jl")
+  include("caches/split_step_caches.jl")
   include("caches/sra_caches.jl")
   include("caches/rossler_caches.jl")
   include("caches/kencarp_caches.jl")
@@ -68,6 +69,7 @@ module StochasticDiffEq
   include("perform_step/sri.jl")
   include("perform_step/sra.jl")
   include("perform_step/sdirk.jl")
+  include("perform_step/split_step.jl")
   include("perform_step/kencarp.jl")
   include("perform_step/predcorr.jl")
   include("perform_step/split.jl")
@@ -86,7 +88,8 @@ module StochasticDiffEq
 
   export SplitEM, IIF1M, IIF2M, IIF1Mil
 
-  export ImplicitEM, ImplicitEulerHeun, ImplicitRKMil
+  export ImplicitEM, ImplicitEulerHeun, ISSEM, ISSEulerHeun,
+         ImplicitRKMil
 
   export StochasticDiffEqRODEAlgorithm, StochasticDiffEqRODEAdaptiveAlgorithm,
          StochasticDiffEqRODECompositeAlgorithm

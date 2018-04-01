@@ -50,6 +50,9 @@ sim = test_convergence(dts,prob,ImplicitEM(symplectic=true),numMonte=100)
 sim = test_convergence(dts,prob,ImplicitEM(symplectic=true,autodiff=false),numMonte=100)
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
 
+sim = test_convergence(dts,prob,ISSEM(),numMonte=100)
+@test abs(sim.𝒪est[:l2]-.5) < 0.1
+
 sim = test_convergence(dts,prob,ImplicitRKMil(),numMonte=100)
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 

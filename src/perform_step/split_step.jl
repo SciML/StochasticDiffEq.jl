@@ -1,7 +1,6 @@
 @muladd function perform_step!(integrator,
-                               cache::Union{ImplicitEMConstantCache,
-                                            ImplicitEulerHeunConstantCache,
-                                            ImplicitRKMilConstantCache},
+                               cache::Union{ISSEMConstantCache,
+                                            ISSEulerHeunConstantCache},
                                             f=integrator.f)
   @unpack t,dt,uprev,u,p = integrator
   @unpack uf = cache
@@ -26,29 +25,6 @@
 
   L = integrator.g(uprev,p,t)
   ftmp = integrator.f(uprev,p,t)
-  gtmp = L.*integrator.W.dW
-
-  if typeof(cache) <: ImplicitEulerHeunConstantCache
-    utilde = uprev + gtmp
-    gtmp = ((integrator.g(utilde,p,t) + L)/2)*integrator.W.dW
-  end
-
-  if typeof(cache) <: ImplicitRKMilConstantCache || integrator.opts.adaptive == true
-    if alg_interpretation(integrator.alg) == :Ito ||
-       typeof(cache) <: ImplicitEMConstantCache
-      K = @muladd uprev .+ dt.*ftmp
-      utilde =  K + L*integrator.sqdt
-      ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
-      mil_correction = ggprime .* (integrator.W.dW.^2 .- dt)./2
-      gtmp += mil_correction
-    elseif alg_interpretation(integrator.alg) == :Stratonovich ||
-           typeof(cache) <: ImplicitEulerHeunConstantCache
-      utilde = uprev + L*integrator.sqdt
-      ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
-      mil_correction = ggprime.*(integrator.W.dW.^2)./2
-      gtmp += mil_correction
-    end
-  end
 
   if integrator.alg.symplectic
     z = zero(u) # constant extrapolation, justified by ODE IM
@@ -59,9 +35,9 @@
   iter += 1
   if integrator.alg.symplectic
     # u = uprev + z then  u = (uprev+u)/2 = (uprev+uprev+z)/2 = uprev + z/2
-    u = uprev + z/2 + gtmp/2
+    u = uprev + z/2
   else
-    u = uprev + dt*(1-theta)*ftmp + theta*z + gtmp
+    u = uprev + dt*(1-theta)*ftmp + theta*z
   end
   b = -z .+ dt.*f(u,p,t+a)
   dz = W\b
@@ -80,9 +56,9 @@
     iter += 1
     if integrator.alg.symplectic
       # u = uprev + z then  u = (uprev+u)/2 = (uprev+uprev+z)/2 = uprev + z/2
-      u = uprev + z/2 + gtmp/2
+      u = uprev + z/2
     else
-      u = uprev + dt*(1-theta)*ftmp + theta*z + gtmp
+      u = uprev + dt*(1-theta)*ftmp + theta*z
     end
     b = -z .+ dt.*f(u,p,t+a)
     dz = W\b
@@ -99,10 +75,19 @@
   end
 
   if integrator.alg.symplectic
-    u = uprev + z + gtmp
+    u = uprev + z
   else
-    u = uprev + dt*(1-theta)*ftmp + theta*z + gtmp
+    u = uprev + dt*(1-theta)*ftmp + theta*z
   end
+
+  gtmp = L.*integrator.W.dW
+
+  if typeof(cache) <: ISSEulerHeunConstantCache
+    utilde = u + gtmp
+    gtmp = ((integrator.g(utilde,p,t) + L)/2)*integrator.W.dW
+  end
+
+  u += gtmp
 
   if (iter >= integrator.alg.max_newton_iter && do_newton) || fail_convergence
     integrator.force_stepfail = true
@@ -115,11 +100,16 @@
   if integrator.opts.adaptive
 
     Ed = dt*J*ftmp/2
-    if typeof(cache) <: Union{ImplicitEMConstantCache,ImplicitEulerHeunConstantCache}
-        En = mil_correction
-    else
-        En = integrator.opts.internalnorm.(dW.^3) .*
-             integrator.opts.internalnorm.(ggprime).^2 ./ 6
+
+    if typeof(cache) <: SplitStepEulerConstantCache
+      K = @muladd uprev .+ dt.*ftmp
+      utilde =  K + L*integrator.sqdt
+      ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
+      En = ggprime .* (integrator.W.dW.^2 .- dt)./2
+    elseif typeof(cache) <: ISSEulerHeunConstantCache
+      utilde = uprev + L*integrator.sqdt
+      ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
+      En = ggprime.*(integrator.W.dW.^2)./2
     end
 
     tmp = Ed+En
@@ -130,9 +120,8 @@
 end
 
 @muladd function perform_step!(integrator,
-                               cache::Union{ImplicitEMCache,
-                                            ImplicitEulerHeunCache,
-                                            ImplicitRKMilCache},
+                               cache::Union{ISSEMCache,
+                                            ISSEulerHeunCache},
                                f=integrator.f)
   @unpack t,dt,uprev,u,p = integrator
   @unpack uf,du1,dz,z,k,J,W,jac_config,gtmp,gtmp2,tmp = cache
@@ -174,51 +163,7 @@ end
     end
   end
 
-  ##############################################################################
-
-  # Handle noise computations
-
-  integrator.g(gtmp,uprev,p,t)
   integrator.f(tmp,uprev,p,t)
-
-  if is_diagonal_noise(integrator.sol.prob)
-    @tight_loop_macros for i in eachindex(u)
-      @inbounds gtmp2[i]=gtmp[i]*dW[i]
-    end
-  else
-    A_mul_B!(gtmp2,gtmp,dW)
-  end
-
-  if typeof(cache) <: ImplicitEulerHeunCache
-    gtmp3 = cache.gtmp3
-    @. z = uprev + gtmp2
-    integrator.g(gtmp3,z,p,t)
-    @. gtmp = (gtmp3 + gtmp)/2
-    if is_diagonal_noise(integrator.sol.prob)
-      @tight_loop_macros for i in eachindex(u)
-        @inbounds gtmp2[i]=gtmp[i]*dW[i]
-      end
-    else
-      A_mul_B!(gtmp2,gtmp,dW)
-    end
-  end
-
-  if typeof(cache) <: ImplicitRKMilCache
-    gtmp3 = cache.gtmp3
-    if alg_interpretation(integrator.alg) == :Ito
-      @. z = @muladd uprev + dt*tmp + gtmp*integrator.sqdt
-      integrator.g(gtmp3,z,p,t)
-      @. gtmp3 = (gtmp3-gtmp)/(integrator.sqdt) # ggprime approximation
-      @. gtmp2 += gtmp3*(dW.^2 - dt)/2
-    elseif alg_interpretation(integrator.alg) == :Stratonovich
-      @. z = @muladd uprev + gtmp*integrator.sqdt
-      integrator.g(gtmp3,z,p,t)
-      @. gtmp3 = (gtmp3-gtmp)/(integrator.sqdt) # ggprime approximation
-      @. gtmp2 += gtmp3*(dW.^2)/2
-    end
-  end
-
-  ##############################################################################
 
   if integrator.alg.symplectic
     @. z = zero(u) # Justified by ODE solvers, constrant extrapolation when IM
@@ -230,9 +175,9 @@ end
   κ = cache.κ
   tol = cache.tol
   if integrator.alg.symplectic
-    @. u = uprev + z/2 + gtmp2/2
+    @. u = uprev + z/2
   else
-    @. u = uprev + dt*(1-theta)*tmp + theta*z + gtmp2
+    @. u = uprev + dt*(1-theta)*tmp + theta*z
   end
   iter += 1
   f(k,u,p,t+a)
@@ -262,9 +207,9 @@ end
   while (do_newton || iter < integrator.alg.min_newton_iter) && iter < integrator.alg.max_newton_iter
     iter += 1
     if integrator.alg.symplectic
-      @. u = uprev + z/2 + gtmp2/2
+      @. u = uprev + z/2
     else
-      @. u = uprev + dt*(1-theta)*tmp + theta*z + gtmp2
+      @. u = uprev + dt*(1-theta)*tmp + theta*z
     end
     f(k,u,p,t+a)
     scale!(k,dt)
@@ -292,9 +237,9 @@ end
   end
 
   if integrator.alg.symplectic
-    @. u = uprev + z + gtmp2
+    @. u = uprev + z
   else
-    @. u = uprev + dt*(1-theta)*tmp + theta*z + gtmp2
+    @. u = uprev + dt*(1-theta)*tmp + theta*z
   end
 
   if (iter >= integrator.alg.max_newton_iter && do_newton) || fail_convergence
@@ -304,6 +249,39 @@ end
 
   cache.ηold = η
   cache.newton_iters = iter
+
+  ##############################################################################
+
+  # Handle noise computations
+
+  integrator.g(gtmp,uprev,p,t)
+
+
+  if is_diagonal_noise(integrator.sol.prob)
+    @tight_loop_macros for i in eachindex(u)
+      @inbounds gtmp2[i]=gtmp[i]*dW[i]
+    end
+  else
+    A_mul_B!(gtmp2,gtmp,dW)
+  end
+
+  if typeof(cache) <: ISSEulerHeunCache
+    gtmp3 = cache.gtmp3
+    @. z = uprev + gtmp2
+    integrator.g(gtmp3,z,p,t)
+    @. gtmp = (gtmp3 + gtmp)/2
+    if is_diagonal_noise(integrator.sol.prob)
+      @tight_loop_macros for i in eachindex(u)
+        @inbounds gtmp2[i]=gtmp[i]*dW[i]
+      end
+    else
+      A_mul_B!(gtmp2,gtmp,dW)
+    end
+  end
+
+  @. u += gtmp2
+
+  ##############################################################################
 
   if integrator.opts.adaptive
 
@@ -317,7 +295,6 @@ end
 
     # k is Ed
     # dz is En
-    if typeof(cache) <: Union{ImplicitEMCache,ImplicitEulerHeunCache}
 
       if !is_diagonal_noise(integrator.sol.prob)
         g_sized = norm(gtmp,2)
@@ -325,7 +302,7 @@ end
         g_sized = gtmp
       end
 
-      if typeof(cache) <: ImplicitEMCache
+      if typeof(cache) <: ISSEMCache
         @. z = @muladd uprev + dt*tmp + g_sized*integrator.sqdt
 
         if !is_diagonal_noise(integrator.sol.prob)
@@ -341,7 +318,7 @@ end
           @. dz = (g_sized2-g_sized)/(2integrator.sqdt)*(dW.^2 - dt)
         end
 
-      elseif typeof(cache) <: ImplicitEulerHeunCache
+      elseif typeof(cache) <: ISSEulerHeunCache
         @. z = @muladd uprev + g_sized*integrator.sqdt
 
         if !is_diagonal_noise(integrator.sol.prob)
@@ -357,11 +334,7 @@ end
           @. dz = (g_sized2-g_sized)/(2integrator.sqdt)*(dW.^2)
         end
 
-      end
 
-    elseif typeof(cache) <: ImplicitRKMilCache
-      # gtmp3 is ggprime
-      @. dz = abs(dW^3)*integrator.opts.internalnorm(gtmp3)^2 / 6
     end
 
     @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
