@@ -111,3 +111,7 @@ function alg_mass_matrix_compatible(alg::Union{StochasticDiffEqNewtonAlgorithm,S
         error("Algorithm must be set as symplectic or theta=1 for mass matrices")
     end
 end
+
+is_split_step(::StochasticDiffEqAlgorithm) = false
+is_split_step(::EM{split}) = split
+is_split_step(::LambaEM{split}) = split

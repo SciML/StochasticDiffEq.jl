@@ -13,12 +13,17 @@
 
 # Basics
 
-struct EM <: StochasticDiffEqAlgorithm end
+struct EM{split} <: StochasticDiffEqAlgorithm end
+Base.@pure EM(split=true) = EM{split}()
+
 struct SplitEM <: StochasticDiffEqAlgorithm end
 struct EulerHeun <: StochasticDiffEqAlgorithm end
 
-struct LambaEM <: StochasticDiffEqAdaptiveAlgorithm end
+struct LambaEM{split} <: StochasticDiffEqAdaptiveAlgorithm end
+Base.@pure LambaEM(split=true) = LambaEM{split}()
+
 struct LambaEulerHeun <: StochasticDiffEqAdaptiveAlgorithm end
+
 struct RKMil{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
 Base.@pure RKMil(;interpretation=:Ito) = RKMil{interpretation}()
 

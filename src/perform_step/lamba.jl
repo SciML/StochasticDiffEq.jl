@@ -2,7 +2,13 @@
   @unpack t,dt,uprev,u,W,p = integrator
   du1 = integrator.f(uprev,p,t)
   K = @muladd uprev + dt*du1
-  L = integrator.g(uprev,p,t)
+
+  if is_split_step(integrator.alg)
+    L = integrator.g(uprev,p,t+dt)
+  else
+    L = integrator.g(K,p,t+dt)
+  end
+
   mil_correction = zero(u)
 
   u = K+L*W.dW
@@ -24,9 +30,15 @@ end
 @muladd function perform_step!(integrator,cache::LambaEMCache,f=integrator.f)
   @unpack du1,du2,K,tmp,L,gtmp = cache
   @unpack t,dt,uprev,u,W,p = integrator
+
   integrator.f(du1,uprev,p,t)
-  integrator.g(L,uprev,p,t)
   @. K = @muladd uprev + dt*du1
+
+  if is_split_step(integrator.alg)
+    integrator.g(L,K,p,t+dt)
+  else
+    integrator.g(L,uprev,p,t+dt)
+  end
 
   if is_diagonal_noise(integrator.sol.prob)
     @. tmp=L*W.dW

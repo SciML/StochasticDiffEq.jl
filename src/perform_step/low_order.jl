@@ -1,11 +1,21 @@
 @muladd function perform_step!(integrator,cache::EMConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
-  if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
-    noise = integrator.g(uprev,p,t)*W.dW
+
+  K = @muladd uprev + dt*integrator.f(uprev,p,t)
+
+  if is_split_step(integrator.alg)
+    u_choice = K
   else
-    noise = integrator.g(uprev,p,t).*W.dW
+    u_choice = uprev
   end
-  u = @muladd uprev + dt*integrator.f(uprev,p,t) + noise
+
+  if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
+    noise = integrator.g(u_choice,p,t)*W.dW
+  else
+    noise = integrator.g(u_choice,p,t).*W.dW
+  end
+
+  u = K + noise
   integrator.u = u
 end
 
@@ -13,7 +23,16 @@ end
   @unpack rtmp1,rtmp2,rtmp3 = cache
   @unpack t,dt,uprev,u,W,p = integrator
   integrator.f(rtmp1,uprev,p,t)
-  integrator.g(rtmp2,uprev,p,t)
+
+  @. u = @muladd uprev + dt*rtmp1
+
+  if is_split_step(integrator.alg)
+    u_choice = u
+  else
+    u_choice = uprev
+  end
+
+  integrator.g(rtmp2,u,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
     @tight_loop_macros for i in eachindex(u)
@@ -23,10 +42,7 @@ end
     A_mul_B!(rtmp3,rtmp2,W.dW)
   end
 
-  #@. u = @muladd uprev + dt*rtmp1 + rtmp3
-  @tight_loop_macros for i in eachindex(u)
-    @inbounds u[i] = @muladd uprev[i] + dt*rtmp1[i] + rtmp3[i]
-  end
+  @. u += rtmp3
 end
 
 @muladd function perform_step!(integrator,cache::EulerHeunConstantCache,f=integrator.f)
