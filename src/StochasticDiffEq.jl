@@ -82,11 +82,12 @@ module StochasticDiffEq
          SOSRA, SOSRA2, RKMilCommute,
          SRIW2, SOSRI, SOSRI2, SKenCarp
 
-  export EulerHeun, LambaEulerHeun
+  export EulerHeun, LambaEulerHeun,
 
   export SplitEM, IIF1M, IIF2M, IIF1Mil
 
-  export ImplicitEM, ImplicitEulerHeun, ImplicitRKMil
+  export ImplicitEM, ImplicitEulerHeun, SplitStepEM, SplitStepEulerHeun,
+         ImplicitRKMil
 
   export StochasticDiffEqRODEAlgorithm, StochasticDiffEqRODEAdaptiveAlgorithm,
          StochasticDiffEqRODECompositeAlgorithm

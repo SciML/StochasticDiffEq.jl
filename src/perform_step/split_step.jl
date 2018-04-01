@@ -1,7 +1,6 @@
 @muladd function perform_step!(integrator,
-                               cache::Union{ImplicitEMConstantCache,
-                                            ImplicitEulerHeunConstantCache,
-                                            ImplicitRKMilConstantCache},
+                               cache::Union{SplitStepEMConstantCache,
+                                            SplitStepEulerHeunConstantCache},
                                             f=integrator.f)
   @unpack t,dt,uprev,u,p = integrator
   @unpack uf = cache
@@ -26,29 +25,6 @@
 
   L = integrator.g(uprev,p,t)
   ftmp = integrator.f(uprev,p,t)
-  gtmp = L.*integrator.W.dW
-
-  if typeof(cache) <: ImplicitEulerHeunConstantCache
-    utilde = uprev + gtmp
-    gtmp = ((integrator.g(utilde,p,t) + L)/2)*integrator.W.dW
-  end
-
-  if typeof(cache) <: ImplicitRKMilConstantCache || integrator.opts.adaptive == true
-    if alg_interpretation(integrator.alg) == :Ito ||
-       typeof(cache) <: ImplicitEMConstantCache
-      K = @muladd uprev .+ dt.*ftmp
-      utilde =  K + L*integrator.sqdt
-      ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
-      mil_correction = ggprime .* (integrator.W.dW.^2 .- dt)./2
-      gtmp += mil_correction
-    elseif alg_interpretation(integrator.alg) == :Stratonovich ||
-           typeof(cache) <: ImplicitEulerHeunConstantCache
-      utilde = uprev + L*integrator.sqdt
-      ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
-      mil_correction = ggprime.*(integrator.W.dW.^2)./2
-      gtmp += mil_correction
-    end
-  end
 
   if integrator.alg.symplectic
     z = zero(u) # constant extrapolation, justified by ODE IM
@@ -59,9 +35,9 @@
   iter += 1
   if integrator.alg.symplectic
     # u = uprev + z then  u = (uprev+u)/2 = (uprev+uprev+z)/2 = uprev + z/2
-    u = uprev + z/2 + gtmp/2
+    u = uprev + z/2
   else
-    u = uprev + dt*(1-theta)*ftmp + theta*z + gtmp
+    u = uprev + dt*(1-theta)*ftmp + theta*z
   end
   b = -z .+ dt.*f(u,p,t+a)
   dz = W\b
@@ -80,9 +56,9 @@
     iter += 1
     if integrator.alg.symplectic
       # u = uprev + z then  u = (uprev+u)/2 = (uprev+uprev+z)/2 = uprev + z/2
-      u = uprev + z/2 + gtmp/2
+      u = uprev + z/2
     else
-      u = uprev + dt*(1-theta)*ftmp + theta*z + gtmp
+      u = uprev + dt*(1-theta)*ftmp + theta*z
     end
     b = -z .+ dt.*f(u,p,t+a)
     dz = W\b
@@ -99,10 +75,19 @@
   end
 
   if integrator.alg.symplectic
-    u = uprev + z + gtmp
+    u = uprev + z
   else
-    u = uprev + dt*(1-theta)*ftmp + theta*z + gtmp
+    u = uprev + dt*(1-theta)*ftmp + theta*z
   end
+
+  gtmp = L.*integrator.W.dW
+
+  if typeof(cache) <: SplitStepEulerHeunConstantCache
+    utilde = u + gtmp
+    gtmp = ((integrator.g(utilde,p,t) + L)/2)*integrator.W.dW
+  end
+
+  u += gtmp
 
   if (iter >= integrator.alg.max_newton_iter && do_newton) || fail_convergence
     integrator.force_stepfail = true
@@ -115,11 +100,16 @@
   if integrator.opts.adaptive
 
     Ed = dt*J*ftmp/2
-    if typeof(cache) <: Union{ImplicitEMConstantCache,ImplicitEulerHeunConstantCache}
-        En = mil_correction
-    else
-        En = integrator.opts.internalnorm.(dW.^3) .*
-             integrator.opts.internalnorm.(ggprime).^2 ./ 6
+
+    if typeof(cache) <: SplitStepEulerConstantCache
+      K = @muladd uprev .+ dt.*ftmp
+      utilde =  K + L*integrator.sqdt
+      ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
+      En = ggprime .* (integrator.W.dW.^2 .- dt)./2
+    elseif typeof(cache) <: SplitStepEulerHeunConstantCache
+      utilde = uprev + L*integrator.sqdt
+      ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
+      En = ggprime.*(integrator.W.dW.^2)./2
     end
 
     tmp = Ed+En
