@@ -54,6 +54,8 @@ probiip = SDEProblem{true}(f_nondiag,g_nondiag,u0,(0.0,1.0),noise_rate_prototype
 ## Just solve to test compatibility
 IEM = solve(probiip,ImplicitEM())
 IEM = solve(probiip,ImplicitEulerHeun())
+IEM = solve(probiip,ISSEM())
+IEM = solve(probiip,ISSEulerHeun())
 
 ## use BenchmarkTools to benchmark speed here if desired.
 dt = 0.002

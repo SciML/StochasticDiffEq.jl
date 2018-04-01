@@ -9,6 +9,9 @@ sim  = test_convergence(dts,prob,EulerHeun(),numMonte=Int(5e2))
 sim  = test_convergence(dts,prob,LambaEulerHeun(),numMonte=Int(5e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
+sim  = test_convergence(dts,prob,ISSEulerHeun(),numMonte=Int(5e2))
+@test abs(sim.𝒪est[:l2]-1) < 0.1
+
 sim  = test_convergence(dts,prob,ImplicitEulerHeun(),numMonte=Int(5e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
@@ -30,6 +33,9 @@ sim  = test_convergence(dts,prob,EulerHeun(),numMonte=Int(5e1))
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
 sim  = test_convergence(dts,prob,LambaEulerHeun(),numMonte=Int(5e1))
+@test abs(sim.𝒪est[:l2]-1) < 0.1
+
+sim  = test_convergence(dts,prob,ISSEulerHeun(),numMonte=Int(5e1))
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
 sim  = test_convergence(dts,prob,ImplicitEulerHeun(),numMonte=Int(5e1))
