@@ -318,7 +318,7 @@ end
     # k is Ed
     # dz is En
     if typeof(cache) <: Union{ImplicitEMCache,ImplicitEulerHeunCache}
-
+      dW_cache = cache.dW_cache
       if !is_diagonal_noise(integrator.sol.prob)
         g_sized = norm(gtmp,2)
       else
@@ -331,8 +331,8 @@ end
         if !is_diagonal_noise(integrator.sol.prob)
           integrator.g(gtmp,z,p,t)
           g_sized2 = norm(gtmp,2)
-          @. dz = dW.^2 - dt
-          diff_tmp = integrator.opts.internalnorm(dz)
+          @. dW_cache = dW.^2 - dt
+          diff_tmp = integrator.opts.internalnorm(dW_cache)
           En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
           @. dz = En
         else
@@ -347,8 +347,8 @@ end
         if !is_diagonal_noise(integrator.sol.prob)
           integrator.g(gtmp,z,p,t)
           g_sized2 = norm(gtmp,2)
-          @. dz = dW.^2
-          diff_tmp = integrator.opts.internalnorm(dz)
+          @. dW_cache = dW.^2
+          diff_tmp = integrator.opts.internalnorm(dW_cache)
           En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
           @. dz = En
         else

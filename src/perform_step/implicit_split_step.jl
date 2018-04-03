@@ -124,7 +124,7 @@ end
                                             ISSEulerHeunCache},
                                f=integrator.f)
   @unpack t,dt,uprev,u,p = integrator
-  @unpack uf,du1,dz,z,k,J,W,jac_config,gtmp,gtmp2,tmp = cache
+  @unpack uf,du1,dz,z,k,J,W,jac_config,gtmp,gtmp2,tmp,dW_cache = cache
   integrator.alg.symplectic ? a = dt/2 : a = dt
   dW = integrator.W.dW
   mass_matrix = integrator.sol.prob.mass_matrix
@@ -308,8 +308,8 @@ end
         if !is_diagonal_noise(integrator.sol.prob)
           integrator.g(gtmp,z,p,t)
           g_sized2 = norm(gtmp,2)
-          @. dz = dW.^2 - dt
-          diff_tmp = integrator.opts.internalnorm(dz)
+          @. dW_cache = dW.^2 - dt
+          diff_tmp = integrator.opts.internalnorm(dW_cache)
           En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
           @. dz = En
         else
@@ -324,8 +324,8 @@ end
         if !is_diagonal_noise(integrator.sol.prob)
           integrator.g(gtmp,z,p,t)
           g_sized2 = norm(gtmp,2)
-          @. dz = dW.^2
-          diff_tmp = integrator.opts.internalnorm(dz)
+          @. dW_cache = dW.^2
+          diff_tmp = integrator.opts.internalnorm(dW_cache)
           En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
           @. dz = En
         else

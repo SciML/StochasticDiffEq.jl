@@ -1,4 +1,4 @@
-mutable struct ImplicitEMCache{uType,rateType,J,JC,UF,uEltypeNoUnits,noiseRateType,F} <: StochasticDiffEqMutableCache
+mutable struct ImplicitEMCache{uType,rateType,J,JC,UF,uEltypeNoUnits,noiseRateType,F,dWType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   du1::rateType
@@ -18,6 +18,7 @@ mutable struct ImplicitEMCache{uType,rateType,J,JC,UF,uEltypeNoUnits,noiseRateTy
   κ::uEltypeNoUnits
   tol::uEltypeNoUnits
   newton_iters::Int
+  dW_cache::dWType
 end
 
 u_cache(c::ImplicitEMCache)    = (c.uprev2,c.z,c.dz)
@@ -52,12 +53,14 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_pr
 
   if is_diagonal_noise(prob)
     gtmp2 = gtmp
+    dW_cache = nothing
   else
     gtmp2 = similar(rate_prototype)
+    dW_cache = similar(ΔW)
   end
 
   ImplicitEMCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,J,W,jac_config,linsolve,uf,
-                  ηold,κ,tol,10000)
+                  ηold,κ,tol,10000,dW_cache)
 end
 
 mutable struct ImplicitEMConstantCache{F,uEltypeNoUnits} <: StochasticDiffEqConstantCache
@@ -88,7 +91,7 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_pr
   ImplicitEMConstantCache(uf,ηold,κ,tol,100000)
 end
 
-mutable struct ImplicitEulerHeunCache{uType,rateType,J,JC,UF,uEltypeNoUnits,noiseRateType,F} <: StochasticDiffEqMutableCache
+mutable struct ImplicitEulerHeunCache{uType,rateType,J,JC,UF,uEltypeNoUnits,noiseRateType,F,dWType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   du1::rateType
@@ -109,6 +112,7 @@ mutable struct ImplicitEulerHeunCache{uType,rateType,J,JC,UF,uEltypeNoUnits,nois
   κ::uEltypeNoUnits
   tol::uEltypeNoUnits
   newton_iters::Int
+  dW_cache::dWType
 end
 
 u_cache(c::ImplicitEulerHeunCache)    = (c.uprev2,c.z,c.dz)
@@ -145,12 +149,14 @@ function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_
 
   if is_diagonal_noise(prob)
       gtmp3 = gtmp2
+      dW_cache = nothing
   else
       gtmp3 = similar(noise_rate_prototype)
+      dW_cache = similar(ΔW)
   end
 
   ImplicitEulerHeunCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,gtmp3,
-                         J,W,jac_config,linsolve,uf,ηold,κ,tol,10000)
+                         J,W,jac_config,linsolve,uf,ηold,κ,tol,10000,dW_cache)
 end
 
 mutable struct ImplicitEulerHeunConstantCache{F,uEltypeNoUnits} <: StochasticDiffEqConstantCache

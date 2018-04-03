@@ -1,4 +1,6 @@
-mutable struct ISSEMCache{uType,rateType,J,JC,UF,uEltypeNoUnits,noiseRateType,F} <: StochasticDiffEqMutableCache
+mutable struct ISSEMCache{uType,rateType,J,JC,UF,
+                          uEltypeNoUnits,noiseRateType,F,dWType} <:
+                          StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   du1::rateType
@@ -18,6 +20,7 @@ mutable struct ISSEMCache{uType,rateType,J,JC,UF,uEltypeNoUnits,noiseRateType,F}
   κ::uEltypeNoUnits
   tol::uEltypeNoUnits
   newton_iters::Int
+  dW_cache::dWType
 end
 
 u_cache(c::ISSEMCache)    = (c.uprev2,c.z,c.dz)
@@ -52,12 +55,14 @@ function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototy
 
   if is_diagonal_noise(prob)
     gtmp2 = gtmp
+    dW_cache = nothing
   else
     gtmp2 = similar(rate_prototype)
+    dW_cache = similar(ΔW)
   end
 
   ISSEMCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,J,W,jac_config,linsolve,uf,
-                  ηold,κ,tol,10000)
+                  ηold,κ,tol,10000,dW_cache)
 end
 
 mutable struct ISSEMConstantCache{F,uEltypeNoUnits} <: StochasticDiffEqConstantCache
@@ -88,7 +93,9 @@ function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototy
   ISSEMConstantCache(uf,ηold,κ,tol,100000)
 end
 
-mutable struct ISSEulerHeunCache{uType,rateType,J,JC,UF,uEltypeNoUnits,noiseRateType,F} <: StochasticDiffEqMutableCache
+mutable struct ISSEulerHeunCache{uType,rateType,J,JC,UF,uEltypeNoUnits,
+                                 noiseRateType,F,dWType} <:
+                                 StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   du1::rateType
@@ -109,6 +116,7 @@ mutable struct ISSEulerHeunCache{uType,rateType,J,JC,UF,uEltypeNoUnits,noiseRate
   κ::uEltypeNoUnits
   tol::uEltypeNoUnits
   newton_iters::Int
+  dW_cache::dWType
 end
 
 u_cache(c::ISSEulerHeunCache)    = (c.uprev2,c.z,c.dz)
@@ -145,12 +153,14 @@ function alg_cache(alg::ISSEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
 
   if is_diagonal_noise(prob)
       gtmp3 = gtmp2
+      dW_cache = nothing
   else
       gtmp3 = similar(noise_rate_prototype)
+      dW_cache = similar(ΔW)
   end
 
   ISSEulerHeunCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,gtmp3,
-                         J,W,jac_config,linsolve,uf,ηold,κ,tol,10000)
+                         J,W,jac_config,linsolve,uf,ηold,κ,tol,10000,dW_cache)
 end
 
 mutable struct ISSEulerHeunConstantCache{F,uEltypeNoUnits} <: StochasticDiffEqConstantCache

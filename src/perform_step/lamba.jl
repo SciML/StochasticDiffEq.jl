@@ -28,7 +28,7 @@
 end
 
 @muladd function perform_step!(integrator,cache::LambaEMCache,f=integrator.f)
-  @unpack du1,du2,K,tmp,L,gtmp = cache
+  @unpack du1,du2,K,tmp,L,gtmp,dW_cache = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
   integrator.f(du1,uprev,p,t)
@@ -61,8 +61,8 @@ end
     if !is_diagonal_noise(integrator.sol.prob)
       integrator.g(gtmp,tmp,p,t)
       g_sized2 = norm(gtmp,2)
-      @. tmp = dW.^2 - dt
-      diff_tmp = integrator.opts.internalnorm(tmp)
+      @. dW_cache = dW.^2 - dt
+      diff_tmp = integrator.opts.internalnorm(dW_cache)
       En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
       @. tmp = En
     else
@@ -118,7 +118,7 @@ end
 end
 
 @muladd function perform_step!(integrator,cache::LambaEulerHeunCache,f=integrator.f)
-  @unpack du1,du2,K,tmp,L,gtmp = cache
+  @unpack du1,du2,K,tmp,L,gtmp,dW_cache = cache
   @unpack t,dt,uprev,u,W,p = integrator
   integrator.f(du1,uprev,p,t)
   integrator.g(L,uprev,p,t)
@@ -168,8 +168,8 @@ end
     if !is_diagonal_noise(integrator.sol.prob)
       integrator.g(gtmp,tmp,p,t)
       g_sized2 = norm(gtmp,2)
-      @. tmp = dW.^2
-      diff_tmp = integrator.opts.internalnorm(tmp)
+      @. dW_cache = dW.^2
+      diff_tmp = integrator.opts.internalnorm(dW_cache)
       En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
       @. tmp = En
     else
