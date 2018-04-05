@@ -6,7 +6,7 @@ struct LambaEMCache{uType,rateType,rateNoiseType,dWType} <: StochasticDiffEqMuta
   du2::rateType
   K::rateType
   tmp::uType
-  L::rateType
+  L::rateNoiseType
   gtmp::rateNoiseType
   dW_cache::dWType
 end
@@ -37,7 +37,7 @@ struct LambaEulerHeunCache{uType,rateType,rateNoiseType,dWType} <: StochasticDif
   du2::rateType
   K::rateType
   tmp::uType
-  L::rateType
+  L::rateNoiseType
   gtmp::rateNoiseType
   dW_cache::dWType
 end

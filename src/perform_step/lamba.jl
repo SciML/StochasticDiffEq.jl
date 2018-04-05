@@ -56,9 +56,8 @@ end
       g_sized = L
     end
 
-    @. tmp = @muladd K + L*integrator.sqdt
-
     if !is_diagonal_noise(integrator.sol.prob)
+      @. tmp = @muladd K + g_sized*integrator.sqdt
       integrator.g(gtmp,tmp,p,t)
       g_sized2 = norm(gtmp,2)
       @. dW_cache = dW.^2 - dt
@@ -66,6 +65,7 @@ end
       En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
       @. tmp = En
     else
+      @. tmp = @muladd K + L*integrator.sqdt
       integrator.g(gtmp,tmp,p,t)
       @. tmp = (gtmp-L)/(2integrator.sqdt)*(W.dW.^2 - dt)
     end
@@ -163,16 +163,16 @@ end
       g_sized = L
     end
 
-    @. tmp = @muladd uprev + L*integrator.sqdt
-
     if !is_diagonal_noise(integrator.sol.prob)
+      @. tmp = @muladd uprev + g_sized*integrator.sqdt
       integrator.g(gtmp,tmp,p,t)
       g_sized2 = norm(gtmp,2)
-      @. dW_cache = dW.^2
+      @. dW_cache = W.dW.^2
       diff_tmp = integrator.opts.internalnorm(dW_cache)
       En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
       @. tmp = En
     else
+      @. tmp = @muladd uprev + L*integrator.sqdt
       integrator.g(gtmp,tmp,p,t)
       @. tmp = (gtmp-L)/(2integrator.sqdt)*(W.dW.^2)
     end
