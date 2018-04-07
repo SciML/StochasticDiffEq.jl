@@ -73,17 +73,17 @@ function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prot
   du1 = zeros(rate_prototype)
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
   W = zeros(J)
-  z₁ = zeros(u,indices(u)); z₂ = zeros(u,indices(u))
-  z₃ = zeros(u,indices(u)); z₄ = zeros(u,indices(u))
-  dz = zeros(u,indices(u))
+  z₁ = similar(u,indices(u)); z₂ = similar(u,indices(u))
+  z₃ = similar(u,indices(u)); z₄ = similar(u,indices(u))
+  dz = similar(u,indices(u))
   fsalfirst = zeros(rate_prototype)
   k = zeros(rate_prototype)
-  tmp = zeros(ΔW); b = zeros(u,indices(u));
+  tmp = zeros(ΔW); b = similar(u,indices(u));
   atmp = zeros(u,uEltypeNoUnits,indices(u))
 
   if typeof(f) <: SplitFunction
-    k1 = zeros(u,indices(u)); k2 = zeros(u,indices(u))
-    k3 = zeros(u,indices(u)); k4 = zeros(u,indices(u))
+    k1 = zeros(u); k2 = zeros(u)
+    k3 = zeros(u); k4 = zeros(u)
     uf = DiffEqDiffTools.UJacobianWrapper(f.f1,t,p)
   else
     k1 = nothing; k2 = nothing

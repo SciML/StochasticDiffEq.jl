@@ -1,8 +1,8 @@
 struct EMConstantCache <: StochasticDiffEqConstantCache end
-struct EMCache{uType,rateType,rateNoiseType,rateNoiseCollectionType} <: StochasticDiffEqMutableCache
+struct EMCache{uType,rateType,rateNoiseType,rateNoiseCollectionType,randType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
-  tmp::uType
+  tmp::randType
   rtmp1::rateType
   rtmp2::rateNoiseType
   rtmp3::rateNoiseCollectionType
@@ -25,10 +25,10 @@ function alg_cache(alg::EM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
 end
 
 struct SplitEMConstantCache <: StochasticDiffEqConstantCache end
-struct SplitEMCache{uType,rateType,rateNoiseType,rateNoiseCollectionType} <: StochasticDiffEqMutableCache
+struct SplitEMCache{uType,rateType,rateNoiseType,rateNoiseCollectionType,randType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
-  tmp::uType
+  tmp::randType
   rtmp1::rateType
   rtmp2::rateNoiseType
   rtmp3::rateNoiseCollectionType
@@ -51,10 +51,10 @@ function alg_cache(alg::SplitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_proto
 end
 
 struct EulerHeunConstantCache <: StochasticDiffEqConstantCache end
-struct EulerHeunCache{uType,rateType,rateNoiseType,rateNoiseCollectionType} <: StochasticDiffEqMutableCache
+struct EulerHeunCache{uType,rateType,rateNoiseType,rateNoiseCollectionType,randType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
-  tmp::uType
+  tmp::randType
   ftmp1::rateType
   ftmp2::rateType
   nrtmp::rateNoiseCollectionType
@@ -75,10 +75,10 @@ function alg_cache(alg::EulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_pro
 end
 
 struct RandomEMConstantCache <: StochasticDiffEqConstantCache end
-struct RandomEMCache{uType,rateType} <: StochasticDiffEqMutableCache
+struct RandomEMCache{uType,rateType,randType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
-  tmp::uType
+  tmp::randType
   rtmp::rateType
 end
 
@@ -93,13 +93,13 @@ function alg_cache(alg::RandomEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prot
 end
 
 struct RKMilConstantCache <: StochasticDiffEqConstantCache end
-struct RKMilCache{uType,rateType} <: StochasticDiffEqMutableCache
+struct RKMilCache{uType,rateType,randType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   du1::rateType
   du2::rateType
   K::rateType
-  tmp::uType
+  tmp::randType
   L::rateType
 end
 
