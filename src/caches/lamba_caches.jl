@@ -18,13 +18,13 @@ alg_cache(alg::LambaEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uElt
 
 function alg_cache(alg::LambaEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   du1 = zeros(rate_prototype); du2 = zeros(rate_prototype)
-  K = zeros(rate_prototype); tmp = similar(u);
+  K = zeros(rate_prototype); tmp = zeros(ΔW);
   L = zeros(noise_rate_prototype)
   gtmp = zeros(noise_rate_prototype)
   if is_diagonal_noise(prob)
     dW_cache = nothing
   else
-    dW_cache = similar(ΔW)
+    dW_cache = zeros(ΔW)
   end
   LambaEMCache(u,uprev,du1,du2,K,tmp,L,gtmp,dW_cache)
 end
@@ -49,13 +49,13 @@ alg_cache(alg::LambaEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototy
 
 function alg_cache(alg::LambaEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   du1 = zeros(rate_prototype); du2 = zeros(rate_prototype)
-  K = zeros(rate_prototype); tmp = similar(u);
+  K = zeros(rate_prototype); tmp = zeros(ΔW);
   L = zeros(noise_rate_prototype)
   gtmp = zeros(noise_rate_prototype)
   if is_diagonal_noise(prob)
     dW_cache = nothing
   else
-    dW_cache = similar(ΔW)
+    dW_cache = zeros(ΔW)
   end
   LambaEulerHeunCache(u,uprev,du1,du2,K,tmp,L,gtmp,dW_cache)
 end

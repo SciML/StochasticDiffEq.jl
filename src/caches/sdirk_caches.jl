@@ -28,9 +28,9 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_pr
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   du1 = zeros(rate_prototype)
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
-  W = similar(J)
-  z = similar(u)
-  dz = similar(u); tmp = similar(u); gtmp = similar(noise_rate_prototype)
+  W = zeros(J)
+  z = zeros(u)
+  dz = zeros(u); tmp = zeros(ΔW); gtmp = zeros(noise_rate_prototype)
   fsalfirst = zeros(rate_prototype)
   k = zeros(rate_prototype)
 
@@ -55,8 +55,8 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_pr
     gtmp2 = gtmp
     dW_cache = nothing
   else
-    gtmp2 = similar(rate_prototype)
-    dW_cache = similar(ΔW)
+    gtmp2 = zeros(rate_prototype)
+    dW_cache = zeros(ΔW)
   end
 
   ImplicitEMCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,J,W,jac_config,linsolve,uf,
@@ -122,9 +122,9 @@ function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   du1 = zeros(rate_prototype)
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
-  W = similar(J)
-  z = similar(u)
-  dz = similar(u); tmp = similar(u); gtmp = similar(noise_rate_prototype)
+  W = zeros(J)
+  z = zeros(u)
+  dz = zeros(u); tmp = zeros(ΔW); gtmp = zeros(noise_rate_prototype)
   fsalfirst = zeros(rate_prototype)
   k = zeros(rate_prototype)
 
@@ -145,14 +145,14 @@ function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_
     tol = min(0.03,first(reltol)^(0.5))
   end
 
-  gtmp2 = similar(rate_prototype)
+  gtmp2 = zeros(rate_prototype)
 
   if is_diagonal_noise(prob)
       gtmp3 = gtmp2
       dW_cache = nothing
   else
-      gtmp3 = similar(noise_rate_prototype)
-      dW_cache = similar(ΔW)
+      gtmp3 = zeros(noise_rate_prototype)
+      dW_cache = zeros(ΔW)
   end
 
   ImplicitEulerHeunCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,gtmp3,
@@ -217,9 +217,9 @@ function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   du1 = zeros(rate_prototype)
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
-  W = similar(J)
-  z = similar(u)
-  dz = similar(u); tmp = similar(u); gtmp = similar(noise_rate_prototype)
+  W = zeros(J)
+  z = zeros(u)
+  dz = zeros(u); tmp = zeros(ΔW); gtmp = zeros(noise_rate_prototype)
   fsalfirst = zeros(rate_prototype)
   k = zeros(rate_prototype)
 
@@ -240,8 +240,8 @@ function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate
     tol = min(0.03,first(reltol)^(0.5))
   end
 
-  gtmp2 = similar(rate_prototype)
-  gtmp3 = similar(rate_prototype)
+  gtmp2 = zeros(rate_prototype)
+  gtmp3 = zeros(rate_prototype)
 
   ImplicitRKMilCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,gtmp3,
                    J,W,jac_config,linsolve,uf,ηold,κ,tol,10000)

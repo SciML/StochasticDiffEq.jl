@@ -23,7 +23,7 @@ function alg_cache(alg::SRA1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototyp
   if typeof(ΔW) <: Union{SArray,Number}
     chi2 = copy(ΔW)
   else
-    chi2 = similar(ΔW)
+    chi2 = zeros(ΔW)
   end
   tmp1 = zeros(u)
   E₁ = zeros(rate_prototype); gt = zeros(noise_rate_prototype); gpdt = zeros(noise_rate_prototype)
@@ -85,7 +85,7 @@ function alg_cache(alg::SRA2,prob,u,ΔW,ΔZ,p,rate_prototype,
   if typeof(ΔW) <: Union{SArray,Number}
     chi2 = copy(ΔW)
   else
-    chi2 = similar(ΔW)
+    chi2 = zeros(ΔW)
   end
   tab = SRA2ConstantCache(uBottomEltype)
   g1 = zeros(noise_rate_prototype); g2 = zeros(noise_rate_prototype)
@@ -234,7 +234,7 @@ function alg_cache(alg::SRA3,prob,u,ΔW,ΔZ,p,rate_prototype,
   if typeof(ΔW) <: Union{SArray,Number}
     chi2 = copy(ΔW)
   else
-    chi2 = similar(ΔW)
+    chi2 = zeros(ΔW)
   end
   tab = SRA3ConstantCache(uBottomEltype)
   g1 = zeros(noise_rate_prototype); g2 = zeros(noise_rate_prototype)
@@ -257,7 +257,7 @@ function alg_cache(alg::SOSRA,prob,u,ΔW,ΔZ,p,rate_prototype,
   if typeof(ΔW) <: Union{SArray,Number}
     chi2 = copy(ΔW)
   else
-    chi2 = similar(ΔW)
+    chi2 = zeros(ΔW)
   end
   tab = SOSRAConstantCache(uBottomEltype)
   g1 = zeros(noise_rate_prototype); g2 = zeros(noise_rate_prototype)
@@ -280,7 +280,7 @@ function alg_cache(alg::SOSRA2,prob,u,ΔW,ΔZ,p,rate_prototype,
   if typeof(ΔW) <: Union{SArray,Number}
     chi2 = copy(ΔW)
   else
-    chi2 = similar(ΔW)
+    chi2 = zeros(ΔW)
   end
   tab = SOSRA2ConstantCache(uBottomEltype)
   g1 = zeros(noise_rate_prototype); g2 = zeros(noise_rate_prototype)
@@ -354,7 +354,7 @@ function alg_cache(alg::SRA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype
   if typeof(ΔW) <: Union{SArray,Number}
     chi2 = copy(ΔW)
   else
-    chi2 = similar(ΔW)
+    chi2 = zeros(ΔW)
   end
   atemp = zeros(rate_prototype); btemp = zeros(rate_prototype); E₂ = zeros(rate_prototype); E₁temp = zeros(rate_prototype)
   E₁ = zeros(rate_prototype)

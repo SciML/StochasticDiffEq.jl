@@ -83,9 +83,9 @@ function alg_cache(alg::SRI,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype
     chi2 = copy(ΔW)
     chi3 = copy(ΔW)
   else
-    chi1 = similar(ΔW)
-    chi2 = similar(ΔW)
-    chi3 = similar(ΔW)
+    chi1 = zeros(ΔW)
+    chi2 = zeros(ΔW)
+    chi3 = zeros(ΔW)
   end
   tmp = zeros(u)
   SRICache(u,uprev,H0,H1,A0temp,A1temp,B0temp,B1temp,A0temp2,A1temp2,B0temp2,B1temp2,
@@ -134,9 +134,9 @@ function alg_cache(alg::SRIW1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototy
     chi2 = copy(ΔW)
     chi3 = copy(ΔW)
   else
-    chi1 = similar(ΔW)
-    chi2 = similar(ΔW)
-    chi3 = similar(ΔW)
+    chi1 = zeros(ΔW)
+    chi2 = zeros(ΔW)
+    chi3 = zeros(ΔW)
   end
   fH01o4 = zeros(rate_prototype)
   g₁o2 = zeros(rate_prototype)
@@ -431,9 +431,9 @@ function alg_cache(alg::SRIW2,prob,u,ΔW,ΔZ,p,rate_prototype,
     chi2 = copy(ΔW)
     chi3 = copy(ΔW)
   else
-    chi1 = similar(ΔW)
-    chi2 = similar(ΔW)
-    chi3 = similar(ΔW)
+    chi1 = zeros(ΔW)
+    chi2 = zeros(ΔW)
+    chi3 = zeros(ΔW)
   end
   tab = SRIW2ConstantCache(uBottomEltype)
   g1 = zeros(noise_rate_prototype); g2 = zeros(noise_rate_prototype)
@@ -453,9 +453,9 @@ function alg_cache(alg::SOSRI,prob,u,ΔW,ΔZ,p,rate_prototype,
     chi2 = copy(ΔW)
     chi3 = copy(ΔW)
   else
-    chi1 = similar(ΔW)
-    chi2 = similar(ΔW)
-    chi3 = similar(ΔW)
+    chi1 = zeros(ΔW)
+    chi2 = zeros(ΔW)
+    chi3 = zeros(ΔW)
   end
   tab = SOSRIConstantCache(uBottomEltype)
   g1 = zeros(noise_rate_prototype); g2 = zeros(noise_rate_prototype)
@@ -475,9 +475,9 @@ function alg_cache(alg::SOSRI2,prob,u,ΔW,ΔZ,p,rate_prototype,
     chi2 = copy(ΔW)
     chi3 = copy(ΔW)
   else
-    chi1 = similar(ΔW)
-    chi2 = similar(ΔW)
-    chi3 = similar(ΔW)
+    chi1 = zeros(ΔW)
+    chi2 = zeros(ΔW)
+    chi3 = zeros(ΔW)
   end
   tab = SOSRI2ConstantCache(uBottomEltype)
   g1 = zeros(noise_rate_prototype); g2 = zeros(noise_rate_prototype)

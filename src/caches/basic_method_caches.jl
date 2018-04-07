@@ -14,7 +14,7 @@ du_cache(c::EMCache) = (c.rtmp1,c.rtmp2)
 alg_cache(alg::EM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = EMConstantCache()
 
 function alg_cache(alg::EM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
-  tmp = similar(u); rtmp1 = zeros(rate_prototype);
+  tmp = zeros(ΔW); rtmp1 = zeros(rate_prototype);
   rtmp2 = zeros(noise_rate_prototype)
   if is_diagonal_noise(prob)
     rtmp3 = rtmp2
@@ -40,7 +40,7 @@ du_cache(c::SplitEMCache) = (c.rtmp1,c.rtmp2)
 alg_cache(alg::SplitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = SplitEMConstantCache()
 
 function alg_cache(alg::SplitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
-  tmp = similar(u); rtmp1 = zeros(rate_prototype);
+  tmp = zeros(ΔW); rtmp1 = zeros(rate_prototype);
   rtmp2 = zeros(noise_rate_prototype)
   if is_diagonal_noise(prob)
     rtmp3 = rtmp2
@@ -68,7 +68,7 @@ du_cache(c::EulerHeunCache) = (c.rtmp1,c.rtmp2,c.rtmp3,c.rtmp4)
 alg_cache(alg::EulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = EulerHeunConstantCache()
 
 function alg_cache(alg::EulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
-  tmp = similar(u); ftmp1 = zeros(rate_prototype); ftmp2 = zeros(rate_prototype)
+  tmp = zeros(ΔW); ftmp1 = zeros(rate_prototype); ftmp2 = zeros(rate_prototype)
   nrtmp = zeros(rate_prototype)
   gtmp1 = zeros(noise_rate_prototype); gtmp2 = zeros(noise_rate_prototype)
   EulerHeunCache(u,uprev,tmp,ftmp1,ftmp2,nrtmp,gtmp1,gtmp2)
@@ -88,7 +88,7 @@ du_cache(c::RandomEMCache) = (c.rtmp1,c.rtmp2)
 alg_cache(alg::RandomEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = RandomEMConstantCache()
 
 function alg_cache(alg::RandomEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
-  tmp = similar(u); rtmp = zeros(rate_prototype)
+  tmp = zeros(ΔW); rtmp = zeros(rate_prototype)
   RandomEMCache(u,uprev,tmp,rtmp)
 end
 
@@ -110,7 +110,7 @@ alg_cache(alg::RKMil,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltyp
 
 function alg_cache(alg::RKMil,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   du1 = zeros(rate_prototype); du2 = zeros(rate_prototype)
-  K = zeros(rate_prototype); tmp = similar(u); L = zeros(rate_prototype)
+  K = zeros(rate_prototype); tmp = zeros(ΔW); L = zeros(rate_prototype)
   RKMilCache(u,uprev,du1,du2,K,tmp,L)
 end
 
@@ -142,6 +142,6 @@ function alg_cache(alg::RKMilCommute,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
   L = zeros(noise_rate_prototype); tmp = zeros(rate_prototype)
   I = zeros(length(ΔW),length(ΔW));
   Dg = zeros(length(ΔW),length(ΔW)); mil_correction = zeros(rate_prototype)
-  Kj = similar(u); Dgj = zeros(noise_rate_prototype)
+  Kj = zeros(u); Dgj = zeros(noise_rate_prototype)
   RKMilCommuteCache(u,uprev,du1,du2,K,gtmp,L,I,Dg,mil_correction,Kj,Dgj,tmp)
 end

@@ -180,6 +180,7 @@ end
   integrator.f(du1,uprev,p,t)
   integrator.g(L,uprev,p,t)
   @. K = @muladd uprev + dt*du1
+  @. du2 = zero(eltype(u)) # This makes it safe to re-use the array
   if alg_interpretation(integrator.alg) == :Ito
     @. tmp = @muladd K + L*integrator.sqdt
     integrator.g(du2,tmp,p,t)
