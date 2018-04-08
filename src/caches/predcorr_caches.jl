@@ -11,7 +11,7 @@ struct PCEulerCache{uType,rateType,rateNoiseType,rateNoiseCollectionType} <: Sto
 end
 
 function alg_cache(alg::PCEuler,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
-  utmp = zeros(ΔW); ftmp = zeros(rate_prototype);
+  utmp = zeros(u); ftmp = zeros(rate_prototype);
   gtmp = zeros(noise_rate_prototype)
   bbprimetmp = zeros(ftmp)
   if is_diagonal_noise(prob)

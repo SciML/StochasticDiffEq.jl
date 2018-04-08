@@ -32,7 +32,7 @@ function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototy
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
   W = zeros(J)
   z = zeros(u)
-  dz = zeros(u); tmp = zeros(ΔW); gtmp = zeros(noise_rate_prototype)
+  dz = zeros(u); tmp = zeros(u); gtmp = zeros(noise_rate_prototype)
   fsalfirst = zeros(rate_prototype)
   k = zeros(rate_prototype)
 
@@ -128,7 +128,7 @@ function alg_cache(alg::ISSEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
   W = zeros(J)
   z = zeros(u)
-  dz = zeros(u); tmp = zeros(ΔW); gtmp = zeros(noise_rate_prototype)
+  dz = zeros(u); tmp = zeros(u); gtmp = zeros(noise_rate_prototype)
   fsalfirst = zeros(rate_prototype)
   k = zeros(rate_prototype)
 

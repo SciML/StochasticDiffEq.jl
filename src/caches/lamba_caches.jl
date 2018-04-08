@@ -18,7 +18,7 @@ alg_cache(alg::LambaEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uElt
 
 function alg_cache(alg::LambaEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   du1 = zeros(rate_prototype); du2 = zeros(rate_prototype)
-  K = zeros(rate_prototype); tmp = zeros(ΔW);
+  K = zeros(rate_prototype); tmp = zeros(u);
   L = zeros(noise_rate_prototype)
   gtmp = zeros(noise_rate_prototype)
   if is_diagonal_noise(prob)
@@ -49,7 +49,7 @@ alg_cache(alg::LambaEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototy
 
 function alg_cache(alg::LambaEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   du1 = zeros(rate_prototype); du2 = zeros(rate_prototype)
-  K = zeros(rate_prototype); tmp = zeros(ΔW);
+  K = zeros(rate_prototype); tmp = zeros(u);
   L = zeros(noise_rate_prototype)
   gtmp = zeros(noise_rate_prototype)
   if is_diagonal_noise(prob)

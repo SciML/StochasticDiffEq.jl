@@ -78,7 +78,7 @@ function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prot
   dz = similar(u,indices(u))
   fsalfirst = zeros(rate_prototype)
   k = zeros(rate_prototype)
-  tmp = zeros(ΔW); b = similar(u,indices(u));
+  tmp = zeros(u); b = similar(u,indices(u));
   atmp = zeros(u,uEltypeNoUnits,indices(u))
 
   if typeof(f) <: SplitFunction

@@ -30,7 +30,7 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_pr
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
   W = zeros(J)
   z = zeros(u)
-  dz = zeros(u); tmp = zeros(ΔW); gtmp = zeros(noise_rate_prototype)
+  dz = zeros(u); tmp = zeros(u); gtmp = zeros(noise_rate_prototype)
   fsalfirst = zeros(rate_prototype)
   k = zeros(rate_prototype)
 
@@ -124,7 +124,7 @@ function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
   W = zeros(J)
   z = zeros(u)
-  dz = zeros(u); tmp = zeros(ΔW); gtmp = zeros(noise_rate_prototype)
+  dz = zeros(u); tmp = zeros(u); gtmp = zeros(noise_rate_prototype)
   fsalfirst = zeros(rate_prototype)
   k = zeros(rate_prototype)
 
@@ -219,7 +219,7 @@ function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
   W = zeros(J)
   z = zeros(u)
-  dz = zeros(u); tmp = zeros(ΔW); gtmp = zeros(noise_rate_prototype)
+  dz = zeros(u); tmp = zeros(u); gtmp = zeros(noise_rate_prototype)
   fsalfirst = zeros(rate_prototype)
   k = zeros(rate_prototype)
 
