@@ -4,8 +4,6 @@ module StochasticDiffEq
 
   import Base: linspace
 
-  import Base: start, next, done, eltype
-
   import RandomNumbers: Xorshifts
 
   using Reexport
@@ -31,7 +29,9 @@ module StochasticDiffEq
                      resize_non_user_cache!,deleteat_non_user_cache!,addat_non_user_cache!,
                      terminate!,get_du, get_dt,get_proposed_dt,set_proposed_dt!,
                      u_modified!,savevalues!,add_tstop!,add_saveat!,set_reltol!,
-                     set_abstol!
+                     set_abstol!, postamble!, last_step_failed
+
+  using DiffEqBase: check_error!
 
   const CompiledFloats = Union{Float32,Float64}
 
