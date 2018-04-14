@@ -130,6 +130,8 @@ end
   mass_matrix = integrator.sol.prob.mass_matrix
   theta = integrator.alg.theta
 
+  repeat_step = false
+
   if integrator.success_iter > 0 && !integrator.u_modified && integrator.alg.extrapolant == :interpolant
     current_extrapolant!(u,t+dt,integrator)
   elseif integrator.alg.extrapolant == :linear
@@ -138,30 +140,7 @@ end
     copy!(u,uprev)
   end
 
-  if has_invW(f)
-    f(Val{:invW},W,uprev,p,dt,t) # W == inverse W
-  else
-    if !integrator.last_stepfail && cache.newton_iters == 1 && cache.ηold < integrator.alg.new_jac_conv_bound
-      new_jac = false
-    else # Compute a new Jacobian
-      new_jac = true
-      if has_jac(f)
-        f(Val{:jac},J,uprev,p,t)
-      else
-        uf.t = t
-        jacobian!(J, uf, uprev, du1, integrator, jac_config)
-      end
-    end
-    if integrator.iter < 1 || new_jac || abs(dt - (t-integrator.tprev)) > 100eps()
-      new_W = true
-      thetadt = dt*theta
-      for j in 1:length(u), i in 1:length(u)
-          @inbounds W[i,j] = mass_matrix[i,j]-thetadt*J[i,j]
-      end
-    else
-      new_W = false
-    end
-  end
+  new_W = calc_W!(integrator, cache, dt, repeat_step)
 
   integrator.f(tmp,uprev,p,t)
 
