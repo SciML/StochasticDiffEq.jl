@@ -188,7 +188,7 @@ end
   save_noise!(integrator.W)
 end
 
-@inline function postamble!(integrator)
+@inline function postamble!(integrator::SDEIntegrator)
   solution_endpoint_match_cur_integrator!(integrator)
   resize!(integrator.sol.t,integrator.saveiter)
   resize!(integrator.sol.u,integrator.saveiter)
