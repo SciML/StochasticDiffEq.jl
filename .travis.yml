@@ -6,6 +6,9 @@ os:
 julia:
   - 0.6
   - nightly
+env:
+  - GROUP=Interface
+  - GROUP=AlgConvergence
 matrix:
   allow_failures:
     - julia: nightly
