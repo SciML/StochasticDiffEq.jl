@@ -368,7 +368,7 @@ function solve!(integrator::SDEIntegrator)
   @inbounds while !isempty(integrator.opts.tstops)
     while integrator.tdir*integrator.t < integrator.tdir*top(integrator.opts.tstops)
       loopheader!(integrator)
-      @sde_exit_condtions
+      @sde_exit_conditions
       perform_step!(integrator,integrator.cache)
       loopfooter!(integrator)
       if isempty(integrator.opts.tstops)
