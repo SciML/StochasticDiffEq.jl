@@ -62,7 +62,7 @@ end
 last_step_failed(integrator::SDEIntegrator) =
   integrator.last_stepfail && !integrator.opts.adaptive
 
-@def sde_exit_condtions begin
+@def sde_exit_conditions begin
   if check_error!(integrator) != :Success
     return integrator.sol
   end
