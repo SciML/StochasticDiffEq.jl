@@ -283,6 +283,7 @@ function init(
     end
   end
 
+  eigen_est = 1/oneunit(tType)
   EEst = tTypeNoUnits(1)
   q = tTypeNoUnits(1)
   just_hit_tstop = false
@@ -320,7 +321,7 @@ function init(
   end
 
   integrator =    SDEIntegrator{typeof(alg),uType,uBottomEltype,tType,typeof(p),
-                  tTypeNoUnits,
+                  typeof(eigen_est),tTypeNoUnits,
                   uEltypeNoUnits,typeof(W),rateType,typeof(sol),typeof(cache),
                   typeof(prog),FType,GType,typeof(opts),typeof(noise)}(
                   f,g,noise,uprev,tprev,t,u,p,tType(dt),tType(dt),tType(dt),dtcache,T,tdir,
@@ -330,7 +331,7 @@ function init(
                   saveiter,
                   alg,sol,
                   cache,tType(dt),W,
-                  opts,iter,success_iter,prog,EEst,q,
+                  opts,iter,success_iter,prog,eigen_est,EEst,q,
                   tTypeNoUnits(qoldinit),q11)
 
   if initialize_integrator
