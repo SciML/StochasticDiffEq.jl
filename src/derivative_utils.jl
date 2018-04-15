@@ -18,6 +18,7 @@ function calc_W!(integrator, cache, γdt, repeat_step)
     @unpack t,dt,uprev,u,f,p = integrator
     @unpack J,W,jac_config = cache
     is_compos = typeof(integrator.alg) <: StochasticCompositeAlgorithm
+    alg = typeof(integrator.alg) <: Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm} ? integrator.alg.algs[integrator.alg.current_alg] : integrator.alg
     mass_matrix = integrator.sol.prob.mass_matrix
 
     new_W = true
@@ -27,7 +28,7 @@ function calc_W!(integrator, cache, γdt, repeat_step)
       is_compos && calc_J!(integrator, cache, true)
     else
       # skip calculation of J if step is repeated
-      if repeat_step || (!integrator.last_stepfail && cache.newton_iters == 1 && cache.ηold < integrator.alg.new_jac_conv_bound)
+      if repeat_step || (!integrator.last_stepfail && cache.newton_iters == 1 && cache.ηold < alg.new_jac_conv_bound)
         new_jac = false
       else # Compute a new Jacobian
         new_jac = true

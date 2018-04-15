@@ -5,8 +5,9 @@
                                             f=integrator.f)
   @unpack t,dt,uprev,u,p = integrator
   @unpack uf = cache
-  theta = integrator.alg.theta
-  integrator.alg.symplectic ? a = dt/2 : a = dt
+  alg = typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm ? integrator.alg.algs[integrator.alg.current_alg] : integrator.alg
+  theta = alg.theta
+  alg.symplectic ? a = dt/2 : a = dt
   uf.t = t
 
   # TODO: Stochastic extrapolants?
@@ -34,14 +35,14 @@
   end
 
   if typeof(cache) <: ImplicitRKMilConstantCache || integrator.opts.adaptive == true
-    if alg_interpretation(integrator.alg) == :Ito ||
+    if alg_interpretation(alg) == :Ito ||
        typeof(cache) <: ImplicitEMConstantCache
       K = @muladd uprev .+ dt.*ftmp
       utilde =  K + L*integrator.sqdt
       ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
       mil_correction = ggprime .* (integrator.W.dW.^2 .- dt)./2
       gtmp += mil_correction
-    elseif alg_interpretation(integrator.alg) == :Stratonovich ||
+    elseif alg_interpretation(alg) == :Stratonovich ||
            typeof(cache) <: ImplicitEulerHeunConstantCache
       utilde = uprev + L*integrator.sqdt
       ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
@@ -50,14 +51,14 @@
     end
   end
 
-  if integrator.alg.symplectic
+  if alg.symplectic
     z = zero(u) # constant extrapolation, justified by ODE IM
   else
     z = dt*ftmp # linear extrapolation
   end
 
   iter += 1
-  if integrator.alg.symplectic
+  if alg.symplectic
     # u = uprev + z then  u = (uprev+u)/2 = (uprev+uprev+z)/2 = uprev + z/2
     u = uprev + z/2 + gtmp/2
   else
@@ -76,9 +77,9 @@
   end
 
   fail_convergence = false
-  while (do_newton || iter < integrator.alg.min_newton_iter) && iter < integrator.alg.max_newton_iter
+  while (do_newton || iter < alg.min_newton_iter) && iter < alg.max_newton_iter
     iter += 1
-    if integrator.alg.symplectic
+    if alg.symplectic
       # u = uprev + z then  u = (uprev+u)/2 = (uprev+uprev+z)/2 = uprev + z/2
       u = uprev + z/2 + gtmp/2
     else
@@ -89,7 +90,7 @@
     ndzprev = ndz
     ndz = integrator.opts.internalnorm(dz)
     θ = ndz/ndzprev
-    if θ > 1 || ndz*(θ^(integrator.alg.max_newton_iter - iter)/(1-θ)) > κ*tol
+    if θ > 1 || ndz*(θ^(alg.max_newton_iter - iter)/(1-θ)) > κ*tol
       fail_convergence = true
       break
     end
@@ -98,13 +99,13 @@
     z = z + dz
   end
 
-  if integrator.alg.symplectic
+  if alg.symplectic
     u = uprev + z + gtmp
   else
     u = uprev + dt*(1-theta)*ftmp + theta*z + gtmp
   end
 
-  if (iter >= integrator.alg.max_newton_iter && do_newton) || fail_convergence
+  if (iter >= alg.max_newton_iter && do_newton) || fail_convergence
     integrator.force_stepfail = true
     return
   end
@@ -136,16 +137,17 @@ end
                                f=integrator.f)
   @unpack t,dt,uprev,u,p = integrator
   @unpack uf,du1,dz,z,k,J,W,jac_config,gtmp,gtmp2,tmp = cache
-  integrator.alg.symplectic ? a = dt/2 : a = dt
+  alg = typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm ? integrator.alg.algs[integrator.alg.current_alg] : integrator.alg
+  alg.symplectic ? a = dt/2 : a = dt
   dW = integrator.W.dW
   mass_matrix = integrator.sol.prob.mass_matrix
-  theta = integrator.alg.theta
+  theta = alg.theta
 
   repeat_step = false
 
-  if integrator.success_iter > 0 && !integrator.u_modified && integrator.alg.extrapolant == :interpolant
+  if integrator.success_iter > 0 && !integrator.u_modified && alg.extrapolant == :interpolant
     current_extrapolant!(u,t+dt,integrator)
-  elseif integrator.alg.extrapolant == :linear
+  elseif alg.extrapolant == :linear
     @. u = uprev + integrator.fsalfirst*dt
   else # :constant
     copy!(u,uprev)
@@ -184,12 +186,12 @@ end
 
   if typeof(cache) <: ImplicitRKMilCache
     gtmp3 = cache.gtmp3
-    if alg_interpretation(integrator.alg) == :Ito
+    if alg_interpretation(alg) == :Ito
       @. z = @muladd uprev + dt*tmp + gtmp*integrator.sqdt
       integrator.g(gtmp3,z,p,t)
       @. gtmp3 = (gtmp3-gtmp)/(integrator.sqdt) # ggprime approximation
       @. gtmp2 += gtmp3*(dW.^2 - dt)/2
-    elseif alg_interpretation(integrator.alg) == :Stratonovich
+    elseif alg_interpretation(alg) == :Stratonovich
       @. z = @muladd uprev + gtmp*integrator.sqdt
       integrator.g(gtmp3,z,p,t)
       @. gtmp3 = (gtmp3-gtmp)/(integrator.sqdt) # ggprime approximation
@@ -199,7 +201,7 @@ end
 
   ##############################################################################
 
-  if integrator.alg.symplectic
+  if alg.symplectic
     @. z = zero(u) # Justified by ODE solvers, constrant extrapolation when IM
   else
     @. z = dt*tmp # linear extrapolation
@@ -208,7 +210,7 @@ end
   iter = 0
   κ = cache.κ
   tol = cache.tol
-  if integrator.alg.symplectic
+  if alg.symplectic
     @. u = uprev + z/2 + gtmp2/2
   else
     @. u = uprev + dt*(1-theta)*tmp + theta*z + gtmp2
@@ -238,9 +240,9 @@ end
   end
 
   fail_convergence = false
-  while (do_newton || iter < integrator.alg.min_newton_iter) && iter < integrator.alg.max_newton_iter
+  while (do_newton || iter < alg.min_newton_iter) && iter < alg.max_newton_iter
     iter += 1
-    if integrator.alg.symplectic
+    if alg.symplectic
       @. u = uprev + z/2 + gtmp2/2
     else
       @. u = uprev + dt*(1-theta)*tmp + theta*z + gtmp2
@@ -261,7 +263,7 @@ end
     ndzprev = ndz
     ndz = integrator.opts.internalnorm(dz)
     θ = ndz/ndzprev
-    if θ > 1 || ndz*(θ^(integrator.alg.max_newton_iter - iter)/(1-θ)) > κ*tol
+    if θ > 1 || ndz*(θ^(alg.max_newton_iter - iter)/(1-θ)) > κ*tol
       fail_convergence = true
       break
     end
@@ -270,13 +272,13 @@ end
     z .+= dz
   end
 
-  if integrator.alg.symplectic
+  if alg.symplectic
     @. u = uprev + z + gtmp2
   else
     @. u = uprev + dt*(1-theta)*tmp + theta*z + gtmp2
   end
 
-  if (iter >= integrator.alg.max_newton_iter && do_newton) || fail_convergence
+  if (iter >= alg.max_newton_iter && do_newton) || fail_convergence
     integrator.force_stepfail = true
     return
   end

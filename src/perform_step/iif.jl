@@ -29,6 +29,7 @@ end
 @muladd function perform_step!(integrator,cache::Union{IIF1MConstantCache,IIF2MConstantCache,IIF1MilConstantCache},f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack uhold,rhs,nl_rhs = cache
+  alg = typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm ? integrator.alg.algs[integrator.alg.current_alg] : integrator.alg
   A = integrator.f[1](u,p,t)
   if typeof(cache) <: IIF1MilConstantCache
     error("Milstein correction does not work.")
@@ -45,7 +46,7 @@ end
   rhs.t = t
   rhs.dt = dt
   rhs.tmp = tmp
-  nlres = integrator.alg.nlsolve(nl_rhs,uhold)
+  nlres = alg.nlsolve(nl_rhs,uhold)
 
   u = nlres[1]
   integrator.u = u
@@ -93,6 +94,7 @@ end
   @unpack rtmp1,rtmp2,rtmp3,tmp,noise_tmp = cache
   @unpack uhold,rhs,nl_rhs = cache
   @unpack t,dt,uprev,u,W,p = integrator
+  alg = typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm ? integrator.alg.algs[integrator.alg.current_alg] : integrator.alg
   uidx = eachindex(u)
 
   integrator.g(rtmp2,uprev,p,t)
@@ -122,7 +124,7 @@ end
   rhs.dt = dt
   rhs.tmp = tmp
   rhs.sizeu = size(u)
-  nlres = integrator.alg.nlsolve(nl_rhs,uhold)
+  nlres = alg.nlsolve(nl_rhs,uhold)
 
   copy!(uhold,nlres)
 
@@ -133,6 +135,7 @@ end
   @unpack rtmp1,rtmp2,rtmp3,tmp,noise_tmp = cache
   @unpack uhold,rhs,nl_rhs = cache
   @unpack t,dt,uprev,u,W,p = integrator
+  alg = typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm ? integrator.alg.algs[integrator.alg.current_alg] : integrator.alg
 
   dW = W.dW; sqdt = integrator.sqdt
   f = integrator.f; g = integrator.g
@@ -190,7 +193,7 @@ end
   rhs.dt = dt
   rhs.tmp = tmp
   rhs.sizeu = size(u)
-  nlres = integrator.alg.nlsolve(nl_rhs,uhold)
+  nlres = alg.nlsolve(nl_rhs,uhold)
 
   copy!(uhold,nlres)
 end
