@@ -421,6 +421,8 @@ struct FourStageSRICache{uType,randType,tabType,NT,T} <: StochasticDiffEqMutable
   E₁::T
   E₂::T
   tmp::T
+  H02::T
+  H03::T
 end
 
 function alg_cache(alg::SRIW2,prob,u,ΔW,ΔZ,p,rate_prototype,
@@ -442,7 +444,7 @@ function alg_cache(alg::SRIW2,prob,u,ΔW,ΔZ,p,rate_prototype,
   k3 = zeros(rate_prototype); k4 = zeros(rate_prototype)
   E₁ = zeros(rate_prototype); E₂ = zeros(rate_prototype)
   tmp = zeros(rate_prototype)
-  FourStageSRICache(u,uprev,chi1,chi2,chi3,tab,g1,g2,g3,g4,k1,k2,k3,k4,E₁,E₂,tmp)
+  FourStageSRICache(u,uprev,chi1,chi2,chi3,tab,g1,g2,g3,g4,k1,k2,k3,k4,E₁,E₂,tmp,tmp,tmp)
 end
 
 function alg_cache(alg::SOSRI,prob,u,ΔW,ΔZ,p,rate_prototype,
@@ -464,7 +466,7 @@ function alg_cache(alg::SOSRI,prob,u,ΔW,ΔZ,p,rate_prototype,
   k3 = zeros(rate_prototype); k4 = zeros(rate_prototype)
   E₁ = zeros(rate_prototype); E₂ = zeros(rate_prototype)
   tmp = zeros(rate_prototype)
-  FourStageSRICache(u,uprev,chi1,chi2,chi3,tab,g1,g2,g3,g4,k1,k2,k3,k4,E₁,E₂,tmp)
+  FourStageSRICache(u,uprev,chi1,chi2,chi3,tab,g1,g2,g3,g4,k1,k2,k3,k4,E₁,E₂,tmp,tmp,tmp)
 end
 
 function alg_cache(alg::SOSRI2,prob,u,ΔW,ΔZ,p,rate_prototype,
@@ -485,6 +487,7 @@ function alg_cache(alg::SOSRI2,prob,u,ΔW,ΔZ,p,rate_prototype,
   k1 = zeros(rate_prototype); k2 = zeros(rate_prototype)
   k3 = zeros(rate_prototype); k4 = zeros(rate_prototype)
   E₁ = zeros(rate_prototype); E₂ = zeros(rate_prototype)
-  tmp = zeros(rate_prototype)
-  FourStageSRICache(u,uprev,chi1,chi2,chi3,tab,g1,g2,g3,g4,k1,k2,k3,k4,E₁,E₂,tmp)
+  tmp = zeros(rate_prototype); H02 = zeros(rate_prototype)
+  H03 = zeros(rate_prototype)
+  FourStageSRICache(u,uprev,chi1,chi2,chi3,tab,g1,g2,g3,g4,k1,k2,k3,k4,E₁,E₂,tmp,H02,H03)
 end
