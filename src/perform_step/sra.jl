@@ -189,6 +189,12 @@ end
 
   u = uprev + E₁ + E₂ + W.dW*(beta11*g1 + beta12*g2 + beta13*g3)
 
+  if typeof(integrator.alg) <: StochasticCompositeAlgorithm && typeof(integrator.alg.algs[1]) <: SOSRA2
+    ϱu = integrator.opts.internalnorm(k3 - k2)
+    ϱd = integrator.opts.internalnorm(H02 - H01)
+    integrator.eigen_est = ϱu/ϱd
+  end
+
   if integrator.opts.adaptive
     E₁ = dt*(k1 + k2 + k3)
     integrator.EEst = integrator.opts.internalnorm((integrator.opts.delta*E₁+E₂)/(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol))
@@ -251,6 +257,14 @@ end
     for i in eachindex(u)
       @inbounds u[i] = uprev[i] + dt*(α1*k1[i] + α2*k2[i] + α3*k3[i]) + E₂[i] + E₁[i]
     end
+  end
+
+  if typeof(integrator.alg) <: StochasticCompositeAlgorithm && typeof(integrator.alg.algs[1]) <: SOSRA2
+    @. tmp = k3 - k2
+    ϱu = integrator.opts.internalnorm(tmp)
+    @. tmp = H02 - H01
+    ϱd = integrator.opts.internalnorm(tmp)
+    integrator.eigen_est = ϱu/ϱd
   end
 
   if integrator.opts.adaptive

@@ -347,6 +347,12 @@ end
 
   E₁ = dt*(k1 + k2 + k3 + k4)
 
+  if typeof(integrator.alg) <: StochasticCompositeAlgorithm && typeof(integrator.alg.algs[1]) <: SOSRI2
+    ϱu = integrator.opts.internalnorm(k4 - k3)
+    ϱd = integrator.opts.internalnorm(H03 - H02)
+    integrator.eigen_est = ϱu/ϱd
+  end
+
   if integrator.opts.adaptive
     integrator.EEst = integrator.opts.internalnorm((integrator.opts.delta*E₁+E₂)./(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
   end
@@ -355,7 +361,7 @@ end
 
 @muladd function perform_step!(integrator,cache::FourStageSRICache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
-  @unpack chi1,chi2,chi3,tab,g1,g2,g3,g4,k1,k2,k3,k4,E₁,E₂,tmp = cache
+  @unpack chi1,chi2,chi3,tab,g1,g2,g3,g4,k1,k2,k3,k4,E₁,E₂,tmp,H02,H03 = cache
   @unpack a021,a031,a032,a041,a042,a043,a121,a131,a132,a141,a142,a143,b021,b031,b032,b041,b042,b043,b121,b131,b132,b141,b142,b143,c02,c03,c04,c11,c12,c13,c14,α1,α2,α3,α4,beta11,beta12,beta13,beta14,beta21,beta22,beta23,beta24,beta31,beta32,beta33,beta34,beta41,beta42,beta43,beta44 = cache.tab
 
   sqdt = integrator.sqdt
@@ -380,23 +386,31 @@ end
   integrator.g(g2,tmp,p,t+c12*dt)
 
   for i in eachindex(u)
-    @inbounds tmp[i] = uprev[i] + dt*(a031*k1[i] + a032*k2[i]) + chi2[i]*(b031*g1[i] + b032*g2[i])
+    @inbounds H02[i] = uprev[i] + dt*(a031*k1[i] + a032*k2[i]) + chi2[i]*(b031*g1[i] + b032*g2[i])
   end
-  integrator.f(k3,tmp,p,t+c03*dt)
+  integrator.f(k3,H02,p,t+c03*dt)
   for i in eachindex(u)
     @inbounds tmp[i] = uprev[i] + dt*(a131*k1[i] + a132*k2[i]) + sqdt*(b131*g1[i] + b132*g2[i])
   end
   integrator.g(g3,tmp,p,t+c13*dt)
 
   for i in eachindex(u)
-    @inbounds tmp[i] = uprev[i] + dt*(a041*k1[i] + a042*k2[i] + a043*k3[i]) + chi2[i]*(b041*g1[i] + b042*g2[i] + b043*g3[i])
+    @inbounds H03[i] = uprev[i] + dt*(a041*k1[i] + a042*k2[i] + a043*k3[i]) + chi2[i]*(b041*g1[i] + b042*g2[i] + b043*g3[i])
   end
-  integrator.f(k4,tmp,p,t+c04*dt)
+  integrator.f(k4,H03,p,t+c04*dt)
 
   for i in eachindex(u)
     @inbounds tmp[i] = uprev[i] + dt*(a141*k1[i] + a142*k2[i] + a143*k3[i]) + sqdt*(b141*g1[i] + b142*g2[i] + b143*g3[i])
   end
   integrator.g(g4,tmp,p,t+c14*dt)
+
+  if typeof(integrator.alg) <: StochasticCompositeAlgorithm && typeof(integrator.alg.algs[1]) <: SOSRI2
+    @. tmp = k4 - k3
+    ϱu = integrator.opts.internalnorm(tmp)
+    @. tmp = H03 - H02
+    ϱd = integrator.opts.internalnorm(tmp)
+    integrator.eigen_est = ϱu/ϱd
+  end
 
   for i in eachindex(u)
     @inbounds E₂[i] = chi2[i]*(beta31*g1[i] + beta32*g2[i] + beta33*g3[i] + beta34*g4[i]) + chi3[i]*(beta41*g1[i] + beta42*g2[i] + beta43*g3[i] + beta44*g4[i])
