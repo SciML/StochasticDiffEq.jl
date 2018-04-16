@@ -119,7 +119,7 @@
     if typeof(cache) <: Union{ImplicitEMConstantCache,ImplicitEulerHeunConstantCache}
         En = mil_correction
     else
-        En = integrator.opts.internalnorm.(dW.^3) .*
+        En = integrator.opts.internalnorm.(integrator.W.dW.^3) .*
              integrator.opts.internalnorm.(ggprime).^2 ./ 6
     end
 
