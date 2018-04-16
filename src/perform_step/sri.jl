@@ -267,7 +267,6 @@ end
 
 @muladd function perform_step!(integrator,cache::SRIConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
-  error_terms = integrator.alg.error_terms
   @unpack c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄,stages,H0,H1,error_terms = cache
   chi1 = .5*(W.dW.^2 - dt)/integrator.sqdt #I_(1,1)/sqrt(h)
   chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h

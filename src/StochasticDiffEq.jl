@@ -62,6 +62,7 @@ module StochasticDiffEq
   include("integrators/integrator_utils.jl")
   include("integrators/integrator_interface.jl")
   include("iterator_interface.jl")
+  include("composite_solution.jl")
   include("solve.jl")
   include("initdt.jl")
   include("perform_step/low_order.jl")
@@ -76,6 +77,7 @@ module StochasticDiffEq
   include("perform_step/split.jl")
   include("perform_step/composite.jl")
   include("tableaus.jl")
+  include("composite_algs.jl")
 
    export StochasticDiffEqAlgorithm, StochasticDiffEqAdaptiveAlgorithm,
           StochasticCompositeAlgorithm
@@ -83,7 +85,8 @@ module StochasticDiffEq
   export EM, LambaEM, PCEuler, RKMil, SRA, SRI, SRIW1,
          SRA1, SRA2, SRA3,
          SOSRA, SOSRA2, RKMilCommute,
-         SRIW2, SOSRI, SOSRI2, SKenCarp
+         SRIW2, SOSRI, SOSRI2, SKenCarp,
+         AutoSOSRI2, AutoSOSRA2
 
   export EulerHeun, LambaEulerHeun
 

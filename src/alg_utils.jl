@@ -3,7 +3,7 @@ qmin_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}
 
 isadaptive(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = false
 isadaptive(alg::Union{StochasticDiffEqAdaptiveAlgorithm,StochasticDiffEqRODEAdaptiveAlgorithm}) = true
-isadaptive(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = isadaptive(alg.algs[1])
+isadaptive(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = all(isadaptive.(alg.algs))
 
 alg_order(alg::EM) = 1//2
 alg_order(alg::LambaEM) = 1//2
@@ -34,7 +34,9 @@ alg_order(alg::SRA3) = 2//1
 alg_order(alg::SOSRA) = 2//1
 alg_order(alg::SOSRA2) = 2//1
 alg_order(alg::SKenCarp) = 2//1
-alg_order(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = alg_order(alg.algs[1])
+alg_order(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = maximum(alg_order.(alg.algs))
+get_current_alg_order(alg::StochasticDiffEqAlgorithm,cache) = alg_order(alg)
+get_current_alg_order(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm},cache) = alg_order(alg.algs[cache.current])
 
 beta2_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = 2//(5alg_order(alg))
 beta1_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm},beta2) = 7//(10alg_order(alg))
@@ -115,3 +117,6 @@ end
 is_split_step(::StochasticDiffEqAlgorithm) = false
 is_split_step(::EM{split}) = split
 is_split_step(::LambaEM{split}) = split
+
+alg_stability_size(alg::SOSRI2) = 10.6
+alg_stability_size(alg::SOSRA2) = 5.3

@@ -88,7 +88,7 @@ end
       else
         copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})
       end
-      if typeof(alg) <: StochasticDiffEqCompositeAlgorithm
+      if typeof(alg) <: Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}
         copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
       end
     end
@@ -102,9 +102,9 @@ end
       copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})
     end
     copyat_or_push!(integrator.sol.t,integrator.saveiter,integrator.t)
-    #if typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm
-    #  copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
-    #end
+    if typeof(integrator.alg) <: Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}
+      copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
+    end
   end
 end
 

@@ -304,9 +304,18 @@ function init(
 
   id = LinearInterpolationData(timeseries,ts)
 
-  sol = build_solution(prob,alg,ts,timeseries,W=W,
-                calculate_error = false,
-                interp = id, dense = dense, seed = _seed)
+  alg_choice = Int[]
+
+  if typeof(alg) <: Union{StochasticDiffEqCompositeAlgorithm,
+                          StochasticDiffEqRODECompositeAlgorithm}
+    sol = build_solution(prob,alg,ts,timeseries,W=W,
+                  calculate_error = false, alg_choice=alg_choice,
+                  interp = id, dense = dense, seed = _seed)
+  else
+    sol = build_solution(prob,alg,ts,timeseries,W=W,
+                  calculate_error = false,
+                  interp = id, dense = dense, seed = _seed)
+  end
 
   if recompile_flag == true
     FType = typeof(f)
@@ -337,6 +346,8 @@ function init(
   if initialize_integrator
     initialize_callbacks!(integrator)
     initialize!(integrator,integrator.cache)
+    save_start && typeof(alg) <: Union{StochasticDiffEqCompositeAlgorithm,
+                                       StochasticDiffEqRODECompositeAlgorithm} && copyat_or_push!(alg_choice,1,integrator.cache.current)
   end
 
   if integrator.dt == zero(integrator.dt) && integrator.opts.adaptive
