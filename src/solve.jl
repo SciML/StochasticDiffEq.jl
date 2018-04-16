@@ -347,7 +347,7 @@ function init(
     initialize_callbacks!(integrator)
     initialize!(integrator,integrator.cache)
     save_start && typeof(alg) <: Union{StochasticDiffEqCompositeAlgorithm,
-                                       StochasticDiffEqRODECompositeAlgorithm} && copyat_or_push!(alg_choice,1,integrator.alg.current_alg)
+                                       StochasticDiffEqRODECompositeAlgorithm} && copyat_or_push!(alg_choice,1,integrator.cache.current)
   end
 
   if integrator.dt == zero(integrator.dt) && integrator.opts.adaptive

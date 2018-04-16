@@ -265,11 +265,9 @@ Base.@pure SKenCarp(;chunk_size=0,autodiff=true,diff_type=Val{:central},
 
 # Etc.
 
-mutable struct StochasticCompositeAlgorithm{T,F} <: StochasticDiffEqCompositeAlgorithm
+struct StochasticCompositeAlgorithm{T,F} <: StochasticDiffEqCompositeAlgorithm
   algs::T
   choice_function::F
-  current_alg::Int
 end
-StochasticCompositeAlgorithm(a::T, b::F) where {T,F} = StochasticCompositeAlgorithm(a, b, 1)
 
 struct RandomEM <: StochasticDiffEqRODEAlgorithm end

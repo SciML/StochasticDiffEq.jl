@@ -7,7 +7,7 @@
   @unpack γ,a31,a32,a41,a42,a43,btilde1,btilde2,btilde3,btilde4,c3,α31,α32 = cache.tab
   @unpack ea21,ea31,ea32,ea41,ea42,ea43,eb1,eb2,eb3,eb4,ebtilde1,ebtilde2,ebtilde3,ebtilde4 = cache.tab
   @unpack nb021,nb043 = cache.tab
-  alg = typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm ? integrator.alg.algs[integrator.alg.current_alg] : integrator.alg
+  alg = typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm ? integrator.alg.algs[integrator.cache.current] : integrator.alg
 
   chi2 = (integrator.W.dW + integrator.W.dZ/sqrt(3))/2 #I_(1,0)/h
 
@@ -242,7 +242,7 @@ end
   @unpack ea21,ea31,ea32,ea41,ea42,ea43,eb1,eb2,eb3,eb4 = cache.tab
   @unpack ebtilde1,ebtilde2,ebtilde3,ebtilde4 = cache.tab
   @unpack nb021,nb043 = cache.tab
-  alg = typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm ? integrator.alg.algs[integrator.alg.current_alg] : integrator.alg
+  alg = typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm ? integrator.alg.algs[integrator.cache.current] : integrator.alg
 
   # Some aliases
 

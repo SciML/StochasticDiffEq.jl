@@ -34,7 +34,7 @@ alg_order(alg::SRA3) = 2//1
 alg_order(alg::SOSRA) = 2//1
 alg_order(alg::SOSRA2) = 2//1
 alg_order(alg::SKenCarp) = 2//1
-alg_order(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = alg_order(alg.algs[alg.current_alg])
+alg_order(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = maximum(alg_order.(alg.algs))
 get_current_alg_order(alg::StochasticDiffEqAlgorithm,cache) = alg_order(alg)
 get_current_alg_order(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm},cache) = alg_order(alg.algs[cache.current])
 
