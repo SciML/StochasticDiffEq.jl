@@ -9,5 +9,5 @@ alg = AutoSOSRA2(SKenCarp(), maxstiffstep=2, maxnonstiffstep=2, stiffalgfirst=tr
 @test length(unique(sol.alg_choice)) == 2
 
 srand(100)
-@time sol = solve(prob, AutoSOSRI2(SKenCarp(), maxstiffstep=3, maxnonstiffstep=3));
+@time sol = solve(prob, AutoSOSRI2(ImplicitRKMil(), maxstiffstep=3, maxnonstiffstep=3));
 @test length(unique(sol.alg_choice)) == 2
