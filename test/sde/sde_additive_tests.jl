@@ -1,6 +1,8 @@
 using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Base.Test
 srand(100)
 
+println("Bunch of additive solves")
+
 f_bm(u,p,t) = 0.0
 f_bm(::Type{Val{:analytic}},u0,p,t,W) = W
 g_bm(u,p,t) = 1.0
