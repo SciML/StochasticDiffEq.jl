@@ -31,7 +31,7 @@ sol =solve(prob,SRIW1())
 
 The options for `solve` are defined in the [common solver options page](http://docs.juliadiffeq.org/latest/basics/common_solver_opts.html) and are thoroughly explained in [the ODE tutorial](http://docs.juliadiffeq.org/latest/tutorials/ode_example.html).
 
-That example uses the out-of-place syntax `f(t,u)`, while the inplace syntax (more efficient for systems of equations) is shown in the Lorenz example:
+That example uses the out-of-place syntax `f(u,p,t)`, while the inplace syntax (more efficient for systems of equations) is shown in the Lorenz example:
 
 ```julia
 function lorenz(du,u,p,t)
