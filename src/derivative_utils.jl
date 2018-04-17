@@ -28,7 +28,7 @@ function calc_W!(integrator, cache, γdt, repeat_step)
       is_compos && calc_J!(integrator, cache, true)
     else
       # skip calculation of J if step is repeated
-      if repeat_step || (!integrator.last_stepfail && cache.newton_iters == 1 && cache.ηold < alg.new_jac_conv_bound)
+      if repeat_step || (!integrator.last_stepfail && cache.newton_iters == 1 && real(cache.ηold) < real(alg.new_jac_conv_bound))
         new_jac = false
       else # Compute a new Jacobian
         new_jac = true

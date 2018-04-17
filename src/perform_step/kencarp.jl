@@ -321,8 +321,8 @@ end
   ndz = integrator.opts.internalnorm(dz)
   z₂ .+= dz
 
-  η = max(cache.ηold,eps(eltype(integrator.opts.reltol)))^(0.8)
-  do_newton = integrator.success_iter == 0 || η*ndz > κtol
+  η = max(real(cache.ηold),eps(real(eltype(integrator.opts.reltol))))^(0.8)
+  do_newton = integrator.success_iter == 0 || η*ndz > real(κtol)
 
   # Newton iteration
   fail_convergence = false
@@ -339,12 +339,12 @@ end
     ndzprev = ndz
     ndz = integrator.opts.internalnorm(dz)
     θ = ndz/ndzprev
-    if θ > 1 || ndz*(θ^(alg.max_newton_iter - iter)/(1-θ)) > κtol
+    if θ > 1 || ndz*(θ^(alg.max_newton_iter - iter)/(1-θ)) > real(κtol)
       fail_convergence = true
       break
     end
     η = θ/(1-θ)
-    do_newton = (η*ndz > κtol)
+    do_newton = (η*ndz > real(κtol))
     z₂ .+= dz
   end
 
@@ -387,8 +387,8 @@ end
   ndz = integrator.opts.internalnorm(dz)
   z₃ .+= dz
 
-  η = max(η,eps(eltype(integrator.opts.reltol)))^(0.8)
-  do_newton = (η*ndz > κtol)
+  η = max(real(η),eps(real(eltype(integrator.opts.reltol))))^(0.8)
+  do_newton = (η*ndz > real(κtol))
 
   # Newton iteration
   fail_convergence = false
@@ -405,12 +405,12 @@ end
     ndzprev = ndz
     ndz = integrator.opts.internalnorm(dz)
     θ = ndz/ndzprev
-    if θ > 1 || ndz*(θ^(alg.max_newton_iter - iter)/(1-θ)) > κtol
+    if θ > 1 || ndz*(θ^(alg.max_newton_iter - iter)/(1-θ)) > real(κtol)
       fail_convergence = true
       break
     end
     η = θ/(1-θ)
-    do_newton = (η*ndz > κtol)
+    do_newton = (η*ndz > real(κtol))
     z₃ .+= dz
   end
 
@@ -455,8 +455,8 @@ end
   ndz = integrator.opts.internalnorm(dz)
   z₄ .+= dz
 
-  η = max(η,eps(eltype(integrator.opts.reltol)))^(0.8)
-  do_newton = (η*ndz > κtol)
+  η = max(real(η),eps(real(eltype(integrator.opts.reltol))))^(0.8)
+  do_newton = (η*ndz > real(κtol))
 
   # Newton iteration
   fail_convergence = false
@@ -473,12 +473,12 @@ end
     ndzprev = ndz
     ndz = integrator.opts.internalnorm(dz)
     θ = ndz/ndzprev
-    if θ > 1 || ndz*(θ^(alg.max_newton_iter - iter)/(1-θ)) > κtol
+    if θ > 1 || ndz*(θ^(alg.max_newton_iter - iter)/(1-θ)) > real(κtol)
       fail_convergence = true
       break
     end
     η = θ/(1-θ)
-    do_newton = (η*ndz > κtol)
+    do_newton = (η*ndz > real(κtol))
     z₄ .+= dz
   end
 
