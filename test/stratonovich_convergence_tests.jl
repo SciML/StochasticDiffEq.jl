@@ -22,7 +22,7 @@ sim  = test_convergence(dts,prob,ImplicitEulerHeun(symplectic=true),numMonte=Int
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
 sim = test_convergence(dts,prob,RKMil(interpretation=:Stratonovich),numMonte=Int(5e2))
-@test abs(sim2.𝒪est[:l2]-1) < 0.2
+@test abs(sim.𝒪est[:l2]-1) < 0.2
 
 sim  = test_convergence(dts,prob,ImplicitRKMil(interpretation=:Stratonovich),numMonte=Int(5e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.1
