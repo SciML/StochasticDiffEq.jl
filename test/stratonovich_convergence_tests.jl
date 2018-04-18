@@ -27,6 +27,8 @@ sim2 = test_convergence(dts,prob,RKMil(interpretation=:Stratonovich),numMonte=In
 sim  = test_convergence(dts,prob,ImplicitRKMil(interpretation=:Stratonovich),numMonte=Int(5e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
+println("Now 2D")
+
 prob = prob_sde_2Dlinear_stratonovich
 
 sim  = test_convergence(dts,prob,EulerHeun(),numMonte=Int(5e1))
