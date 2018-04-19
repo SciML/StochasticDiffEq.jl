@@ -60,7 +60,7 @@ end
       @. tmp = @muladd K + g_sized*integrator.sqdt
       integrator.g(gtmp,tmp,p,t)
       g_sized2 = norm(gtmp,2)
-      @. dW_cache = dW.^2 - dt
+      @. dW_cache = W.dW.^2 - dt
       diff_tmp = integrator.opts.internalnorm(dW_cache)
       En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
       @. tmp = En
