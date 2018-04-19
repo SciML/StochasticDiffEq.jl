@@ -322,7 +322,7 @@ end
   k1 = integrator.f(uprev,p,t)
   g1 = integrator.g(uprev,p,t+c11*dt)
 
-  H01 = uprev + dt*a021*k1 + chi2.*b021*g1
+  H01 = uprev + dt*a021*k1 + b021*chi2.*g1
   H11 = uprev + dt*a121*k1 + integrator.sqdt*b121*g1
 
   k2 = integrator.f(H01,p,t+c02*dt)
