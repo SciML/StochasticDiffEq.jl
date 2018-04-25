@@ -11,7 +11,7 @@
 
   mil_correction = zero(u)
 
-  u = K+L*W.dW
+  u = K+L.*W.dW
 
   if integrator.opts.adaptive
     du2 = integrator.f(K,p,t+dt)
