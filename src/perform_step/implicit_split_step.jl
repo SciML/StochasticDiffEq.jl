@@ -12,13 +12,8 @@
   # TODO: Stochastic extrapolants?
   u = uprev
 
-  if typeof(uprev) <: AbstractArray
-    J = ForwardDiff.jacobian(uf,uprev)
-    W = I - dt*theta*J
-  else
-    J = ForwardDiff.derivative(uf,uprev)
-    W = 1 - dt*theta*J
-  end
+  repeat_step = false
+  J, W = calc_W!(integrator, cache, dt*theta, repeat_step)
 
   iter = 0
   κ = cache.κ

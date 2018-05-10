@@ -13,11 +13,11 @@ function calc_J!(integrator, cache, is_compos)
     end
 end
 
-function calc_W!(integrator, cache, γdt, repeat_step)
+function calc_W!(integrator, cache::StochasticDiffEqMutableCache, γdt, repeat_step)
   @inbounds begin
     @unpack t,dt,uprev,u,f,p = integrator
     @unpack J,W,jac_config = cache
-    is_compos = typeof(integrator.alg) <: StochasticCompositeAlgorithm
+    is_compos = is_composite(alg)
     alg = unwrap_alg(integrator, true)
     mass_matrix = integrator.sol.prob.mass_matrix
 
@@ -45,4 +45,20 @@ function calc_W!(integrator, cache, γdt, repeat_step)
     end
     return new_W
   end
+end
+
+function calc_W!(integrator, cache::StochasticDiffEqConstantCache, γdt, repeat_step)
+  uprev = integrator.uprev
+  uf = cache.uf
+  is_compos = is_composite(integrator.alg)
+  if typeof(uprev) <: AbstractArray
+    J = ForwardDiff.jacobian(uf,uprev)
+    is_compos && ( integrator.eigen_est = norm(J, Inf) )
+    W = I - γdt*J
+  else
+    J = ForwardDiff.derivative(uf,uprev)
+    W = 1 - γdt*J
+    is_compos && ( integrator.eigen_est = J )
+  end
+  J, W
 end

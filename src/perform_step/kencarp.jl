@@ -25,13 +25,8 @@
 
   # calculate W
   uf.t = t
-  if typeof(uprev) <: AbstractArray
-    J = ForwardDiff.jacobian(uf,uprev)
-    W = I - γdt*J
-  else
-    J = ForwardDiff.derivative(uf,uprev)
-    W = 1 - γdt*J
-  end
+  repeat_step = false
+  J, W = calc_W!(integrator, cache, γdt, repeat_step)
 
   z₁ = dt*f( uprev,p,t)
 

@@ -9,17 +9,12 @@
   theta = alg.theta
   alg.symplectic ? a = dt/2 : a = dt
   uf.t = t
+  γdt = dt*theta
+  repeat_step = false
+  J, W = calc_W!(integrator, cache, γdt, repeat_step)
 
   # TODO: Stochastic extrapolants?
   u = uprev
-
-  if typeof(uprev) <: AbstractArray
-    J = ForwardDiff.jacobian(uf,uprev)
-    W = I - dt*theta*J
-  else
-    J = ForwardDiff.derivative(uf,uprev)
-    W = 1 - dt*theta*J
-  end
 
   iter = 0
   κ = cache.κ
