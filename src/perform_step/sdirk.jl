@@ -5,7 +5,7 @@
                                             f=integrator.f)
   @unpack t,dt,uprev,u,p = integrator
   @unpack uf = cache
-  alg = typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm ? integrator.alg.algs[integrator.cache.current] : integrator.alg
+  alg = unwrap_alg(integrator, true)
   theta = alg.theta
   alg.symplectic ? a = dt/2 : a = dt
   uf.t = t
@@ -137,7 +137,7 @@ end
                                f=integrator.f)
   @unpack t,dt,uprev,u,p = integrator
   @unpack uf,du1,dz,z,k,J,W,jac_config,gtmp,gtmp2,tmp = cache
-  alg = typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm ? integrator.alg.algs[integrator.cache.current] : integrator.alg
+  alg = unwrap_alg(integrator, true)
   alg.symplectic ? a = dt/2 : a = dt
   dW = integrator.W.dW
   mass_matrix = integrator.sol.prob.mass_matrix

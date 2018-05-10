@@ -18,7 +18,7 @@ function calc_W!(integrator, cache, γdt, repeat_step)
     @unpack t,dt,uprev,u,f,p = integrator
     @unpack J,W,jac_config = cache
     is_compos = typeof(integrator.alg) <: StochasticCompositeAlgorithm
-    alg = typeof(integrator.alg) <: Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm} ? integrator.alg.algs[integrator.cache.current] : integrator.alg
+    alg = unwrap_alg(integrator, true)
     mass_matrix = integrator.sol.prob.mass_matrix
 
     new_W = true
