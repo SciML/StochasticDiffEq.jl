@@ -12,6 +12,7 @@
       elseif !integrator.force_stepfail
         integrator.dtnew = integrator.dt/min(inv(integrator.opts.qmin),integrator.q11/integrator.opts.gamma)
       end
+      choose_algorithm!(integrator,integrator.cache)
       fix_dtnew_at_bounds!(integrator)
       modify_dtnew_for_tstops!(integrator)
       reject_step!(integrator.W,integrator.dtnew)
@@ -22,7 +23,6 @@
 
   integrator.iter += 1
   integrator.force_stepfail = false
-  choose_algorithm!(integrator,integrator.cache)
 end
 
 @inline function fix_dtnew_at_bounds!(integrator)
