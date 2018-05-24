@@ -15,7 +15,7 @@ end
 
 function calc_W!(integrator, cache::StochasticDiffEqMutableCache, γdt, repeat_step)
   @inbounds begin
-    @unpack t,dt,uprev,u,f,p = integrator
+    @unpack t,dt,uprev,u,f,p, alg = integrator
     @unpack J,W,jac_config = cache
     is_compos = is_composite(alg)
     alg = unwrap_alg(integrator, true)
