@@ -120,3 +120,18 @@ is_split_step(::LambaEM{split}) = split
 
 alg_stability_size(alg::SOSRI2) = 10.6
 alg_stability_size(alg::SOSRA2) = 5.3
+
+is_composite(alg) = false
+is_composite(alg::StochasticDiffEqCompositeAlgorithm) = true
+is_composite(alg::StochasticDiffEqRODECompositeAlgorithm) = true
+function unwrap_alg(integrator, is_nlsolve)
+  alg = integrator.alg
+  if !is_composite(alg)
+    return alg
+  elseif typeof(alg.choice_function) <: AutoSwitch
+    num = is_nlsolve ? 2 : 1
+    return alg.algs[num]
+  else
+    return alg.algs[integrator.cache.current]
+  end
+end

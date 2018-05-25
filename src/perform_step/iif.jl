@@ -29,7 +29,7 @@ end
 @muladd function perform_step!(integrator,cache::Union{IIF1MConstantCache,IIF2MConstantCache,IIF1MilConstantCache},f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack uhold,rhs,nl_rhs = cache
-  alg = typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm ? integrator.alg.algs[integrator.cache.current] : integrator.alg
+  alg = unwrap_alg(integrator, true)
   A = integrator.f[1](u,p,t)
   if typeof(cache) <: IIF1MilConstantCache
     error("Milstein correction does not work.")
@@ -94,7 +94,7 @@ end
   @unpack rtmp1,rtmp2,rtmp3,tmp,noise_tmp = cache
   @unpack uhold,rhs,nl_rhs = cache
   @unpack t,dt,uprev,u,W,p = integrator
-  alg = typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm ? integrator.alg.algs[integrator.cache.current] : integrator.alg
+  alg = unwrap_alg(integrator, true)
   uidx = eachindex(u)
 
   integrator.g(rtmp2,uprev,p,t)
@@ -135,7 +135,7 @@ end
   @unpack rtmp1,rtmp2,rtmp3,tmp,noise_tmp = cache
   @unpack uhold,rhs,nl_rhs = cache
   @unpack t,dt,uprev,u,W,p = integrator
-  alg = typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm ? integrator.alg.algs[integrator.cache.current] : integrator.alg
+  alg = unwrap_alg(integrator, true)
 
   dW = W.dW; sqdt = integrator.sqdt
   f = integrator.f; g = integrator.g
