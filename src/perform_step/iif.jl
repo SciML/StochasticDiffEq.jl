@@ -65,10 +65,7 @@ function (f::RHS_IIF1)(resid,u)
   _du = get_du(f.dual_cache, eltype(u))
   du = reinterpret(eltype(u),_du)
   f.f[2](du,reshape(u,f.sizeu),f.p,f.t+f.dt)
-  #@. resid = u - p.tmp - p.dt*du
-  @tight_loop_macros for i in eachindex(u)
-    @inbounds resid[i] = u[i] - f.tmp[i] - f.dt*du[i]
-  end
+  @. resid = u - f.tmp - f.dt*du
 end
 
 mutable struct RHS_IIF2{F,uType,tType,DiffCacheType,SizeType,P} <: Function
@@ -84,10 +81,7 @@ function (f::RHS_IIF2)(resid,u)
   _du = get_du(f.dual_cache, eltype(u))
   du = reinterpret(eltype(u),_du)
   f.f[2](du,reshape(u,f.sizeu),f.p,f.t+f.dt)
-  #@. resid = u - p.tmp - 0.5p.dt*du
-  @tight_loop_macros for i in eachindex(u)
-    @inbounds resid[i] = u[i] - f.tmp[i] - 0.5f.dt*du[i]
-  end
+  @. resid = u - f.tmp - 0.5f.dt*du
 end
 
 @muladd function perform_step!(integrator,cache::Union{IIF1MCache,IIF2MCache},f=integrator.f)

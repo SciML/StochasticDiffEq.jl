@@ -37,20 +37,13 @@ end
   ggprime(bbprimetmp,uprev,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
-    @tight_loop_macros for i in eachindex(u)
-      @inbounds gtmp[i]*=dW[i] # gtmp === gdWtmp
-    end
+    @. gtmp *= dW
   else
     A_mul_B!(gdWtmp,gtmp,dW)
   end
 
-  @tight_loop_macros for i in eachindex(utmp)
-    @inbounds utmp[i] = uprev[i] + ftmp[i]*dt + gdWtmp[i]
-  end
-
-  @tight_loop_macros for i in eachindex(utmp)
-    @inbounds u[i] = uprev[i] + (1-theta)*(ftmp[i]- eta*bbprimetmp[i])*dt + (1-eta)*gdWtmp[i]
-  end
+  @. utmp = uprev + ftmp*dt + gdWtmp
+  @. u = uprev + (1-theta)*(ftmp- eta*bbprimetmp)*dt + (1-eta)*gdWtmp
 
   tnp1 = t + dt
   f(ftmp,utmp,p,tnp1)
@@ -58,14 +51,10 @@ end
   ggprime(bbprimetmp,utmp,p,tnp1)
 
   if is_diagonal_noise(integrator.sol.prob)
-    @tight_loop_macros for i in eachindex(u)
-      @inbounds gtmp[i]*=dW[i] # gtmp === gdWtmp
-    end
+    @. gtmp *= dW
   else
     A_mul_B!(gdWtmp,gtmp,dW)
   end
 
-  @tight_loop_macros for i in eachindex(utmp)
-    @inbounds u[i] += theta*(ftmp[i]- eta*bbprimetmp[i])*dt + eta*gdWtmp[i]
-  end
+  @. u += theta*(ftmp - eta*bbprimetmp)*dt + eta*gdWtmp
 end

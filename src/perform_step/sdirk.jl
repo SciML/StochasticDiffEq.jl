@@ -158,9 +158,7 @@ end
   integrator.f(tmp,uprev,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
-    @tight_loop_macros for i in eachindex(u)
-      @inbounds gtmp2[i]=gtmp[i]*dW[i]
-    end
+    @. gtmp2 = gtmp*dW
   else
     A_mul_B!(gtmp2,gtmp,dW)
   end
@@ -171,9 +169,7 @@ end
     integrator.g(gtmp3,z,p,t)
     @. gtmp = (gtmp3 + gtmp)/2
     if is_diagonal_noise(integrator.sol.prob)
-      @tight_loop_macros for i in eachindex(u)
-        @inbounds gtmp2[i]=gtmp[i]*dW[i]
-      end
+      @. gtmp2 = gtmp*dW
     else
       A_mul_B!(gtmp2,gtmp,dW)
     end

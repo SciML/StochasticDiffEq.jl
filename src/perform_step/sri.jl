@@ -79,17 +79,13 @@ end
     for j = 1:i-1
       integrator.f(ftemp,H0[j],p,t + c₀[j]*dt)
       integrator.g(gtemp,H1[j],p,t + c₁[j]*dt)
-      @tight_loop_macros for k in eachindex(u)
-        @inbounds A0temp[k] = @muladd A0temp[k] + A₀[j,i]*ftemp[k]
-        @inbounds B0temp[k] = @muladd B0temp[k] + B₀[j,i]*gtemp[k]
-        @inbounds A1temp[k] = @muladd A1temp[k] + A₁[j,i]*ftemp[k]
-        @inbounds B1temp[k] = @muladd B1temp[k] + B₁[j,i]*gtemp[k]
-      end
+      @. A0temp = A0temp + A₀[j,i]*ftemp
+      @. B0temp = B0temp + B₀[j,i]*gtemp
+      @. A1temp = A1temp + A₁[j,i]*ftemp
+      @. B1temp = B1temp + B₁[j,i]*gtemp
     end
-    @tight_loop_macros for k in eachindex(u)
-      @inbounds H0[i][k] = uprev[k] + A0temp[k]*dt + B0temp[k]*chi2[k]
-      @inbounds H1[i][k] = uprev[k] + A1temp[k]*dt + B1temp[k]*integrator.sqdt
-    end
+    @. H0[i] = uprev + A0temp*dt + B0temp*chi2
+    @. H1[i] = uprev + A1temp*dt + B1temp*integrator.sqdt
   end
   fill!(atemp,zero(eltype(integrator.u)))
   fill!(btemp,zero(eltype(integrator.u)))
@@ -98,25 +94,16 @@ end
   for i = 1:stages
     integrator.f(ftemp,H0[i],p,t+c₀[i]*dt)
     integrator.g(gtemp,H1[i],p,t+c₁[i]*dt)
-    @tight_loop_macros for j in eachindex(u)
-      @inbounds atemp[j] = @muladd atemp[j] + α[i]*ftemp[j]
-      @inbounds btemp[j] = @muladd btemp[j] + (β₁[i]*W.dW[j] + β₂[i]*chi1[j])*gtemp[j]
-      @inbounds E₂[j]    = @muladd E₂[j]    + (β₃[i]*chi2[j] + β₄[i]*chi3[j])*gtemp[j]
-    end
+    @. atemp = atemp + α[i]*ftemp
+    @. btemp = btemp + (β₁[i]*W.dW + β₂[i]*chi1)*gtemp
+    @. E₂    = E₂    + (β₃[i]*chi2 + β₄[i]*chi3)*gtemp
     if i <= error_terms
-      @tight_loop_macros for j in eachindex(u)
-        @inbounds E₁temp[j] += ftemp[j]
-      end
+      @. E₁temp += ftemp
     end
   end
 
-  @tight_loop_macros for i in eachindex(u)
-    @inbounds E₁[i] = dt*E₁temp[i]
-  end
-
-  @tight_loop_macros for i in eachindex(u)
-    @inbounds u[i] = uprev[i] + (dt*atemp[i] + btemp[i]) + E₂[i]
-  end
+  @. E₁ = dt*E₁temp
+  @. u = uprev + (dt*atemp + btemp) + E₂
 
   if integrator.opts.adaptive
     @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
@@ -184,34 +171,33 @@ end
   end
 
   integrator.f(fH01,uprev,p,t)
-  @tight_loop_macros for i in eachindex(u)
-    @inbounds fH01[i] = dt*fH01[i]
-  end
+  @. fH01 = dt*fH01
   integrator.g(g₁,uprev,p,t)
   dto4 = dt/4
-  @tight_loop_macros for i in eachindex(u)
-    @inbounds fH01o4[i] = fH01[i]/4
-    @inbounds g₁o2[i] = g₁[i]/2
-    @inbounds H0[i] =  @muladd uprev[i] + 3*(fH01o4[i]  + chi2[i]*g₁o2[i])
-    @inbounds H11[i] = @muladd uprev[i] + fH01o4[i]   + integrator.sqdt*g₁o2[i]
-    @inbounds H12[i] = @muladd uprev[i] + fH01[i]     - integrator.sqdt*g₁[i]
-  end
+
+  @. fH01o4 = fH01/4
+  @. g₁o2 = g₁/2
+  @. H0 =  uprev + 3*(fH01o4  + chi2*g₁o2)
+  @. H11 = uprev + fH01o4   + integrator.sqdt*g₁o2
+  @. H12 = uprev + fH01     - integrator.sqdt*g₁
+
   integrator.g(g₂,H11,p,t+dto4)
   integrator.g(g₃,H12,p,t+dt)
-  @tight_loop_macros for i in eachindex(u)
-    @inbounds H13[i] = @muladd uprev[i] + fH01o4[i] + integrator.sqdt*(-5g₁[i] + 3g₂[i] + g₃[i]/2)
-  end
+
+  @. H13 = uprev + fH01o4 + integrator.sqdt*(-5g₁ + 3g₂ + g₃/2)
 
   integrator.g(g₄,H13,p,t+dto4)
   integrator.f(fH02,H0,p,t+3dto4)
+
+  @. fH02 = fH02*dt
+  @. g₂o3 = g₂/3
+  @. Fg₂o3 = 4g₂o3
+  @. g₃o3 = g₃/3
+  @. Tg₃o3 = 2g₃o3
+  @. mg₁ = -g₁
+  @. E₁ = fH01+fH02
+
   @tight_loop_macros for i in eachindex(u)
-    @inbounds fH02[i] = fH02[i]*dt
-    @inbounds g₂o3[i] = g₂[i]/3
-    @inbounds Fg₂o3[i] = 4g₂o3[i]
-    @inbounds g₃o3[i] = g₃[i]/3
-    @inbounds Tg₃o3[i] = 2g₃o3[i]
-    @inbounds mg₁[i] = -g₁[i]
-    @inbounds E₁[i] = fH01[i]+fH02[i]
     @inbounds E₂[i] = @muladd chi2[i]*(2g₁[i] - Fg₂o3[i] - Tg₃o3[i]) + chi3[i]*(2mg₁[i] + 5g₂o3[i] - Tg₃o3[i] + g₄[i])
   end
 
