@@ -72,41 +72,25 @@ end
   integrator.g(gtmp1,uprev,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
-    #@. nrtmp=gtmp1*W.dW
-    @tight_loop_macros for i in eachindex(u)
-      @inbounds nrtmp[i]=gtmp1[i]*W.dW[i]
-    end
+    @. nrtmp=gtmp1*W.dW
   else
     A_mul_B!(nrtmp,gtmp1,W.dW)
   end
 
-  #@. tmp = @muladd uprev + ftmp1*dt + nrtmp
-  @tight_loop_macros for i in eachindex(u)
-    @inbounds tmp[i] = @muladd uprev[i] + ftmp1[i]*dt + nrtmp[i]
-  end
+  @. tmp = @muladd uprev + ftmp1*dt + nrtmp
 
   integrator.f(ftmp2,tmp,p,t+dt)
   integrator.g(gtmp2,tmp,p,t+dt)
 
   if is_diagonal_noise(integrator.sol.prob)
-    #@. nrtmp=(1/2)*W.dW*(gtmp1+gtmp2)
-    @tight_loop_macros for i in eachindex(u)
-      @inbounds dWo2 = (1/2)*W.dW[i]
-      @inbounds nrtmp[i]=dWo2*(gtmp1[i]+gtmp2[i])
-    end
+    @. nrtmp=(1/2)*W.dW*(gtmp1+gtmp2)
   else
-    #@. gtmp1 = (1/2)*(gtmp1+gtmp2)
-    @tight_loop_macros for i in eachindex(gtmp1)
-      @inbounds gtmp1[i] = (1/2)*(gtmp1[i]+gtmp2[i])
-    end
+    @. gtmp1 = (1/2)*(gtmp1+gtmp2)
     A_mul_B!(nrtmp,gtmp1,W.dW)
   end
 
   dto2 = dt*(1/2)
-  #@. u = @muladd uprev + dto2*(ftmp1+ftmp2) + nrtmp
-  @tight_loop_macros for i in eachindex(u)
-    @inbounds u[i] = @muladd uprev[i] + dto2*(ftmp1[i]+ftmp2[i]) + nrtmp[i]
-  end
+  @. u = @muladd uprev + dto2*(ftmp1+ftmp2) + nrtmp
 end
 
 @muladd function perform_step!(integrator,cache::RandomEMConstantCache,f=integrator.f)
@@ -119,10 +103,7 @@ end
   @unpack rtmp = cache
   @unpack t,dt,uprev,u,W,p = integrator
   integrator.f(rtmp,uprev,p,t,W.dW)
-  #@. u = @muladd uprev + dt*rtmp
-  @tight_loop_macros for i in eachindex(u)
-    @inbounds u[i] = @muladd uprev[i] + dt*rtmp[i]
-  end
+  @. u = @muladd uprev + dt*rtmp
   integrator.u = u
 end
 
