@@ -138,12 +138,12 @@ end
   if is_diagonal_noise(integrator.sol.prob)
     @. tmp=(1/2)*W.dW*(L+gtmp)
   else
-    @. gtmp1 = (1/2)*(gtmp1+gtmp2)
+    @. gtmp = (1/2)*(L+gtmp)
     A_mul_B!(tmp,gtmp,W.dW)
   end
 
   dto2 = dt*(1/2)
-  @. u = @muladd uprev + dto2*(ftmp1+ftmp2) + nrtmp
+  @. u = uprev + dto2*(du1+du2) + tmp
 
   if integrator.opts.adaptive
 
