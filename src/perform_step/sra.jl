@@ -349,9 +349,8 @@ end
         @. B0temp = @muladd B0temp + B₀[j,i]*E₁temp
       end
     end
-    @tight_loop_macros for j in eachindex(u)
-      @inbounds H0[i][j] = @muladd uprev[j] + A0temp[j]*dt + B0temp[j]
-    end
+
+    @. H0[i] = uprev + A0temp*dt + B0temp
   end
   fill!(atemp ,zero(eltype(integrator.u)))
   fill!(btemp ,zero(eltype(integrator.u)))
@@ -373,18 +372,13 @@ end
       A_mul_B!(E₁temp,gtmp,chi2)
       @. E₂ = @muladd E₂ + β₂[i]*E₁temp
     end
-    @tight_loop_macros for j in eachindex(u)
-      @inbounds atemp[j]  =  @muladd atemp[j]  + α[i]*ftmp[j]
-      @inbounds E₁temp[j] =  E₁temp[j] +  ftmp[j]
-    end
-  end
-  @tight_loop_macros for i in eachindex(u)
-    @inbounds E₁[i] = dt*E₁temp[i]
+
+    @. atemp  =  atemp  + α[i]*ftmp
+    @. E₁temp =  E₁temp +  ftmp
   end
 
-  @tight_loop_macros for i in eachindex(u)
-    @inbounds u[i] = @muladd uprev[i] + dt*atemp[i] + btemp[i] + E₂[i]
-  end
+  @. E₁ = dt*E₁temp
+  @. u = uprev + dt*atemp + btemp + E₂
 
   if integrator.opts.adaptive
     @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),

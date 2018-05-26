@@ -136,24 +136,14 @@ end
   integrator.g(gtmp,tmp,p,t+dt)
 
   if is_diagonal_noise(integrator.sol.prob)
-    #@. nrtmp=(1/2)*W.dW*(gtmp1+gtmp2)
-    @tight_loop_macros for i in eachindex(u)
-      @inbounds dWo2 = (1/2)*W.dW[i]
-      @inbounds tmp[i]=dWo2*(L[i]+gtmp[i])
-    end
+    @. tmp=(1/2)*W.dW*(L+gtmp)
   else
-    #@. gtmp1 = (1/2)*(gtmp1+gtmp2)
-    @tight_loop_macros for i in eachindex(gtmp)
-      @inbounds gtmp[i] = (1/2)*(L[i]+gtmp[i])
-    end
+    @. gtmp = (1/2)*(L+gtmp)
     A_mul_B!(tmp,gtmp,W.dW)
   end
 
   dto2 = dt*(1/2)
-  #@. u = @muladd uprev + dto2*(ftmp1+ftmp2) + nrtmp
-  @tight_loop_macros for i in eachindex(u)
-    @inbounds u[i] = @muladd uprev[i] + dto2*(du1[i]+du2[i]) + tmp[i]
-  end
+  @. u = uprev + dto2*(du1+du2) + tmp
 
   if integrator.opts.adaptive
 

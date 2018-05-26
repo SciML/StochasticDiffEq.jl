@@ -35,9 +35,7 @@ end
   integrator.g(rtmp2,u,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
-    @tight_loop_macros for i in eachindex(u)
-      @inbounds rtmp2[i]*=W.dW[i] # rtmp2 === rtmp3
-    end
+    @. rtmp2 *= W.dW # rtmp2 === rtmp3
   else
     A_mul_B!(rtmp3,rtmp2,W.dW)
   end
