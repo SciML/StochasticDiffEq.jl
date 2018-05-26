@@ -37,6 +37,7 @@ if group == "All" || group == "Interface"
   @time @testset "Multiple Dimension Linear Adaptive Test" begin include("adaptive/sde_twodimlinearadaptive_tests.jl") end
   @time @testset "Autostepsize Test" begin include("adaptive/sde_autostepsize_test.jl") end
   @time @testset "Additive Lorenz Attractor Test" begin include("adaptive/sde_lorenzattractor_tests.jl") end
+  @time @testset "Adaptive Complex Mean Test" begin include("adaptive/sde_complex_adaptive_mean_test.jl") end
 elseif group == "All" || group == "AlgConvergence"
   @time @testset "Additive SDE Tests" begin include("sde/sde_additive_tests.jl") end
   @time @testset "Non-diagonal SDE Tests" begin include("nondiagonal_tests.jl") end
