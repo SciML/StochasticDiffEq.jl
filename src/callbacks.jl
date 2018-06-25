@@ -39,11 +39,44 @@ end
   else
     previous_condition = callback.condition(@view(integrator.uprev[callback.idxs]),integrator.tprev,integrator)
   end
-  if integrator.event_last_time
-    prev_sign = 0.0
+
+  if integrator.event_last_time && abs(previous_condition) < callback.abstol
+
+    # abs(previous_condition) < callback.abstol is for multiple events: only
+    # condition this on the correct event
+
+    # If there was a previous event, utilize the derivative at the start to
+    # chose the previous sign. If the derivative is positive at tprev, then
+    # we treat the value as positive, and derivative is negative then we
+    # treat the value as negative, reguardless of the postiivity/negativity
+    # of the true value due to it being =0 sans floating point issues.
+
+    if typeof(integrator.cache) <: StochasticDiffEqMutableCache
+      if typeof(callback.idxs) <: Void
+        tmp = integrator.cache.tmp
+      else !(typeof(callback.idxs) <: Number)
+        tmp = @view integrator.cache.tmp[callback.idxs]
+      end
+    end
+
+    if typeof(integrator.cache) <: StochasticDiffEqMutableCache && !(typeof(callback.idxs) <: Number)
+      sde_interpolant!(tmp,100eps(typeof(integrator.tprev)),
+                       integrator,callback.idxs,Val{0})
+    else
+
+      tmp = sde_interpolant(100eps(typeof(integrator.tprev)),
+                            integrator,callback.idxs,Val{0})
+    end
+
+    tmp_condition = callback.condition(tmp,integrator.tprev +
+                                       100eps(typeof(integrator.tprev)),
+                                       integrator)
+
+    prev_sign = sign((tmp_condition-previous_condition)/integrator.dt)
   else
     prev_sign = sign(previous_condition)
   end
+
   prev_sign_index = 1
   if typeof(callback.idxs) <: Void
     next_sign = sign(callback.condition(integrator.u,integrator.t,integrator))
