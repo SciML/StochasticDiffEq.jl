@@ -20,8 +20,9 @@ function init(
   save_noise = save_everystep && typeof(prob.f) <: Tuple ?
                has_analytic(prob.f[1]) : has_analytic(prob.f),
   save_idxs = nothing,
-  save_start = isempty(saveat) ? true : prob.tspan[1] in saveat, save_end = true,
-  dense = save_everystep,
+  save_start = save_everystep || isempty(saveat) || typeof(saveat) <: Number ? true : prob.tspan[1] in saveat,
+  save_end = save_everystep || isempty(saveat) || typeof(saveat) <: Number ? true : prob.tspan[2] in saveat,
+  dense = save_everystep && isempty(saveat),
   calck = (!isempty(setdiff(saveat,tstops)) || dense),
   adaptive=isadaptive(alg),gamma=9//10,
   abstol=1e-2,reltol=1e-2,
