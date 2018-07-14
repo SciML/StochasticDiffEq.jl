@@ -1,4 +1,5 @@
-using StochasticDiffEq, DiffEqProblemLibrary, DiffEqBase, Base.Test
+using StochasticDiffEq, DiffEqBase, Test
+import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear, prob_sde_2Dlinear, prob_sde_additive, prob_sde_additivesystem
 
 probs = Vector{SDEProblem}(2)
 add_probs = Vector{SDEProblem}(2)

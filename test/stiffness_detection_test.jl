@@ -1,7 +1,8 @@
-using StochasticDiffEq, DiffEqProblemLibrary, Base.Test
+using StochasticDiffEq, Test, Random
+import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_stiffquadito
 
 srand(100)
-prob = DiffEqProblemLibrary.prob_sde_stiffquadito
+prob = prob_sde_stiffquadito
 prob = remake(prob;p=(1e5,2.))
 alg = AutoSOSRA2(SKenCarp(), maxstiffstep=5, maxnonstiffstep=2, stiffalgfirst=true)
 @test StochasticDiffEq.isadaptive(alg)
@@ -10,7 +11,7 @@ alg = AutoSOSRA2(SKenCarp(), maxstiffstep=5, maxnonstiffstep=2, stiffalgfirst=tr
 @test length(unique(sol.alg_choice)) == 2
 
 srand(100)
-prob = DiffEqProblemLibrary.prob_sde_stiffquadito
+prob = prob_sde_stiffquadito
 prob = remake(prob;p=(1e5,2.))
 @time sol = solve(prob, AutoSOSRI2(ImplicitRKMil(), maxstiffstep=2, maxnonstiffstep=2, stiffalgfirst=true),
                         abstol=1e-4,reltol=1e-4);

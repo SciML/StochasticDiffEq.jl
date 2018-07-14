@@ -1,5 +1,6 @@
-using StochasticDiffEq, DiffEqDevTools, DiffEqProblemLibrary
-using Base.Test
+using StochasticDiffEq, DiffEqDevTools
+using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
+using Test, Random
 
 
 const TEST_PLOT = false

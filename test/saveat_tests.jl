@@ -1,4 +1,5 @@
-using StochasticDiffEq, DiffEqDevTools, DiffEqBase, DiffEqProblemLibrary, Base.Test
+using StochasticDiffEq, DiffEqDevTools, DiffEqBase, Test
+import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear, prob_sde_2Dlinear
 srand(100)
 prob = prob_sde_linear
 f(u,p,t) = 2u

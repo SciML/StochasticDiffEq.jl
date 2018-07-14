@@ -1,4 +1,5 @@
-using StochasticDiffEq, DiffEqProblemLibrary, Base.Test
+using StochasticDiffEq, Test
+import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear, prob_sde_2Dlinear
 prob = prob_sde_2Dlinear
 choice_function(integrator) = (Int(integrator.t<0.5) + 1)
 alg_double = StochasticCompositeAlgorithm((SRIW1(),SRIW1()),choice_function)
