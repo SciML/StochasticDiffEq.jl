@@ -1,14 +1,14 @@
-function solve(
+function __solve(
   prob::AbstractRODEProblem,
 alg::algType,timeseries=[],ts=[],ks=[],recompile::Type{Val{recompile_flag}}=Val{true};
 kwargs...) where {algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},recompile_flag}
 
-  integrator = init(prob,alg,timeseries,ts,ks,recompile;kwargs...)
+  integrator = __init(prob,alg,timeseries,ts,ks,recompile;kwargs...)
   solve!(integrator)
   integrator.sol
 end
 
-function init(
+function __init(
   prob::AbstractRODEProblem{uType,tType,isinplace,ND},
   alg::algType,timeseries_init=uType[],ts_init=tType[],ks_init=[],
   recompile::Type{Val{recompile_flag}}=Val{true};
@@ -62,7 +62,7 @@ function init(
     error("This solver is not able to use mass matrices.")
   end
 
-  if (typeof(prob.noise)<:NoiseProcess) && typeof(prob.noise.bridge)<:Void && adaptive
+  if (typeof(prob.noise)<:NoiseProcess) && typeof(prob.noise.bridge)<:Nothing && adaptive
     error("Bridge function must be given for adaptivity. Either declare this function in noise process or set adaptive=false")
   end
 
@@ -120,7 +120,7 @@ function init(
   end
   rateType = typeof(rate_prototype) ## Can be different if united
 
-  if ND <: Void
+  if ND <: Nothing
     noise_rate_prototype = rate_prototype
   else
     if typeof(prob) <: AbstractSDEProblem
@@ -220,7 +220,7 @@ function init(
     randType = typeof(rand_prototype)
   else
     randElType = typeof(recursive_one(u)) # Strip units and type info
-    if ND <: Void # noise_dim isn't set, so it's diagonal
+    if ND <: Nothing # noise_dim isn't set, so it's diagonal
       if typeof(u) <: SArray
         rand_prototype = zero(u) # TODO: Array{randElType} for units
       else
@@ -238,7 +238,7 @@ function init(
 
   seed == 0 ? (prob.seed == 0 ? _seed = rand(UInt64) : _seed = prob.seed) : _seed = seed
 
-  if typeof(prob.noise) <: Void
+  if typeof(prob.noise) <: Nothing
     isadaptive(alg) ? rswm = RSWM(adaptivealg=:RSwM3) : rswm = RSWM(adaptivealg=:RSwM1)
     if isinplace
       if alg_needs_extra_process(alg)

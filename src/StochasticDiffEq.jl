@@ -22,7 +22,10 @@ module StochasticDiffEq
 
   import ForwardDiff.Dual
 
-  import DiffEqBase: solve, solve!, init, step!, build_solution, initialize!
+  import DiffEqBase: __solve, solve!, __init, step!, build_solution, initialize!, DEAlgorithm,
+                     AbstractSDEAlgorithm, AbstractRODEAlgorithm, DEIntegrator, AbstractDiffEqInterpolation,
+                     DECache, AbstractSDEIntegrator, AbstractRODEIntegrator, AbstractContinuousCallback,
+                     @def, AbstractRODESolution, AbstractSDEProblem, AbstractRODEProblem, Tableau
 
   # Integrator Interface
   import DiffEqBase: resize!,deleteat!,addat!,full_cache,user_cache,u_cache,du_cache,

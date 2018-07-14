@@ -32,7 +32,7 @@ end
   Θs = linspace(typeof(integrator.t)(0),typeof(integrator.t)(1),callback.interp_points)
   interp_index = 0
   # Check if the event occured
-  if typeof(callback.idxs) <: Void
+  if typeof(callback.idxs) <: Nothing
     previous_condition = callback.condition(integrator.uprev,integrator.tprev,integrator)
   elseif typeof(callback.idxs) <: Number
     previous_condition = callback.condition(integrator.uprev[callback.idxs],integrator.tprev,integrator)
@@ -52,7 +52,7 @@ end
     # of the true value due to it being =0 sans floating point issues.
 
     if typeof(integrator.cache) <: StochasticDiffEqMutableCache
-      if typeof(callback.idxs) <: Void
+      if typeof(callback.idxs) <: Nothing
         tmp = integrator.cache.tmp
       else !(typeof(callback.idxs) <: Number)
         tmp = @view integrator.cache.tmp[callback.idxs]
@@ -78,19 +78,19 @@ end
   end
 
   prev_sign_index = 1
-  if typeof(callback.idxs) <: Void
+  if typeof(callback.idxs) <: Nothing
     next_sign = sign(callback.condition(integrator.u,integrator.t,integrator))
   elseif typeof(callback.idxs) <: Number
     next_sign = sign(callback.condition(integrator.u[callback.idxs],integrator.t,integrator))
   else
     next_sign = sign(callback.condition(@view(integrator.u[callback.idxs]),integrator.t,integrator))
   end
-  if ((prev_sign<0 && !(typeof(callback.affect!)<:Void)) || (prev_sign>0 && !(typeof(callback.affect_neg!)<:Void))) && prev_sign*next_sign<=0
+  if ((prev_sign<0 && !(typeof(callback.affect!)<:Nothing)) || (prev_sign>0 && !(typeof(callback.affect_neg!)<:Nothing))) && prev_sign*next_sign<=0
     event_occurred = true
     interp_index = callback.interp_points
   elseif callback.interp_points!=0 # Use the interpolants for safety checking
     if typeof(integrator.cache) <: StochasticDiffEqMutableCache
-      if typeof(callback.idxs) <: Void
+      if typeof(callback.idxs) <: Nothing
         tmp = integrator.cache.tmp
       elseif !(typeof(callback.idxs) <: Number)
         tmp = @view integrator.cache.tmp[callback.idxs]
@@ -107,7 +107,7 @@ end
         prev_sign = sign(new_sign)
         prev_sign_index = i
       end
-      if ((prev_sign<0 && !(typeof(callback.affect!)<:Void)) || (prev_sign>0 && !(typeof(callback.affect_neg!)<:Void))) && prev_sign*new_sign<0
+      if ((prev_sign<0 && !(typeof(callback.affect!)<:Nothing)) || (prev_sign>0 && !(typeof(callback.affect_neg!)<:Nothing))) && prev_sign*new_sign<0
         event_occurred = true
         interp_index = i
         break
@@ -120,7 +120,7 @@ end
 function find_callback_time(integrator,callback)
   event_occurred,interp_index,Θs,prev_sign,prev_sign_index = determine_event_occurance(integrator,callback)
   if event_occurred
-    if typeof(callback.condition) <: Void
+    if typeof(callback.condition) <: Nothing
       new_t = zero(typeof(integrator.t))
     else
       if callback.interp_points!=0
@@ -132,7 +132,7 @@ function find_callback_time(integrator,callback)
       end
       if callback.rootfind
         if typeof(integrator.cache) <: StochasticDiffEqMutableCache
-          if typeof(callback.idxs) <: Void
+          if typeof(callback.idxs) <: Nothing
             tmp = integrator.cache.tmp
           elseif !(typeof(callback.idxs) <: Number)
             tmp = @view integrator.cache.tmp[callback.idxs]
@@ -183,13 +183,13 @@ function apply_callback!(integrator,callback::ContinuousCallback,cb_time,prev_si
   integrator.u_modified = true
 
   if prev_sign < 0
-    if typeof(callback.affect!) <: Void
+    if typeof(callback.affect!) <: Nothing
       integrator.u_modified = false
     else
       callback.affect!(integrator)
     end
   elseif prev_sign > 0
-    if typeof(callback.affect_neg!) <: Void
+    if typeof(callback.affect_neg!) <: Nothing
       integrator.u_modified = false
     else
       callback.affect_neg!(integrator)
