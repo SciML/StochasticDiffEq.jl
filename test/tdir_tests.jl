@@ -1,4 +1,5 @@
-using StochasticDiffEq, DiffEqDevTools, DiffEqBase, DiffEqProblemLibrary, Base.Test
+using StochasticDiffEq, DiffEqDevTools, DiffEqBase, Test
+import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear, prob_sde_2Dlinear
 srand(100)
 prob = deepcopy(prob_sde_linear)
 prob2 = SDEProblem(prob.f,prob.g,prob.u0,(1.0,0.0))

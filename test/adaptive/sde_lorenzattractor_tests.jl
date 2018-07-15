@@ -1,4 +1,5 @@
-using StochasticDiffEq, DiffEqProblemLibrary
+using StochasticDiffEq, Random
+import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_lorenz
 srand(100)
 prob = prob_sde_lorenz
 

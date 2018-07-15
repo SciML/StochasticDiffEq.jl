@@ -1,13 +1,13 @@
-@compat abstract type StochasticDiffEqAlgorithm <: AbstractSDEAlgorithm end
-@compat abstract type StochasticDiffEqAdaptiveAlgorithm <: StochasticDiffEqAlgorithm end
-@compat abstract type StochasticDiffEqCompositeAlgorithm <: StochasticDiffEqAlgorithm end
+abstract type StochasticDiffEqAlgorithm <: AbstractSDEAlgorithm end
+abstract type StochasticDiffEqAdaptiveAlgorithm <: StochasticDiffEqAlgorithm end
+abstract type StochasticDiffEqCompositeAlgorithm <: StochasticDiffEqAlgorithm end
 
-@compat abstract type StochasticDiffEqRODEAlgorithm <: AbstractRODEAlgorithm end
-@compat abstract type StochasticDiffEqRODEAdaptiveAlgorithm <: StochasticDiffEqRODEAlgorithm end
-@compat abstract type StochasticDiffEqRODECompositeAlgorithm <: StochasticDiffEqRODEAlgorithm end
+abstract type StochasticDiffEqRODEAlgorithm <: AbstractRODEAlgorithm end
+abstract type StochasticDiffEqRODEAdaptiveAlgorithm <: StochasticDiffEqRODEAlgorithm end
+abstract type StochasticDiffEqRODECompositeAlgorithm <: StochasticDiffEqRODEAlgorithm end
 
-@compat abstract type StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller} <: StochasticDiffEqAdaptiveAlgorithm end
-@compat abstract type StochasticDiffEqNewtonAlgorithm{CS,AD,Controller} <: StochasticDiffEqAlgorithm end
+abstract type StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller} <: StochasticDiffEqAdaptiveAlgorithm end
+abstract type StochasticDiffEqNewtonAlgorithm{CS,AD,Controller} <: StochasticDiffEqAlgorithm end
 
 ################################################################################
 

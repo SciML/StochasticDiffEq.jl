@@ -192,7 +192,7 @@ end
   solution_endpoint_match_cur_integrator!(integrator)
   resize!(integrator.sol.t,integrator.saveiter)
   resize!(integrator.sol.u,integrator.saveiter)
-  !(typeof(integrator.prog)<:Void) && Juno.done(integrator.prog)
+  !(typeof(integrator.prog)<:Nothing) && Juno.done(integrator.prog)
   return nothing
 end
 

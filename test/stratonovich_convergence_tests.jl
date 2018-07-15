@@ -1,6 +1,7 @@
-using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Base.Test
+using StochasticDiffEq, DiffEqProblemLibrary, Test, Random
+import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear_stratonovich, prob_sde_2Dlinear_stratonovich
 srand(100)
-dts = 1./2.^(10:-1:2) #14->7 good plot
+dts = 1 ./2 .^(10:-1:2) #14->7 good plot
 
 prob = prob_sde_linear_stratonovich
 sim  = test_convergence(dts,prob,EulerHeun(),numMonte=Int(5e2))

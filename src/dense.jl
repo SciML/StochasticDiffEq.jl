@@ -24,7 +24,7 @@ function sde_interpolant(Θ,integrator::DEIntegrator,idxs,deriv::Type)
   sde_interpolant(Θ,integrator.dt,integrator.uprev,integrator.u,idxs,deriv)
 end
 
-@muladd function sde_interpolant(Θ,dt,u0::Number,u1,idxs::Void,deriv::Type{Val{0}})
+@muladd function sde_interpolant(Θ,dt,u0::Number,u1,idxs::Nothing,deriv::Type{Val{0}})
   @. (1-Θ)*u0 + Θ*u1
 end
 
@@ -32,7 +32,7 @@ end
   @. (1-Θ)*u0[idxs] + Θ*u1[idxs]
 end
 
-function sde_interpolant(Θ,dt,u0::Number,u1,idxs::Void,deriv::Type{Val{1}})
+function sde_interpolant(Θ,dt,u0::Number,u1,idxs::Nothing,deriv::Type{Val{1}})
   @. (u1-u0)/dt
 end
 
@@ -78,7 +78,7 @@ function sde_interpolant(Θ,dt,u0::AbstractArray,u1,idxs,deriv::Type)
     S = promote_type(typeof(oneunit(Θ) * oneunit(eltype(u0))), # Θ*u0
                      typeof(oneunit(eltype(u0)) / oneunit(dt))) # u1/dt
 
-    if typeof(idxs) <: Void
+    if typeof(idxs) <: Nothing
       out = similar(u0, S)
     else
       out = similar(u0, S, indices(idxs))

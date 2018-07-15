@@ -1,4 +1,5 @@
-using StochasticDiffEq, DiffEqProblemLibrary, Base.Test
+using StochasticDiffEq, Test
+import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_2Dlinear
 
 #=
 function f(u,p,t)

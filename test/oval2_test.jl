@@ -1,9 +1,8 @@
 # multiDimAdditiveSDEExample()
+import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_lorenz, oval2ModelExample
 
-prob_sde_lorenz
+oval2ModelExample()
 
-DiffEqProblemLibrary.oval2ModelExample()
-
-DiffEqProblemLibrary.oval2ModelExample(useBigs=true,largeFluctuations=true)
+oval2ModelExample(useBigs=true,largeFluctuations=true)
 
 true
