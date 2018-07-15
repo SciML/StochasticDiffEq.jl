@@ -1,4 +1,4 @@
-using DiffEqBase, StochasticDiffEq, Base.Test
+using DiffEqBase, StochasticDiffEq, Test
 
 f1(u,p,t) = 0.
 g1(u,p,t) = 1.

@@ -1,4 +1,4 @@
-using StochasticDiffEq, Base.Test
+using StochasticDiffEq, Test
 
 function f(du, u, p, t)
     du[1] = u[1]

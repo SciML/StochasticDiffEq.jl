@@ -1,4 +1,4 @@
-@everywhere using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Base.Test
+@everywhere using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Test
 srand(100)
 dts = 1./2.^(10:-1:2) #14->7 good plot
 

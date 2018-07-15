@@ -1,4 +1,4 @@
-using StochasticDiffEq, Base.Test
+using StochasticDiffEq, Test
 
 const mm_A = [-2.0 1 4
             4 -2 1

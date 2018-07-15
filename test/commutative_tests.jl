@@ -1,4 +1,4 @@
-using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Base.Test
+using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Test
 srand(100)
 dts = 1./2.^(10:-1:2) #14->7 good plot
 
@@ -16,7 +16,7 @@ function f_commute(du,u,p,t)
 end
 function (::typeof(f_commute))(::Type{Val{:analytic}},u0,p,t,W)
  tmp = (A+1.01I-(B^2))*t + B*sum(W)
- expm(tmp)*u0
+ exp(tmp)*u0
 end
 function σ(du,u,p,t)
   du[1,1] = σ_const*u[1]

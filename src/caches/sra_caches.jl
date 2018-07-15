@@ -344,7 +344,7 @@ du_cache(c::SRACache) = (c.A0temp,c.B0temp,c.ftmp,c.gtmp,c.chi2,c.chi2,c.atemp,
 user_cache(c::SRACache) = (c.u,c.uprev,c.tmp,c.H0...)
 
 function alg_cache(alg::SRA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
-  H0 = Vector{typeof(u)}(0)
+  H0 = Vector{typeof(u)}()
   tab = SRAConstantCache(alg.tableau,rate_prototype)
   for i = 1:tab.stages
     push!(H0,zeros(u))

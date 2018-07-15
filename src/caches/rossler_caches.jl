@@ -62,8 +62,8 @@ du_cache(c::SRICache) = (c.A0temp,c.A1temp,c.B0temp,c.B1temp,c.A0temp2,c.A1temp2
 user_cache(c::SRICache) = (c.u,c.uprev,c.tmp,c.H0...,c.H1...)
 
 function alg_cache(alg::SRI,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
-  H0 = Vector{typeof(u)}(0)
-  H1 = Vector{typeof(u)}(0)
+  H0 = Vector{typeof(u)}()
+  H1 = Vector{typeof(u)}()
   tab = SRIConstantCache(alg.tableau,rate_prototype,alg.error_terms)
   for i = 1:tab.stages
     push!(H0,zeros(u))

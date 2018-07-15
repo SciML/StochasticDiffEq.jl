@@ -1,5 +1,5 @@
 using DiffEqBase, StochasticDiffEq, DiffEqNoiseProcess,
-      Base.Test, DiffEqDevTools, SpecialMatrices
+      Test, DiffEqDevTools, SpecialMatrices
 const μ = 1.01
 const σ_const = 0.87
 
@@ -60,13 +60,13 @@ end
 
 function (::typeof(f))(::Type{Val{:analytic}},u0,p,t,W)
  tmp = (A+1.01I-(B^2))*t + B*sum(W)
- expm(tmp)*u0
+ exp(tmp)*u0
 end
 
 f1_A(du,u,p,t) = A
 function (::typeof(f1_A))(::Type{Val{:analytic}},u0,p,t,W)
  tmp = (A+1.01I-(B^2))*t + B*sum(W)
- expm(tmp)*u0
+ exp(tmp)*u0
 end
 f2(du,u,p,t) = du .= μ .* u
 
@@ -79,7 +79,7 @@ function σ22(du,u,p,t)
 end
 function (::typeof(f1_no_noise))(::Type{Val{:analytic}},u0,p,t,W)
  tmp = (A+1.01I)*t
- expm(tmp)*u0
+ exp(tmp)*u0
 end
 prob_no_noise = SDEProblem((f1_no_noise,f2),σ22,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
 
