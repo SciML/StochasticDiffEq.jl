@@ -50,7 +50,7 @@ function __init(
   kwargs...) where {uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},ND,recompile_flag}
 
   if save_timeseries != nothing
-    warn("save_timeseries is deprecated. Use save_everystep instead")
+    @warn("save_timeseries is deprecated. Use save_everystep instead")
     save_everystep = save_timeseries
   end
 
@@ -102,7 +102,7 @@ function __init(
     u = deepcopy(prob.u0)
   end
 
-  ks = Vector{uType}(0)
+  ks = Vector{uType}()
 
   order = alg_order(alg)
 
@@ -358,7 +358,7 @@ function __init(
     end
     if isnan(integrator.dt)
       if verbose
-        warn("Automatic dt set the starting dt as NaN, causing instability.")
+        @warn("Automatic dt set the starting dt as NaN, causing instability.")
       end
     end
   elseif integrator.opts.adaptive && integrator.dt > zero(integrator.dt) && integrator.tdir < 0

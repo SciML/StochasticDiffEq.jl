@@ -1,4 +1,4 @@
-using StochasticDiffEq, DiffEqBase, Base.Test
+using StochasticDiffEq, DiffEqBase, Test
 
 f(du,u,p,t) = (du.=1.01u)
 function g(du,u,p,t)

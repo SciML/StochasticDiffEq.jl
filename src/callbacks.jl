@@ -29,7 +29,7 @@ end
 
 @inline function determine_event_occurance(integrator,callback)
   event_occurred = false
-  Θs = linspace(typeof(integrator.t)(0),typeof(integrator.t)(1),callback.interp_points)
+  Θs = range(typeof(integrator.t)(0), stop=typeof(integrator.t)(1), length=callback.interp_points)
   interp_index = 0
   # Check if the event occured
   if typeof(callback.idxs) <: Nothing

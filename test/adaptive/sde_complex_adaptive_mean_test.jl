@@ -1,11 +1,11 @@
-using StochasticDiffEq, DiffEqCallbacks, DiffEqNoiseProcess, Base.Test
+using StochasticDiffEq, DiffEqCallbacks, DiffEqNoiseProcess, Test
 
 # Definitions according to vector/matrix representations of operators from QuantumOptics
-u0 = Complex128[0.0, 1.0]
-A = zeros(Complex128, 2, 2)
+u0 = ComplexF64[0.0, 1.0]
+A = zeros(ComplexF64, 2, 2)
 A[2, 1] = 1.0
 A[1, 2] = 1.0
-As = zeros(Complex128, 2, 2)
+As = zeros(ComplexF64, 2, 2)
 As[1, 1] = 0.5
 As[2, 2] = -0.5
 
@@ -20,7 +20,7 @@ end
 # Set up two identical instances of saving
 T = [0:0.1:2;]
 fout(u, t, integrator) = abs2(u[1]) - abs2(u[2])
-out1 = SavedValues(Float64,Complex128)
+out1 = SavedValues(Float64,ComplexF64)
 scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
 
 # Define the problems -- note the difference in noise
@@ -38,20 +38,20 @@ avg3 = zeros(T)
 
 for i=1:Ntraj
 
-  out1 = SavedValues(Float64,Complex128)
+  out1 = SavedValues(Float64,ComplexF64)
   scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
 
   solve(prob1, RKMil{:Stratonovich}(), dt=1e-4, callback=scb1, seed = i, adaptive = false)
   avg1 .+= out1.saveval ./ Ntraj
 
-  out1 = SavedValues(Float64,Complex128)
+  out1 = SavedValues(Float64,ComplexF64)
   scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
 
   solve(prob1, RKMil{:Stratonovich}(), tstops = T, callback=scb1,
         save_everystep=false, save_start=false)
   avg2 .+= out1.saveval ./ Ntraj
 
-  out1 = SavedValues(Float64,Complex128)
+  out1 = SavedValues(Float64,ComplexF64)
   scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
 
   solve(prob2, RKMil{:Stratonovich}(), tstops = T, callback=scb1,

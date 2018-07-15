@@ -1,4 +1,4 @@
-using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Base.Test
+using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Test
 import SpecialMatrices:Strang
 ##
 srand(100)
@@ -20,7 +20,7 @@ end
 
 function f_nondiag(::Type{Val{:analytic}},u0,p,t,W)
  tmp = (A+1.01I-(B^2))*t + B*sum(W)
- expm(tmp)*u0
+ exp(tmp)*u0
 end
 
 function g_nondiag(u,p,t)

@@ -1,4 +1,4 @@
-using DiffEqBase, StochasticDiffEq, DiffEqDevTools, Base.Test
+using DiffEqBase, StochasticDiffEq, DiffEqDevTools, Test
 
 u0 = ones(2)
 A = [-3/2 1/20
@@ -16,7 +16,7 @@ end
 
 function (::typeof(f))(::Type{Val{:analytic}},u0,p,t,W)
   tmp = (A-(B^2))*t + B*W[1] + B*W[2]
-  expm(tmp)*u0
+  exp(tmp)*u0
 end
 
 prob2 = SDEProblem(f,σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
@@ -49,7 +49,7 @@ end
 
 function (::typeof(f))(::Type{Val{:analytic}},u0,p,t,W)
  tmp = (A+1.01I-(B^2))*t + B*sum(W)
- expm(tmp)*u0
+ exp(tmp)*u0
 end
 
 prob2 = SDEProblem(f,σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
