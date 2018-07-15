@@ -1,6 +1,6 @@
 struct DiffEqNLSolveTag end
 
-immutable DiffCache{T<:AbstractArray, S<:AbstractArray}
+struct DiffCache{T<:AbstractArray, S<:AbstractArray}
     du::T
     dual_du::S
 end
