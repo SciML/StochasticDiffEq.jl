@@ -1,4 +1,5 @@
 using StochasticDiffEq, Test, Random
+using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
 import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_stiffquadito
 
 srand(100)

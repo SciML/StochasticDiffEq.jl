@@ -1,4 +1,5 @@
 using StochasticDiffEq, DiffEqDevTools, Test, Random
+using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
 import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_additive, prob_sde_additivesystem
 srand(100)
 

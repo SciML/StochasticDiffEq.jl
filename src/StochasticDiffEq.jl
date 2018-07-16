@@ -32,7 +32,8 @@ module StochasticDiffEq
                      resize_non_user_cache!,deleteat_non_user_cache!,addat_non_user_cache!,
                      terminate!,get_du, get_dt,get_proposed_dt,set_proposed_dt!,
                      u_modified!,savevalues!,add_tstop!,add_saveat!,set_reltol!,
-                     set_abstol!, postamble!, last_step_failed
+                     set_abstol!, postamble!, last_step_failed, is_diagonal_noise,
+                     has_analytic, has_invW, has_jac, solution_new_retcode
 
   using DiffEqBase: check_error!
 

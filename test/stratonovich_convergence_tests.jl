@@ -1,4 +1,5 @@
 using StochasticDiffEq, DiffEqProblemLibrary, Test, Random
+using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
 import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear_stratonovich, prob_sde_2Dlinear_stratonovich
 srand(100)
 dts = 1 ./2 .^(10:-1:2) #14->7 good plot
