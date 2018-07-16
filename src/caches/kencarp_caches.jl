@@ -73,13 +73,13 @@ function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prot
   du1 = zeros(rate_prototype)
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
   W = zeros(J)
-  z₁ = similar(u,indices(u)); z₂ = similar(u,indices(u))
-  z₃ = similar(u,indices(u)); z₄ = similar(u,indices(u))
-  dz = similar(u,indices(u))
+  z₁ = similar(u,axes(u)); z₂ = similar(u,axes(u))
+  z₃ = similar(u,axes(u)); z₄ = similar(u,axes(u))
+  dz = similar(u,axes(u))
   fsalfirst = zeros(rate_prototype)
   k = zeros(rate_prototype)
-  tmp = zeros(u); b = similar(u,indices(u));
-  atmp = zeros(u,uEltypeNoUnits,indices(u))
+  tmp = zeros(u); b = similar(u,axes(u));
+  atmp = zeros(u,uEltypeNoUnits,axes(u))
 
   if typeof(f) <: SplitFunction
     k1 = zeros(u); k2 = zeros(u)

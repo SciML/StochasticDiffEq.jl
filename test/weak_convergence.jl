@@ -1,4 +1,7 @@
-@everywhere using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Test
+@everywhere using StochasticDiffEq, DiffEqDevTools, Test
+@everywhere using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems
+@everywhere importsdeproblems()
+import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear, prob_sde_2Dlinear, prob_sde_additive
 srand(100)
 dts = 1./2.^(10:-1:2) #14->7 good plot
 

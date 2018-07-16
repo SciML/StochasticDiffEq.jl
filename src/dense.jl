@@ -81,7 +81,7 @@ function sde_interpolant(Θ,dt,u0::AbstractArray,u1,idxs,deriv::Type)
     if typeof(idxs) <: Nothing
       out = similar(u0, S)
     else
-      out = similar(u0, S, indices(idxs))
+      out = similar(u0, S, axes(idxs))
     end
     sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv)
     return out

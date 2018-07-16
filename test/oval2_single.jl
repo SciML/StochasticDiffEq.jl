@@ -1,4 +1,5 @@
 using StochasticDiffEq, DiffEqBase
+using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
 import DiffEqProblemLibrary.SDEProblemLibrary: oval2ModelExample
 srand(200)
 prob = oval2ModelExample(largeFluctuations=true,useBigs=false)

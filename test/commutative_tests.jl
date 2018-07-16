@@ -1,4 +1,4 @@
-using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Test
+using StochasticDiffEq, DiffEqDevTools, Test
 srand(100)
 dts = 1./2.^(10:-1:2) #14->7 good plot
 

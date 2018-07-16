@@ -10,11 +10,11 @@ end
 
 function __init(
   prob::AbstractRODEProblem{uType,tType,isinplace,ND},
-  alg::algType,timeseries_init=uType[],ts_init=tType[],ks_init=[],
+  alg::algType,timeseries_init=uType[],ts_init=eltype(tType)[],ks_init=[],
   recompile::Type{Val{recompile_flag}}=Val{true};
-  dt = tType(0),
+  dt = eltype(tType)(0),
   timeseries_steps::Int = 1,
-  saveat = tType[],tstops = tType[],d_discontinuities= tType[],
+  saveat = eltype(tType)[],tstops = eltype(tType)[],d_discontinuities= eltype(tType)[],
   save_timeseries = nothing,
   save_everystep = isempty(saveat),
   save_noise = save_everystep && typeof(prob.f) <: Tuple ?
@@ -32,8 +32,8 @@ function __init(
   beta2=beta2_default(alg),
   beta1=beta1_default(alg,beta2),
   delta=1//6,maxiters = 1e9,
-  dtmax=tType((prob.tspan[end]-prob.tspan[1])),
-  dtmin=tType <: AbstractFloat ? tType(1000)*eps(tType) : tType(1//10^(10)),
+  dtmax=eltype(tType)((prob.tspan[end]-prob.tspan[1])),
+  dtmin=eltype(tType) <: AbstractFloat ? eltype(tType)(1000)*eps(eltype(tType)) : eltype(tType)(1//10^(10)),
   internalnorm=ODE_DEFAULT_NORM,
   unstable_check = ODE_DEFAULT_UNSTABLE_CHECK,
   isoutofdomain = ODE_DEFAULT_ISOUTOFDOMAIN,
@@ -74,11 +74,12 @@ function __init(
   tspan = prob.tspan
   p = prob.p
   tdir = sign(tspan[end]-tspan[1])
+  _tType = eltype(tType)
 
-  T = tType(tspan[2])
-  t = tType(tspan[1])
+  T = _tType(tspan[2])
+  t = _tType(tspan[1])
 
-  if !adaptive && dt == tType(0) && isempty(tstops)
+  if !adaptive && dt == _tType(0) && isempty(tstops)
       error("Fixed timestep methods require a choice of dt or choosing the tstops")
   end
 
@@ -114,7 +115,7 @@ function __init(
   # dtmin is all abs => does not care about sign already.
 
   if typeof(u) <: AbstractArray
-    rate_prototype = similar(u/zero(t),indices(u)) # rate doesn't need type info
+    rate_prototype = similar(u/zero(t),axes(u)) # rate doesn't need type info
   else
     rate_prototype = u/zero(t)
   end
@@ -131,7 +132,7 @@ function __init(
   end
 
   tstops_internal, saveat_internal, d_discontinuities_internal =
-    tstop_saveat_disc_handling(tstops,saveat,d_discontinuities,tdir,tspan,tType)
+    tstop_saveat_disc_handling(tstops,saveat,d_discontinuities,tdir,tspan,_tType)
 
   callbacks_internal = CallbackSet(callback,prob.callback)
 
@@ -153,7 +154,7 @@ function __init(
     u_initial = u[save_idxs]
     timeseries = convert(Vector{typeof(u_initial)},timeseries_init)
   end
-  ts = convert(Vector{tType},ts_init)
+  ts = convert(Vector{_tType},ts_init)
 
   if !adaptive && save_everystep
     dt == 0 ? steps = length(tstops) : steps = round(Int,(tspan[2]-tspan[1])/dt,RoundUp)
@@ -212,7 +213,7 @@ function __init(
     uprev = deepcopy(u)
   end
 
-  dtcache = tType(dt)
+  dtcache = _tType(dt)
   dtchangeable = true
 
   if !(uType <: AbstractArray)
@@ -224,7 +225,7 @@ function __init(
       if typeof(u) <: SArray
         rand_prototype = zero(u) # TODO: Array{randElType} for units
       else
-        rand_prototype = similar(Array{randElType},indices(u))
+        rand_prototype = similar(Array{randElType},axes(u))
         fill!(rand_prototype,zero(randElType))
       end
     elseif typeof(prob) <: AbstractSDEProblem
@@ -284,7 +285,7 @@ function __init(
     end
   end
 
-  eigen_est = 1/oneunit(tType)
+  eigen_est = 1/oneunit(_tType)
   EEst = tTypeNoUnits(1)
   q = tTypeNoUnits(1)
   just_hit_tstop = false
@@ -330,17 +331,17 @@ function __init(
     cacheType =  OrdinaryDiffEqCache
   end
 
-  integrator =    SDEIntegrator{typeof(alg),uType,uBottomEltype,tType,typeof(p),
+  integrator =    SDEIntegrator{typeof(alg),uType,uBottomEltype,_tType,typeof(p),
                   typeof(eigen_est),tTypeNoUnits,
                   uEltypeNoUnits,typeof(W),rateType,typeof(sol),typeof(cache),
                   typeof(prog),FType,GType,typeof(opts),typeof(noise)}(
-                  f,g,noise,uprev,tprev,t,u,p,tType(dt),tType(dt),tType(dt),dtcache,T,tdir,
+                  f,g,noise,uprev,tprev,t,u,p,_tType(dt),_tType(dt),_tType(dt),dtcache,T,tdir,
                   just_hit_tstop,isout,event_last_time,accept_step,
                   last_stepfail,force_stepfail,
                   dtchangeable,u_modified,
                   saveiter,
                   alg,sol,
-                  cache,tType(dt),W,
+                  cache,_tType(dt),W,
                   opts,iter,success_iter,prog,eigen_est,EEst,q,
                   tTypeNoUnits(qoldinit),q11)
 
@@ -353,7 +354,7 @@ function __init(
 
   if integrator.dt == zero(integrator.dt) && integrator.opts.adaptive
     auto_dt_reset!(integrator)
-    if sign(integrator.dt)!=integrator.tdir && integrator.dt!=tType(0) && !isnan(integrator.dt)
+    if sign(integrator.dt)!=integrator.tdir && integrator.dt!=_tType(0) && !isnan(integrator.dt)
       error("Automatic dt setting has the wrong sign. Exiting. Please report this error.")
     end
     if isnan(integrator.dt)

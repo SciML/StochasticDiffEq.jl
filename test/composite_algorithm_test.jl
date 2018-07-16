@@ -1,4 +1,5 @@
 using StochasticDiffEq, Test
+using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
 import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear, prob_sde_2Dlinear
 prob = prob_sde_2Dlinear
 choice_function(integrator) = (Int(integrator.t<0.5) + 1)
