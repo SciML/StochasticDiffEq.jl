@@ -1,11 +1,11 @@
-using StochasticDiffEq, Test
+using StochasticDiffEq, Test, LinearAlgebra
 
 const mm_A = [-2.0 1 4
             4 -2 1
             2 1 3]
 const mm_b = mm_A*ones(3)
 function mm_f(du,u,p,t)
-      A_mul_B!(du,mm_A,u)
+      mul!(du,mm_A,u)
       tmp = t*mm_b
       du .+= tmp
 end

@@ -56,7 +56,7 @@ end
   if is_diagonal_noise(integrator.sol.prob)
     @. E₁ = chi2*gpdt
   else
-    A_mul_B!(E₁,gpdt,chi2)
+    mul!(E₁,gpdt,chi2)
   end
 
   for i in eachindex(u)
@@ -73,7 +73,7 @@ end
   if is_diagonal_noise(integrator.sol.prob)
     @. tmp1 = W.dW*gpdt
   else
-    A_mul_B!(tmp1,gpdt,W.dW)
+    mul!(tmp1,gpdt,W.dW)
   end
 
   for i in eachindex(u)
@@ -132,7 +132,7 @@ end
   if is_diagonal_noise(integrator.sol.prob)
     @. H01 = uprev + dt*a21*k1 + chi2*b21*g1
   else
-    A_mul_B!(E₁,g1,chi2)
+    mul!(E₁,g1,chi2)
     @. H01 = uprev + dt*a21*k1 + b21*E₁
   end
 
@@ -147,9 +147,9 @@ end
     end
   else
     @. g1 = beta21*g1 + beta22*g2
-    A_mul_B!(E₂,g1,chi2)
+    mul!(E₂,g1,chi2)
     g2 .*= beta12
-    A_mul_B!(E₁,g2,W.dW)
+    mul!(E₁,g2,W.dW)
     for i in eachindex(u)
       @inbounds u[i] = uprev[i] + dt*(α1*k1[i] + α2*k2[i]) + E₂[i] + E₁[i]
     end
@@ -221,7 +221,7 @@ end
   if is_diagonal_noise(integrator.sol.prob)
     @. H01 = uprev + dt*a21*k1 + chi2*b21*g1
   else
-    A_mul_B!(E₁,g1,chi2)
+    mul!(E₁,g1,chi2)
     @. H01 = uprev + dt*a21*k1 + b21*E₁
   end
 
@@ -234,7 +234,7 @@ end
     end
   else
     @. gtmp = b31*g1 + b32*g2
-    A_mul_B!(E₁,gtmp,chi2)
+    mul!(E₁,gtmp,chi2)
     for i in eachindex(u)
       H02[i] = uprev[i] + dt*(a31*k1[i] + a32*k2[i]) + E₁[i]
     end
@@ -251,9 +251,9 @@ end
     end
   else
     @. gtmp = beta21*g1 + beta22*g2 + beta23*g3
-    A_mul_B!(E₂,gtmp,chi2)
+    mul!(E₂,gtmp,chi2)
     @. gtmp = beta11*g1 + beta12*g2 + beta13*g3
-    A_mul_B!(E₁,gtmp,W.dW)
+    mul!(E₁,gtmp,W.dW)
     for i in eachindex(u)
       @inbounds u[i] = uprev[i] + dt*(α1*k1[i] + α2*k2[i] + α3*k3[i]) + E₂[i] + E₁[i]
     end
@@ -345,7 +345,7 @@ end
       if is_diagonal_noise(integrator.sol.prob)
         @. B0temp = @muladd B0temp + B₀[j,i]*gtmp*chi2
       else
-        A_mul_B!(E₁temp,gtmp,chi2)
+        mul!(E₁temp,gtmp,chi2)
         @. B0temp = @muladd B0temp + B₀[j,i]*E₁temp
       end
     end
@@ -363,13 +363,13 @@ end
     if is_diagonal_noise(integrator.sol.prob)
       @. btemp = @muladd btemp + β₁[i]*W.dW*gtmp
     else
-      A_mul_B!(E₁temp,gtmp,W.dW)
+      mul!(E₁temp,gtmp,W.dW)
       @. btemp = @muladd btemp + β₁[i]*E₁temp
     end
     if is_diagonal_noise(integrator.sol.prob)
       @. E₂ = @muladd E₂ + β₂[i]*chi2*gtmp
     else
-      A_mul_B!(E₁temp,gtmp,chi2)
+      mul!(E₁temp,gtmp,chi2)
       @. E₂ = @muladd E₂ + β₂[i]*E₁temp
     end
 

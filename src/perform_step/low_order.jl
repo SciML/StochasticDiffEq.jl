@@ -37,7 +37,7 @@ end
   if is_diagonal_noise(integrator.sol.prob)
     @. rtmp2 *= W.dW # rtmp2 === rtmp3
   else
-    A_mul_B!(rtmp3,rtmp2,W.dW)
+    mul!(rtmp3,rtmp2,W.dW)
   end
 
   @. u += rtmp3
@@ -72,7 +72,7 @@ end
   if is_diagonal_noise(integrator.sol.prob)
     @. nrtmp=gtmp1*W.dW
   else
-    A_mul_B!(nrtmp,gtmp1,W.dW)
+    mul!(nrtmp,gtmp1,W.dW)
   end
 
   @. tmp = @muladd uprev + ftmp1*dt + nrtmp
@@ -84,7 +84,7 @@ end
     @. nrtmp=(1/2)*W.dW*(gtmp1+gtmp2)
   else
     @. gtmp1 = (1/2)*(gtmp1+gtmp2)
-    A_mul_B!(nrtmp,gtmp1,W.dW)
+    mul!(nrtmp,gtmp1,W.dW)
   end
 
   dto2 = dt*(1/2)
@@ -210,10 +210,10 @@ end
     if integrator.opts.adaptive
         ggprime_norm += integrator.opts.internalnorm(Dgj)
     end
-    A_mul_B!(tmp,Dgj,@view(I[:,j]))
+    mul!(tmp,Dgj,@view(I[:,j]))
     mil_correction .+= tmp
   end
-  A_mul_B!(tmp,L,dW)
+  mul!(tmp,L,dW)
   @. u .= uprev + dt*du1 + tmp + mil_correction
 
   if integrator.opts.adaptive

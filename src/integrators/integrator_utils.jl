@@ -266,10 +266,10 @@ end
 @inline function update_noise!(integrator,scaling_factor=integrator.sqdt)
   if isinplace(integrator.noise)
     integrator.noise(integrator.ΔW,integrator)
-    scale!(integrator.ΔW,scaling_factor)
+    rmul!(integrator.ΔW,scaling_factor)
     if alg_needs_extra_process(integrator.alg)
       integrator.noise(integrator.ΔZ,integrator)
-      scale!(integrator.ΔZ,scaling_factor)
+      rmul!(integrator.ΔZ,scaling_factor)
     end
   else
     if typeof(integrator.u) <: AbstractArray

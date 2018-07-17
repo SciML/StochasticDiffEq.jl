@@ -39,7 +39,7 @@ end
   if is_diagonal_noise(integrator.sol.prob)
     @. gtmp *= dW
   else
-    A_mul_B!(gdWtmp,gtmp,dW)
+    mul!(gdWtmp,gtmp,dW)
   end
 
   @. utmp = uprev + ftmp*dt + gdWtmp
@@ -53,7 +53,7 @@ end
   if is_diagonal_noise(integrator.sol.prob)
     @. gtmp *= dW
   else
-    A_mul_B!(gdWtmp,gtmp,dW)
+    mul!(gdWtmp,gtmp,dW)
   end
 
   @. u += theta*(ftmp - eta*bbprimetmp)*dt + eta*gdWtmp

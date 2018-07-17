@@ -212,15 +212,15 @@ end
   @inbounds i = searchsortedfirst(ts,tval,rev=tdir<0) # It's in the interval ts[i-1] to ts[i]
   @inbounds if ts[i] == tval
     if idxs == nothing
-      copy!(out,timeseries[i])
+      copyto!(out,timeseries[i])
     else
-      copy!(out,timeseries[i][idxs])
+      copyto!(out,timeseries[i][idxs])
     end
   elseif ts[i-1] == tval # Can happen if it's the first value!
     if idxs == nothing
-      copy!(out,timeseries[i-1])
+      copyto!(out,timeseries[i-1])
     else
-      copy!(out,timeseries[i-1][idxs])
+      copyto!(out,timeseries[i-1][idxs])
     end
   else
     dt = ts[i] - ts[i-1]

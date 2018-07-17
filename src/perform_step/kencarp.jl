@@ -283,7 +283,7 @@ end
   if is_diagonal_noise(integrator.sol.prob)
     @. z₄ = chi2*g1 # use z₄ as storage for the g1*chi2
   else
-    A_mul_B!(z₄,g1,chi2) # use z₄ as storage for the g1*chi2
+    mul!(z₄,g1,chi2) # use z₄ as storage for the g1*chi2
   end
 
   @. tmp = uprev + γ*z₁ + nb021*z₄
@@ -309,7 +309,7 @@ end
   f(k,u,p,tstep)
   @. b = dt*k - z₂
   if has_invW(f)
-    A_mul_B!(vec(dz),W,vec(b)) # Here W is actually invW
+    mul!(vec(dz),W,vec(b)) # Here W is actually invW
   else
     cache.linsolve(vec(dz),W,vec(b),new_W)
   end
@@ -327,7 +327,7 @@ end
     f(k,u,p,tstep)
     @. b = dt*k - z₂
     if has_invW(f)
-      A_mul_B!(vec(dz),W,vec(b)) # Here W is actually invW
+      mul!(vec(dz),W,vec(b)) # Here W is actually invW
     else
       cache.linsolve(vec(dz),W,vec(b),false)
     end
@@ -375,7 +375,7 @@ end
   f(k,u,p,tstep)
   @. b = dt*k - z₃
   if has_invW(f)
-    A_mul_B!(vec(dz),W,vec(b)) # Here W is actually invW
+    mul!(vec(dz),W,vec(b)) # Here W is actually invW
   else
     cache.linsolve(vec(dz),W,vec(b),false)
   end
@@ -393,7 +393,7 @@ end
     f(k,u,p,tstep)
     @. b = dt*k - z₃
     if has_invW(f)
-      A_mul_B!(vec(dz),W,vec(b)) # Here W is actually invW
+      mul!(vec(dz),W,vec(b)) # Here W is actually invW
     else
       cache.linsolve(vec(dz),W,vec(b),false)
     end
@@ -443,7 +443,7 @@ end
   f(k,u,p,tstep)
   @. b = dt*k - z₄
   if has_invW(f)
-    A_mul_B!(vec(dz),W,vec(b)) # Here W is actually invW
+    mul!(vec(dz),W,vec(b)) # Here W is actually invW
   else
     cache.linsolve(vec(dz),W,vec(b),false)
   end
@@ -461,7 +461,7 @@ end
     f(k,u,p,tstep)
     @. b = dt*k - z₄
     if has_invW(f)
-      A_mul_B!(vec(dz),W,vec(b)) # Here W is actually invW
+      mul!(vec(dz),W,vec(b)) # Here W is actually invW
     else
       cache.linsolve(vec(dz),W,vec(b),false)
     end
@@ -496,8 +496,8 @@ end
       end
     else
       g1 .-= g4
-      A_mul_B!(E₂,g1,chi2)
-      A_mul_B!(tmp,g4,integrator.W.dW)
+      mul!(E₂,g1,chi2)
+      mul!(tmp,g4,integrator.W.dW)
       for i in eachindex(u)
         @inbounds u[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + γ*z₄[i] + eb1*k1[i] + eb2*k2[i] + eb3*k3[i] + eb4*k4[i] + tmp[i] + E₂[i]
       end
@@ -511,8 +511,8 @@ end
       end
     else
       g1 .-= g4
-      A_mul_B!(E₂,g1,chi2)
-      A_mul_B!(tmp,g4,integrator.W.dW)
+      mul!(E₂,g1,chi2)
+      mul!(tmp,g4,integrator.W.dW)
       for i in eachindex(u)
         @inbounds u[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + γ*z₄[i] + tmp[i] + E₂[i]
       end
@@ -534,7 +534,7 @@ end
           @inbounds dz[i] = btilde1*z₁[i] + btilde2*z₂[i] + btilde3*z₃[i] + btilde4*z₄[i] + ebtilde1*k1[i] + ebtilde2*k2[i] + ebtilde3*k3[i] + ebtilde4*k4[i] + chi2[i]*(g1[i]-g4[i])
         end
       else
-        # dz already holds A_mul_B!(dz,g1,chi2)!
+        # dz already holds mul!(dz,g1,chi2)!
         #@. dz += btilde1*z₁ + btilde2*z₂ + btilde3*z₃ + btilde4*z₄ + ebtilde1*k1 + ebtilde2*k2 + ebtilde3*k3 + ebtilde4*k4
         for i in eachindex(dz)
           @inbounds dz[i] += btilde1*z₁[i] + btilde2*z₂[i] + btilde3*z₃[i] + btilde4*z₄[i] + ebtilde1*k1[i] + ebtilde2*k2[i] + ebtilde3*k3[i] + ebtilde4*k4[i]
@@ -547,14 +547,14 @@ end
           @inbounds dz[i] = btilde1*z₁[i] + btilde2*z₂[i] + btilde3*z₃[i] + btilde4*z₄[i] + chi2[i]*(g1[i]-g4[i])
         end
       else
-        # dz already holds A_mul_B!(dz,g1,chi2)!
+        # dz already holds mul!(dz,g1,chi2)!
         @. dz += btilde1*z₁ + btilde2*z₂ + btilde3*z₃ + btilde4*z₄
       end
     end
 
     if alg.smooth_est # From Shampine
       if has_invW(f)
-        A_mul_B!(vec(tmp),W,vec(dz))
+        mul!(vec(tmp),W,vec(dz))
       else
         cache.linsolve(vec(tmp),W,vec(dz),false)
       end

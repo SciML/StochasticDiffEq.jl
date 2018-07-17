@@ -134,7 +134,7 @@ end
   elseif alg.extrapolant == :linear
     @. u = uprev + integrator.fsalfirst*dt
   else # :constant
-    copy!(u,uprev)
+    copyto!(u,uprev)
   end
 
   new_W = calc_W!(integrator, cache, dt, repeat_step)
@@ -157,15 +157,15 @@ end
   end
   iter += 1
   f(k,u,p,t+a)
-  scale!(k,dt)
+  rmul!(k,dt)
   if mass_matrix == I
     k .-= z
   else
-    A_mul_B!(vec(du1),mass_matrix,vec(z))
+    mul!(vec(du1),mass_matrix,vec(z))
     k .-= du1
   end
   if has_invW(f)
-    A_mul_B!(vec(dz),W,vec(k)) # Here W is actually invW
+    mul!(vec(dz),W,vec(k)) # Here W is actually invW
   else
     cache.linsolve(vec(dz),W,vec(k),new_W)
   end
@@ -188,15 +188,15 @@ end
       @. u = uprev + dt*(1-theta)*tmp + theta*z
     end
     f(k,u,p,t+a)
-    scale!(k,dt)
+    rmul!(k,dt)
     if mass_matrix == I
       k .-= z
     else
-      A_mul_B!(du1,mass_matrix,z)
+      mul!(du1,mass_matrix,z)
       k .-= du1
     end
     if has_invW(f)
-      A_mul_B!(dz,W,k) # Here W is actually invW
+      mul!(dz,W,k) # Here W is actually invW
     else
       cache.linsolve(vec(dz),W,vec(k),false)
     end
@@ -236,7 +236,7 @@ end
   if is_diagonal_noise(integrator.sol.prob)
     @. gtmp2 = gtmp*dW
   else
-    A_mul_B!(gtmp2,gtmp,dW)
+    mul!(gtmp2,gtmp,dW)
   end
 
   if typeof(cache) <: ISSEulerHeunCache
@@ -247,7 +247,7 @@ end
     if is_diagonal_noise(integrator.sol.prob)
       @. gtmp2 = gtmp*dW
     else
-      A_mul_B!(gtmp2,gtmp,dW)
+      mul!(gtmp2,gtmp,dW)
     end
   end
 
@@ -262,7 +262,7 @@ end
       f(Val{:jac},J,uprev,p,t)
     end
 
-    A_mul_B!(vec(z),J,vec(tmp))
+    mul!(vec(z),J,vec(tmp))
     @. k = dt*dt*z/2
 
     # k is Ed

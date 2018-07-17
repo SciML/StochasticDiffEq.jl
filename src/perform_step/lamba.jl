@@ -43,7 +43,7 @@ end
   if is_diagonal_noise(integrator.sol.prob)
     @. tmp=L*W.dW
   else
-    A_mul_B!(tmp,L,W.dW)
+    mul!(tmp,L,W.dW)
   end
 
   @. u = K+tmp
@@ -127,7 +127,7 @@ end
   if is_diagonal_noise(integrator.sol.prob)
     @. tmp=L*W.dW
   else
-    A_mul_B!(tmp,L,W.dW)
+    mul!(tmp,L,W.dW)
   end
 
   @. tmp = K+tmp
@@ -139,7 +139,7 @@ end
     @. tmp=(1/2)*W.dW*(L+gtmp)
   else
     @. gtmp = (1/2)*(L+gtmp)
-    A_mul_B!(tmp,gtmp,W.dW)
+    mul!(tmp,gtmp,W.dW)
   end
 
   dto2 = dt*(1/2)

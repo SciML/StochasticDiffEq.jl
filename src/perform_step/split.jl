@@ -12,9 +12,9 @@ end
 
   integrator.g(rtmp2,uprev,p,t)
   if is_diagonal_noise(integrator.sol.prob)
-    scale!(rtmp2,W.dW) # rtmp2 === rtmp3
+    rmul!(rtmp2,W.dW) # rtmp2 === rtmp3
   else
-    A_mul_B!(rtmp3,rtmp2,W.dW)
+    mul!(rtmp3,rtmp2,W.dW)
   end
 
   integrator.f[1](t,uprev,rtmp1)

@@ -94,9 +94,9 @@ end
   integrator.g(rtmp2,uprev,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
-    scale!(rtmp2,W.dW) # rtmp2 === rtmp3
+    rmul!(rtmp2,W.dW) # rtmp2 === rtmp3
   else
-    A_mul_B!(rtmp3,rtmp2,W.dW)
+    mul!(rtmp3,rtmp2,W.dW)
   end
 
   rtmp3 .+= uprev
@@ -108,7 +108,7 @@ end
 
   A = integrator.f[1](rtmp1,uprev,p,t)
   M = expm(A*dt)
-  A_mul_B!(tmp,M,rtmp3)
+  mul!(tmp,M,rtmp3)
 
   if integrator.iter > 1 && !integrator.u_modified
     current_extrapolant!(uhold,t+dt,integrator)
@@ -120,7 +120,7 @@ end
   rhs.sizeu = size(u)
   nlres = alg.nlsolve(nl_rhs,uhold)
 
-  copy!(uhold,nlres)
+  copyto!(uhold,nlres)
 
 
 end
@@ -141,15 +141,15 @@ end
   integrator.g(rtmp2,uprev,p,t)
   if typeof(cache) <: Union{IIF1MCache,IIF2MCache}
     if is_diagonal_noise(integrator.sol.prob)
-      scale!(rtmp2,W.dW) # rtmp2 === rtmp3
+      rmul!(rtmp2,W.dW) # rtmp2 === rtmp3
     else
-      A_mul_B!(rtmp3,rtmp2,W.dW)
+      mul!(rtmp3,rtmp2,W.dW)
     end
   else #Milstein correction
-    rtmp2 = M*rtmp2 # A_mul_B!(rtmp2,M,gtmp)
+    rtmp2 = M*rtmp2 # mul!(rtmp2,M,gtmp)
     @unpack gtmp,gtmp2 = cache
     #error("Milstein correction does not work.")
-    A_mul_B!(rtmp3,rtmp2,W.dW)
+    mul!(rtmp3,rtmp2,W.dW)
     I = zeros(length(dW),length(dW));
     Dg = zeros(length(dW),length(dW)); mil_correction = zeros(length(dW))
     mil_correction .= 0.0
@@ -160,7 +160,7 @@ end
     for j = 1:length(uprev)
       #Kj = uprev .+ dt.*du1 + sqdt*rtmp2[:,j] # This works too
       Kj = uprev .+ sqdt*rtmp2[:,j]
-      g(gtmp,Kj,p,t); A_mul_B!(gtmp2,M,gtmp)
+      g(gtmp,Kj,p,t); mul!(gtmp2,M,gtmp)
       Dgj = (gtmp2 - rtmp2)/sqdt
       mil_correction .+= Dgj*I[:,j]
     end
@@ -170,12 +170,12 @@ end
   if typeof(cache) <: IIF2MCache
     integrator.f[2](t,uprev,rtmp1)
     @. rtmp1 = @muladd 0.5dt*rtmp1 + uprev + rtmp3
-    A_mul_B!(tmp,M,rtmp1)
+    mul!(tmp,M,rtmp1)
   elseif !(typeof(cache) <: IIF1MilCache)
     @. rtmp1 = uprev + rtmp3
-    A_mul_B!(tmp,M,rtmp1)
+    mul!(tmp,M,rtmp1)
   else
-    A_mul_B!(tmp,M,uprev)
+    mul!(tmp,M,uprev)
     tmp .+= rtmp3
   end
 
@@ -189,5 +189,5 @@ end
   rhs.sizeu = size(u)
   nlres = alg.nlsolve(nl_rhs,uhold)
 
-  copy!(uhold,nlres)
+  copyto!(uhold,nlres)
 end
