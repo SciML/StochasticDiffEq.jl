@@ -20,6 +20,8 @@ module StochasticDiffEq
 
   using Compat
 
+  using LinearAlgebra, Random
+
   import ForwardDiff.Dual
 
   import DiffEqBase: __solve, solve!, __init, step!, build_solution, initialize!, DEAlgorithm,

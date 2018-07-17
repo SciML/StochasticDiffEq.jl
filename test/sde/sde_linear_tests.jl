@@ -13,7 +13,7 @@ sol = solve(prob,SRIW1(),dt=1//2^(4))
 NUM_MONTE = 100
 ## Convergence Testing
 println("Convergence Test on Linear")
-dts = 1.//2.^(9:-1:4) #14->7 good plot with higher num Monte
+dts = (1//2) .^(9:-1:4) #14->7 good plot with higher num Monte
 
 sim = test_convergence(dts,prob,EM(),numMonte=NUM_MONTE)
 

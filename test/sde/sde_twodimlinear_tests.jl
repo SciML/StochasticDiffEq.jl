@@ -20,7 +20,7 @@ sol = solve(prob,ImplicitEM(autodiff=false),dt=1/2^(3))
 sol = solve(prob,ImplicitRKMil(),dt=1/2^(3))
 
 sol = solve(prob,SRIW1(),dt=1/2^(3),save_everystep=false)
-sol = solve(prob,SRIW1(),dt=1/2^(3),progress=true,progress_steps=1)
+#sol = solve(prob,SRIW1(),dt=1/2^(3),progress=true,progress_steps=1)
 
 sol = solve(prob,SRIW1(),dt=1/2^(3),seed=1)
 sol2 = solve(prob,SRI(error_terms=2),dt=1/2^(3),seed=1)
