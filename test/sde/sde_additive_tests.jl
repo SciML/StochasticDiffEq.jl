@@ -43,7 +43,7 @@ sol =solve(prob,SKenCarp(),dt=1/2^(3))
 
 ## Convergence Testing
 println("Convergence Test on MultiDimAdditive")
-dts = 1./2.^(7:-1:4) #14->7 good plot
+dts = (1/2) .^ (7:-1:4) #14->7 good plot
 
 sim = test_convergence(dts,prob,SRA(),numMonte=5)
 @test abs(sim.𝒪est[:l2]-2) < 0.1

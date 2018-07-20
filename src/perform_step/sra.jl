@@ -393,7 +393,7 @@ end
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages,H0 = cache
   @unpack t,dt,uprev,u,W,p = integrator
   chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
-  H0[:]=zeros(stages)
+  H0[:]=fill(zero(u),stages)
 
   for i = 1:stages
     A0temp = zero(u)

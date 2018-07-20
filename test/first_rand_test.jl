@@ -1,7 +1,7 @@
 using DiffEqBase, StochasticDiffEq, Test
 
-f1(u,p,t) = 0.
-g1(u,p,t) = 1.
+f1(u,p,t) = zero(u)
+g1(u,p,t) = ones(size(u))
 dt = 1//2^(4)
 prob1 = SDEProblem{false}(f1,g1,0.,(0.0,1.0))
 integrator = init(prob1,EM(),dt=dt,save_noise=true)
