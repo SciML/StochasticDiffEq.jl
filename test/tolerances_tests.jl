@@ -18,7 +18,7 @@ probs = [prob_sde_2Dlinear,
          SDEProblem(f,σ,prob_sde_2Dlinear.u0,prob_sde_2Dlinear.tspan)]
 =#
 
-let probs = [prob_sde_2Dlinear], algs = [SRI(),SRIW1(),SRA1(),SRA(),RKMil()]
+function tolerance_testing(probs,algs)
   for alg in algs, prob in probs
     dt = typeof(alg)<:StochasticDiffEqAdaptiveAlgorithm ? 0.0 : 0.1
     srand(100)
@@ -37,3 +37,7 @@ let probs = [prob_sde_2Dlinear], algs = [SRI(),SRIW1(),SRA1(),SRA(),RKMil()]
     @test sol.t == sol2.t && sol.u == sol2.u
   end
 end
+
+probs = [prob_sde_2Dlinear]
+algs = [SRI(),SRIW1(),SRA1(),SRA(),RKMil()]
+tolerance_testing(probs,algs)

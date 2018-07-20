@@ -11,7 +11,7 @@ A = full(Strang(2))
 B = Diagonal([σ_const for i in 1:2])
 
 function f_commute(du,u,p,t)
-  A_mul_B!(du,A,u)
+  mul!(du,A,u)
   du .+= 1.01u
 end
 function (::typeof(f_commute))(::Type{Val{:analytic}},u0,p,t,W)

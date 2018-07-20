@@ -14,7 +14,7 @@ function f_nondiag(u,p,t)
 end
 
 function f_nondiag(du,u,p,t)
-  A_mul_B!(du,A,u)
+  mul!(du,A,u)
   du .+= 1.01u
 end
 

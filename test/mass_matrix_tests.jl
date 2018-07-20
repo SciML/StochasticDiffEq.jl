@@ -7,16 +7,16 @@ const mm_b = mm_A*ones(3)
 function mm_f(du,u,p,t)
       mul!(du,mm_A,u)
       tmp = t*mm_b
-      du .+= tmp
+      @. du += tmp
 end
 function mm_analytic(u0,p,t,W)
       @. 2ones(3)*exp(t) - t - 1
 end
 function mm_g(du,u,p,t)
-      du .= u + t
+      @. du = u + t
 end
 function g!(du,u,p,t)
-    du .= 0.0
+    @. du = 0.0
 end
 
 prob2 = SDEProblem(SDEFunction(mm_g,g!,analytic=mm_analytic),g!,ones(3),(0.0,1.0))
@@ -44,7 +44,7 @@ sol2 = solve(prob2, ImplicitEM(symplectic=true), dt = 0.01, adaptive = false)
 @test norm(sol .- sol2) ≈ 0 atol=1e-11
 
 function mm_f2(du,u,p,t)
-      A_mul_B!(du,mm_A,u)
+      mul!(du,mm_A,u)
 end
 function no_mm_f2(du,u,p,t)
       du .= u

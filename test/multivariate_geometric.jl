@@ -7,11 +7,11 @@ B = [1/5 1/100
     1/100 1/5]
 
 function f(du,u,p,t)
-  A_mul_B!(du,A,u)
+  mul!(du,A,u)
 end
 function σ(du,u,p,t)
-  A_mul_B!(@view(du[:,1]),B,u)
-  A_mul_B!(@view(du[:,2]),B,u)
+  mul!(@view(du[:,1]),B,u)
+  mul!(@view(du[:,2]),B,u)
 end
 
 function (::typeof(f))(::Type{Val{:analytic}},u0,p,t,W)
@@ -39,12 +39,12 @@ B = [1/5 1/100
     1/100 1/5]
 
 function f(du,u,p,t)
-  A_mul_B!(du,A,u)
+  mul!(du,A,u)
   du .+= 1.01u
 end
 function σ(du,u,p,t)
-  A_mul_B!(@view(du[:,1]),B,u)
-  A_mul_B!(@view(du[:,2]),B,u)
+  mul!(@view(du[:,1]),B,u)
+  mul!(@view(du[:,2]),B,u)
 end
 
 function (::typeof(f))(::Type{Val{:analytic}},u0,p,t,W)
