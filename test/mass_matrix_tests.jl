@@ -1,4 +1,4 @@
-using StochasticDiffEq, Test, LinearAlgebra
+using StochasticDiffEq, Test, LinearAlgebra, Random
 
 const mm_A = [-2.0 1 4
             4 -2 1
@@ -9,20 +9,19 @@ function mm_f(du,u,p,t)
       tmp = t*mm_b
       du .+= tmp
 end
-function mm_f(::Type{Val{:analytic}},u0,p,t,W)
+function mm_analytic(u0,p,t,W)
       @. 2ones(3)*exp(t) - t - 1
 end
 function mm_g(du,u,p,t)
       du .= u + t
 end
-function mm_g(::Type{Val{:analytic}},u0,p,t,W)
-      @. 2ones(3)*exp(t) - t - 1
-end
 function g!(du,u,p,t)
     du .= 0.0
 end
-prob2 = SDEProblem(mm_g,g!,ones(3),(0.0,1.0))
-prob = SDEProblem(mm_f,g!,ones(3),(0.0,1.0),mass_matrix=mm_A)
+
+prob2 = SDEProblem(SDEFunction(mm_g,g!,analytic=mm_analytic),g!,ones(3),(0.0,1.0))
+prob = SDEProblem(SDEFunction(mm_f,g!,analytic=mm_analytic),g!,
+                  ones(3),(0.0,1.0),mass_matrix=mm_A)
 
 sol = solve(prob, ImplicitRKMil(theta=1), dt = 0.01, adaptive = false)
 sol2 = solve(prob2, ImplicitRKMil(theta=1), dt = 0.01, adaptive = false)
@@ -54,7 +53,7 @@ function no_mm_g2(du,u,p,t)
       du .= u
 end
 function mm_g2(du,u,p,t)
-    A_mul_B!(du,mm_A,u)
+    mul!(du,mm_A,u)
 end
 prob2 = SDEProblem(no_mm_f2,no_mm_g2,ones(3),(0.0,1.0))
 prob = SDEProblem(mm_f2,no_mm_g2,ones(3),(0.0,1.0),mass_matrix=mm_A)

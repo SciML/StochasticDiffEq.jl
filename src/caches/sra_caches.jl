@@ -312,7 +312,7 @@ end
 function SRAConstantCache(tableau,rate_prototype)
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂ = tableau
   stages = length(α)
-  H0 = Vector{typeof(rate_prototype)}(stages)
+  H0 = Vector{typeof(rate_prototype)}(undef,stages)
   SRAConstantCache(c₀,c₁,A₀',B₀',α,β₁,β₂,stages,H0)
 end
 
