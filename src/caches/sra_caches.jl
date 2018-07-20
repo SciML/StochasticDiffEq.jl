@@ -23,12 +23,12 @@ function alg_cache(alg::SRA1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototyp
   if typeof(ΔW) <: Union{SArray,Number}
     chi2 = copy(ΔW)
   else
-    chi2 = zeros(ΔW)
+    chi2 = zero(ΔW)
   end
-  tmp1 = zeros(u)
-  E₁ = zeros(rate_prototype); gt = zeros(noise_rate_prototype); gpdt = zeros(noise_rate_prototype)
-  E₂ = zeros(rate_prototype); k₁ = zeros(rate_prototype); k₂ = zeros(rate_prototype)
-  tmp = zeros(u)
+  tmp1 = zero(u)
+  E₁ = zero(rate_prototype); gt = zero(noise_rate_prototype); gpdt = zero(noise_rate_prototype)
+  E₂ = zero(rate_prototype); k₁ = zero(rate_prototype); k₂ = zero(rate_prototype)
+  tmp = zero(u)
   SRA1Cache(u,uprev,chi2,tmp1,E₁,E₂,gt,k₁,k₂,gpdt,tmp)
 end
 
@@ -85,12 +85,12 @@ function alg_cache(alg::SRA2,prob,u,ΔW,ΔZ,p,rate_prototype,
   if typeof(ΔW) <: Union{SArray,Number}
     chi2 = copy(ΔW)
   else
-    chi2 = zeros(ΔW)
+    chi2 = zero(ΔW)
   end
   tab = SRA2ConstantCache(uBottomEltype)
-  g1 = zeros(noise_rate_prototype); g2 = zeros(noise_rate_prototype)
-  k1 = zeros(rate_prototype); k2 = zeros(rate_prototype)
-  E₁ = zeros(rate_prototype); E₂ = zeros(rate_prototype)
+  g1 = zero(noise_rate_prototype); g2 = zero(noise_rate_prototype)
+  k1 = zero(rate_prototype); k2 = zero(rate_prototype)
+  E₁ = zero(rate_prototype); E₂ = zero(rate_prototype)
   tmp = k1
   SRA2Cache(u,uprev,chi2,tab,g1,g2,k1,k2,E₁,E₂,tmp)
 end
@@ -234,19 +234,19 @@ function alg_cache(alg::SRA3,prob,u,ΔW,ΔZ,p,rate_prototype,
   if typeof(ΔW) <: Union{SArray,Number}
     chi2 = copy(ΔW)
   else
-    chi2 = zeros(ΔW)
+    chi2 = zero(ΔW)
   end
   tab = SRA3ConstantCache(uBottomEltype)
-  g1 = zeros(noise_rate_prototype); g2 = zeros(noise_rate_prototype)
-  g3 = zeros(noise_rate_prototype)
-  k1 = zeros(rate_prototype); k2 = zeros(rate_prototype)
-  k3 = zeros(rate_prototype)
-  E₁ = zeros(rate_prototype); E₂ = zeros(rate_prototype)
+  g1 = zero(noise_rate_prototype); g2 = zero(noise_rate_prototype)
+  g3 = zero(noise_rate_prototype)
+  k1 = zero(rate_prototype); k2 = zero(rate_prototype)
+  k3 = zero(rate_prototype)
+  E₁ = zero(rate_prototype); E₂ = zero(rate_prototype)
   tmp = k1
   if typeof(noise_rate_prototype) == typeof(rate_prototype)
     gtmp = nothing
   else
-    gtmp = zeros(noise_rate_prototype)
+    gtmp = zero(noise_rate_prototype)
   end
   ThreeStageSRACache(u,uprev,chi2,tab,g1,g2,g3,k1,k2,k3,E₁,E₂,tmp,gtmp)
 end
@@ -257,19 +257,19 @@ function alg_cache(alg::SOSRA,prob,u,ΔW,ΔZ,p,rate_prototype,
   if typeof(ΔW) <: Union{SArray,Number}
     chi2 = copy(ΔW)
   else
-    chi2 = zeros(ΔW)
+    chi2 = zero(ΔW)
   end
   tab = SOSRAConstantCache(uBottomEltype)
-  g1 = zeros(noise_rate_prototype); g2 = zeros(noise_rate_prototype)
-  g3 = zeros(noise_rate_prototype)
-  k1 = zeros(rate_prototype); k2 = zeros(rate_prototype)
-  k3 = zeros(rate_prototype)
-  E₁ = zeros(rate_prototype); E₂ = zeros(rate_prototype)
+  g1 = zero(noise_rate_prototype); g2 = zero(noise_rate_prototype)
+  g3 = zero(noise_rate_prototype)
+  k1 = zero(rate_prototype); k2 = zero(rate_prototype)
+  k3 = zero(rate_prototype)
+  E₁ = zero(rate_prototype); E₂ = zero(rate_prototype)
   tmp = k1
   if typeof(noise_rate_prototype) == typeof(rate_prototype)
     gtmp = nothing
   else
-    gtmp = zeros(noise_rate_prototype)
+    gtmp = zero(noise_rate_prototype)
   end
   ThreeStageSRACache(u,uprev,chi2,tab,g1,g2,g3,k1,k2,k3,E₁,E₂,tmp,gtmp)
 end
@@ -280,19 +280,19 @@ function alg_cache(alg::SOSRA2,prob,u,ΔW,ΔZ,p,rate_prototype,
   if typeof(ΔW) <: Union{SArray,Number}
     chi2 = copy(ΔW)
   else
-    chi2 = zeros(ΔW)
+    chi2 = zero(ΔW)
   end
   tab = SOSRA2ConstantCache(uBottomEltype)
-  g1 = zeros(noise_rate_prototype); g2 = zeros(noise_rate_prototype)
-  g3 = zeros(noise_rate_prototype)
-  k1 = zeros(rate_prototype); k2 = zeros(rate_prototype)
-  k3 = zeros(rate_prototype)
-  E₁ = zeros(rate_prototype); E₂ = zeros(rate_prototype)
+  g1 = zero(noise_rate_prototype); g2 = zero(noise_rate_prototype)
+  g3 = zero(noise_rate_prototype)
+  k1 = zero(rate_prototype); k2 = zero(rate_prototype)
+  k3 = zero(rate_prototype)
+  E₁ = zero(rate_prototype); E₂ = zero(rate_prototype)
   tmp = k1
   if typeof(noise_rate_prototype) == typeof(rate_prototype)
     gtmp = nothing
   else
-    gtmp = zeros(noise_rate_prototype)
+    gtmp = zero(noise_rate_prototype)
   end
   ThreeStageSRACache(u,uprev,chi2,tab,g1,g2,g3,k1,k2,k3,E₁,E₂,tmp,gtmp)
 end
@@ -347,17 +347,17 @@ function alg_cache(alg::SRA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype
   H0 = Vector{typeof(u)}()
   tab = SRAConstantCache(alg.tableau,rate_prototype)
   for i = 1:tab.stages
-    push!(H0,zeros(u))
+    push!(H0,zero(u))
   end
-  A0temp = zeros(rate_prototype); B0temp = zeros(rate_prototype)
-  ftmp = zeros(rate_prototype); gtmp = zeros(noise_rate_prototype);
+  A0temp = zero(rate_prototype); B0temp = zero(rate_prototype)
+  ftmp = zero(rate_prototype); gtmp = zero(noise_rate_prototype);
   if typeof(ΔW) <: Union{SArray,Number}
     chi2 = copy(ΔW)
   else
-    chi2 = zeros(ΔW)
+    chi2 = zero(ΔW)
   end
-  atemp = zeros(rate_prototype); btemp = zeros(rate_prototype); E₂ = zeros(rate_prototype); E₁temp = zeros(rate_prototype)
-  E₁ = zeros(rate_prototype)
-  tmp = zeros(u)
+  atemp = zero(rate_prototype); btemp = zero(rate_prototype); E₂ = zero(rate_prototype); E₁temp = zero(rate_prototype)
+  E₁ = zero(rate_prototype)
+  tmp = zero(u)
   SRACache(u,uprev,H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂,tmp,tab)
 end

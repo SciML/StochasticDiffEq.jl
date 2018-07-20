@@ -34,18 +34,18 @@ end
 
 function alg_cache(alg::IIF1M,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
 
-  tmp = similar(u,axes(u)); rtmp1 = zeros(rate_prototype)
+  tmp = similar(u,axes(u)); rtmp1 = zero(rate_prototype)
   dual_cache = DiffCache(u,Val{determine_chunksize(u,get_chunksize(alg.nlsolve))})
   uhold = vec(u) # this makes uhold the same values as integrator.u
   rhs = RHS_IIF1(f,tmp,t,t,dual_cache,size(u),p)
   nl_rhs = alg.nlsolve(Val{:init},rhs,uhold)
   noise_tmp = tmp
 
-  rtmp2 = zeros(noise_rate_prototype)
+  rtmp2 = zero(noise_rate_prototype)
   if is_diagonal_noise(prob)
     rtmp3 = rtmp2
   else
-    rtmp3 = zeros(rate_prototype)
+    rtmp3 = zero(rate_prototype)
   end
   IIF1MCache(u,uprev,uhold,dual_cache,tmp,rhs,nl_rhs,rtmp1,rtmp2,rtmp3,noise_tmp)
 end
@@ -85,18 +85,18 @@ end
 
 function alg_cache(alg::IIF2M,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
 
-  tmp = similar(u,axes(u)); rtmp1 = zeros(rate_prototype)
+  tmp = similar(u,axes(u)); rtmp1 = zero(rate_prototype)
   dual_cache = DiffCache(u,Val{determine_chunksize(u,get_chunksize(alg.nlsolve))})
   uhold = vec(u) # this makes uhold the same values as integrator.u
   rhs = RHS_IIF2(f,tmp,t,t,dual_cache,size(u),p)
   nl_rhs = alg.nlsolve(Val{:init},rhs,uhold)
   noise_tmp = tmp
 
-  rtmp2 = zeros(noise_rate_prototype)
+  rtmp2 = zero(noise_rate_prototype)
   if is_diagonal_noise(prob)
     rtmp3 = rtmp2
   else
-    rtmp3 = zeros(rate_prototype)
+    rtmp3 = zero(rate_prototype)
   end
   IIF2MCache(u,uprev,uhold,dual_cache,tmp,rhs,nl_rhs,rtmp1,rtmp2,rtmp3,noise_tmp)
 end
@@ -136,18 +136,18 @@ function alg_cache(alg::IIF1Mil,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_proto
 end
 
 function alg_cache(alg::IIF1Mil,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
-  tmp = similar(u,axes(u)); rtmp1 = zeros(rate_prototype)
+  tmp = similar(u,axes(u)); rtmp1 = zero(rate_prototype)
   dual_cache = DiffCache(u,Val{determine_chunksize(u,get_chunksize(alg.nlsolve))})
   uhold = vec(u) # this makes uhold the same values as integrator.u
   rhs = RHS_IIF1(f,tmp,t,t,dual_cache,size(u))
   nl_rhs = alg.nlsolve(Val{:init},rhs,uhold)
-  noise_tmp = zeros(noise_rate_prototype)
-  gtmp = zeros(noise_rate_prototype); gtmp2 = zeros(noise_rate_prototype)
-  rtmp2 = zeros(noise_rate_prototype)
+  noise_tmp = zero(noise_rate_prototype)
+  gtmp = zero(noise_rate_prototype); gtmp2 = zero(noise_rate_prototype)
+  rtmp2 = zero(noise_rate_prototype)
   if is_diagonal_noise(prob)
     rtmp3 = rtmp2
   else
-    rtmp3 = zeros(rate_prototype)
+    rtmp3 = zero(rate_prototype)
   end
   IIF1MilCache(u,uprev,uhold,dual_cache,tmp,rhs,nl_rhs,rtmp1,rtmp2,rtmp3,noise_tmp,gtmp,gtmp2)
 end

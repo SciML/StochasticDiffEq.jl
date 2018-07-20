@@ -142,11 +142,11 @@ times ts (sorted), with values timeseries and derivatives ks
   tdir*tvals[idx[1]] < tdir*ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
   i = 2 # Start the search thinking it's between ts[1] and ts[2]
   if typeof(idxs) <: Number
-    vals = Vector{eltype(first(timeseries))}(length(tvals))
+    vals = Vector{eltype(first(timeseries))}(undef,length(tvals))
   elseif typeof(idxs) <: AbstractArray
-     vals = Vector{Array{eltype(first(timeseries)),ndims(idxs)}}(length(tvals))
+     vals = Vector{Array{eltype(first(timeseries)),ndims(idxs)}}(undef,length(tvals))
   else
-    vals = Vector{eltype(timeseries)}(length(tvals))
+    vals = Vector{eltype(timeseries)}(undef,length(tvals))
   end
   @inbounds for j in idx
     t = tvals[j]

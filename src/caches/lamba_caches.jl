@@ -17,14 +17,14 @@ du_cache(c::LambaEMCache) = (c.du1,c.du2,c.K,c.L)
 alg_cache(alg::LambaEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = LambaEMConstantCache()
 
 function alg_cache(alg::LambaEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
-  du1 = zeros(rate_prototype); du2 = zeros(rate_prototype)
-  K = zeros(rate_prototype); tmp = zeros(u);
-  L = zeros(noise_rate_prototype)
-  gtmp = zeros(noise_rate_prototype)
+  du1 = zero(rate_prototype); du2 = zero(rate_prototype)
+  K = zero(rate_prototype); tmp = zero(u);
+  L = zero(noise_rate_prototype)
+  gtmp = zero(noise_rate_prototype)
   if is_diagonal_noise(prob)
     dW_cache = nothing
   else
-    dW_cache = zeros(ΔW)
+    dW_cache = zero(ΔW)
   end
   LambaEMCache(u,uprev,du1,du2,K,tmp,L,gtmp,dW_cache)
 end
@@ -48,14 +48,14 @@ du_cache(c::LambaEulerHeunCache) = (c.du1,c.du2,c.K,c.L)
 alg_cache(alg::LambaEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = LambaEulerHeunConstantCache()
 
 function alg_cache(alg::LambaEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
-  du1 = zeros(rate_prototype); du2 = zeros(rate_prototype)
-  K = zeros(rate_prototype); tmp = zeros(u);
-  L = zeros(noise_rate_prototype)
-  gtmp = zeros(noise_rate_prototype)
+  du1 = zero(rate_prototype); du2 = zero(rate_prototype)
+  K = zero(rate_prototype); tmp = zero(u);
+  L = zero(noise_rate_prototype)
+  gtmp = zero(noise_rate_prototype)
   if is_diagonal_noise(prob)
     dW_cache = nothing
   else
-    dW_cache = zeros(ΔW)
+    dW_cache = zero(ΔW)
   end
   LambaEulerHeunCache(u,uprev,du1,du2,K,tmp,L,gtmp,dW_cache)
 end

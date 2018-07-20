@@ -70,20 +70,20 @@ du_cache(c::SKenCarpCache)   = (c.k,c.fsalfirst)
 
 function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
 
-  du1 = zeros(rate_prototype)
+  du1 = zero(rate_prototype)
   J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
-  W = zeros(J)
+  W = zero(J)
   z₁ = similar(u,axes(u)); z₂ = similar(u,axes(u))
   z₃ = similar(u,axes(u)); z₄ = similar(u,axes(u))
   dz = similar(u,axes(u))
-  fsalfirst = zeros(rate_prototype)
-  k = zeros(rate_prototype)
-  tmp = zeros(u); b = similar(u,axes(u));
-  atmp = zeros(u,uEltypeNoUnits,axes(u))
+  fsalfirst = zero(rate_prototype)
+  k = zero(rate_prototype)
+  tmp = zero(u); b = similar(u,axes(u));
+  atmp = zero(u,uEltypeNoUnits,axes(u))
 
   if typeof(f) <: SplitFunction
-    k1 = zeros(u); k2 = zeros(u)
-    k3 = zeros(u); k4 = zeros(u)
+    k1 = zero(u); k2 = zero(u)
+    k3 = zero(u); k4 = zero(u)
     uf = DiffEqDiffTools.UJacobianWrapper(f.f1,t,p)
   else
     k1 = nothing; k2 = nothing
@@ -108,10 +108,10 @@ function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prot
   if typeof(ΔW) <: Union{SArray,Number}
     chi2 = copy(ΔW)
   else
-    chi2 = zeros(ΔW)
+    chi2 = zero(ΔW)
   end
 
-  g1 = zeros(noise_rate_prototype); g4 = zeros(noise_rate_prototype)
+  g1 = zero(noise_rate_prototype); g4 = zero(noise_rate_prototype)
 
   tab = SKenCarpTableau(real(uBottomEltype),real(tTypeNoUnits))
 

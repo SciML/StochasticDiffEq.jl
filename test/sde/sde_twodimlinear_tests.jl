@@ -32,7 +32,7 @@ sol.t ≈ sol2.t
 
 ## Convergence Testing
 println("Convergence Test on 2D Linear")
-dts = 1./2.^(7:-1:4) #14->7 good plot
+dts = (1/2) .^ (7:-1:4) #14->7 good plot
 
 sim = test_convergence(dts,prob,EM(),numMonte=1000)
 @test abs(sim.𝒪est[:l2]-.5) < 0.1

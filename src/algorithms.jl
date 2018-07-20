@@ -67,13 +67,16 @@ PCEuler(ggprime; theta=1/2, eta=1/2) = PCEuler(theta,eta,ggprime)
 
 # Rossler
 
-@with_kw struct SRA{TabType} <: StochasticDiffEqAdaptiveAlgorithm
-  tableau::TabType = constructSRA1()
+struct SRA{TabType} <: StochasticDiffEqAdaptiveAlgorithm
+  tableau::TabType
 end
-@with_kw struct SRI{TabType} <: StochasticDiffEqAdaptiveAlgorithm
-  tableau::TabType = constructSRIW1()
-  error_terms = 4
+SRA(;tableau=constructSRA1()) = SRA(tableau)
+
+struct SRI{TabType} <: StochasticDiffEqAdaptiveAlgorithm
+  tableau::TabType
+  error_terms::Int
 end
+SRI(;tableau=constructSRIW1(),error_terms=4) = SRI(tableau,error_terms)
 
 struct SRIW1 <: StochasticDiffEqAdaptiveAlgorithm end
 struct SRIW2 <: StochasticDiffEqAdaptiveAlgorithm end
