@@ -4,7 +4,6 @@ DiffEqBase 3.8.0
 RecursiveArrayTools 0.13.0
 DataStructures 0.4.6
 Roots
-Compat 0.17.0
 DiffEqNoiseProcess
 NLsolve 0.14.1
 ForwardDiff 0.7.0

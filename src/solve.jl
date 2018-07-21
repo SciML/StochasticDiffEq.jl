@@ -334,7 +334,7 @@ function __init(
   integrator =    SDEIntegrator{typeof(alg),uType,uBottomEltype,_tType,typeof(p),
                   typeof(eigen_est),tTypeNoUnits,
                   uEltypeNoUnits,typeof(W),rateType,typeof(sol),typeof(cache),
-                  typeof(prog),FType,GType,typeof(opts),typeof(noise)}(
+                  FType,GType,typeof(opts),typeof(noise)}(
                   f,g,noise,uprev,tprev,t,u,p,_tType(dt),_tType(dt),_tType(dt),dtcache,T,tdir,
                   just_hit_tstop,isout,event_last_time,accept_step,
                   last_stepfail,force_stepfail,
@@ -342,7 +342,7 @@ function __init(
                   saveiter,
                   alg,sol,
                   cache,_tType(dt),W,
-                  opts,iter,success_iter,prog,eigen_est,EEst,q,
+                  opts,iter,success_iter,eigen_est,EEst,q,
                   tTypeNoUnits(qoldinit),q11)
 
   if initialize_integrator

@@ -1,4 +1,4 @@
-mutable struct SDEIntegrator{T1,uType,uEltype,tType,P,eigenType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,cacheType,progType,F4,F5,OType,noiseType} <: AbstractSDEIntegrator
+mutable struct SDEIntegrator{T1,uType,uEltype,tType,P,eigenType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,cacheType,F4,F5,OType,noiseType} <: AbstractSDEIntegrator
   f::F4
   g::F5
   noise::noiseType
@@ -30,7 +30,6 @@ mutable struct SDEIntegrator{T1,uType,uEltype,tType,P,eigenType,tTypeNoUnits,uEl
   opts::OType
   iter::Int
   success_iter::Int
-  prog::progType
   eigen_est::eigenType
   EEst::tTypeNoUnits
   q::tTypeNoUnits

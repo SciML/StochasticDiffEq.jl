@@ -18,7 +18,7 @@ module StochasticDiffEq
 
   import RecursiveArrayTools: chain
 
-  using Compat
+  using Logging
 
   using LinearAlgebra, Random
 
