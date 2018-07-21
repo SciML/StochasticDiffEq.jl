@@ -203,7 +203,7 @@ function __init(
     callbacks_internal,isoutofdomain,unstable_check,verbose,calck,force_dtmin,
     advance_to_tstop,stop_at_next_tstop)
 
-  progress ? (prog = Juno.ProgressBar(name=progress_name)) : prog = nothing
+  progress && @logmsg(-1,progress_name,_id=_id = :StochasticDiffEq,progress=0)
 
   # k = rateType[]
 

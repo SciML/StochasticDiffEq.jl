@@ -153,8 +153,11 @@ end
     handle_callbacks!(integrator)
   end
   if integrator.opts.progress && integrator.iter%integrator.opts.progress_steps==0
-    Juno.msg(integrator.prog,integrator.opts.progress_message(integrator.dt,integrator.u,integrator.p,integrator.t))
-    Juno.progress(integrator.prog,integrator.t/integrator.T)
+    @logmsg(-1,
+    integrator.opts.progress_name,
+    _id = :StochasticDiffEq,
+    #message=integrator.opts.progress_message(integrator.dt,integrator.u,integrator.p,integrator.t),
+    progress=integrator.t/integrator.sol.prob.tspan[2])
   end
 end
 
@@ -192,7 +195,13 @@ end
   solution_endpoint_match_cur_integrator!(integrator)
   resize!(integrator.sol.t,integrator.saveiter)
   resize!(integrator.sol.u,integrator.saveiter)
-  !(typeof(integrator.prog)<:Nothing) && Juno.done(integrator.prog)
+  if integrator.opts.progress
+    @logmsg(-1,
+    integrator.opts.progress_name,
+    _id = :StochasticDiffEq,
+    #message=integrator.opts.progress_message(integrator.dt,integrator.u,integrator.p,integrator.t),
+    progress="done")
+  end
   return nothing
 end
 

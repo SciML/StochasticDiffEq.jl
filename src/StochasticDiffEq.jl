@@ -9,7 +9,7 @@ module StochasticDiffEq
   using Reexport
   @reexport using DiffEqBase
 
-  using Parameters, RecursiveArrayTools, Juno,
+  using Parameters, RecursiveArrayTools,
         DataStructures, Roots, DiffEqNoiseProcess,
         NLsolve, ForwardDiff, StaticArrays, MuladdMacro, DiffEqDiffTools
 
