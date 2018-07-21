@@ -3,15 +3,15 @@
   gpdt = integrator.g(uprev,p,t+dt)
   chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   k₁ = dt*integrator.f(uprev,p,t)
-  k₂ = dt*integrator.f(uprev+3k₁/4 + 3chi2*gpdt/2,p,t+3dt/4)
+  k₂ = dt*integrator.f(uprev+3k₁/4 + 3chi2.*gpdt/2,p,t+3dt/4)
   E₁ = k₁ + k₂
   E₂ = chi2.*(integrator.g(uprev,p,t)-gpdt) #Only for additive!
 
   if integrator.opts.adaptive
-    u = uprev + k₁/3 + 2k₂/3 + E₂ + W.dW*gpdt
+    u = uprev + k₁/3 + 2k₂/3 + E₂ + W.dW.*gpdt
     integrator.EEst = integrator.opts.internalnorm((integrator.opts.delta*E₁+E₂)./(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
   else
-    u = uprev + k₁/3 + 2k₂/3 + E₂ + W.dW*gpdt
+    u = uprev + k₁/3 + 2k₂/3 + E₂ + W.dW.*gpdt
   end
   integrator.u = u
 end
