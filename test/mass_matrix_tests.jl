@@ -19,9 +19,9 @@ function g!(du,u,p,t)
     @. du = 0.0
 end
 
-prob2 = SDEProblem(SDEFunction(mm_g,g!,analytic=mm_analytic),g!,ones(3),(0.0,1.0))
-prob = SDEProblem(SDEFunction(mm_f,g!,analytic=mm_analytic),g!,
-                  ones(3),(0.0,1.0),mass_matrix=mm_A)
+prob2 = SDEProblem(SDEFunction(mm_g,g!;analytic=mm_analytic),g!,ones(3),(0.0,1.0))
+prob = SDEProblem(SDEFunction(mm_f,g!;analytic=mm_analytic,mass_matrix=mm_A),g!,
+                  ones(3),(0.0,1.0))
 
 sol = solve(prob, ImplicitRKMil(theta=1), dt = 0.01, adaptive = false)
 sol2 = solve(prob2, ImplicitRKMil(theta=1), dt = 0.01, adaptive = false)
@@ -56,7 +56,7 @@ function mm_g2(du,u,p,t)
     mul!(du,mm_A,u)
 end
 prob2 = SDEProblem(no_mm_f2,no_mm_g2,ones(3),(0.0,1.0))
-prob = SDEProblem(mm_f2,no_mm_g2,ones(3),(0.0,1.0),mass_matrix=mm_A)
+prob = SDEProblem(SDEFunction(mm_f2,no_mm_g2;mass_matrix=mm_A),no_mm_g2,ones(3),(0.0,1.0))
 
 srand(1)
 sol = solve(prob, ImplicitEM(theta=1), dt = 0.01, adaptive = false)

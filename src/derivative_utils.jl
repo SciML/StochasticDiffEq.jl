@@ -19,7 +19,7 @@ function calc_W!(integrator, cache::StochasticDiffEqMutableCache, γdt, repeat_s
     @unpack J,W,jac_config = cache
     is_compos = is_composite(alg)
     alg = unwrap_alg(integrator, true)
-    mass_matrix = integrator.sol.prob.mass_matrix
+    mass_matrix = integrator.f.mass_matrix
 
     new_W = true
     if has_invW(f)

@@ -135,7 +135,7 @@ end
   alg = unwrap_alg(integrator, true)
   alg.symplectic ? a = dt/2 : a = dt
   dW = integrator.W.dW
-  mass_matrix = integrator.sol.prob.mass_matrix
+  mass_matrix = integrator.f.mass_matrix
   theta = alg.theta
 
   repeat_step = false
