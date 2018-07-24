@@ -156,7 +156,7 @@ end
     @logmsg(-1,
     integrator.opts.progress_name,
     _id = :StochasticDiffEq,
-    #message=integrator.opts.progress_message(integrator.dt,integrator.u,integrator.p,integrator.t),
+    message=integrator.opts.progress_message(integrator.dt,integrator.u,integrator.p,integrator.t),
     progress=integrator.t/integrator.sol.prob.tspan[2])
   end
 end
@@ -199,7 +199,7 @@ end
     @logmsg(-1,
     integrator.opts.progress_name,
     _id = :StochasticDiffEq,
-    #message=integrator.opts.progress_message(integrator.dt,integrator.u,integrator.p,integrator.t),
+    message=integrator.opts.progress_message(integrator.dt,integrator.u,integrator.p,integrator.t),
     progress="done")
   end
   return nothing
