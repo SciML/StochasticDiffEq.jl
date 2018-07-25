@@ -56,12 +56,12 @@ ff1 = (u,p,t) -> 0.0
 ff2 = (u,p,t) -> β./sqrt.(1+t) - u./(2*(1+t))
 σ2 = (u,p,t) -> α*β./sqrt.(1+t)
 f_ff1 = SplitSDEFunction(ff1,ff2,σ2,analytic=ff1_analytic)
-prob = SplitSDEProblem(f_ff1,σ2,1.,(0.0,1.0))
+prob = SDEProblem(f_ff1,σ2,1.,(0.0,1.0))
 
 sol = solve(prob,EM(),dt=1/10)
 sol2 = solve(prob,SKenCarp(),dt=1/10,seed=1)
 
-dts = 1./2.^(10:-1:2) #14->7 good plot
+dts = (1/2) .^ (10:-1:2) #14->7 good plot
 sim10 = test_convergence(dts,prob,SKenCarp(),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-2) < 0.3
 
@@ -73,12 +73,12 @@ ff1 = (u,p,t) -> β./sqrt.(1+t)
 ff2 = (u,p,t) -> - u./(2*(1+t))
 σ2 = (u,p,t) -> α*β./sqrt.(1+t)
 f_ff1 = SplitSDEFunction(ff1,ff2,σ2,analytic=ff1_analytic)
-prob = SplitSDEProblem(f_ff1,σ2,1.,(0.0,1.0))
+prob = SDEProblem(f_ff1,σ2,1.,(0.0,1.0))
 
 sol = solve(prob,EM(),dt=1/10)
 sol2 = solve(prob,SKenCarp(),dt=1/10)
 
-dts = 1./2.^(10:-1:2) #14->7 good plot
+dts = (1/2) .^ (10:-1:2) #14->7 good plot
 sim10 = test_convergence(dts,prob,SKenCarp(),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-2) < 0.3
 
@@ -92,12 +92,12 @@ ff1 = (du,u,p,t) -> du .= β./sqrt.(1+t) - u./(2*(1+t))
 ff2 = (du,u,p,t) -> du .= 0.0
 σ2 = (du,u,p,t) -> du .= α*β./sqrt.(1+t)
 f_ff1 = SplitSDEFunction(ff1,ff2,σ2,analytic=ff1_analytic)
-prob = SplitSDEProblem(f_ff1,σ2,[1.],(0.0,1.0))
+prob = SDEProblem(f_ff1,σ2,[1.],(0.0,1.0))
 
 sol = solve(prob,EM(),dt=1/10)
 sol2 = solve(prob,SKenCarp(),dt=1/10)
 
-dts = 1./2.^(10:-1:2) #14->7 good plot
+dts = (1/2) .^ (10:-1:2) #14->7 good plot
 sim10 = test_convergence(dts,prob,SKenCarp(),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-2) < 0.3
 
@@ -109,12 +109,12 @@ ff1 = (du,u,p,t) -> du .= 0.0
 ff2 = (du,u,p,t) -> du .= β./sqrt.(1+t) - u./(2*(1+t))
 σ2 = (du,u,p,t) -> du .= α*β./sqrt.(1+t)
 f_ff1 = SplitSDEFunction(ff1,ff2,σ2,analytic=ff1_analytic)
-prob = SplitSDEProblem(f_ff1,σ2,[1.],(0.0,1.0))
+prob = SDEProblem(f_ff1,σ2,[1.],(0.0,1.0))
 
 sol = solve(prob,EM(),dt=1/10)
 sol2 = solve(prob,SKenCarp(),dt=1/10)
 
-dts = 1./2.^(10:-1:2) #14->7 good plot
+dts = (1/2) .^ (10:-1:2) #14->7 good plot
 sim10 = test_convergence(dts,prob,SKenCarp(),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-2) < 0.3
 
@@ -126,11 +126,11 @@ ff1 = (du,u,p,t) -> du .= β./sqrt.(1+t)
 ff2 = (du,u,p,t) -> du .= - u./(2*(1+t))
 σ2 = (du,u,p,t) -> du .= α*β./sqrt.(1+t)
 f_ff1 = SplitSDEFunction(ff1,ff2,σ2,analytic=ff1_analytic)
-prob = SplitSDEProblem(f_ff1,σ2,[1.],(0.0,1.0))
+prob = SDEProblem(f_ff1,σ2,[1.],(0.0,1.0))
 
 sol = solve(prob,EM(),dt=1/10)
 sol2 = solve(prob,SKenCarp(),dt=1/10)
 
-dts = 1./2.^(10:-1:2) #14->7 good plot
+dts = (1/2) .^ (10:-1:2) #14->7 good plot
 sim10 = test_convergence(dts,prob,SKenCarp(),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-2) < 0.3
