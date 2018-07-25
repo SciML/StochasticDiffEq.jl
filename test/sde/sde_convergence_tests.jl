@@ -5,7 +5,7 @@ import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_wave,
                                                prob_sde_cubic,
                                                prob_sde_additive
 srand(100)
-dts = (1/2) .^(10:-1:2) #14->7 good plot
+dts = (1/2) .^ (10:-1:2) #14->7 good plot
 
 prob = prob_sde_wave
 sim  = test_convergence(dts,prob,ImplicitEM(),numMonte=Int(1e1))
@@ -89,7 +89,7 @@ sim8 = test_convergence(dts,prob,SOSRA(),numMonte=Int(1e1))
 @test abs(sim8.𝒪est[:final]-2) < 0.3
 sim9 = test_convergence(dts,prob,SOSRA2(),numMonte=Int(1e1))
 @test abs(sim9.𝒪est[:final]-2) < 0.3
-dts = 1./2.^(10:-1:4) #14->7 good plot
+dts = (1/2) .^ (10:-1:4) #14->7 good plot
 sim10 = test_convergence(dts,prob,SKenCarp(),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-2) < 0.3
 sim11 = test_convergence(dts,prob,SKenCarp(min_newton_iter=3),numMonte=Int(1e1))

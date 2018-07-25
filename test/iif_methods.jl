@@ -1,5 +1,5 @@
 using DiffEqBase, StochasticDiffEq, DiffEqNoiseProcess,
-      Test, DiffEqDevTools, SpecialMatrices
+      Test, DiffEqDevTools
 const μ = 1.01
 const σ_const = 0.87
 
@@ -12,8 +12,8 @@ no_noise(u,p,t) = 0.0
 f1_no_noise(u,p,t) = μ
 (::typeof(f1_no_noise))(::Type{Val{:analytic}},u0,p,t,W) = u0.*exp.(2μ*t)
 
-prob = SDEProblem{false}((f1_μ,f2),σ,1/2,(0.0,1.0))
-no_noise_prob = SDEProblem{false}((f1_no_noise,f2),no_noise,1/2,(0.0,1.0))
+prob = SplitSDEProblem{false}(f1_μ,f2,σ,1/2,(0.0,1.0))
+no_noise_prob = SplictSDEProblem{false}(f1_no_noise,f2,no_noise,1/2,(0.0,1.0))
 
 sol = solve(prob,IIF1M(),dt=1/10)
 
@@ -45,7 +45,7 @@ sim  = test_convergence(dts,prob,IIF1Mil(),numMonte=Int(2e1))
 
 
 u0 = rand(2)
-A = full(Strang(2))
+A = [-2.0 1.0; 1.0 -2.0]
 B = [σ_const 0
     0 σ_const]
 

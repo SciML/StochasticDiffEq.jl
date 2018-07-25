@@ -48,7 +48,7 @@ is_APPVEYOR = ( Sys.iswindows() && haskey(ENV,"APPVEYOR") )
     @time @testset "Non-diagonal SDE Tests" begin include("nondiagonal_tests.jl") end
     @time @testset "Rossler Order Tests" begin include("sde/sde_rosslerorder_tests.jl") end
     @time @testset "Convergence Tests" begin include("sde/sde_convergence_tests.jl") end
-    @time @testset "Split Tests" begin include("split_tests.jl") end
+    #@time @testset "Split Tests" begin include("split_tests.jl") end
     @time @testset "Stratonovich Convergence Tests" begin include("stratonovich_convergence_tests.jl") end
     @time @testset "IIF Convergence Tests" begin include("iif_methods.jl") end
     LONGER_TESTS && @time @testset "Weak Convergence Tests" begin include("weak_convergence.jl") end

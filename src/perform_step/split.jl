@@ -1,7 +1,7 @@
 @muladd function perform_step!(integrator,cache::SplitEMConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
-  u = dt*(integrator.f[1](uprev,p,t) +
-           integrator.f[2](uprev,p,t)) +
+  u = dt*(integrator.f.f1(uprev,p,t) +
+           integrator.f.f2(uprev,p,t)) +
            integrator.g(uprev,p,t).*W.dW + uprev
   integrator.u = u
 end
@@ -17,8 +17,8 @@ end
     mul!(rtmp3,rtmp2,W.dW)
   end
 
-  integrator.f[1](t,uprev,rtmp1)
+  integrator.f.f1(t,uprev,rtmp1)
   @. u = @muladd uprev + dt*rtmp1 + rtmp3
-  integrator.f[2](t,uprev,rtmp1)
+  integrator.f.f2(t,uprev,rtmp1)
   @. u = @muladd u + dt*rtmp1
 end

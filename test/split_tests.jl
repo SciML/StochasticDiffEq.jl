@@ -6,18 +6,16 @@ f2(u,p,t) = (1.01)/2 * u
 σ(u,p,t) = 0.87u
 #(::typeof(f))(::Type{Val{:analytic}},u0,p,t,W) = u0.*exp.(0.63155t+0.87W)
 
-prob = SDEProblem{false}((f1,f2),σ,1/2,(0.0,1.0))
-
+prob = SplitSDEProblem{false}(f1,f2,σ,1/2,(0.0,1.0))
 sol = solve(prob,SplitEM(),dt=1/10,save_noise=true)
 
 prob = SDEProblem{false}(f,σ,1/2,(0.0,1.0),noise = NoiseWrapper(sol.W))
-
 sol2 = solve(prob,EM(),dt=1/10)
 
 @test sol[:] ≈ sol2[:]
 
 u0 = rand(4)
-prob = SDEProblem{false}((f1,f2),σ,u0,(0.0,1.0))
+prob = SplitSDEProblem{false}(f1,f2,σ,u0,(0.0,1.0))
 
 sol = solve(prob,SplitEM(),dt=1/10,save_noise=true)
 

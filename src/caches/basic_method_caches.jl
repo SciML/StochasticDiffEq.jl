@@ -140,8 +140,8 @@ function alg_cache(alg::RKMilCommute,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
   du1 = zero(rate_prototype); du2 = zero(rate_prototype)
   K = zero(rate_prototype); gtmp = zero(noise_rate_prototype);
   L = zero(noise_rate_prototype); tmp = zero(rate_prototype)
-  I = zero(length(ΔW),length(ΔW));
-  Dg = zero(length(ΔW),length(ΔW)); mil_correction = zero(rate_prototype)
+  I = zeros(length(ΔW),length(ΔW));
+  Dg = zeros(length(ΔW),length(ΔW)); mil_correction = zero(rate_prototype)
   Kj = zero(u); Dgj = zero(noise_rate_prototype)
   RKMilCommuteCache(u,uprev,du1,du2,K,gtmp,L,I,Dg,mil_correction,Kj,Dgj,tmp)
 end
