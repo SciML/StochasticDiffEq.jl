@@ -1,25 +1,29 @@
 using DiffEqBase, StochasticDiffEq, DiffEqNoiseProcess,
-      Test, DiffEqDevTools
+      Test, DiffEqDevTools, Random, LinearAlgebra
 const μ = 1.01
 const σ_const = 0.87
 
 f(u,p,t) = μ * u + μ * u
 f1_μ(u,p,t) = μ
-(::typeof(f1_μ))(::Type{Val{:analytic}},u0,p,t,W) = u0.*exp.((2μ-(σ_const^2)/2)t+σ_const*W)
+f1_μ_analytic(u0,p,t,W) = u0.*exp.((2μ-(σ_const^2)/2)t+σ_const*W)
 f2(u,p,t) = μ * u
 σ(u,p,t) = σ_const*u
 no_noise(u,p,t) = 0.0
 f1_no_noise(u,p,t) = μ
-(::typeof(f1_no_noise))(::Type{Val{:analytic}},u0,p,t,W) = u0.*exp.(2μ*t)
+f1_no_noise_analytic(u0,p,t,W) = u0.*exp.(2μ*t)
 
-prob = SplitSDEProblem{false}(f1_μ,f2,σ,1/2,(0.0,1.0))
-no_noise_prob = SplictSDEProblem{false}(f1_no_noise,f2,no_noise,1/2,(0.0,1.0))
+ff1_μ = SplitSDEFunction(f1_μ,f2,σ,analytic=f1_μ_analytic)
+prob = SDEProblem(ff1_μ,σ,1/2,(0.0,1.0))
+ff1_no_noise = SplitSDEFunction(f1_no_noise,f2,no_noise,analytic=f1_no_noise_analytic)
+no_noise_prob = SDEProblem(ff1_no_noise,no_noise,1/2,(0.0,1.0))
 
 sol = solve(prob,IIF1M(),dt=1/10)
 
 prob2 = SDEProblem{false}(f,σ,1/2,(0.0,1.0),noise = NoiseWrapper(sol.W))
 
 sol2 = solve(prob2,EM(),dt=1/10)
+
+sol = solve(no_noise_prob,IIF1M(),dt=1/10)
 
 srand(100)
 dts = (1/2) .^ (7:-1:4) #14->7 good plot
@@ -29,7 +33,7 @@ sim  = test_convergence(dts,prob,IIF1M(),numMonte=Int(1e2))
 sim  = test_convergence(dts,no_noise_prob,IIF1M(),numMonte=Int(2e1))
 @test abs(sim.𝒪est[:l2]-1.0) < 0.2 # closer to 1 at this part
 
-dts = (1/2) .^(7:-1:4) #14->7 good plot
+dts = (1/2) .^ (7:-1:4) #14->7 good plot
 println("IIF no noise scalar")
 srand(100)
 sim  = test_convergence(dts,prob,IIF2M(),numMonte=Int(1e2))
@@ -58,35 +62,37 @@ function σ(du,u,p,t)
   mul!(@view(du[:,2]),B,u)
 end
 
-function (::typeof(f))(::Type{Val{:analytic}},u0,p,t,W)
+function f_analytic(u0,p,t,W)
  tmp = (A+1.01I-(B^2))*t + B*sum(W)
  exp(tmp)*u0
 end
 
 f1_A(du,u,p,t) = A
-function (::typeof(f1_A))(::Type{Val{:analytic}},u0,p,t,W)
+function f1_A_analytic(u0,p,t,W)
  tmp = (A+1.01I-(B^2))*t + B*sum(W)
  exp(tmp)*u0
 end
 f2(du,u,p,t) = du .= μ .* u
 
-prob = SDEProblem((f1_A,f2),σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
+ff1_A = SplitSDEFunction(f1_A,f2,σ,analytic=f1_A_analytic)
+prob = SDEProblem(ff1_A,σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
 
 f1_no_noise(du,u,p,t) = A
 f2(du,u,p,t) = (du .= μ .* u)
 function σ22(du,u,p,t)
   du .= 0
 end
-function (::typeof(f1_no_noise))(::Type{Val{:analytic}},u0,p,t,W)
+function f1_no_noise_analytic(u0,p,t,W)
  tmp = (A+1.01I)*t
  exp(tmp)*u0
 end
-prob_no_noise = SDEProblem((f1_no_noise,f2),σ22,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
+ff1_A = SplitSDEFunction(f1_no_noise,f2,σ22,analytic=f1_no_noise_analytic)
+prob_no_noise = SDEProblem(ff1_A,σ22,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
 
 
 sol = solve(prob,IIF1M(),dt=1/10)
 
-dts = 1./2.^(8:-1:4) #14->7 good plot
+dts = (1/2) .^ (8:-1:4) #14->7 good plot
 
 srand(250)
 println("IIF")
