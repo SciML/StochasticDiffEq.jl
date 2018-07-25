@@ -21,7 +21,7 @@ prob = prob_sde_additive
 # Test error in stepping and seeding simultaniously
 sol  = solve(prob,SRA(StochasticDiffEq.constructSOSRA()),dt=1/2^(3),seed=1)
 sol2 = solve(prob,SOSRA(),dt=1/2^(3),seed=1)
-@test sol.t == sol2.t
+@test sol.t ≈ sol2.t
 
 sol =solve(prob,SRA1(),dt=1/2^(3))
 sol =solve(prob,SRA2(),dt=1/2^(3))

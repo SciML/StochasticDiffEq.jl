@@ -1,9 +1,11 @@
-@everywhere using StochasticDiffEq, DiffEqDevTools, Test, Random
-@everywhere using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems
-@everywhere importsdeproblems()
-@everywhere import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_wave, prob_sde_cubic, prob_sde_additive
+using StochasticDiffEq, DiffEqDevTools, Test, Random
+using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems
+importsdeproblems()
+import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_wave,
+                                               prob_sde_cubic,
+                                               prob_sde_additive
 srand(100)
-dts = 1.0 ./2.0 .^(10:-1:2) #14->7 good plot
+dts = (1/2) .^(10:-1:2) #14->7 good plot
 
 prob = prob_sde_wave
 sim  = test_convergence(dts,prob,ImplicitEM(),numMonte=Int(1e1))

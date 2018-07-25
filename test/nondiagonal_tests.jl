@@ -1,12 +1,11 @@
-using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Test
-import SpecialMatrices:Strang
-##
+using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Test, LinearAlgebra
+
 srand(100)
 const σ_const = 0.87
 const μ = 1.01
 
 u0 = rand(2)
-A = full(Strang(2))
+A = [-2.0 1.0;1.0 -2.0]
 B = Diagonal([σ_const for i in 1:2])
 
 function f_nondiag(u,p,t)
@@ -78,7 +77,7 @@ solPCEuleriip = solve(probiip, PCEuler(ggprime), dt=dt, seed=seed)
 # legend()
 
 ##
-dts = 1./2.^(10:-1:5) #14->7 good plot
+dts = (1/2) .^ (10:-1:5) #14->7 good plot
 numMonte = 50
 simEM = test_convergence(dts,probiip,EM(),numMonte=numMonte)
 simPCEuler = test_convergence(dts,probiip,PCEuler(ggprime),numMonte=numMonte)
