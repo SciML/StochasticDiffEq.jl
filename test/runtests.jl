@@ -12,6 +12,8 @@ else
     group = "All"
 end
 
+is_APPVEYOR = ( Sys.iswindows() && haskey(ENV,"APPVEYOR") )
+
 @time begin
   if group == "All" || group == "Interface"
     @time @testset "First Rand Tests" begin include("first_rand_test.jl") end
@@ -39,7 +41,9 @@ end
     @time @testset "Autostepsize Test" begin include("adaptive/sde_autostepsize_test.jl") end
     @time @testset "Additive Lorenz Attractor Test" begin include("adaptive/sde_lorenzattractor_tests.jl") end
     @time @testset "Adaptive Complex Mean Test" begin include("adaptive/sde_complex_adaptive_mean_test.jl") end
-  elseif group == "All" || group == "AlgConvergence"
+  end
+
+  if !is_APPVEYOR && (group == "All" || group == "AlgConvergence")
     @time @testset "Additive SDE Tests" begin include("sde/sde_additive_tests.jl") end
     @time @testset "Non-diagonal SDE Tests" begin include("nondiagonal_tests.jl") end
     @time @testset "Rossler Order Tests" begin include("sde/sde_rosslerorder_tests.jl") end

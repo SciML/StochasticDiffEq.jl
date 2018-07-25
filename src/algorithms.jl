@@ -14,21 +14,21 @@ abstract type StochasticDiffEqNewtonAlgorithm{CS,AD,Controller} <: StochasticDif
 # Basics
 
 struct EM{split} <: StochasticDiffEqAlgorithm end
-Base.@pure EM(split=true) = EM{split}()
+EM(split=true) = EM{split}()
 
 struct SplitEM <: StochasticDiffEqAlgorithm end
 struct EulerHeun <: StochasticDiffEqAlgorithm end
 
 struct LambaEM{split} <: StochasticDiffEqAdaptiveAlgorithm end
-Base.@pure LambaEM(split=true) = LambaEM{split}()
+LambaEM(split=true) = LambaEM{split}()
 
 struct LambaEulerHeun <: StochasticDiffEqAdaptiveAlgorithm end
 
 struct RKMil{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
-Base.@pure RKMil(;interpretation=:Ito) = RKMil{interpretation}()
+RKMil(;interpretation=:Ito) = RKMil{interpretation}()
 
 struct RKMilCommute{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
-Base.@pure RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
+RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
 
 ###############################################################################
 
@@ -95,17 +95,17 @@ struct SOSRA2 <: StochasticDiffEqAdaptiveAlgorithm end
 struct IIF1M{F} <: StochasticDiffEqAlgorithm
   nlsolve::F
 end
-Base.@pure IIF1M(;nlsolve=NLSOLVEJL_SETUP()) = IIF1M{typeof(nlsolve)}(nlsolve)
+IIF1M(;nlsolve=NLSOLVEJL_SETUP()) = IIF1M{typeof(nlsolve)}(nlsolve)
 
 struct IIF2M{F} <: StochasticDiffEqAlgorithm
   nlsolve::F
 end
-Base.@pure IIF2M(;nlsolve=NLSOLVEJL_SETUP()) = IIF2M{typeof(nlsolve)}(nlsolve)
+IIF2M(;nlsolve=NLSOLVEJL_SETUP()) = IIF2M{typeof(nlsolve)}(nlsolve)
 
 struct IIF1Mil{F} <: StochasticDiffEqAlgorithm
   nlsolve::F
 end
-Base.@pure IIF1Mil(;nlsolve=NLSOLVEJL_SETUP()) = IIF1Mil{typeof(nlsolve)}(nlsolve)
+IIF1Mil(;nlsolve=NLSOLVEJL_SETUP()) = IIF1Mil{typeof(nlsolve)}(nlsolve)
 
 ################################################################################
 
@@ -123,7 +123,7 @@ struct ImplicitEM{CS,AD,F,S,K,T,T2,Controller} <: StochasticDiffEqNewtonAdaptive
   new_jac_conv_bound::T2
   symplectic::Bool
 end
-Base.@pure ImplicitEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
+ImplicitEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           linsolve=DEFAULT_LINSOLVE,κ=nothing,tol=nothing,
                           extrapolant=:constant,min_newton_iter=1,
                           theta = 1/2,symplectic=false,
@@ -151,7 +151,7 @@ struct ImplicitEulerHeun{CS,AD,F,S,K,T,T2,Controller} <: StochasticDiffEqNewtonA
   new_jac_conv_bound::T2
   symplectic::Bool
 end
-Base.@pure ImplicitEulerHeun(;chunk_size=0,autodiff=true,diff_type=Val{:central},
+ImplicitEulerHeun(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           linsolve=DEFAULT_LINSOLVE,κ=nothing,tol=nothing,
                           extrapolant=:constant,min_newton_iter=1,
                           theta = 1/2,symplectic = false,
@@ -178,7 +178,7 @@ struct ImplicitRKMil{CS,AD,F,S,K,T,T2,Controller,interpretation} <: StochasticDi
   new_jac_conv_bound::T2
   symplectic::Bool
 end
-Base.@pure ImplicitRKMil(;chunk_size=0,autodiff=true,diff_type=Val{:central},
+ImplicitRKMil(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           linsolve=DEFAULT_LINSOLVE,κ=nothing,tol=nothing,
                           extrapolant=:constant,min_newton_iter=1,
                           theta = 1/2,symplectic = false,
@@ -205,7 +205,7 @@ struct ISSEM{CS,AD,F,S,K,T,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgor
   new_jac_conv_bound::T2
   symplectic::Bool
 end
-Base.@pure ISSEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
+ISSEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                        linsolve=DEFAULT_LINSOLVE,κ=nothing,tol=nothing,
                        extrapolant=:constant,min_newton_iter=1,
                        theta = 1,symplectic=false,
@@ -233,7 +233,7 @@ struct ISSEulerHeun{CS,AD,F,S,K,T,T2,Controller} <: StochasticDiffEqNewtonAdapti
  new_jac_conv_bound::T2
  symplectic::Bool
 end
-Base.@pure ISSEulerHeun(;chunk_size=0,autodiff=true,diff_type=Val{:central},
+ISSEulerHeun(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                       linsolve=DEFAULT_LINSOLVE,κ=nothing,tol=nothing,
                       extrapolant=:constant,min_newton_iter=1,
                       theta = 1,symplectic=false,
@@ -260,7 +260,7 @@ struct SKenCarp{CS,AD,F,FDT,K,T,T2,Controller} <: StochasticDiffEqNewtonAdaptive
   new_jac_conv_bound::T2
 end
 
-Base.@pure SKenCarp(;chunk_size=0,autodiff=true,diff_type=Val{:central},
+SKenCarp(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                    linsolve=DEFAULT_LINSOLVE,κ=nothing,tol=nothing,
                    smooth_est=true,extrapolant=:min_correct,min_newton_iter=1,
                    max_newton_iter=7,new_jac_conv_bound = 1e-3,
