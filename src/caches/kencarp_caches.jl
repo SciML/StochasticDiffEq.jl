@@ -79,7 +79,7 @@ function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prot
   fsalfirst = zero(rate_prototype)
   k = zero(rate_prototype)
   tmp = zero(u); b = similar(u,axes(u));
-  atmp = zeros(u,uEltypeNoUnits,axes(u))
+  atmp = fill!(similar(u,uEltypeNoUnits,axes(u)),0)
 
   if typeof(f) <: SplitFunction
     k1 = zero(u); k2 = zero(u)
