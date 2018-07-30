@@ -24,7 +24,7 @@ function calc_J!(integrator, cache::StochasticDiffEqConstantCache, is_compos)
 end
 
 """
-    WOperator(mass_matrix,gamma,J[;transform=false])
+    WOperator(mass_matrix,gamma,J)
 
 A linear operator that represents the W matrix of an ODEProblem, defined as
 
@@ -32,18 +32,12 @@ A linear operator that represents the W matrix of an ODEProblem, defined as
 W = MM - \\gamma J
 ```
 
-or, if `transform=true`:
-
-```math
-W = \\frac{1}{\\gamma}MM - J
-```
-
 where `MM` is the mass matrix (a regular `AbstractMatrix` or a `UniformScaling`),
 `γ` is a real number proportional to the time step, and `J` is the Jacobian
 operator (must be a `AbstractDiffEqLinearOperator`). A `WOperator` can also be
 constructed using a `*DEFunction` directly as
 
-    WOperator(f,gamma[;transform=false])
+    WOperator(f,gamma)
 
 `f` needs to have a jacobian and `jac_prototype`, but the prototype does not need
 to be a diffeq operator --- it will automatically be converted to one.
@@ -60,13 +54,12 @@ mutable struct WOperator{T,
   mass_matrix::MType
   gamma::GType
   J::JType
-  transform::Bool       # true => W = mm/gamma - J; false => W = mm - gamma*J
   _func_cache           # cache used in `mul!`
   _concrete_form        # non-lazy form (matrix/number) of the operator
-  WOperator(mass_matrix, gamma, J; transform=false) = new{eltype(J),typeof(mass_matrix),
-    typeof(gamma),typeof(J)}(mass_matrix,gamma,J,transform,nothing,nothing)
+  WOperator(mass_matrix, gamma, J) = new{eltype(J),typeof(mass_matrix),
+    typeof(gamma),typeof(J)}(mass_matrix,gamma,J,nothing,nothing)
 end
-function WOperator(f::DiffEqBase.AbstractODEFunction, gamma; transform=false)
+function WOperator(f::DiffEqBase.AbstractODEFunction, gamma)
   @assert DiffEqBase.has_jac(f) "f needs to have an associated jacobian"
   if isa(f, Union{SplitFunction, DynamicalODEFunction})
     error("WOperator does not support $(typeof(f)) yet")
@@ -81,7 +74,7 @@ function WOperator(f::DiffEqBase.AbstractODEFunction, gamma; transform=false)
   if !isa(J, DiffEqBase.AbstractDiffEqLinearOperator)
     J = DiffEqArrayOperator(J; update_func=f.jac)
   end
-  return WOperator(mass_matrix, gamma, J; transform=transform)
+  return WOperator(mass_matrix, gamma, J)
 end
 
 set_gamma!(W::WOperator, gamma) = (W.gamma = gamma; W)
@@ -89,53 +82,20 @@ DiffEqBase.update_coefficients!(W::WOperator,u,p,t) = (update_coefficients!(W.J,
 function Base.convert(::Type{AbstractMatrix}, W::WOperator)
   if W._concrete_form == nothing
     # Allocating
-    if W.transform
-      W._concrete_form = W.mass_matrix / W.gamma - convert(AbstractMatrix,W.J)
-    else
-      W._concrete_form = W.mass_matrix - W.gamma * convert(AbstractMatrix,W.J)
-    end
+    W._concrete_form = W.mass_matrix - W.gamma * convert(AbstractMatrix,W.J)
   else
     # Non-allocating
-    if W.transform
-      rmul!(copyto!(W._concrete_form, W.mass_matrix), 1/W.gamma)
-      axpy!(-1, convert(AbstractMatrix,W.J), W._concrete_form)
-    else
-      copyto!(W._concrete_form, W.mass_matrix)
-      axpy!(-W.gamma, convert(AbstractMatrix,W.J), W._concrete_form)
-    end
+    copyto!(W._concrete_form, W.mass_matrix)
+    axpy!(-W.gamma, convert(AbstractMatrix,W.J), W._concrete_form)
   end
   W._concrete_form
 end
-function Base.convert(::Type{Number}, W::WOperator)
-  if W.transform
-    W._concrete_form = W.mass_matrix / W.gamma - convert(Number,W.J)
-  else
-    W._concrete_form = W.mass_matrix - W.gamma * convert(Number,W.J)
-  end
-  W._concrete_form
-end
+Base.convert(::Type{Number}, W::WOperator) = W.mass_matrix - W.gamma * convert(Number,W.J)
 Base.size(W::WOperator, args...) = size(W.J, args...)
-function Base.getindex(W::WOperator, i::Int)
-  if W.transform
-    W.mass_matrix[i] / W.gamma - W.J[i]
-  else
-    W.mass_matrix[i] - W.gamma * W.J[i]
-  end
-end
-function Base.getindex(W::WOperator, I::Vararg{Int,N}) where {N}
-  if W.transform
-    W.mass_matrix[I...] / W.gamma - W.J[I...]
-  else
-    W.mass_matrix[I...] - W.gamma * W.J[I...]
-  end
-end
-function Base.:*(W::WOperator, x::Union{AbstractVecOrMat,Number})
-  if W.transform
-    (W.mass_matrix*x) / W.gamma - W.J*x
-  else
-    W.mass_matrix*x - W.gamma * (W.J*x)
-  end
-end
+Base.getindex(W::WOperator, i::Int) = W.mass_matrix[i] - W.gamma * W.J[i]
+Base.getindex(W::WOperator, I::Vararg{Int,N}) where {N} =
+  W.mass_matrix[I...] - W.gamma * W.J[I...]
+Base.:*(W::WOperator, x::Union{AbstractVecOrMat,Number}) = W.mass_matrix*x - W.gamma * (W.J*x)
 function Base.:\(W::WOperator, x::Union{AbstractVecOrMat,Number})
   if size(W) == () # scalar operator
     convert(Number,W) \ x
@@ -148,30 +108,16 @@ function LinearAlgebra.mul!(Y::AbstractVecOrMat, W::WOperator, B::AbstractVecOrM
     # Allocate cache only if needed
     W._func_cache = Vector{eltype(W)}(undef, size(Y, 1))
   end
-  if W.transform
-    # Compute mass_matrix * B
-    if isa(W.mass_matrix, UniformScaling)
-      a = W.mass_matrix.λ / W.gamma
-      @. Y = a * B
-    else
-      mul!(Y, W.mass_matrix, B)
-      lmul!(1/W.gamma, Y)
-    end
-    # Compute J * B and subtract
-    mul!(W._func_cache, W.J, B)
-    Y .-= W._func_cache
+  # Compute mass_matrix * B
+  if isa(W.mass_matrix, UniformScaling)
+    @. Y = W.mass_matrix.λ * B
   else
-    # Compute mass_matrix * B
-    if isa(W.mass_matrix, UniformScaling)
-      @. Y = W.mass_matrix.λ * B
-    else
-      mul!(Y, W.mass_matrix, B)
-    end
-    # Compute J * B
-    mul!(W._func_cache, W.J, B)
-    # Subtract result
-    axpy!(-W.gamma, W._func_cache, Y)
+    mul!(Y, W.mass_matrix, B)
   end
+  # Compute J * B
+  mul!(W._func_cache, W.J, B)
+  # Subtract result
+  axpy!(-W.gamma, W._func_cache, Y)
 end
 
 function calc_W!(integrator, cache::StochasticDiffEqMutableCache, γdt, repeat_step)
