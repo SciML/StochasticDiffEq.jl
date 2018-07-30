@@ -155,17 +155,25 @@ function calc_W!(integrator, cache::StochasticDiffEqMutableCache, γdt, repeat_s
 end
 
 function calc_W!(integrator, cache::StochasticDiffEqConstantCache, γdt, repeat_step)
-  uprev = integrator.uprev
+  @unpack t,uprev,p,f = integrator
   uf = cache.uf
+  isarray = typeof(uprev) <: AbstractArray
   is_compos = is_composite(integrator.alg)
-  if typeof(uprev) <: AbstractArray
-    J = ForwardDiff.jacobian(uf,uprev)
-    is_compos && ( integrator.eigen_est = norm(J, Inf) )
-    W = I - γdt*J
+  mass_matrix = integrator.f.mass_matrix
+  if has_jac(f)
+    J = f.jac(uprev, p, t)
+    if !isa(J, DiffEqBase.AbstractDiffEqLinearOperator)
+      J = DiffEqArrayOperator(J)
+    end
+    W = WOperator(mass_matrix, γdt, J)
   else
-    J = ForwardDiff.derivative(uf,uprev)
-    W = 1 - γdt*J
-    is_compos && ( integrator.eigen_est = J )
+    if isarray
+      J = ForwardDiff.jacobian(uf,uprev)
+    else
+      J = ForwardDiff.derivative(uf,uprev)
+    end
+    W = mass_matrix - γdt*J
   end
+  iscompo && (integrator.eigen_est = isarray ? opnorm(J, Inf) : J)
   J, W
 end
