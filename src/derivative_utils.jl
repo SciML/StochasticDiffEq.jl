@@ -1,16 +1,26 @@
-function calc_J!(integrator, cache, is_compos)
-    @unpack t,dt,uprev,u,f,p = integrator
-    @unpack du1,uf,J,jac_config = cache
-    if has_jac(f)
-      f(Val{:jac}, J, uprev, p, t)
-    else
-      uf.t = t
-      uf.p = p
-      jacobian!(J, uf, uprev, du1, integrator, jac_config)
-      if is_compos
-        integrator.eigen_est = norm(J, Inf)
-      end
+function calc_J!(integrator, cache::StochasticDiffEqConstantCache, is_compos)
+  @unpack t,dt,uprev,u,f,p = integrator
+  if has_jac(f)
+    J = f.jac(uprev, p, t)
+  else
+    error("Jacobian wrapper for constant caches not yet implemented") #TODO
+  end
+  return J
+end
+function calc_J!(integrator, cache::StochasticDiffEqConstantCache, is_compos)
+  @unpack t,dt,uprev,u,f,p = integrator
+  J = cache.J
+  if has_jac(f)
+    f.jac(J, uprev, p, t)
+  else
+    @unpack du1,uf,jac_config = cache
+    uf.t = t
+    uf.p = p
+    jacobian!(J, uf, uprev, du1, integrator, jac_config)
+    if is_compos
+      integrator.eigen_est = norm(J, Inf)
     end
+  end
 end
 
 function calc_W!(integrator, cache::StochasticDiffEqMutableCache, γdt, repeat_step)
