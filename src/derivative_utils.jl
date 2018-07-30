@@ -7,7 +7,7 @@ function calc_J!(integrator, cache::StochasticDiffEqConstantCache, is_compos)
   end
   return J
 end
-function calc_J!(integrator, cache::StochasticDiffEqConstantCache, is_compos)
+function calc_J!(integrator, cache::StochasticDiffEqMutableCache, is_compos)
   @unpack t,dt,uprev,u,f,p = integrator
   J = cache.J
   if has_jac(f)
@@ -188,6 +188,6 @@ function calc_W!(integrator, cache::StochasticDiffEqConstantCache, γdt, repeat_
     end
     W = mass_matrix - γdt*J
   end
-  iscompo && (integrator.eigen_est = isarray ? opnorm(J, Inf) : J)
+  is_compos && (integrator.eigen_est = isarray ? opnorm(J, Inf) : J)
   J, W
 end
