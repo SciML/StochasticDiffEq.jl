@@ -95,7 +95,7 @@
 
   if integrator.opts.adaptive
 
-    Ed = dt*J*ftmp/2
+    Ed = dt*(J*ftmp)/2
 
     if typeof(cache) <: SplitStepEulerConstantCache
       K = @muladd uprev .+ dt.*ftmp
@@ -259,7 +259,7 @@ end
 
     if has_invW(f)
       # This means the Jacobian was never computed!
-      f(Val{:jac},J,uprev,p,t)
+      f.jac(J,uprev,p,t)
     end
 
     mul!(vec(z),J,vec(tmp))
