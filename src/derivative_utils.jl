@@ -122,17 +122,31 @@ end
 
 function calc_W!(integrator, cache::StochasticDiffEqMutableCache, γdt, repeat_step)
   @inbounds begin
-    @unpack t,dt,uprev,u,f,p, alg = integrator
-    @unpack J,W,jac_config = cache
-    is_compos = is_composite(alg)
+    @unpack t,dt,uprev,u,f,p = integrator
+    @unpack J,W = cache
+    is_compos = is_composite(integrator.alg)
     alg = unwrap_alg(integrator, true)
     mass_matrix = integrator.f.mass_matrix
 
     new_W = true
     if has_invW(f)
       # skip calculation of inv(W) if step is repeated
-      !repeat_step && f(Val{:invW},W,uprev,p,γdt,t) # W == inverse W
+      !repeat_step && f.invW(W,uprev,p,γdt,t) # W == inverse W
       is_compos && calc_J!(integrator, cache, true)
+    elseif has_jac(f) && f.jac_prototype != nothing
+      # skip calculation of J if step is repeated
+      if repeat_step || (!integrator.last_stepfail && cache.newton_iters == 1 && cache.ηold < alg.new_jac_conv_bound)
+        new_jac = false
+      else # Compute a new Jacobian
+        new_jac = true
+        DiffEqBase.update_coefficients!(W,uprev,p,t)
+      end
+      # skip calculation of W if step is repeated
+      if !repeat_step && (integrator.iter < 1 || new_jac || abs(dt - (t-integrator.tprev)) > 100eps(typeof(integrator.t)))
+        set_gamma!(W, γdt)
+      else
+        new_W = false
+      end
     else
       # skip calculation of J if step is repeated
       if repeat_step || (!integrator.last_stepfail && cache.newton_iters == 1 && cache.ηold < alg.new_jac_conv_bound)
