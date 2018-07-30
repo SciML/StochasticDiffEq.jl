@@ -59,7 +59,7 @@ mutable struct WOperator{T,
   WOperator(mass_matrix, gamma, J) = new{eltype(J),typeof(mass_matrix),
     typeof(gamma),typeof(J)}(mass_matrix,gamma,J,nothing,nothing)
 end
-function WOperator(f::DiffEqBase.AbstractODEFunction, gamma)
+function WOperator(f::DiffEqBase.AbstractSDEFunction, gamma)
   @assert DiffEqBase.has_jac(f) "f needs to have an associated jacobian"
   if isa(f, Union{SplitFunction, DynamicalODEFunction})
     error("WOperator does not support $(typeof(f)) yet")
