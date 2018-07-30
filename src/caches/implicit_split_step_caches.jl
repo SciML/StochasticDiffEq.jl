@@ -1,4 +1,4 @@
-mutable struct ISSEMCache{uType,rateType,J,JC,UF,
+mutable struct ISSEMCache{uType,rateType,J,W,JC,UF,
                           uEltypeNoUnits,noiseRateType,F,dWType} <:
                           StochasticDiffEqMutableCache
   u::uType
@@ -12,7 +12,7 @@ mutable struct ISSEMCache{uType,rateType,J,JC,UF,
   gtmp::noiseRateType
   gtmp2::rateType
   J::J
-  W::J
+  W::W
   jac_config::JC
   linsolve::F
   uf::UF
@@ -29,8 +29,13 @@ du_cache(c::ISSEMCache)   = (c.k,c.fsalfirst)
 function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   du1 = zero(rate_prototype)
-  J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
-  W = zero(J)
+  if has_jac(f) && !has_invW(f) && f.jac_prototype != nothing
+    W = WOperator(f, zero(t))
+    J = nothing
+  else
+    J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
+    W = similar(J)
+  end
   z = zero(u)
   dz = zero(u); tmp = zero(u); gtmp = zero(noise_rate_prototype)
   fsalfirst = zero(rate_prototype)
@@ -93,7 +98,7 @@ function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototy
   ISSEMConstantCache(uf,ηold,κ,tol,100000)
 end
 
-mutable struct ISSEulerHeunCache{uType,rateType,J,JC,UF,uEltypeNoUnits,
+mutable struct ISSEulerHeunCache{uType,rateType,J,W,JC,UF,uEltypeNoUnits,
                                  noiseRateType,F,dWType} <:
                                  StochasticDiffEqMutableCache
   u::uType
@@ -108,7 +113,7 @@ mutable struct ISSEulerHeunCache{uType,rateType,J,JC,UF,uEltypeNoUnits,
   gtmp2::rateType
   gtmp3::noiseRateType
   J::J
-  W::J
+  W::W
   jac_config::JC
   linsolve::F
   uf::UF
@@ -125,8 +130,13 @@ du_cache(c::ISSEulerHeunCache)   = (c.k,c.fsalfirst)
 function alg_cache(alg::ISSEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   du1 = zero(rate_prototype)
-  J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
-  W = zero(J)
+  if has_jac(f) && !has_invW(f) && f.jac_prototype != nothing
+    W = WOperator(f, zero(t))
+    J = nothing
+  else
+    J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
+    W = similar(J)
+  end
   z = zero(u)
   dz = zero(u); tmp = zero(u); gtmp = zero(noise_rate_prototype)
   fsalfirst = zero(rate_prototype)
