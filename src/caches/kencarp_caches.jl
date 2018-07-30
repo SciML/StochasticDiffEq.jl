@@ -32,7 +32,7 @@ function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prot
   SKenCarpConstantCache(uf,ηold,κ,tol,10000,tab)
 end
 
-mutable struct SKenCarpCache{uType,rateType,uNoUnitsType,J,UF,JC,uEltypeNoUnits,Tab,F,kType,randType,rateNoiseType} <: StochasticDiffEqMutableCache
+mutable struct SKenCarpCache{uType,rateType,uNoUnitsType,J,W,UF,JC,uEltypeNoUnits,Tab,F,kType,randType,rateNoiseType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   du1::rateType
@@ -51,7 +51,7 @@ mutable struct SKenCarpCache{uType,rateType,uNoUnitsType,J,UF,JC,uEltypeNoUnits,
   tmp::uType
   atmp::uNoUnitsType
   J::J
-  W::J
+  W::W
   uf::UF
   jac_config::JC
   linsolve::F
@@ -71,8 +71,13 @@ du_cache(c::SKenCarpCache)   = (c.k,c.fsalfirst)
 function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
 
   du1 = zero(rate_prototype)
-  J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
-  W = zero(J)
+  if has_jac(f) && !has_invW(f) && f.jac_prototype != nothing
+    W = WOperator(f, zero(t))
+    J = nothing
+  else
+    J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
+    W = similar(J)
+  end
   z₁ = similar(u,axes(u)); z₂ = similar(u,axes(u))
   z₃ = similar(u,axes(u)); z₄ = similar(u,axes(u))
   dz = similar(u,axes(u))
@@ -117,7 +122,7 @@ function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prot
 
   ηold = one(uEltypeNoUnits)
 
-  SKenCarpCache{typeof(u),typeof(rate_prototype),typeof(atmp),typeof(J),typeof(uf),
+  SKenCarpCache{typeof(u),typeof(rate_prototype),typeof(atmp),typeof(J),typeof(W),typeof(uf),
               typeof(jac_config),uEltypeNoUnits,typeof(tab),typeof(linsolve),typeof(k1),
               typeof(chi2),typeof(g1)}(
               u,uprev,du1,fsalfirst,k,z₁,z₂,z₃,z₄,k1,k2,k3,k4,dz,b,tmp,atmp,J,
