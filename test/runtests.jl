@@ -41,6 +41,7 @@ is_APPVEYOR = ( Sys.iswindows() && haskey(ENV,"APPVEYOR") )
     @time @testset "Autostepsize Test" begin include("adaptive/sde_autostepsize_test.jl") end
     @time @testset "Additive Lorenz Attractor Test" begin include("adaptive/sde_lorenzattractor_tests.jl") end
     @time @testset "Adaptive Complex Mean Test" begin include("adaptive/sde_complex_adaptive_mean_test.jl") end
+    @time @testset "Utility Tests" begin include("utility_tests.jl") end
   end
 
   if !is_APPVEYOR && (group == "All" || group == "AlgConvergence")
