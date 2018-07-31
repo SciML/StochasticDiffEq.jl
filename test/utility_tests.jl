@@ -15,8 +15,7 @@ using StochasticDiffEq, LinearAlgebra, SparseArrays, Random, Test, DiffEqOperato
 
   @testset "calc_W!" begin
     A = [-1.0 0.0; 0.0 -0.5]; σ = [0.9 0.0; 0.0 0.8]
-    # mm = [2.0 0.0; 0.0 1.0]
-    mm = I
+    mm = [2.0 0.0; 0.0 1.0]
     u0 = [1.0, 1.0]; tmp = zeros(2)
     tspan = (0.0,1.0); dt = 0.01
     concrete_W = mm - dt * A
@@ -27,7 +26,7 @@ using StochasticDiffEq, LinearAlgebra, SparseArrays, Random, Test, DiffEqOperato
                       mass_matrix=mm,
                       jac=(u,p,t) -> A)
     prob = SDEProblem(fun, _g, u0, tspan)
-    integrator = init(prob, ImplicitEM(); adaptive=false, dt=dt)
+    integrator = init(prob, ImplicitEM(theta=1); adaptive=false, dt=dt)
     J, W = calc_W!(integrator, integrator.cache, dt, false)
     @test convert(AbstractMatrix, W) ≈ concrete_W
     @test W \ u0 ≈ concrete_W \ u0
@@ -38,7 +37,7 @@ using StochasticDiffEq, LinearAlgebra, SparseArrays, Random, Test, DiffEqOperato
                       mass_matrix=mm,
                       jac_prototype=DiffEqArrayOperator(A))
     prob = SDEProblem(fun, _g, u0, tspan)
-    integrator = init(prob, ImplicitEM(); adaptive=false, dt=dt)
+    integrator = init(prob, ImplicitEM(theta=1); adaptive=false, dt=dt)
     calc_W!(integrator, integrator.cache, dt, false)
     @test convert(AbstractMatrix, integrator.cache.W) ≈ concrete_W
     ldiv!(tmp, lu!(integrator.cache.W), u0); @test tmp ≈ concrete_W \ u0
@@ -46,8 +45,7 @@ using StochasticDiffEq, LinearAlgebra, SparseArrays, Random, Test, DiffEqOperato
 
   @testset "Implicit solver with lazy W" begin
     A = sparse([-1.0 0.0; 0.0 -0.5]); σ = sparse([0.9 0.0; 0.0 0.8])
-    # mm = sparse([2.0 0.0; 0.0 1.0])
-    mm = I
+    mm = sparse([2.0 0.0; 0.0 1.0])
     u0 = [1.0, 1.0]; tspan = (0.0,1.0)
 
     _f = (u,p,t) -> t*(A*u); _f_ip = (du,u,p,t) -> lmul!(t,mul!(du,A,u))
@@ -60,20 +58,20 @@ using StochasticDiffEq, LinearAlgebra, SparseArrays, Random, Test, DiffEqOperato
 
     for Alg in [ImplicitEM, ISSEM]
       println(Alg)
-      sol1 = solve(prob1, Alg(); adaptive=false, dt=0.01)
-      sol2 = solve(prob2, Alg(); adaptive=false, dt=0.01)
+      sol1 = solve(prob1, Alg(theta=1); adaptive=false, dt=0.01)
+      sol2 = solve(prob2, Alg(theta=1); adaptive=false, dt=0.01)
       # @test sol1(1.0) ≈ sol2(1.0)
-      sol1_ip = solve(prob1_ip, Alg(); adaptive=false, dt=0.01)
-      sol2_ip = solve(prob2_ip, Alg(linsolve=LinSolveFactorize(lu)); adaptive=false, dt=0.01)
+      sol1_ip = solve(prob1_ip, Alg(theta=1); adaptive=false, dt=0.01)
+      sol2_ip = solve(prob2_ip, Alg(theta=1,linsolve=LinSolveFactorize(lu)); adaptive=false, dt=0.01)
       # @test sol1_ip(1.0) ≈ sol2_ip(1.0)
     end
 
     σ = 1.0
     _g = (u,p,t) -> σ; _g_ip = (du,u,p,t) -> (du .= σ)
-    prob1 = SDEProblem(SDEFunction(_f, _g; mass_matrix=mm), _g, u0, tspan)
-    prob2 = SDEProblem(SDEFunction(_f, _g; mass_matrix=mm, jac=(u,p,t) -> t*A), _g, u0, tspan)
-    prob1_ip = SDEProblem(SDEFunction(_f_ip, _g_ip; mass_matrix=mm), _g_ip, u0, tspan)
-    prob2_ip = SDEProblem(SDEFunction(_f_ip, _g_ip; mass_matrix=mm, jac_prototype=jac_prototype), _g_ip, u0, tspan)
+    prob1 = SDEProblem(SDEFunction(_f, _g), _g, u0, tspan)
+    prob2 = SDEProblem(SDEFunction(_f, _g; jac=(u,p,t) -> t*A), _g, u0, tspan)
+    prob1_ip = SDEProblem(SDEFunction(_f_ip, _g_ip), _g_ip, u0, tspan)
+    prob2_ip = SDEProblem(SDEFunction(_f_ip, _g_ip; jac_prototype=jac_prototype), _g_ip, u0, tspan)
 
     println(SKenCarp)
     sol1 = solve(prob1, SKenCarp(); adaptive=false, dt=0.01)
