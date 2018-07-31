@@ -278,7 +278,7 @@ function __init(
       end
       # Reseed
       if typeof(W) <: NoiseProcess && W.reseed
-        Random.seed!(W.rng,_seed)
+        srand!(W.rng,_seed)
       end
     elseif W.t[end] != t
       error("Starting time in the noise process is not the starting time of the simulation. The noise process should be re-initialized for repeated use")
