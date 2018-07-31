@@ -9,9 +9,9 @@ module StochasticDiffEq
   using Reexport
   @reexport using DiffEqBase
 
-  using Parameters, RecursiveArrayTools,
-        DataStructures, Roots, DiffEqNoiseProcess,
-        NLsolve, ForwardDiff, StaticArrays, MuladdMacro, DiffEqDiffTools
+  using Parameters, RecursiveArrayTools, DataStructures, Roots
+  using DiffEqNoiseProcess, Random
+  using NLsolve, ForwardDiff, StaticArrays, MuladdMacro, DiffEqDiffTools
 
   import DiffEqBase: ODE_DEFAULT_NORM, ODE_DEFAULT_ISOUTOFDOMAIN,
          ODE_DEFAULT_PROG_MESSAGE, ODE_DEFAULT_UNSTABLE_CHECK

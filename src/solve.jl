@@ -115,7 +115,7 @@ function __init(
   # dtmin is all abs => does not care about sign already.
 
   if typeof(u) <: AbstractArray
-    rate_prototype = similar(u/zero(t),axes(u)) # rate doesn't need type info
+    rate_prototype = similar(u/zero(t))
   else
     rate_prototype = u/zero(t)
   end
@@ -278,7 +278,7 @@ function __init(
       end
       # Reseed
       if typeof(W) <: NoiseProcess && W.reseed
-        srand(W.rng,_seed)
+        Random.seed!(W.rng,_seed)
       end
     elseif W.t[end] != t
       error("Starting time in the noise process is not the starting time of the simulation. The noise process should be re-initialized for repeated use")
