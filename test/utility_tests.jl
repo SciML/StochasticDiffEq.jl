@@ -58,12 +58,12 @@ using StochasticDiffEq, LinearAlgebra, SparseArrays, Random, Test, DiffEqOperato
 
     for Alg in [ImplicitEM, ISSEM]
       println(Alg)
-      sol1 = solve(prob1, Alg(theta=1); adaptive=false, dt=0.01)
-      sol2 = solve(prob2, Alg(theta=1); adaptive=false, dt=0.01)
-      # @test sol1(1.0) ≈ sol2(1.0)
-      sol1_ip = solve(prob1_ip, Alg(theta=1); adaptive=false, dt=0.01)
-      sol2_ip = solve(prob2_ip, Alg(theta=1,linsolve=LinSolveFactorize(lu)); adaptive=false, dt=0.01)
-      # @test sol1_ip(1.0) ≈ sol2_ip(1.0)
+      srand(0); sol1 = solve(prob1, Alg(theta=1); adaptive=false, dt=0.01)
+      srand(0); sol2 = solve(prob2, Alg(theta=1); adaptive=false, dt=0.01)
+      @test sol1(1.0) ≈ sol2(1.0)
+      srand(0); sol1_ip = solve(prob1_ip, Alg(theta=1); adaptive=false, dt=0.01)
+      srand(0); sol2_ip = solve(prob2_ip, Alg(theta=1,linsolve=LinSolveFactorize(lu)); adaptive=false, dt=0.01)
+      @test sol1_ip(1.0) ≈ sol2_ip(1.0)
     end
 
     σ = 1.0
@@ -74,11 +74,11 @@ using StochasticDiffEq, LinearAlgebra, SparseArrays, Random, Test, DiffEqOperato
     prob2_ip = SDEProblem(SDEFunction(_f_ip, _g_ip; jac_prototype=jac_prototype), _g_ip, u0, tspan)
 
     println(SKenCarp)
-    sol1 = solve(prob1, SKenCarp(); adaptive=false, dt=0.01)
-    sol2 = solve(prob2, SKenCarp(); adaptive=false, dt=0.01)
-    # @test sol1(1.0) ≈ sol2(1.0)
-    sol1_ip = solve(prob1_ip, SKenCarp(); adaptive=false, dt=0.01)
-    sol2_ip = solve(prob2_ip, SKenCarp(linsolve=LinSolveFactorize(lu)); adaptive=false, dt=0.01)
-    # @test sol1_ip(1.0) ≈ sol2_ip(1.0)
+    srand(0); sol1 = solve(prob1, SKenCarp(); adaptive=false, dt=0.01)
+    srand(0); sol2 = solve(prob2, SKenCarp(); adaptive=false, dt=0.01)
+    @test sol1(1.0) ≈ sol2(1.0)
+    srand(0); sol1_ip = solve(prob1_ip, SKenCarp(); adaptive=false, dt=0.01)
+    srand(0); sol2_ip = solve(prob2_ip, SKenCarp(linsolve=LinSolveFactorize(lu)); adaptive=false, dt=0.01)
+    @test sol1_ip(1.0) ≈ sol2_ip(1.0)
   end
 end
