@@ -1,6 +1,6 @@
 using StochasticDiffEq, DiffEqDevTools, Test, LinearAlgebra
 Random.seed!(100)
-dts = 1./2.^(10:-1:2) #14->7 good plot
+dts = (1/2) .^ (10:-1:2) #14->7 good plot
 
 const σ_const = 0.87
 const μ = 1.01
