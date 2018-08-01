@@ -1,5 +1,5 @@
 using StochasticDiffEq#, Plots
-srand(100)
+Random.seed!(100)
 prob = prob_sde_2Dlinear
 
 ## Solve and plot

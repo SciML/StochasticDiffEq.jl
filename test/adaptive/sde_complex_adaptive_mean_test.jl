@@ -1,6 +1,6 @@
 using StochasticDiffEq, DiffEqCallbacks, DiffEqNoiseProcess, Test, Random
 
-srand(100)
+Random.seed!(100)
 # Definitions according to vector/matrix representations of operators from QuantumOptics
 u0 = ComplexF64[0.0, 1.0]
 A = zeros(ComplexF64, 2, 2)

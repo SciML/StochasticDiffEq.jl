@@ -8,7 +8,7 @@ mutable struct SKenCarpConstantCache{F,uEltypeNoUnits,Tab} <: StochasticDiffEqCo
 end
 
 function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  if typeof(f) <: SplitFunction
+  if typeof(f) <: SplitSDEFunction
     uf = DiffEqDiffTools.UDerivativeWrapper(f.f1,t,p)
   else
     uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
@@ -86,7 +86,7 @@ function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prot
   tmp = zero(u); b = similar(u,axes(u));
   atmp = fill!(similar(u,uEltypeNoUnits,axes(u)),0)
 
-  if typeof(f) <: SplitFunction
+  if typeof(f) <: SplitSDEFunction
     k1 = zero(u); k2 = zero(u)
     k3 = zero(u); k4 = zero(u)
     uf = DiffEqDiffTools.UJacobianWrapper(f.f1,t,p)

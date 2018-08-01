@@ -115,7 +115,7 @@ function __init(
   # dtmin is all abs => does not care about sign already.
 
   if typeof(u) <: AbstractArray
-    rate_prototype = similar(u/zero(t),axes(u)) # rate doesn't need type info
+    rate_prototype = similar(u/zero(t))
   else
     rate_prototype = u/zero(t)
   end

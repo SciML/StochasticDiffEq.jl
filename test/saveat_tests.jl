@@ -1,7 +1,7 @@
 using StochasticDiffEq, DiffEqDevTools, DiffEqBase, Test
 using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
 import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear, prob_sde_2Dlinear
-srand(100)
+Random.seed!(100)
 prob = prob_sde_linear
 f(u,p,t) = 2u
 prob = SDEProblem{false}(f,prob.f,prob.u0,prob.tspan)
@@ -23,9 +23,9 @@ sol.t != [.33,.33+.33,1]
 prob = prob_sde_2Dlinear
 f(du,u,p,t) = prob.f(du,u,p,t)
 prob2 = SDEProblem(f,prob.g,vec(prob.u0),prob.tspan)
-srand(200)
+Random.seed!(200)
 sol = solve(prob2,EM(),dt=1//2^(4),saveat = 0.33,save_start=false,save_everystep=true)
-srand(200)
+Random.seed!(200)
 sol2= solve(prob2,EM(),dt=1//2^(4),saveat = 0.33,save_start=false,save_everystep=true,save_idxs=1:2:5)
 
 @test sol(0.43)[1:2:5] == sol2(0.43)

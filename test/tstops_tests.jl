@@ -1,7 +1,7 @@
 using StochasticDiffEq, DiffEqDevTools, DiffEqBase, Test
 using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
 import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear
-srand(100)
+Random.seed!(100)
 prob = prob_sde_linear
 
 integrator = init(prob,EM(),dt=1//2^(4),tstops = [0.33])
