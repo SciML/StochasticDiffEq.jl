@@ -1,7 +1,7 @@
 using StochasticDiffEq, DiffEqBase
 using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
 import DiffEqProblemLibrary.SDEProblemLibrary: oval2ModelExample
-srand(200)
+Random.seed!(200)
 prob = oval2ModelExample(largeFluctuations=true,useBigs=false)
 quick_prob = deepcopy(prob)
 quick_prob.tspan = (0.0,1.0)
@@ -11,21 +11,21 @@ BenchmarkTools.DEFAULT_PARAMETERS.gcsample = true
 BenchmarkTools.DEFAULT_PARAMETERS.time_tolerance = 0.0001
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 100
 @benchmark begin
-  srand(100)
+  Random.seed!(100)
   sol = solve(quick_prob,SRIW1(),dt=(1/2)^(18),progress_steps=Int(1e5),
         adaptivealg=:RSwM3,progress=false,qmax=4,save_everystep=false,
         timeseries_steps=1000,abstol=1e-5,reltol=1e-3)
 end
 
 using ProfileView
-srand(100)
+Random.seed!(100)
 @profile sol = solve(quick_prob,SRIW1(),dt=(1/2)^(18),progress_steps=Int(1e5),
       adaptivealg=:RSwM3,progress=false,qmax=4,save_everystep=false,
       timeseries_steps=1000,abstol=1e-5,reltol=1e-3)
 
 ProfileView.view()
 
-srand(100)
+Random.seed!(100)
 @time sol = solve(quick_prob,SRIW1(),dt=(1/2)^(18),progress_steps=Int(1e5),
       progress=false,qmax=4,save_everystep=false,
       timeseries_steps=1000,abstol=1e-5,reltol=1e-3)
@@ -34,7 +34,7 @@ println(sol.u[end])
 
 #[0.011503,0.939809,0.00312214,0.00155873,0.0172325,0.0577331,0.237757,0.00134921,0.000238022,4.19916e-5,7.40824e-6,1.307e-6,0.0621091,1.24463,0.0483949,199.901,137.457,0.0177237,0.132583]
 
-srand(100)
+Random.seed!(100)
 @time integrator = init(quick_prob,SRIW1(),dt=(1/2)^(18),progress_steps=Int(1e5),
       adaptivealg=:RSwM3,progress=false,qmax=4,save_everystep=false,
       timeseries_steps=1000,abstol=1e-5,reltol=1e-3)

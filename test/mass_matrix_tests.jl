@@ -58,9 +58,9 @@ end
 prob2 = SDEProblem(no_mm_f2,no_mm_g2,ones(3),(0.0,1.0))
 prob = SDEProblem(SDEFunction(mm_f2,no_mm_g2;mass_matrix=mm_A),no_mm_g2,ones(3),(0.0,1.0))
 
-srand(1)
+Random.seed!(1)
 sol = solve(prob, ImplicitEM(theta=1), dt = 0.01, adaptive = false)
-srand(1)
+Random.seed!(1)
 sol2 = solve(prob2, ImplicitEM(theta=1), dt = 0.01, adaptive = false)
 
 @test norm(sol .- sol2) ≈ 0 atol=1e-11

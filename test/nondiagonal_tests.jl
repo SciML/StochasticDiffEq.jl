@@ -1,6 +1,6 @@
 using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Test, LinearAlgebra
 
-srand(100)
+Random.seed!(100)
 const σ_const = 0.87
 const μ = 1.01
 

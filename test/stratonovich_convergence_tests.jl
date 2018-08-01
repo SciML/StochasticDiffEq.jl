@@ -1,7 +1,7 @@
 using StochasticDiffEq, DiffEqProblemLibrary, Test, Random
 using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
 import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear_stratonovich, prob_sde_2Dlinear_stratonovich
-srand(100)
+Random.seed!(100)
 dts = 1 ./2 .^(10:-1:2) #14->7 good plot
 
 prob = prob_sde_linear_stratonovich
@@ -68,5 +68,5 @@ sim  = test_convergence(dts,prob,ImplicitRKMil(symplectic=true,interpretation=:S
                         numMonte=Int(1e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
-srand(200)
+Random.seed!(200)
 sol = solve(prob,EulerHeun(),dt=1/4)

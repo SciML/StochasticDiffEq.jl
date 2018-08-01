@@ -88,9 +88,9 @@ sim10 = test_convergence(dts,prob,SKenCarp(),numMonte=Int(1e1))
 
 α = 0.1
 β = 0.5
-ff1 = (du,u,p,t) -> du .= β./sqrt.(1+t) - u./(2*(1+t))
-ff2 = (du,u,p,t) -> du .= 0.0
-σ2 = (du,u,p,t) -> du .= α*β./sqrt.(1+t)
+ff1 = (du,u,p,t) -> @. du = β/sqrt(1+t) - u/(2*(1+t))
+ff2 = (du,u,p,t) -> @. du = 0.0
+σ2 = (du,u,p,t) -> @. du = α*β/sqrt(1+t)
 f_ff1 = SplitSDEFunction(ff1,ff2,σ2,analytic=ff1_analytic)
 prob = SDEProblem(f_ff1,σ2,[1.],(0.0,1.0))
 

@@ -3,29 +3,29 @@ using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproble
 import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear, prob_sde_2Dlinear
 prob = prob_sde_linear
 
-srand(100)
+Random.seed!(100)
 sol1 = solve(prob,SRI(),dt=1//2^(4))
-srand(100)
+Random.seed!(100)
 sol2 = solve(prob,SRIW1(),dt=1//2^(4))
 
 @test sol1[end] ≈ sol2[end]
 
 prob = prob_sde_2Dlinear
 
-srand(100)
+Random.seed!(100)
 sol1 = solve(prob,SRI(),dt=1//2^(4))
-srand(100)
+Random.seed!(100)
 sol2 = solve(prob,SRIW1(),dt=1//2^(4))
 
 @test sol1[end] ≈ sol2[end]
 
 prob = prob_sde_linear
 
-srand(100)
+Random.seed!(100)
 integrator1 = init(prob,SRI(),dt=1//2^(4))
 step!(integrator1); step!(integrator1)
 
-srand(100)
+Random.seed!(100)
 integrator2 = init(prob,SRIW1(),dt=1//2^(4))
 step!(integrator2); step!(integrator2)
 
@@ -33,11 +33,11 @@ step!(integrator2); step!(integrator2)
 
 prob = prob_sde_2Dlinear
 
-srand(100)
+Random.seed!(100)
 integrator1 = init(prob,SRI(),dt=1//2^(4))
 step!(integrator1); step!(integrator1)
 
-srand(100)
+Random.seed!(100)
 integrator2 = init(prob,SRIW1(),dt=1//2^(4))
 step!(integrator2); step!(integrator2)
 

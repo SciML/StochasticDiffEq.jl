@@ -1,5 +1,5 @@
 using StochasticDiffEq, DiffEqDevTools, Test, LinearAlgebra
-srand(100)
+Random.seed!(100)
 dts = 1./2.^(10:-1:2) #14->7 good plot
 
 const σ_const = 0.87

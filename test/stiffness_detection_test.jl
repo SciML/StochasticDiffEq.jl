@@ -2,7 +2,7 @@ using StochasticDiffEq, Test, Random
 using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
 import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_stiffquadito
 
-srand(100)
+Random.seed!(100)
 prob = prob_sde_stiffquadito
 prob = remake(prob;p=(1e5,2.))
 alg = AutoSOSRA2(SKenCarp(), maxstiffstep=5, maxnonstiffstep=2, stiffalgfirst=true)
@@ -11,7 +11,7 @@ alg = AutoSOSRA2(SKenCarp(), maxstiffstep=5, maxnonstiffstep=2, stiffalgfirst=tr
 @test typeof(alg.algs[sol.alg_choice[1]]) <: SKenCarp
 @test length(unique(sol.alg_choice)) == 2
 
-srand(100)
+Random.seed!(100)
 prob = prob_sde_stiffquadito
 prob = remake(prob;p=(1e5,2.))
 @time sol = solve(prob, AutoSOSRI2(ImplicitRKMil(), maxstiffstep=2, maxnonstiffstep=2, stiffalgfirst=true),

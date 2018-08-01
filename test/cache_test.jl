@@ -43,7 +43,7 @@ p2 = plot(sol.t,map((x)->length(x),sol[:]),lw=3,
 plot(p1,p2,layout=(2,1),size=(600,1000))
 =#
 
-srand(3)
+Random.seed!(3)
 sol = solve(prob,EM(),callback=callback,dt=1/4)
 sol = solve(prob,RKMil(),callback=callback,dt=1/4)
 sol = solve(prob,SRI(),callback=callback)
