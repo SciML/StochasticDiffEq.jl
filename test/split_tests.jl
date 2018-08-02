@@ -31,6 +31,8 @@ sol2 = solve(prob,EM(),dt=1/10)
 
 ### Only first
 
+println("Only First")
+
 α = 0.1
 β = 0.5
 ff1 = (u,p,t) -> β./sqrt.(1+t) - u./(2*(1+t))
@@ -50,6 +52,8 @@ sim10 = test_convergence(dts,prob,SKenCarp(),numMonte=Int(1e1))
 
 ### Only second
 
+println("Only Second")
+
 α = 0.1
 β = 0.5
 ff1 = (u,p,t) -> 0.0
@@ -66,6 +70,8 @@ sim10 = test_convergence(dts,prob,SKenCarp(),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-2) < 0.3
 
 ### Both
+
+println("Both")
 
 α = 0.1
 β = 0.5
@@ -86,6 +92,8 @@ sim10 = test_convergence(dts,prob,SKenCarp(),numMonte=Int(1e1))
 
 ### Only first
 
+println("Only First")
+
 α = 0.1
 β = 0.5
 ff1 = (du,u,p,t) -> @. du = β/sqrt(1+t) - u/(2*(1+t))
@@ -103,6 +111,8 @@ sim10 = test_convergence(dts,prob,SKenCarp(),numMonte=Int(1e1))
 
 ### Only second
 
+println("Only Second")
+
 α = 0.1
 β = 0.5
 ff1 = (du,u,p,t) -> @. du = 0.0
@@ -119,6 +129,8 @@ sim10 = test_convergence(dts,prob,SKenCarp(),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-2) < 0.3
 
 ### Both
+
+println("Both")
 
 α = 0.1
 β = 0.5
