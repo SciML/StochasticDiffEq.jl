@@ -2,8 +2,6 @@ __precompile__()
 
 module StochasticDiffEq
 
-  import Base: linspace
-
   import RandomNumbers: Xorshifts
 
   using Reexport
