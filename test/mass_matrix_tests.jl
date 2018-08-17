@@ -1,22 +1,26 @@
 using StochasticDiffEq, Test, LinearAlgebra, Random
 
+a = ones(3)
+t = 0.4
+a .- t
+
 const mm_A = [-2.0 1 4
             4 -2 1
             2 1 3]
 const mm_b = mm_A*ones(3)
 function mm_f(du,u,p,t)
-      mul!(du,mm_A,u)
-      tmp = t*mm_b
-      @. du += tmp
+  mul!(du,mm_A,u)
+  tmp = t*mm_b
+  @. du += tmp
 end
 function mm_analytic(u0,p,t,W)
-      @. 2ones(3)*exp(t) - t - 1
+  2.0.*ones(3).*exp.(t) .- t .- 1
 end
 function mm_g(du,u,p,t)
-      @. du = u + t
+  @. du = u + t
 end
 function g!(du,u,p,t)
-    @. du = 0.0
+  @. du = 0.0
 end
 
 prob2 = SDEProblem(SDEFunction(mm_g,g!;analytic=mm_analytic),g!,ones(3),(0.0,1.0))
