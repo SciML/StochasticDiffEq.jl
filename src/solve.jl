@@ -294,7 +294,7 @@ function __init(
   u_modified = false
   last_stepfail = false
   force_stepfail = false
-  event_last_time = false
+  event_last_time = 0
   tprev = t
   iter = 0
   success_iter = 0
