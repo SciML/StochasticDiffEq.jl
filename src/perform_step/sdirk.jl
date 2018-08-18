@@ -61,6 +61,7 @@
     #u = uprev + dt*(1-theta)*ftmp + theta*z + gtmp
     tmp = uprev + dt*(1-theta)*ftmp + gtmp
   end
+  nlcache.tmp = tmp
   (z, η, iter, fail_convergence) = nlsolve!(integrator); fail_convergence && return nothing
 
   if alg.symplectic

@@ -184,32 +184,42 @@ function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_
                          J,W,jac_config,linsolve,uf,ηold,κ,tol,10000,dW_cache)
 end
 
-mutable struct ImplicitEulerHeunConstantCache{F,uEltypeNoUnits} <: StochasticDiffEqConstantCache
+mutable struct ImplicitEulerHeunConstantCache{F,N} <: StochasticDiffEqConstantCache
   uf::F
-  ηold::uEltypeNoUnits
-  κ::uEltypeNoUnits
-  tol::uEltypeNoUnits
-  newton_iters::Int
+  nlsolve::N
 end
 
 function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
+  nlcache = alg.nlsolve.cache
+  @unpack κ,tol,max_iter,min_iter,new_W = nlcache
+  z = uprev
+  uf = alg.nlsolve isa NLNewton ? DiffEqDiffTools.UDerivativeWrapper(f,t,p) : nothing
   ηold = one(uEltypeNoUnits)
+  if DiffEqBase.has_jac(f) && alg.nlsolve isa NLNewton
+    J = f.jac(uprev, p, t)
+    if !isa(J, DiffEqBase.AbstractDiffEqLinearOperator)
+      J = DiffEqArrayOperator(J)
+    end
+    W = WOperator(f.mass_matrix, zero(t), J)
+  else
+    W = typeof(u) <: Number ? u : Matrix{uEltypeNoUnits}(undef, 0, 0) # uEltype?
+  end
 
-  if alg.κ != nothing
-    κ = alg.κ
+  if κ != nothing
+    κ = κ
   else
     κ = uEltypeNoUnits(1//100)
   end
-  if alg.tol != nothing
-    tol = alg.tol
-  else
+  if tol == nothing
     reltol = 1e-1 # TODO: generalize
     tol = min(0.03,first(reltol)^(0.5))
   end
+  z₊,dz,tmp,b,k = z,z,z,z,rate_prototype
+  _nlsolve = oop_nlsolver(alg.nlsolve)
 
-  ImplicitEulerHeunConstantCache(uf,ηold,κ,tol,100000)
+  nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,alg.theta,zero(t),ηold,z₊,dz,tmp,b,k))
+  ImplicitEulerHeunConstantCache(uf,nlsolve)
 end
 
 mutable struct ImplicitRKMilCache{uType,rateType,J,W,JC,UF,uEltypeNoUnits,noiseRateType,F} <: StochasticDiffEqMutableCache
@@ -277,30 +287,40 @@ function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate
                    J,W,jac_config,linsolve,uf,ηold,κ,tol,10000)
 end
 
-mutable struct ImplicitRKMilConstantCache{F,uEltypeNoUnits} <: StochasticDiffEqConstantCache
+mutable struct ImplicitRKMilConstantCache{F,N} <: StochasticDiffEqConstantCache
   uf::F
-  ηold::uEltypeNoUnits
-  κ::uEltypeNoUnits
-  tol::uEltypeNoUnits
-  newton_iters::Int
+  nlsolve::N
 end
 
 function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
+  nlcache = alg.nlsolve.cache
+  @unpack κ,tol,max_iter,min_iter,new_W = nlcache
+  z = uprev
+  uf = alg.nlsolve isa NLNewton ? DiffEqDiffTools.UDerivativeWrapper(f,t,p) : nothing
   ηold = one(uEltypeNoUnits)
+  if DiffEqBase.has_jac(f) && alg.nlsolve isa NLNewton
+    J = f.jac(uprev, p, t)
+    if !isa(J, DiffEqBase.AbstractDiffEqLinearOperator)
+      J = DiffEqArrayOperator(J)
+    end
+    W = WOperator(f.mass_matrix, zero(t), J)
+  else
+    W = typeof(u) <: Number ? u : Matrix{uEltypeNoUnits}(undef, 0, 0) # uEltype?
+  end
 
-  if alg.κ != nothing
-    κ = alg.κ
+  if κ != nothing
+    κ = κ
   else
     κ = uEltypeNoUnits(1//100)
   end
-  if alg.tol != nothing
-    tol = alg.tol
-  else
+  if tol == nothing
     reltol = 1e-1 # TODO: generalize
     tol = min(0.03,first(reltol)^(0.5))
   end
+  z₊,dz,tmp,b,k = z,z,z,z,rate_prototype
+  _nlsolve = oop_nlsolver(alg.nlsolve)
 
-  ImplicitRKMilConstantCache(uf,ηold,κ,tol,100000)
+  nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,alg.theta,zero(t),ηold,z₊,dz,tmp,b,k))
+  ImplicitRKMilConstantCache(uf,nlsolve)
 end
