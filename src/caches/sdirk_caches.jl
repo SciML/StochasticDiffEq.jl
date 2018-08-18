@@ -50,7 +50,6 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_pr
   fsalfirst = zero(rate_prototype)
   k = zero(rate_prototype)
 
-
   if alg.κ != nothing
     κ = alg.κ
   else
@@ -102,9 +101,7 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_pr
   else
     κ = uEltypeNoUnits(1//100)
   end
-  if tol != nothing
-    tol = tol
-  else
+  if tol == nothing
     reltol = 1e-1 # TODO: generalize
     tol = min(0.03,first(reltol)^(0.5))
   end

@@ -1,12 +1,11 @@
 @muladd function perform_step!(integrator, cache::SKenCarpConstantCache, f=integrator.f)
-
-  repeat_step=false
-
   @unpack t,dt,uprev,u,g,p = integrator
-  @unpack uf,κ,tol = cache
+  uf = cache.uf
   @unpack γ,a31,a32,a41,a42,a43,btilde1,btilde2,btilde3,btilde4,c3,α31,α32 = cache.tab
   @unpack ea21,ea31,ea32,ea41,ea42,ea43,eb1,eb2,eb3,eb4,ebtilde1,ebtilde2,ebtilde3,ebtilde4 = cache.tab
   @unpack nb021,nb043 = cache.tab
+  nlsolve! = cache.nlsolve; nlcache = nlsolve!.cache
+  @unpack κ,tol = nlcache
   alg = unwrap_alg(integrator, true)
 
   chi2 = (integrator.W.dW + integrator.W.dZ/sqrt(3))/2 #I_(1,0)/h
@@ -24,70 +23,37 @@
   γdt = γ*dt
 
   # calculate W
-  uf.t = t
   repeat_step = false
-  J, W = calc_W!(integrator, cache, γdt, repeat_step)
+  if nlsolve! isa NLNewton
+    J, nlcache.W = calc_W!(integrator, cache, γdt, repeat_step)
+    uf.t = t
+  end
 
   z₁ = dt*f( uprev,p,t)
-
-  ##### Step 2
-
-  iter = 1
-  tstep = t + 2*γdt
+  nlcache.c = 2*γ
 
   g1 = g(uprev,p,t)
-
   tmp = uprev + γ*z₁ + nb021*chi2.*g1
-
   if typeof(integrator.f) <: SplitSDEFunction
     # This assumes the implicit part is cheaper than the explicit part
     k1 = dt*f2(uprev,p,t)
     tmp += ea21*k1
   end
+  nlcache.tmp = tmp
 
   if alg.extrapolant == :min_correct
     z₂ = zero(z₁)
   elseif alg.extrapolant == :trivial
     z₂ = z₁
   end
+  nlcache.z = z₂
 
-  u = tmp + γ*z₂
-  b = dt*f(u,p,tstep) - z₂
-  dz = W\b
-  ndz = integrator.opts.internalnorm(dz)
-  z₂ = z₂ + dz
+  (z₂, η, iter, fail_convergence) = nlsolve!(integrator); fail_convergence && return nothing
 
-  η = max(cache.ηold,eps(eltype(integrator.opts.reltol)))^(0.8)
-  do_newton = integrator.success_iter == 0 || η*ndz > κtol
-
-  fail_convergence = false
-  while (do_newton || iter < alg.min_newton_iter) && iter < alg.max_newton_iter
-    iter += 1
-    u = tmp + γ*z₂
-    b = dt*f(u,p,tstep) - z₂
-    dz = W\b
-    ndzprev = ndz
-    ndz = integrator.opts.internalnorm(dz)
-    θ = ndz/ndzprev
-    if θ > 1 || ndz*(θ^(alg.max_newton_iter - iter)/(1-θ)) > κtol
-      fail_convergence = true
-      break
-    end
-    η = θ/(1-θ)
-    do_newton = (η*ndz > κtol)
-    z₂ = z₂ + dz
-  end
-
-  if (iter >= alg.max_newton_iter && do_newton) || fail_convergence
-    integrator.force_stepfail = true
-    return
-  end
 
   ################################## Solve Step 3
 
-  iter = 1
-  tstep = t + c3*dt
-
+  nlcache.c = c3
   if typeof(integrator.f) <: SplitSDEFunction
     u = tmp + γ*z₂
     k2 = dt*f2(u,p,t + 2γ*dt)
@@ -95,49 +61,20 @@
   else
     tmp = uprev + a31*z₁ + a32*z₂
   end
+  nlcache.tmp = tmp
 
   if alg.extrapolant == :min_correct
-    z₃ = zero(dz)
+    z₃ = zero(z₂)
   elseif alg.extrapolant == :trivial
     z₃ = z₂
   end
+  nlcache.z = z₃
 
-  u = tmp + γ*z₃
-  b = dt*f(u,p,tstep) - z₃
-  dz = W\b
-  ndz = integrator.opts.internalnorm(dz)
-  z₃ = z₃ + dz
-
-  η = max(η,eps(eltype(integrator.opts.reltol)))^(0.8)
-  do_newton = (η*ndz > κtol)
-
-  fail_convergence = false
-  while (do_newton || iter < alg.min_newton_iter) && iter < alg.max_newton_iter
-    iter += 1
-    u = tmp + γ*z₃
-    b = dt*f(u,p,tstep) - z₃
-    dz = W\b
-    ndzprev = ndz
-    ndz = integrator.opts.internalnorm(dz)
-    θ = ndz/ndzprev
-    if θ > 1 || ndz*(θ^(alg.max_newton_iter - iter)/(1-θ)) > κtol
-      fail_convergence = true
-      break
-    end
-    η = θ/(1-θ)
-    do_newton = (η*ndz > κtol)
-    z₃ = z₃ + dz
-  end
-
-  if (iter >= alg.max_newton_iter && do_newton) || fail_convergence
-    integrator.force_stepfail = true
-    return
-  end
+  (z₃, η, iter, fail_convergence) = nlsolve!(integrator); fail_convergence && return nothing
 
   ################################## Solve Step 4
 
-  iter = 1
-  tstep = t + dt
+  nlcache.c = one(nlcache.c)
 
   # Note: Can use g1 since c13 = 0 => g3 == g1
 
@@ -148,44 +85,16 @@
   else
     tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + nb043*chi2.*g1
   end
+  nlcache.tmp = tmp
 
   if alg.extrapolant == :min_correct
-    z₄ = zero(dz)
+    z₄ = zero(z₂)
   elseif alg.extrapolant == :trivial
     z₄ = z₂
   end
+  nlcache.z = z₄
 
-  u = tmp + γ*z₄
-  b = dt*f(u,p,tstep) - z₄
-  dz = W\b
-  ndz = integrator.opts.internalnorm(dz)
-  z₄ = z₄ + dz
-
-  η = max(η,eps(eltype(integrator.opts.reltol)))^(0.8)
-  do_newton = (η*ndz > κtol)
-
-  fail_convergence = false
-  while (do_newton || iter < alg.min_newton_iter) && iter < alg.max_newton_iter
-    iter += 1
-    u = tmp + γ*z₄
-    b = dt*f(u,p,tstep) - z₄
-    dz = W\b
-    ndzprev = ndz
-    ndz = integrator.opts.internalnorm(dz)
-    θ = ndz/ndzprev
-    if θ > 1 || ndz*(θ^(alg.max_newton_iter - iter)/(1-θ)) > κtol
-      fail_convergence = true
-      break
-    end
-    η = θ/(1-θ)
-    do_newton = (η*ndz > κtol)
-    z₄ = z₄ + dz
-  end
-
-  if (iter >= alg.max_newton_iter && do_newton) || fail_convergence
-    integrator.force_stepfail = true
-    return
-  end
+  (z₄, η, iter, fail_convergence) = nlsolve!(integrator); fail_convergence && return nothing
 
   u = tmp + γ*z₄
   g4 = g(uprev,p,t+dt)
@@ -201,8 +110,8 @@
 
   ################################### Finalize
 
-  cache.ηold = η
-  cache.newton_iters = iter
+  nlcache.ηold = η
+  nlcache.nl_iters = iter
 
   if integrator.opts.adaptive
 

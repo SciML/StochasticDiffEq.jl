@@ -1,35 +1,44 @@
-mutable struct SKenCarpConstantCache{F,uEltypeNoUnits,Tab} <: StochasticDiffEqConstantCache
+mutable struct SKenCarpConstantCache{F,N,Tab} <: StochasticDiffEqConstantCache
   uf::F
-  ηold::uEltypeNoUnits
-  κ::uEltypeNoUnits
-  tol::uEltypeNoUnits
-  newton_iters::Int
+  nlsolve::N
   tab::Tab
 end
 
 function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  if typeof(f) <: SplitSDEFunction
+  nlcache = alg.nlsolve.cache
+  @unpack κ,tol,max_iter,min_iter,new_W = nlcache
+  z = uprev
+  uf = alg.nlsolve isa NLNewton ? DiffEqDiffTools.UDerivativeWrapper(f,t,p) : nothing
+  ηold = one(uEltypeNoUnits)
+  if DiffEqBase.has_jac(f) && alg.nlsolve isa NLNewton
+    J = f.jac(uprev, p, t)
+    if !isa(J, DiffEqBase.AbstractDiffEqLinearOperator)
+      J = DiffEqArrayOperator(J)
+    end
+    W = WOperator(f.mass_matrix, zero(t), J)
+  else
+    W = typeof(u) <: Number ? u : Matrix{uEltypeNoUnits}(undef, 0, 0) # uEltype?
+  end
+  if κ != nothing
+    κ = κ
+  else
+    κ = uEltypeNoUnits(1//100)
+  end
+  if tol == nothing
+    reltol = 1e-1 # TODO: generalize
+    tol = min(0.03,first(reltol)^(0.5))
+  end
+  z₊,dz,tmp,b,k = z,z,z,z,rate_prototype
+  _nlsolve = oop_nlsolver(alg.nlsolve)
+
+  if uf != nothing && typeof(f) <: SplitSDEFunction
     uf = DiffEqDiffTools.UDerivativeWrapper(f.f1,t,p)
   else
     uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
   end
-  ηold = one(uEltypeNoUnits)
-
-  if alg.κ != nothing
-    κ = alg.κ
-  else
-    κ = uEltypeNoUnits(1//100)
-  end
-  if alg.tol != nothing
-    tol = alg.tol
-  else
-    reltol = 1e-1 # TODO: generalize
-    tol = min(0.03,first(reltol)^(0.5))
-  end
-
   tab = SKenCarpTableau(real(uBottomEltype),real(tTypeNoUnits))
-
-  SKenCarpConstantCache(uf,ηold,κ,tol,10000,tab)
+  nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,10000,new_W,z,W,tab.γ,tab.c3,ηold,z₊,dz,tmp,b,k))
+  SKenCarpConstantCache(uf,nlsolve,tab)
 end
 
 mutable struct SKenCarpCache{uType,rateType,uNoUnitsType,J,W,UF,JC,uEltypeNoUnits,Tab,F,kType,randType,rateNoiseType} <: StochasticDiffEqMutableCache
