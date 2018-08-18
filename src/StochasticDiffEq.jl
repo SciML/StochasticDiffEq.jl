@@ -50,6 +50,9 @@ module StochasticDiffEq
   include("options_type.jl")
   include("derivative_wrappers.jl")
   include("interp_func.jl")
+  include("nlsolve/type.jl")
+  include("nlsolve/newton.jl")
+  include("nlsolve/functional.jl")
   include("caches/cache_types.jl")
   include("caches/basic_method_caches.jl")
   include("caches/lamba_caches.jl")
@@ -111,5 +114,7 @@ module StochasticDiffEq
 
   #Misc Tools
   export checkSRIOrder, checkSRAOrder,  constructSRIW1, constructSRA1
+
+  export NLFunctional, NLNewton, NLAnderson
 
 end # module

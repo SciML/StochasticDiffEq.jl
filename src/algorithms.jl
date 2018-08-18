@@ -111,33 +111,27 @@ IIF1Mil(;nlsolve=NLSOLVEJL_SETUP()) = IIF1Mil{typeof(nlsolve)}(nlsolve)
 
 # SDIRK
 
-struct ImplicitEM{CS,AD,F,S,K,T,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}
+struct ImplicitEM{CS,AD,F,F2,S,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}
   linsolve::F
+  nlsolve::F2
   diff_type::S
-  κ::K
-  tol::T
   theta::T2
   extrapolant::Symbol
-  min_newton_iter::Int
-  max_newton_iter::Int
   new_jac_conv_bound::T2
   symplectic::Bool
 end
 ImplicitEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           linsolve=DEFAULT_LINSOLVE,κ=nothing,tol=nothing,
-                          extrapolant=:constant,min_newton_iter=1,
+                          extrapolant=:constant,nlsolve=NLNewton(),
                           theta = 1/2,symplectic=false,
-                          max_newton_iter=7,new_jac_conv_bound = 1e-3,
+                          new_jac_conv_bound = 1e-3,
                           controller = :Predictive) =
                           ImplicitEM{chunk_size,autodiff,
-                          typeof(linsolve),typeof(diff_type),
-                          typeof(κ),typeof(tol),
+                          typeof(linsolve),typeof(nlsolve),typeof(diff_type),
                           typeof(new_jac_conv_bound),controller}(
-                          linsolve,diff_type,κ,tol,
+                          linsolve,nlsolve,diff_type,
                           symplectic ? 1/2 : theta,
-                          extrapolant,
-                          min_newton_iter,
-                          max_newton_iter,new_jac_conv_bound,symplectic)
+                          extrapolant,new_jac_conv_bound,symplectic)
 
 struct ImplicitEulerHeun{CS,AD,F,S,K,T,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}
   linsolve::F

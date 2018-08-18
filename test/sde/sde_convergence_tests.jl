@@ -10,6 +10,8 @@ dts = (1/2) .^ (10:-1:2) #14->7 good plot
 prob = prob_sde_wave
 sim  = test_convergence(dts,prob,ImplicitEM(),numMonte=Int(1e1))
 @test abs(sim.𝒪est[:l2]-.5) < 0.2
+sim  = test_convergence(dts,prob,ImplicitEM(nlsolve=NLFunctional()),numMonte=Int(1e1))
+@test abs(sim.𝒪est[:l2]-.5) < 0.2
 sim  = test_convergence(dts,prob,ImplicitRKMil(),numMonte=Int(1e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.2
 sim  = test_convergence(dts,prob,EM(),numMonte=Int(1e2))
