@@ -9,7 +9,6 @@
   alg = unwrap_alg(integrator, true)
   theta = alg.theta
   alg.symplectic ? a = dt/2 : a = dt
-  nlcache.c, nlcache.γ = a, theta
   γdt = dt*theta
   repeat_step = false
   if nlsolve! isa NLNewton
@@ -53,6 +52,7 @@
   end
   nlcache.z = z
 
+  nlcache.c = a
   if alg.symplectic
     # u = uprev + z then  u = (uprev+u)/2 = (uprev+uprev+z)/2 = uprev + z/2
     #u = uprev + z/2 + gtmp/2

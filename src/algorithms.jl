@@ -187,60 +187,52 @@ ImplicitRKMil(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           extrapolant,min_newton_iter,
                           max_newton_iter,new_jac_conv_bound,symplectic)
 
-struct ISSEM{CS,AD,F,S,K,T,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}
+struct ISSEM{CS,AD,F,S,N,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}
   linsolve::F
   diff_type::S
-  κ::K
-  tol::T
+  nlsolve::N
   theta::T2
   extrapolant::Symbol
-  min_newton_iter::Int
-  max_newton_iter::Int
   new_jac_conv_bound::T2
   symplectic::Bool
 end
 ISSEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
-                       linsolve=DEFAULT_LINSOLVE,κ=nothing,tol=nothing,
-                       extrapolant=:constant,min_newton_iter=1,
+                       linsolve=DEFAULT_LINSOLVE,nlsolve=NLNewton(),
+                       extrapolant=:constant,
                        theta = 1,symplectic=false,
-                       max_newton_iter=7,new_jac_conv_bound = 1e-3,
+                       new_jac_conv_bound = 1e-3,
                        controller = :Predictive) =
                        ISSEM{chunk_size,autodiff,
                        typeof(linsolve),typeof(diff_type),
-                       typeof(κ),typeof(tol),
+                       typeof(nlsolve),
                        typeof(new_jac_conv_bound),controller}(
-                       linsolve,diff_type,κ,tol,
+                       linsolve,diff_type,nlsolve,
                        symplectic ? 1/2 : theta,
                        extrapolant,
-                       min_newton_iter,
-                       max_newton_iter,new_jac_conv_bound,symplectic)
+                       new_jac_conv_bound,symplectic)
 
-struct ISSEulerHeun{CS,AD,F,S,K,T,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}
+struct ISSEulerHeun{CS,AD,F,S,N,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}
  linsolve::F
  diff_type::S
- κ::K
- tol::T
+ nlsolve::N
  theta::T2
  extrapolant::Symbol
- min_newton_iter::Int
- max_newton_iter::Int
  new_jac_conv_bound::T2
  symplectic::Bool
 end
 ISSEulerHeun(;chunk_size=0,autodiff=true,diff_type=Val{:central},
-                      linsolve=DEFAULT_LINSOLVE,κ=nothing,tol=nothing,
-                      extrapolant=:constant,min_newton_iter=1,
+                      linsolve=DEFAULT_LINSOLVE,nlsolve=NLNewton(),
+                      extrapolant=:constant,
                       theta = 1,symplectic=false,
-                      max_newton_iter=7,new_jac_conv_bound = 1e-3,
+                      new_jac_conv_bound = 1e-3,
                       controller = :Predictive) =
                       ISSEulerHeun{chunk_size,autodiff,
                       typeof(linsolve),typeof(diff_type),
-                      typeof(κ),typeof(tol),typeof(new_jac_conv_bound),controller}(
-                      linsolve,diff_type,κ,tol,
+                      typeof(nlsolve),typeof(new_jac_conv_bound),controller}(
+                      linsolve,diff_type,nlsolve,
                       symplectic ? 1/2 : theta,
                       extrapolant,
-                      min_newton_iter,
-                      max_newton_iter,new_jac_conv_bound,symplectic)
+                      new_jac_conv_bound,symplectic)
 
 struct SKenCarp{CS,AD,F,FDT,N,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}
   linsolve::F

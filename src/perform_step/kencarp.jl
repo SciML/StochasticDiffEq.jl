@@ -5,7 +5,6 @@
   @unpack ea21,ea31,ea32,ea41,ea42,ea43,eb1,eb2,eb3,eb4,ebtilde1,ebtilde2,ebtilde3,ebtilde4 = cache.tab
   @unpack nb021,nb043 = cache.tab
   nlsolve! = cache.nlsolve; nlcache = nlsolve!.cache
-  @unpack κ,tol = nlcache
   alg = unwrap_alg(integrator, true)
 
   chi2 = (integrator.W.dW + integrator.W.dZ/sqrt(3))/2 #I_(1,0)/h

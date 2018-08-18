@@ -107,7 +107,7 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_pr
   end
   z₊,dz,tmp,b,k = z,z,z,z,rate_prototype
   _nlsolve = oop_nlsolver(alg.nlsolve)
-  nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,zero(t),zero(t),ηold,z₊,dz,tmp,b,k))
+  nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,alg.theta,zero(t),ηold,z₊,dz,tmp,b,k))
   ImplicitEMConstantCache(uf,nlsolve)
 end
 
