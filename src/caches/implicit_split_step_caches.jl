@@ -1,5 +1,5 @@
 mutable struct ISSEMCache{uType,rateType,J,W,JC,UF,
-                          uEltypeNoUnits,noiseRateType,F,dWType} <:
+                          N,noiseRateType,F,dWType} <:
                           StochasticDiffEqMutableCache
   u::uType
   uprev::uType
@@ -16,10 +16,7 @@ mutable struct ISSEMCache{uType,rateType,J,W,JC,UF,
   jac_config::JC
   linsolve::F
   uf::UF
-  ηold::uEltypeNoUnits
-  κ::uEltypeNoUnits
-  tol::uEltypeNoUnits
-  newton_iters::Int
+  nlsolve::N
   dW_cache::dWType
 end
 
@@ -28,36 +25,8 @@ du_cache(c::ISSEMCache)   = (c.k,c.fsalfirst)
 
 function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
-  du1 = zero(rate_prototype)
-  if has_jac(f) && !has_invW(f) && f.jac_prototype != nothing
-    W = WOperator(f, zero(t))
-    J = nothing
-  else
-    J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
-    W = similar(J)
-  end
-  z = zero(u)
-  dz = zero(u); tmp = zero(u); gtmp = zero(noise_rate_prototype)
-  fsalfirst = zero(rate_prototype)
-  k = zero(rate_prototype)
-
-  uf = DiffEqDiffTools.UJacobianWrapper(f,t,p)
-  linsolve = alg.linsolve(Val{:init},uf,u)
-  jac_config = build_jac_config(alg,f,uf,du1,uprev,u,tmp,dz)
-  ηold = one(uEltypeNoUnits)
-
-  if alg.κ != nothing
-    κ = alg.κ
-  else
-    κ = uEltypeNoUnits(1//100)
-  end
-  if alg.tol != nothing
-    tol = alg.tol
-  else
-    reltol = 1e-1 # TODO: generalize
-    tol = min(0.03,first(reltol)^(0.5))
-  end
-
+  @iipnlcachefields
+  gtmp = zero(noise_rate_prototype)
   if is_diagonal_noise(prob)
     gtmp2 = gtmp
     dW_cache = nothing
@@ -66,39 +35,24 @@ function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototy
     dW_cache = zero(ΔW)
   end
 
+  nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,alg.theta,zero(t),ηold,z₊,dz,tmp,b,k))
   ISSEMCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,J,W,jac_config,linsolve,uf,
-                  ηold,κ,tol,10000,dW_cache)
+                  nlsolve,dW_cache)
 end
 
-mutable struct ISSEMConstantCache{F,uEltypeNoUnits} <: StochasticDiffEqConstantCache
+mutable struct ISSEMConstantCache{F,N} <: StochasticDiffEqConstantCache
   uf::F
-  ηold::uEltypeNoUnits
-  κ::uEltypeNoUnits
-  tol::uEltypeNoUnits
-  newton_iters::Int
+  nlsolve::N
 end
 
 function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
-  ηold = one(uEltypeNoUnits)
-
-  if alg.κ != nothing
-    κ = alg.κ
-  else
-    κ = uEltypeNoUnits(1//100)
-  end
-  if alg.tol != nothing
-    tol = alg.tol
-  else
-    reltol = 1e-1 # TODO: generalize
-    tol = min(0.03,first(reltol)^(0.5))
-  end
-
-  ISSEMConstantCache(uf,ηold,κ,tol,100000)
+  @oopnlcachefields
+  nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,alg.theta,zero(t),ηold,z₊,dz,tmp,b,k))
+  ISSEMConstantCache(uf,nlsolve)
 end
 
-mutable struct ISSEulerHeunCache{uType,rateType,J,W,JC,UF,uEltypeNoUnits,
+mutable struct ISSEulerHeunCache{uType,rateType,J,W,JC,UF,N,
                                  noiseRateType,F,dWType} <:
                                  StochasticDiffEqMutableCache
   u::uType
@@ -117,10 +71,7 @@ mutable struct ISSEulerHeunCache{uType,rateType,J,W,JC,UF,uEltypeNoUnits,
   jac_config::JC
   linsolve::F
   uf::UF
-  ηold::uEltypeNoUnits
-  κ::uEltypeNoUnits
-  tol::uEltypeNoUnits
-  newton_iters::Int
+  nlsolve::N
   dW_cache::dWType
 end
 
@@ -129,36 +80,9 @@ du_cache(c::ISSEulerHeunCache)   = (c.k,c.fsalfirst)
 
 function alg_cache(alg::ISSEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
-  du1 = zero(rate_prototype)
-  if has_jac(f) && !has_invW(f) && f.jac_prototype != nothing
-    W = WOperator(f, zero(t))
-    J = nothing
-  else
-    J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
-    W = similar(J)
-  end
-  z = zero(u)
-  dz = zero(u); tmp = zero(u); gtmp = zero(noise_rate_prototype)
-  fsalfirst = zero(rate_prototype)
-  k = zero(rate_prototype)
+  @iipnlcachefields
 
-  uf = DiffEqDiffTools.UJacobianWrapper(f,t,p)
-  linsolve = alg.linsolve(Val{:init},uf,u)
-  jac_config = build_jac_config(alg,f,uf,du1,uprev,u,tmp,dz)
-  ηold = one(uEltypeNoUnits)
-
-  if alg.κ != nothing
-    κ = alg.κ
-  else
-    κ = uEltypeNoUnits(1//100)
-  end
-  if alg.tol != nothing
-    tol = alg.tol
-  else
-    reltol = 1e-1 # TODO: generalize
-    tol = min(0.03,first(reltol)^(0.5))
-  end
-
+  gtmp = zero(noise_rate_prototype)
   gtmp2 = zero(rate_prototype)
 
   if is_diagonal_noise(prob)
@@ -169,34 +93,19 @@ function alg_cache(alg::ISSEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
       dW_cache = zero(ΔW)
   end
 
+  nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,alg.theta,zero(t),ηold,z₊,dz,tmp,b,k))
   ISSEulerHeunCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,gtmp3,
-                         J,W,jac_config,linsolve,uf,ηold,κ,tol,10000,dW_cache)
+                         J,W,jac_config,linsolve,uf,nlsolve,dW_cache)
 end
 
-mutable struct ISSEulerHeunConstantCache{F,uEltypeNoUnits} <: StochasticDiffEqConstantCache
+mutable struct ISSEulerHeunConstantCache{F,N} <: StochasticDiffEqConstantCache
   uf::F
-  ηold::uEltypeNoUnits
-  κ::uEltypeNoUnits
-  tol::uEltypeNoUnits
-  newton_iters::Int
+  nlsolve::N
 end
 
 function alg_cache(alg::ISSEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
-  ηold = one(uEltypeNoUnits)
-
-  if alg.κ != nothing
-    κ = alg.κ
-  else
-    κ = uEltypeNoUnits(1//100)
-  end
-  if alg.tol != nothing
-    tol = alg.tol
-  else
-    reltol = 1e-1 # TODO: generalize
-    tol = min(0.03,first(reltol)^(0.5))
-  end
-
-  ISSEulerHeunConstantCache(uf,ηold,κ,tol,100000)
+  @oopnlcachefields
+  nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,alg.theta,zero(t),ηold,z₊,dz,tmp,b,k))
+  ISSEulerHeunConstantCache(uf,nlsolve)
 end

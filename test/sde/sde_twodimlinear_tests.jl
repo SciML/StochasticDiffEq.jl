@@ -1,4 +1,4 @@
-using StochasticDiffEq, Test, Random
+using StochasticDiffEq, Test, Random, DiffEqDevTools
 using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
 import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_2Dlinear
 Random.seed!(100)
@@ -16,6 +16,7 @@ sol = solve(prob,SRIW2(),dt=1/2^(3))
 sol = solve(prob,SOSRI(),dt=1/2^(3))
 sol = solve(prob,SOSRI2(),dt=1/2^(3))
 sol = solve(prob,ImplicitEM(),dt=1/2^(3))
+sol = solve(prob,ImplicitEM(nlsolve=NLFunctional()),dt=1/2^(3),adaptive=false)
 sol = solve(prob,ImplicitEM(autodiff=false),dt=1/2^(3))
 sol = solve(prob,ImplicitRKMil(),dt=1/2^(3))
 
@@ -68,6 +69,9 @@ sim = test_convergence(dts,prob,ImplicitRKMil(symplectic=true),numMonte=100)
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
 sim = test_convergence(dts,prob,ImplicitRKMil(symplectic=true,autodiff=false),numMonte=100)
+@test abs(sim.𝒪est[:l2]-1) < 0.1
+
+sim = test_convergence(dts,prob,ImplicitRKMil(nlsolve=NLFunctional()),numMonte=100)
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
 sim2 = test_convergence(dts,prob,RKMil(),numMonte=100)
