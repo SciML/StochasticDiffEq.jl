@@ -64,7 +64,8 @@ sim  = test_convergence(dts,prob,EM(),numMonte=Int(1e1))
 @test abs(sim.𝒪est[:l2]-1) < 0.2
 sim  = test_convergence(dts,prob,LambaEM(),numMonte=Int(1e1))
 @test abs(sim.𝒪est[:l2]-1) < 0.2
-sim  = test_convergence(dts,prob,ISSEM(),numMonte=Int(1e2))
+dts = (1/2) .^ (10:-1:1)
+sim  = test_convergence(dts,prob,ISSEM(),numMonte=Int(1e3))
 @test abs(sim.𝒪est[:l2]-1) < 0.2
 sim  = test_convergence(dts,prob,ImplicitEM(),numMonte=Int(1e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.2
