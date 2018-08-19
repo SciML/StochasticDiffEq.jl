@@ -23,45 +23,52 @@ du_cache(c::ImplicitEMCache)   = (c.k,c.fsalfirst)
 
 function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
-  if alg.nlsolve isa NLNewton
-    if has_jac(f) && !has_invW(f) && f.jac_prototype != nothing
+  nlcache = alg.nlsolve.cache
+  @unpack κ,tol,max_iter,min_iter,new_W = nlcache
+  z = similar(u,axes(u))
+  dz = similar(u,axes(u)); tmp = similar(u,axes(u)); b = similar(u,axes(u))
+  fsalfirst = zero(rate_prototype)
+  k = zero(rate_prototype)
+  uToltype = uEltypeNoUnits
+  ηold = one(uToltype)
+
+  if typeof(alg.nlsolve) <: NLNewton
+    if DiffEqBase.has_jac(f) && !DiffEqBase.has_invW(f) && f.jac_prototype != nothing
       W = WOperator(f, zero(t))
-      J = nothing
+      J = nothing # is J = W.J better?
     else
-      J = zeros(uEltypeNoUnits,length(u),length(u)) # uEltype?
+      J = fill(zero(uEltypeNoUnits),length(u),length(u)) # uEltype?
       W = similar(J)
     end
     du1 = zero(rate_prototype)
     uf = DiffEqDiffTools.UJacobianWrapper(f,t,p)
     jac_config = build_jac_config(alg,f,uf,du1,uprev,u,tmp,dz)
     linsolve = alg.linsolve(Val{:init},uf,u)
-  elseif alg.nlsolve isa NLFunctional
-    J, W = nothing, nothing
+    z₊ = z
+  elseif typeof(alg.nlsolve) <: NLFunctional
+    J = nothing
+    W = nothing
     du1 = rate_prototype
     uf = nothing
     jac_config = nothing
     linsolve = nothing
     z₊ = similar(z)
   end
-  ηold = one(uEltypeNoUnits)
-  z₊ = z
-  z = zero(u)
-  dz = zero(u); tmp = zero(u); gtmp = zero(noise_rate_prototype)
-  fsalfirst = zero(rate_prototype)
-  k = zero(rate_prototype)
 
-  if alg.κ != nothing
-    κ = alg.κ
+  if κ != nothing
+    κ = uToltype(nlcache.κ)
   else
-    κ = uEltypeNoUnits(1//100)
+    κ = uToltype(1//100)
   end
-  if alg.tol != nothing
-    tol = alg.tol
+  if tol != nothing
+    tol = uToltype(nlcache.tol)
   else
     reltol = 1e-1 # TODO: generalize
-    tol = min(0.03,first(reltol)^(0.5))
+    tol = uToltype(min(0.03,first(reltol)^(0.5)))
   end
+  _nlsolve = alg.nlsolve
 
+  gtmp = zero(noise_rate_prototype)
   if is_diagonal_noise(prob)
     gtmp2 = gtmp
     dW_cache = nothing
@@ -70,8 +77,9 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_pr
     dW_cache = zero(ΔW)
   end
 
+  nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,alg.theta,zero(t),ηold,z₊,dz,tmp,b,k))
   ImplicitEMCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,J,W,jac_config,linsolve,uf,
-                  ηold,κ,tol,10000,dW_cache)
+                  dW_cache,nlsolve)
 end
 
 mutable struct ImplicitEMConstantCache{F,N} <: StochasticDiffEqConstantCache

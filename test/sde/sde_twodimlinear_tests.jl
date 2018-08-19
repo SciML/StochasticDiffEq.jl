@@ -16,6 +16,7 @@ sol = solve(prob,SRIW2(),dt=1/2^(3))
 sol = solve(prob,SOSRI(),dt=1/2^(3))
 sol = solve(prob,SOSRI2(),dt=1/2^(3))
 sol = solve(prob,ImplicitEM(),dt=1/2^(3))
+sol = solve(prob,ImplicitEM(nlsolve=NLFunctional()),dt=1/2^(3),adaptive=false)
 sol = solve(prob,ImplicitEM(autodiff=false),dt=1/2^(3))
 sol = solve(prob,ImplicitRKMil(),dt=1/2^(3))
 

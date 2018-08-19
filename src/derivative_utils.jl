@@ -127,6 +127,7 @@ function calc_W!(integrator, cache::StochasticDiffEqMutableCache, γdt, repeat_s
     is_compos = is_composite(integrator.alg)
     alg = unwrap_alg(integrator, true)
     mass_matrix = integrator.f.mass_matrix
+    nlcache = cache.nlsolve.cache
 
     new_W = true
     if has_invW(f)
@@ -135,7 +136,7 @@ function calc_W!(integrator, cache::StochasticDiffEqMutableCache, γdt, repeat_s
       is_compos && calc_J!(integrator, cache, true)
     elseif has_jac(f) && f.jac_prototype != nothing
       # skip calculation of J if step is repeated
-      if repeat_step || (!integrator.last_stepfail && cache.newton_iters == 1 && cache.ηold < alg.new_jac_conv_bound)
+      if repeat_step || (!integrator.last_stepfail && nlcache.nl_iters == 1 && nlcache.ηold < alg.new_jac_conv_bound)
         new_jac = false
       else # Compute a new Jacobian
         new_jac = true
@@ -149,7 +150,7 @@ function calc_W!(integrator, cache::StochasticDiffEqMutableCache, γdt, repeat_s
       end
     else
       # skip calculation of J if step is repeated
-      if repeat_step || (!integrator.last_stepfail && cache.newton_iters == 1 && cache.ηold < alg.new_jac_conv_bound)
+      if repeat_step || (!integrator.last_stepfail && nlcache.nl_iters == 1 && nlcache.ηold < alg.new_jac_conv_bound)
         new_jac = false
       else # Compute a new Jacobian
         new_jac = true
@@ -164,7 +165,8 @@ function calc_W!(integrator, cache::StochasticDiffEqMutableCache, γdt, repeat_s
         new_W = false
       end
     end
-    return new_W
+    nlcache.new_W = new_W
+    return nothing
   end
 end
 
