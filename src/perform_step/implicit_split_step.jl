@@ -14,8 +14,8 @@
 
   repeat_step = false
   if nlsolve! isa NLNewton
-    J, nlcache.W = calc_W!(integrator, cache, dt*theta, repeat_step)
     uf.t = t
+    J, nlcache.W = calc_W!(integrator, cache, dt*theta, repeat_step)
   end
 
   L = integrator.g(uprev,p,t)

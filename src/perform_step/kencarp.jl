@@ -22,8 +22,8 @@
   # calculate W
   repeat_step = false
   if nlsolve! isa NLNewton
-    J, nlcache.W = calc_W!(integrator, cache, γdt, repeat_step)
     uf.t = t
+    J, nlcache.W = calc_W!(integrator, cache, γdt, repeat_step)
   end
 
   z₁ = dt*f( uprev,p,t)
