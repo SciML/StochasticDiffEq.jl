@@ -107,5 +107,5 @@ function alg_cache(alg::ISSEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   @oopnlcachefields
   nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,alg.theta,zero(t),ηold,z₊,dz,tmp,b,k))
-  ISSEulerHeunConstantCache(uf,ηold,κ,tol,100000)
+  ISSEulerHeunConstantCache(uf,nlsolve)
 end

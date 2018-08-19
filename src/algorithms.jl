@@ -136,6 +136,7 @@ ImplicitEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
 struct ImplicitEulerHeun{CS,AD,F,S,N,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}
   linsolve::F
   diff_type::S
+  nlsolve::N
   theta::T2
   extrapolant::Symbol
   new_jac_conv_bound::T2
