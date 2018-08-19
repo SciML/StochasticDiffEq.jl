@@ -87,6 +87,8 @@ sol2 = solve(prob,SKenCarp(),dt=1/10)
 dts = (1/2) .^ (10:-1:2) #14->7 good plot
 sim10 = test_convergence(dts,prob,SKenCarp(),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-2) < 0.3
+sim10 = test_convergence(dts,prob,SKenCarp(nlsolve=NLFunctional()),numMonte=Int(1e1))
+@test abs(sim10.𝒪est[:final]-2) < 0.3
 
 ################################################################################
 
@@ -145,4 +147,6 @@ sol2 = solve(prob,SKenCarp(),dt=1/10)
 
 dts = (1/2) .^ (10:-1:2) #14->7 good plot
 sim10 = test_convergence(dts,prob,SKenCarp(),numMonte=Int(1e1))
+@test abs(sim10.𝒪est[:final]-2) < 0.3
+sim10 = test_convergence(dts,prob,SKenCarp(nlsolve=NLFunctional()),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-2) < 0.3

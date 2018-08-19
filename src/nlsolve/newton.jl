@@ -37,7 +37,7 @@ function (S::NLNewton{false})(integrator)
   @unpack z,tmp,W,κ,tol,c,γ,max_iter,min_iter = nlcache
   theta = γ
   mass_matrix = integrator.f.mass_matrix
-  f = integrator.f isa SplitFunction ? integrator.f.f1 : integrator.f
+  f = integrator.f isa SplitSDEFunction ? integrator.f.f1 : integrator.f
   # precalculations
   κtol = κ*tol
 
@@ -86,7 +86,7 @@ function (S::NLNewton{true})(integrator)
   @unpack t,dt,uprev,u,f,p = integrator
   @unpack z,dz,tmp,b,W,κ,tol,k,new_W,c,γ,max_iter,min_iter = nlcache
   mass_matrix = integrator.f.mass_matrix
-  f = integrator.f isa SplitFunction ? integrator.f.f1 : integrator.f
+  f = integrator.f isa SplitSDEFunction ? integrator.f.f1 : integrator.f
   # precalculations
   κtol = κ*tol
   # initial step of NLNewton iteration

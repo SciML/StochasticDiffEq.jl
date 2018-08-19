@@ -27,7 +27,7 @@ function (S::NLFunctional{false})(integrator)
   @unpack t,dt,uprev,u,f,p = integrator
   @unpack z,tmp,κ,tol,c,γ,min_iter,max_iter = nlcache
   mass_matrix = integrator.f.mass_matrix
-  if typeof(integrator.f) <: SplitFunction
+  if typeof(integrator.f) <: SplitSDEFunction
     f = integrator.f.f1
   else
     f = integrator.f
@@ -80,7 +80,7 @@ function (S::NLFunctional{true})(integrator)
   @unpack z,z₊,b,dz,tmp,κ,tol,k,c,γ,min_iter,max_iter = nlcache
   ztmp = b
   mass_matrix = integrator.f.mass_matrix
-  if typeof(integrator.f) <: SplitFunction
+  if typeof(integrator.f) <: SplitSDEFunction
     f = integrator.f.f1
   else
     f = integrator.f

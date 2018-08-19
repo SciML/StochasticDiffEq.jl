@@ -7,6 +7,7 @@ import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_wave,
 Random.seed!(100)
 dts = (1/2) .^ (10:-1:2) #14->7 good plot
 
+println("prob_sde_wave")
 prob = prob_sde_wave
 sim  = test_convergence(dts,prob,ImplicitEM(),numMonte=Int(1e1))
 @test abs(sim.𝒪est[:l2]-.5) < 0.2
@@ -35,6 +36,7 @@ sim6 = test_convergence(dts,prob,SOSRI(),numMonte=Int(1e1))
 sim7 = test_convergence(dts,prob,SOSRI2(),numMonte=Int(1e1))
 @test abs(sim7.𝒪est[:final]-1.5) < 0.3
 
+println("prob_sde_cubic")
 prob = prob_sde_cubic
 sim  = test_convergence(dts,prob,EM(),numMonte=Int(1e1))
 @test abs(sim.𝒪est[:l2]-.5) < 0.2
@@ -59,6 +61,7 @@ sim6 = test_convergence(dts,prob,SOSRI(),numMonte=Int(1e1))
 sim7 = test_convergence(dts,prob,SOSRI2(),numMonte=Int(1e1))
 @test abs(sim7.𝒪est[:final]-1.5) < 0.3
 
+println("prob_sde_additive")
 prob = prob_sde_additive
 sim  = test_convergence(dts,prob,EM(),numMonte=Int(1e1))
 @test abs(sim.𝒪est[:l2]-1) < 0.2
