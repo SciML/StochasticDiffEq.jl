@@ -71,6 +71,9 @@ sim = test_convergence(dts,prob,ImplicitRKMil(symplectic=true),numMonte=100)
 sim = test_convergence(dts,prob,ImplicitRKMil(symplectic=true,autodiff=false),numMonte=100)
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
+sim = test_convergence(dts,prob,ImplicitRKMil(nlsolve=NLFunctional()),numMonte=100)
+@test abs(sim.𝒪est[:l2]-1) < 0.1
+
 sim2 = test_convergence(dts,prob,RKMil(),numMonte=100)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 
