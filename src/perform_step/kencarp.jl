@@ -17,8 +17,6 @@
   end
 
   # precalculations
-  κtol = κ*tol
-
   γdt = γ*dt
 
   # calculate W

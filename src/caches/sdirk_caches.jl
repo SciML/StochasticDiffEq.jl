@@ -1,28 +1,4 @@
-mutable struct ImplicitEMCache{uType,rateType,J,W,JC,UF,N,noiseRateType,F,dWType} <: StochasticDiffEqMutableCache
-  u::uType
-  uprev::uType
-  du1::rateType
-  fsalfirst::rateType
-  k::rateType
-  z::uType
-  dz::uType
-  tmp::uType
-  gtmp::noiseRateType
-  gtmp2::rateType
-  J::J
-  W::W
-  jac_config::JC
-  linsolve::F
-  uf::UF
-  dW_cache::dWType
-  nlsolve::N
-end
-
-u_cache(c::ImplicitEMCache)    = (c.uprev2,c.z,c.dz)
-du_cache(c::ImplicitEMCache)   = (c.k,c.fsalfirst)
-
-function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+DiffEqBase.@def iipnlcachefields begin
   nlcache = alg.nlsolve.cache
   @unpack κ,tol,max_iter,min_iter,new_W = nlcache
   z = similar(u,axes(u))
@@ -67,28 +43,9 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_pr
     tol = uToltype(min(0.03,first(reltol)^(0.5)))
   end
   _nlsolve = alg.nlsolve
-
-  gtmp = zero(noise_rate_prototype)
-  if is_diagonal_noise(prob)
-    gtmp2 = gtmp
-    dW_cache = nothing
-  else
-    gtmp2 = zero(rate_prototype)
-    dW_cache = zero(ΔW)
-  end
-
-  nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,alg.theta,zero(t),ηold,z₊,dz,tmp,b,k))
-  ImplicitEMCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,J,W,jac_config,linsolve,uf,
-                  dW_cache,nlsolve)
 end
 
-mutable struct ImplicitEMConstantCache{F,N} <: StochasticDiffEqConstantCache
-  uf::F
-  nlsolve::N
-end
-
-function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
+DiffEqBase.@def oopnlcachefields begin
   nlcache = alg.nlsolve.cache
   @unpack κ,tol,max_iter,min_iter,new_W = nlcache
   z = uprev
@@ -115,6 +72,57 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_pr
   end
   z₊,dz,tmp,b,k = z,z,z,z,rate_prototype
   _nlsolve = oop_nlsolver(alg.nlsolve)
+end
+
+mutable struct ImplicitEMCache{uType,rateType,J,W,JC,UF,N,noiseRateType,F,dWType} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+  du1::rateType
+  fsalfirst::rateType
+  k::rateType
+  z::uType
+  dz::uType
+  tmp::uType
+  gtmp::noiseRateType
+  gtmp2::rateType
+  J::J
+  W::W
+  jac_config::JC
+  linsolve::F
+  uf::UF
+  dW_cache::dWType
+  nlsolve::N
+end
+
+u_cache(c::ImplicitEMCache)    = (c.uprev2,c.z,c.dz)
+du_cache(c::ImplicitEMCache)   = (c.k,c.fsalfirst)
+
+function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
+                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+  @iipnlcachefields
+
+  gtmp = zero(noise_rate_prototype)
+  if is_diagonal_noise(prob)
+    gtmp2 = gtmp
+    dW_cache = nothing
+  else
+    gtmp2 = zero(rate_prototype)
+    dW_cache = zero(ΔW)
+  end
+
+  nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,alg.theta,zero(t),ηold,z₊,dz,tmp,b,k))
+  ImplicitEMCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,J,W,jac_config,linsolve,uf,
+                  dW_cache,nlsolve)
+end
+
+mutable struct ImplicitEMConstantCache{F,N} <: StochasticDiffEqConstantCache
+  uf::F
+  nlsolve::N
+end
+
+function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
+                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
+  @oopnlcachefields
   nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,alg.theta,zero(t),ηold,z₊,dz,tmp,b,k))
   ImplicitEMConstantCache(uf,nlsolve)
 end
@@ -199,33 +207,7 @@ end
 
 function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  nlcache = alg.nlsolve.cache
-  @unpack κ,tol,max_iter,min_iter,new_W = nlcache
-  z = uprev
-  uf = alg.nlsolve isa NLNewton ? DiffEqDiffTools.UDerivativeWrapper(f,t,p) : nothing
-  ηold = one(uEltypeNoUnits)
-  if DiffEqBase.has_jac(f) && alg.nlsolve isa NLNewton
-    J = f.jac(uprev, p, t)
-    if !isa(J, DiffEqBase.AbstractDiffEqLinearOperator)
-      J = DiffEqArrayOperator(J)
-    end
-    W = WOperator(f.mass_matrix, zero(t), J)
-  else
-    W = typeof(u) <: Number ? u : Matrix{uEltypeNoUnits}(undef, 0, 0) # uEltype?
-  end
-
-  if κ != nothing
-    κ = κ
-  else
-    κ = uEltypeNoUnits(1//100)
-  end
-  if tol == nothing
-    reltol = 1e-1 # TODO: generalize
-    tol = min(0.03,first(reltol)^(0.5))
-  end
-  z₊,dz,tmp,b,k = z,z,z,z,rate_prototype
-  _nlsolve = oop_nlsolver(alg.nlsolve)
-
+  @oopnlcachefields
   nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,alg.theta,zero(t),ηold,z₊,dz,tmp,b,k))
   ImplicitEulerHeunConstantCache(uf,nlsolve)
 end
@@ -302,33 +284,7 @@ end
 
 function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  nlcache = alg.nlsolve.cache
-  @unpack κ,tol,max_iter,min_iter,new_W = nlcache
-  z = uprev
-  uf = alg.nlsolve isa NLNewton ? DiffEqDiffTools.UDerivativeWrapper(f,t,p) : nothing
-  ηold = one(uEltypeNoUnits)
-  if DiffEqBase.has_jac(f) && alg.nlsolve isa NLNewton
-    J = f.jac(uprev, p, t)
-    if !isa(J, DiffEqBase.AbstractDiffEqLinearOperator)
-      J = DiffEqArrayOperator(J)
-    end
-    W = WOperator(f.mass_matrix, zero(t), J)
-  else
-    W = typeof(u) <: Number ? u : Matrix{uEltypeNoUnits}(undef, 0, 0) # uEltype?
-  end
-
-  if κ != nothing
-    κ = κ
-  else
-    κ = uEltypeNoUnits(1//100)
-  end
-  if tol == nothing
-    reltol = 1e-1 # TODO: generalize
-    tol = min(0.03,first(reltol)^(0.5))
-  end
-  z₊,dz,tmp,b,k = z,z,z,z,rate_prototype
-  _nlsolve = oop_nlsolver(alg.nlsolve)
-
+  @oopnlcachefields
   nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,alg.theta,zero(t),ηold,z₊,dz,tmp,b,k))
   ImplicitRKMilConstantCache(uf,nlsolve)
 end

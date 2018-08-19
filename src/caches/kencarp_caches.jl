@@ -5,32 +5,7 @@ mutable struct SKenCarpConstantCache{F,N,Tab} <: StochasticDiffEqConstantCache
 end
 
 function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  nlcache = alg.nlsolve.cache
-  @unpack κ,tol,max_iter,min_iter,new_W = nlcache
-  z = uprev
-  uf = alg.nlsolve isa NLNewton ? DiffEqDiffTools.UDerivativeWrapper(f,t,p) : nothing
-  ηold = one(uEltypeNoUnits)
-  if DiffEqBase.has_jac(f) && alg.nlsolve isa NLNewton
-    J = f.jac(uprev, p, t)
-    if !isa(J, DiffEqBase.AbstractDiffEqLinearOperator)
-      J = DiffEqArrayOperator(J)
-    end
-    W = WOperator(f.mass_matrix, zero(t), J)
-  else
-    W = typeof(u) <: Number ? u : Matrix{uEltypeNoUnits}(undef, 0, 0) # uEltype?
-  end
-  if κ != nothing
-    κ = κ
-  else
-    κ = uEltypeNoUnits(1//100)
-  end
-  if tol == nothing
-    reltol = 1e-1 # TODO: generalize
-    tol = min(0.03,first(reltol)^(0.5))
-  end
-  z₊,dz,tmp,b,k = z,z,z,z,rate_prototype
-  _nlsolve = oop_nlsolver(alg.nlsolve)
-
+  @oopnlcachefields
   if uf != nothing && typeof(f) <: SplitSDEFunction
     uf = DiffEqDiffTools.UDerivativeWrapper(f.f1,t,p)
   else
