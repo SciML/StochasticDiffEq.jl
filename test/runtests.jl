@@ -21,6 +21,7 @@ is_APPVEYOR = ( Sys.iswindows() && haskey(ENV,"APPVEYOR") )
     @time @testset "Linear RODE Tests" begin include("rode_linear_tests.jl") end
     @time @testset "Two-dimensional Linear SDE Tests" begin include("sde/sde_twodimlinear_tests.jl") end
     @time @testset "Number Type Tests" begin include("sde/sde_numbertype_tests.jl") end
+    @time @testset "Complex Number Tests" begin include("complex_tests.jl") end
     @time @testset "Static Array Tests" begin include("static_array_tests.jl") end
     @time @testset "Noise Type Tests" begin include("noise_type_test.jl") end
     @time @testset "Mass matrix tests" begin include("mass_matrix_tests.jl") end

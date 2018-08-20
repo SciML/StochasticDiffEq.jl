@@ -188,8 +188,8 @@ function __init(
     saveiter = 0
   end
 
-  opts = SDEOptions(maxiters,timeseries_steps,save_everystep,adaptive,map(uBottomEltype,abstol),
-    map(uBottomEltypeNoUnits,reltol),tTypeNoUnits(gamma),tTypeNoUnits(qmax),tTypeNoUnits(qmin),
+  opts = SDEOptions(maxiters,timeseries_steps,save_everystep,adaptive,map(real(uBottomEltype),abstol),
+    map(real(uBottomEltypeNoUnits),reltol),tTypeNoUnits(gamma),tTypeNoUnits(qmax),tTypeNoUnits(qmin),
     tTypeNoUnits(failfactor),
     dtmax,dtmin,internalnorm,save_idxs,
     tstops_internal,saveat_internal,d_discontinuities_internal,

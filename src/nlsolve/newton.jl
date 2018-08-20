@@ -50,7 +50,7 @@ function (S::NLNewton{false})(integrator)
   ndz = integrator.opts.internalnorm(dz)
   z = z + dz
 
-  η = max(nlcache.ηold,eps(first(u)))^(0.8)
+  η = max(nlcache.ηold,eps(eltype(integrator.opts.reltol)))^(0.8)
   do_newton = integrator.success_iter == 0 || η*ndz > κtol
 
   # NLNewton iteration

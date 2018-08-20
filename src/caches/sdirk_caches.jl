@@ -5,7 +5,7 @@ DiffEqBase.@def iipnlcachefields begin
   dz = similar(u,axes(u)); tmp = similar(u,axes(u)); b = similar(u,axes(u))
   fsalfirst = zero(rate_prototype)
   k = zero(rate_prototype)
-  uToltype = uEltypeNoUnits
+  uToltype = real(uEltypeNoUnits)
   ηold = one(uToltype)
 
   if typeof(alg.nlsolve) <: NLNewton
@@ -50,7 +50,8 @@ DiffEqBase.@def oopnlcachefields begin
   @unpack κ,tol,max_iter,min_iter,new_W = nlcache
   z = uprev
   uf = alg.nlsolve isa NLNewton ? DiffEqDiffTools.UDerivativeWrapper(f,t,p) : nothing
-  ηold = one(uEltypeNoUnits)
+  uToltype = real(uEltypeNoUnits)
+  ηold = one(uToltype)
   if DiffEqBase.has_jac(f) && alg.nlsolve isa NLNewton
     J = f.jac(uprev, p, t)
     if !isa(J, DiffEqBase.AbstractDiffEqLinearOperator)
@@ -62,13 +63,13 @@ DiffEqBase.@def oopnlcachefields begin
   end
 
   if κ != nothing
-    κ = κ
+    κ = uToltype(κ)
   else
-    κ = uEltypeNoUnits(1//100)
+    κ = uToltype(1//100)
   end
   if tol == nothing
     reltol = 1e-1 # TODO: generalize
-    tol = min(0.03,first(reltol)^(0.5))
+    tol = uToltype(min(0.03,first(reltol)^(0.5)))
   end
   z₊,dz,tmp,b,k = z,z,z,z,rate_prototype
   _nlsolve = oop_nlsolver(alg.nlsolve)
