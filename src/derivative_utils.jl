@@ -1,12 +1,61 @@
-function calc_J!(integrator, cache::StochasticDiffEqConstantCache, is_compos)
+function calc_tderivative!(integrator, cache, dtd1, repeat_step)
+  @inbounds begin
+    @unpack t,dt,uprev,u,f,p = integrator
+    @unpack du2,fsalfirst,dT,tf,linsolve_tmp = cache
+
+    # Time derivative
+    if !repeat_step # skip calculation if step is repeated
+      if DiffEqBase.has_tgrad(f)
+        f.tgrad(dT, uprev, p, t)
+      else
+        tf.uprev = uprev
+        tf.p = p
+        derivative!(dT, tf, t, du2, integrator, cache.grad_config)
+      end
+    end
+
+    f(fsalfirst, uprev, p, t)
+    @. linsolve_tmp = fsalfirst + dtd1*dT
+  end
+end
+
+function calc_tderivative(integrator, cache)
   @unpack t,dt,uprev,u,f,p = integrator
-  if has_jac(f)
+
+  # Time derivative
+  if DiffEqBase.has_tgrad(f)
+    dT = f.tgrad(uprev, p, t)
+  else
+    tf = cache.tf
+    tf.u = uprev
+    tf.p = p
+    dT = derivative(tf, t, integrator)
+  end
+  dT
+end
+
+"""
+    calc_J!(integrator,cache,is_compos)
+
+Interface for calculating the jacobian.
+
+For constant caches, a new jacobian object is returned whereas for mutable
+caches `cache.J` is updated. In both cases, if `integrator.f` has a custom
+jacobian update function, then it will be called for the update. Otherwise,
+either ForwardDiff or finite difference will be used depending on the
+`jac_config` of the cache.
+"""
+function calc_J(integrator, cache::StochasticDiffEqConstantCache, is_compos)
+  @unpack t,dt,uprev,u,f,p = integrator
+  if DiffEqBase.has_jac(f)
     J = f.jac(uprev, p, t)
   else
-    error("Jacobian wrapper for constant caches not yet implemented") #TODO
+    J = jacobian(cache.uf,uprev,integrator)
   end
+  is_compos && (integrator.eigen_est = opnorm(J, Inf))
   return J
 end
+
 function calc_J!(integrator, cache::StochasticDiffEqMutableCache, is_compos)
   @unpack t,dt,uprev,u,f,p = integrator
   J = cache.J
@@ -183,11 +232,7 @@ function calc_W!(integrator, cache::StochasticDiffEqConstantCache, γdt, repeat_
     end
     W = WOperator(mass_matrix, γdt, J)
   else
-    if isarray
-      J = ForwardDiff.jacobian(uf,uprev)
-    else
-      J = ForwardDiff.derivative(uf,uprev)
-    end
+    J = calc_J(integrator, cache, is_compos)
     W = mass_matrix - γdt*J
   end
   is_compos && (integrator.eigen_est = isarray ? opnorm(J, Inf) : J)
