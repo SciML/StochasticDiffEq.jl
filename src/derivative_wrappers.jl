@@ -1,10 +1,11 @@
 function derivative(f, x::Union{Number,AbstractArray{<:Number}},
                     integrator)
     local d
+    alg = unwrap_alg(integrator, true)
     if get_current_alg_autodiff(integrator.alg, integrator.cache)
       d = ForwardDiff.derivative(f, x)
     else
-      d = DiffEqDiffTools.finite_difference_gradient(f, x)
+      d = DiffEqDiffTools.finite_difference_gradient(f, x, alg.diff_type, eltype(x), Val{false})
     end
     d
 end
@@ -22,6 +23,7 @@ end
 function jacobian(f, x,
                   integrator::DiffEqBase.DEIntegrator)
     local J
+    alg = unwrap_alg(integrator, true)
     isarray = typeof(x) <: AbstractArray
     if get_current_alg_autodiff(integrator.alg, integrator.cache)
       if isarray
@@ -31,9 +33,9 @@ function jacobian(f, x,
       end
     else
       if isarray
-        J = DiffEqDiffTools.finite_difference_jacobian(f, x)
+        J = DiffEqDiffTools.finite_difference_jacobian(f, x, alg.diff_type, eltype(x), Val{false})
       else
-        J = DiffEqDiffTools.finite_difference_derivative(f, x)
+        J = DiffEqDiffTools.finite_difference_derivative(f, x, alg.diff_type, eltype(x), Val{false})
       end
     end
     J
