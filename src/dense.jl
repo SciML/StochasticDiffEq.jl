@@ -134,7 +134,7 @@ sde_interpolation(tvals,ts,timeseries,ks)
 Get the value at tvals where the solution is known at the
 times ts (sorted), with values timeseries and derivatives ks
 """
-@inline function sde_interpolation(tvals,id,idxs,deriv,p)
+@inline function sde_interpolation(tvals,id,idxs,deriv,p,continuity)
   @unpack ts,timeseries = id
   tdir = sign(ts[end]-ts[1])
   idx = sortperm(tvals,rev=tdir<0)
@@ -152,10 +152,11 @@ times ts (sorted), with values timeseries and derivatives ks
     t = tvals[j]
     i = searchsortedfirst(@view(ts[i:end]),t,rev=tdir<0)+i-1 # It's in the interval ts[i-1] to ts[i]
     if ts[i] == t
+      k = continuity == :right && ts[i+1] == t ? i+1 : i
       if idxs == nothing
-        vals[j] = timeseries[i]
+        vals[j] = timeseries[k]
       else
-        vals[j] = timeseries[i][idxs]
+        vals[j] = timeseries[k][idxs]
       end
     elseif ts[i-1] == t # Can happen if it's the first value!
       if idxs == nothing
@@ -178,17 +179,18 @@ sde_interpolation(tval::Number,ts,timeseries,ks)
 Get the value at tval where the solution is known at the
 times ts (sorted), with values timeseries and derivatives ks
 """
-@inline function sde_interpolation(tval::Number,id,idxs,deriv,p)
+@inline function sde_interpolation(tval::Number,id,idxs,deriv,p,continuity)
   @unpack ts,timeseries = id
   tdir = sign(ts[end]-ts[1])
   tdir*tval > tdir*ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
   tdir*tval < tdir*ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
   @inbounds i = searchsortedfirst(ts,tval,rev=tdir<0) # It's in the interval ts[i-1] to ts[i]
   @inbounds if ts[i] == tval
+    k = continuity == :right && ts[i+1] == tval ? i+1 : i
     if idxs == nothing
-      val = timeseries[i]
+      val = timeseries[k]
     else
-      val = timeseries[i][idxs]
+      val = timeseries[k][idxs]
     end
   elseif ts[i-1] == tval # Can happen if it's the first value!
     if idxs == nothing
@@ -204,17 +206,18 @@ times ts (sorted), with values timeseries and derivatives ks
   val
 end
 
-@inline function sde_interpolation!(out,tval::Number,id,idxs,deriv,p)
+@inline function sde_interpolation!(out,tval::Number,id,idxs,deriv,p,continuity)
   @unpack ts,timeseries = id
   tdir = sign(ts[end]-ts[1])
   tdir*tval > tdir*ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
   tdir*tval < tdir*ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
   @inbounds i = searchsortedfirst(ts,tval,rev=tdir<0) # It's in the interval ts[i-1] to ts[i]
   @inbounds if ts[i] == tval
+    k = continuity == :right && ts[i+1] == tval ? i+1 : i
     if idxs == nothing
-      copyto!(out,timeseries[i])
+      copyto!(out,timeseries[k])
     else
-      copyto!(out,timeseries[i][idxs])
+      copyto!(out,timeseries[k][idxs])
     end
   elseif ts[i-1] == tval # Can happen if it's the first value!
     if idxs == nothing
@@ -229,7 +232,7 @@ end
   end
 end
 
-@inline function sde_interpolation!(vals,tvals,id,idxs,deriv,p)
+@inline function sde_interpolation!(vals,tvals,id,idxs,deriv,p,continuity)
   @unpack ts,timeseries = id
   tdir = sign(ts[end]-ts[1])
   idx = sortperm(tvals,rev=tdir<0)
@@ -240,10 +243,11 @@ end
     t = tvals[j]
     i = searchsortedfirst(@view(ts[i:end]),t,rev=tdir<0)+i-1 # It's in the interval ts[i-1] to ts[i]
     if ts[i] == t
+      k = continuity == :right && ts[i+1] == t ? i+1 : i
       if idxs == nothing
-        vals[j] = timeseries[i]
+        vals[j] = timeseries[k]
       else
-        vals[j] = timeseries[i][idxs]
+        vals[j] = timeseries[k][idxs]
       end
     elseif ts[i-1] == t # Can happen if it's the first value!
       if idxs == nothing
