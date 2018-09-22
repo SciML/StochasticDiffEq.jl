@@ -13,8 +13,8 @@ struct RODECompositeSolution{T,N,uType,uType2,EType,tType,randType,P,A,IType} <:
   retcode::Symbol
   seed::UInt64
 end
-(sol::RODECompositeSolution)(t,deriv::Type=Val{0};idxs=nothing) = sol.interp(t,idxs,deriv,sol.prob.p)
-(sol::RODECompositeSolution)(v,t,deriv::Type=Val{0};idxs=nothing) = sol.interp(v,t,idxs,deriv,sol.prob.p)
+(sol::RODECompositeSolution)(t,deriv::Type=Val{0};idxs=nothing,continuity=:left) = sol.interp(t,idxs,deriv,sol.prob.p,continuity)
+(sol::RODECompositeSolution)(v,t,deriv::Type=Val{0};idxs=nothing,continuity=:left) = sol.interp(v,t,idxs,deriv,sol.prob.p,continuity)
 
 function build_solution(
         prob::AbstractRODEProblem,
