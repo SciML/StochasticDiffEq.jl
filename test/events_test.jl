@@ -27,6 +27,13 @@ sol = solve(prob,SRIW1(),callback=callback,adaptive=false,dt=3/4)
 
 @test minimum(sol[1,:]) > -1e-12 && minimum(sol[1,:]) < 1e-12
 
+sol = solve(prob,SRIW1(),callback=callback,save_everystep=false)
+t = sol.t[end÷2] # this is the callback time point
+sol = solve(prob,SRIW1(),callback=callback,saveat=t)
+@test count(x->x==t, sol.t) == 2
+sol = solve(prob,SRIW1(),callback=callback,saveat=t-eps(t))
+@test count(x->x==t, sol.t) == 2
+
 function g(du,u,p,t)
   du[2] = .125*u[2]
 end
