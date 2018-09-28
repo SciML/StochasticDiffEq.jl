@@ -3,7 +3,7 @@ using StochasticDiffEq, LinearAlgebra, SparseArrays, Random, Test, DiffEqOperato
 
 @testset "Derivative Utilities" begin
   @testset "WOperator" begin
-    srand(0); y = zeros(2); b = rand(2)
+    Random.seed!(0); y = zeros(2); b = rand(2)
     mm = I; _J = rand(2,2)
     W = WOperator(mm, 1.0, DiffEqArrayOperator(_J))
     set_gamma!(W, 2.0)
@@ -58,11 +58,11 @@ using StochasticDiffEq, LinearAlgebra, SparseArrays, Random, Test, DiffEqOperato
 
     for Alg in [ImplicitEM, ISSEM]
       println(Alg)
-      srand(0); sol1 = solve(prob1, Alg(theta=1); adaptive=false, dt=0.01)
-      srand(0); sol2 = solve(prob2, Alg(theta=1); adaptive=false, dt=0.01)
+      Random.seed!(0); sol1 = solve(prob1, Alg(theta=1); adaptive=false, dt=0.01)
+      Random.seed!(0); sol2 = solve(prob2, Alg(theta=1); adaptive=false, dt=0.01)
       @test sol1(1.0) ≈ sol2(1.0)
-      srand(0); sol1_ip = solve(prob1_ip, Alg(theta=1); adaptive=false, dt=0.01)
-      srand(0); sol2_ip = solve(prob2_ip, Alg(theta=1,linsolve=LinSolveFactorize(lu)); adaptive=false, dt=0.01)
+      Random.seed!(0); sol1_ip = solve(prob1_ip, Alg(theta=1); adaptive=false, dt=0.01)
+      Random.seed!(0); sol2_ip = solve(prob2_ip, Alg(theta=1,linsolve=LinSolveFactorize(lu)); adaptive=false, dt=0.01)
       @test sol1_ip(1.0) ≈ sol2_ip(1.0)
     end
 
@@ -74,11 +74,11 @@ using StochasticDiffEq, LinearAlgebra, SparseArrays, Random, Test, DiffEqOperato
     prob2_ip = SDEProblem(SDEFunction(_f_ip, _g_ip; jac_prototype=jac_prototype), _g_ip, u0, tspan)
 
     println(SKenCarp)
-    srand(0); sol1 = solve(prob1, SKenCarp(); adaptive=false, dt=0.01)
-    srand(0); sol2 = solve(prob2, SKenCarp(); adaptive=false, dt=0.01)
+    Random.seed!(0); sol1 = solve(prob1, SKenCarp(); adaptive=false, dt=0.01)
+    Random.seed!(0); sol2 = solve(prob2, SKenCarp(); adaptive=false, dt=0.01)
     @test sol1(1.0) ≈ sol2(1.0)
-    srand(0); sol1_ip = solve(prob1_ip, SKenCarp(); adaptive=false, dt=0.01)
-    srand(0); sol2_ip = solve(prob2_ip, SKenCarp(linsolve=LinSolveFactorize(lu)); adaptive=false, dt=0.01)
+    Random.seed!(0); sol1_ip = solve(prob1_ip, SKenCarp(); adaptive=false, dt=0.01)
+    Random.seed!(0); sol2_ip = solve(prob2_ip, SKenCarp(linsolve=LinSolveFactorize(lu)); adaptive=false, dt=0.01)
     @test sol1_ip(1.0) ≈ sol2_ip(1.0)
   end
 end
