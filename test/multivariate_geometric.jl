@@ -1,4 +1,4 @@
-using DiffEqBase, StochasticDiffEq, DiffEqDevTools, Test, LinearAlgebra
+using DiffEqBase, StochasticDiffEq, DiffEqDevTools, Test, LinearAlgebra, Random
 
 u0 = ones(2)
 A = [-3/2 1/20
@@ -26,8 +26,10 @@ sol2 = solve(prob2,EM(),dt=1/100)
 
 dts = 1 ./ 2 .^ (14:-1:7) #14->7 good plot
 
-sim  = test_convergence(dts,prob2,EM(),numMonte=Int(5e1))
-@test_broken abs(sim.𝒪est[:l2]-0.5) < 0.1
+println("First Test")
+Random.seed!(100)
+sim  = test_convergence(dts,prob2,EM(),numMonte=100)
+@test abs(sim.𝒪est[:l2]-0.5) < 0.1
 
 # using Plots; plot(sim)
 
@@ -57,7 +59,9 @@ sol2 = solve(prob2,EM(),dt=1/100)
 
 dts = 1 ./ 2 .^ (17:-1:10) #14->7 good plot
 
-sim  = test_convergence(dts,prob2,EM(),numMonte=Int(5e1))
+println("Second Test")
+Random.seed!(100)
+sim  = test_convergence(dts,prob2,EM(),numMonte=50)
 @test_broken abs(sim.𝒪est[:l2]-0.5) < 0.1
 
 # using Plots; plot(sim)
