@@ -61,7 +61,7 @@ dts = 1 ./ 2 .^ (17:-1:10) #14->7 good plot
 
 println("Second Test")
 Random.seed!(100)
-sim  = test_convergence(dts,prob2,EM(),numMonte=50)
+sim  = test_convergence(dts,prob2,EM(),numMonte=100)
 @test_broken abs(sim.𝒪est[:l2]-0.5) < 0.1
 
 # using Plots; plot(sim)
