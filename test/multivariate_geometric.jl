@@ -22,9 +22,8 @@ end
 prob2 = SDEProblem(f,σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
 
 sol2 = solve(prob2,EM(),dt=1/100)
-# using Plots; plot(sol2,plot_analytic=true)
 
-dts = 1 ./ 2 .^ (14:-1:7) #14->7 good plot
+dts = 1 ./ 2 .^ (14:-1:7)
 
 println("First Test")
 Random.seed!(100)
@@ -55,13 +54,13 @@ end
 prob2 = SDEProblem(f,σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
 
 sol2 = solve(prob2,EM(),dt=1/100)
-# using Plots; plot(sol2,plot_analytic=true)
 
-dts = 1 ./ 2 .^ (17:-1:10) #14->7 good plot
+dts = 1 ./ 2 .^ (14:-1:7)
 
 println("Second Test")
 Random.seed!(100)
-sim  = test_convergence(dts,prob2,EM(),numMonte=100)
-@test_broken abs(sim.𝒪est[:l2]-0.5) < 0.1
+sim  = test_convergence(dts,prob2,EM(),numMonte=50)
+# Superconvergence
+@test abs(sim.𝒪est[:l2]-1.0) < 0.1
 
 # using Plots; plot(sim)
