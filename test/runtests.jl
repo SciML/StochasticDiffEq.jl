@@ -55,6 +55,6 @@ is_APPVEYOR = ( Sys.iswindows() && haskey(ENV,"APPVEYOR") )
     @time @testset "IIF Convergence Tests" begin include("iif_methods.jl") end
     LONGER_TESTS && @time @testset "Weak Convergence Tests" begin include("weak_convergence.jl") end
     @time @testset "Cummutative Noise Methods Tests" begin include("commutative_tests.jl") end
-    LONGER_TESTS && @time @testset "Multivariate Geometric Tests" begin include("multivariate_geometric.jl") end
+    @time @testset "Multivariate Geometric Tests" begin include("multivariate_geometric.jl") end
   end
 end
