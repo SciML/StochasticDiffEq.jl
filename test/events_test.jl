@@ -17,6 +17,7 @@ function affect_neg!(integrator)
   integrator.u[2] = -integrator.u[2]
 end
 
+# Continuous callback
 callback = ContinuousCallback(condtion,affect!,affect_neg!)
 
 u0 = [50.0,0.0]
@@ -43,3 +44,16 @@ prob = SDEProblem(f,g,u0,tspan)
 sol = solve(prob,SRIW1(),callback=callback)
 
 sol = solve(prob,EM(),callback=callback,dt=1/4)
+
+# Discrete callback
+tstop = [5.;8.]
+condition = (u,t,integrator) -> t in tstop
+affect! = (integrator) -> integrator.u .= 1.0
+save_positions = (true,true)
+callback = DiscreteCallback(condition, affect!, save_positions=save_positions)
+sol = solve(prob, SRIW1(), callback=callback, tstops=tstop, saveat=tstop)
+@test count(x->x==tstop[1], sol.t) == 2
+@test count(x->x==tstop[2], sol.t) == 2
+sol = solve(prob, SRIW1(), callback=callback, tstops=tstop, saveat=prevfloat.(tstop))
+@test count(x->x==tstop[1], sol.t) == 2
+@test count(x->x==tstop[2], sol.t) == 2
