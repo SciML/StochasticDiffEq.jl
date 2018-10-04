@@ -29,3 +29,9 @@ Random.seed!(200)
 sol2= solve(prob2,EM(),dt=1//2^(4),saveat = 0.33,save_start=false,save_everystep=true,save_idxs=1:2:5)
 
 @test sol(0.43)[1:2:5] == sol2(0.43)
+
+# Test save_on switch
+sol = solve(prob2, EM(), dt=1//2^(4), save_on=false, save_start=false, save_end=false)
+@test isempty(sol.t) && isempty(sol.u)
+sol = solve(prob2, EM(), dt=1//2^(4), saveat=0.33, save_on=false, save_start=false, save_end=false)
+@test isempty(sol.t) && isempty(sol.u)

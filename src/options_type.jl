@@ -32,6 +32,7 @@ mutable struct SDEOptions{tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsType,ECType,ST
   delta::D
   qoldinit::tTypeNoUnits
   dense::Bool
+  save_on::Bool
   save_start::Bool
   save_end::Bool
   save_noise::Bool

@@ -20,6 +20,7 @@ function __init(
   save_noise = save_everystep && typeof(prob.f) <: Tuple ?
                has_analytic(prob.f[1]) : has_analytic(prob.f),
   save_idxs = nothing,
+  save_on = true,
   save_start = save_everystep || isempty(saveat) || typeof(saveat) <: Number ? true : prob.tspan[1] in saveat,
   save_end = save_everystep || isempty(saveat) || typeof(saveat) <: Number ? true : prob.tspan[2] in saveat,
   dense = save_everystep && isempty(saveat),
@@ -199,7 +200,7 @@ function __init(
     progress_name,progress_message,
     timeseries_errors,dense_errors,
     tTypeNoUnits(beta1),tTypeNoUnits(beta2),map(uBottomEltypeNoUnits,delta),tTypeNoUnits(qoldinit),
-    dense,save_start,save_end,save_noise,
+    dense,save_on,save_start,save_end,save_noise,
     callbacks_internal,isoutofdomain,unstable_check,verbose,calck,force_dtmin,
     advance_to_tstop,stop_at_next_tstop)
 
