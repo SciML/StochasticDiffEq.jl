@@ -197,11 +197,11 @@ function apply_callback!(integrator,callback::ContinuousCallback,cb_time,prev_si
   end
 
   # handle saveat
-  savevalues!(integrator)
+  _, saved_in_saveat = savevalues!(integrator)
 
   if callback.save_positions[1]
     # if already saved then skip saving
-    last(integrator.sol.t) == integrator.t || savevalues!(integrator,true)
+    saved_in_saveat || savevalues!(integrator,true)
     saved_in_cb = true
   end
 
@@ -237,10 +237,10 @@ function apply_discrete_callback!(integrator::SDEIntegrator,callback::DiscreteCa
   saved_in_cb = false
   if callback.condition(integrator.u,integrator.t,integrator)
     # handle saveat
-    savevalues!(integrator)
+    _, saved_in_saveat = savevalues!(integrator)
     if callback.save_positions[1]
       # if already saved then skip saving
-      last(integrator.sol.t) == integrator.t || savevalues!(integrator,true)
+      saved_in_saveat || savevalues!(integrator,true)
       saved_in_cb = true
     end
     integrator.u_modified = true
