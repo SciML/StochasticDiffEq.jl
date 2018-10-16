@@ -145,3 +145,6 @@ function alg_cache(alg::RKMilCommute,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
   Kj = zero(u); Dgj = zero(noise_rate_prototype)
   RKMilCommuteCache(u,uprev,du1,du2,K,gtmp,L,I,Dg,mil_correction,Kj,Dgj,tmp)
 end
+
+DiffEqBase.ismutablecache(::StochasticDiffEqMutableCache) = true
+DiffEqBase.ismutablecache(::StochasticDiffEqCache) = false
