@@ -357,5 +357,3 @@ function DiffEqBase.set_u!(integrator::SDEIntegrator, u)
   integrator.u = u
   u_modified!(integrator, true)
 end
-
-DiffEqBase.isnative(integrator::SDEIntegrator) = true
