@@ -65,7 +65,6 @@ module StochasticDiffEq
   include("caches/predcorr_caches.jl")
   include("integrators/type.jl")
   include("dense.jl")
-  include("callbacks.jl")
   include("alg_utils.jl")
   include("integrators/integrator_utils.jl")
   include("integrators/integrator_interface.jl")
