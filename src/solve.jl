@@ -296,6 +296,7 @@ function __init(
   last_stepfail = false
   force_stepfail = false
   event_last_time = 0
+  last_event_error = zero(uBottomEltype)
   tprev = t
   iter = 0
   success_iter = 0
@@ -335,9 +336,9 @@ function __init(
   integrator =    SDEIntegrator{typeof(alg),uType,uBottomEltype,_tType,typeof(p),
                   typeof(eigen_est),tTypeNoUnits,
                   uEltypeNoUnits,typeof(W),rateType,typeof(sol),typeof(cache),
-                  FType,GType,typeof(opts),typeof(noise)}(
+                  FType,GType,typeof(opts),typeof(noise),typeof(last_event_error)}(
                   f,g,noise,uprev,tprev,t,u,p,_tType(dt),_tType(dt),_tType(dt),dtcache,T,tdir,
-                  just_hit_tstop,isout,event_last_time,accept_step,
+                  just_hit_tstop,isout,event_last_time,last_event_error,accept_step,
                   last_stepfail,force_stepfail,
                   dtchangeable,u_modified,
                   saveiter,

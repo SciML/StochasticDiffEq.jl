@@ -1,4 +1,4 @@
-mutable struct SDEIntegrator{T1,uType,uEltype,tType,P,eigenType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,cacheType,F4,F5,OType,noiseType} <: AbstractSDEIntegrator
+mutable struct SDEIntegrator{T1,uType,uEltype,tType,P,eigenType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,cacheType,F4,F5,OType,noiseType,EventErrorType} <: AbstractSDEIntegrator
   f::F4
   g::F5
   noise::noiseType
@@ -16,6 +16,7 @@ mutable struct SDEIntegrator{T1,uType,uEltype,tType,P,eigenType,tTypeNoUnits,uEl
   just_hit_tstop::Bool
   isout::Bool
   event_last_time::Int
+  last_event_error::EventErrorType
   accept_step::Bool
   last_stepfail::Bool
   force_stepfail::Bool
