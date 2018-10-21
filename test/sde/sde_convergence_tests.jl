@@ -11,7 +11,7 @@ println("prob_sde_wave")
 prob = prob_sde_wave
 sim  = test_convergence(dts,prob,ImplicitEM(),numMonte=Int(1e1))
 @test abs(sim.𝒪est[:l2]-.5) < 0.2
-sim  = test_convergence(dts,prob,ImplicitEM(nlsolve=NLFunctional()),numMonte=Int(1e1))
+sim  = test_convergence(dts,prob,ImplicitEM(nlsolve=StochasticDiffEq.NLFunctional()),numMonte=Int(1e1))
 @test abs(sim.𝒪est[:l2]-.5) < 0.2
 sim  = test_convergence(dts,prob,ImplicitRKMil(),numMonte=Int(1e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.2
@@ -19,7 +19,7 @@ sim  = test_convergence(dts,prob,EM(),numMonte=Int(1e2))
 @test abs(sim.𝒪est[:l2]-.5) < 0.2
 sim  = test_convergence(dts,prob,ISSEM(),numMonte=Int(1e2))
 @test abs(sim.𝒪est[:l2]-.5) < 0.2
-sim  = test_convergence(dts,prob,ISSEM(nlsolve=NLFunctional()),numMonte=Int(1e2))
+sim  = test_convergence(dts,prob,ISSEM(nlsolve=StochasticDiffEq.NLFunctional()),numMonte=Int(1e2))
 @test abs(sim.𝒪est[:l2]-.5) < 0.2
 sim  = test_convergence(dts,prob,LambaEM(),numMonte=Int(1e2))
 @test abs(sim.𝒪est[:l2]-.5) < 0.2
@@ -100,9 +100,9 @@ sim9 = test_convergence(dts,prob,SOSRA2(),numMonte=Int(1e1))
 dts = (1/2) .^ (10:-1:4) #14->7 good plot
 sim10 = test_convergence(dts,prob,SKenCarp(),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-2) < 0.3
-sim10 = test_convergence(dts,prob,SKenCarp(nlsolve=NLFunctional()),numMonte=Int(1e1))
+sim10 = test_convergence(dts,prob,SKenCarp(nlsolve=StochasticDiffEq.NLFunctional()),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-2) < 0.3
-sim11 = test_convergence(dts,prob,SKenCarp(nlsolve=NLNewton(min_iter=3)),numMonte=Int(1e1))
+sim11 = test_convergence(dts,prob,SKenCarp(nlsolve=StochasticDiffEq.NLNewton(min_iter=3)),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-2) < 0.3
 
 sim2 = test_convergence(dts,prob,SRA(tableau=StochasticDiffEq.constructSRA2()),numMonte=Int(1e1))
