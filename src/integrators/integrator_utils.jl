@@ -68,46 +68,48 @@ last_step_failed(integrator::SDEIntegrator) =
   end
 end
 
-@inline function savevalues!(integrator::SDEIntegrator,force_save=false)
-  if integrator.opts.save_on
-    while !isempty(integrator.opts.saveat) && integrator.tdir*top(integrator.opts.saveat) <= integrator.tdir*integrator.t # Perform saveat
-      integrator.saveiter += 1
-      curt = pop!(integrator.opts.saveat)
-      if integrator.opts.saveat!=integrator.t # If <t, interpolate
-        Θ = (curt - integrator.tprev)/integrator.dt
-        val = sde_interpolant(Θ,integrator,integrator.opts.save_idxs,Val{0}) # out of place, but force copy later
-        save_val = val
-        copyat_or_push!(integrator.sol.t,integrator.saveiter,curt)
-        copyat_or_push!(integrator.sol.u,integrator.saveiter,save_val,Val{false})
-        if typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm
-          copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
-        end
-      else # ==t, just save
-        copyat_or_push!(integrator.sol.t,integrator.saveiter,integrator.t)
-        if integrator.opts.save_idxs == nothing
-          copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u)
-        else
-          copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})
-        end
-        if typeof(alg) <: Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}
-          copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
-        end
+@inline function savevalues!(integrator::SDEIntegrator,force_save=false)::Tuple{Bool,Bool}
+  saved, savedexactly = false, false
+  !integrator.opts.save_on && return saved, savedexactly
+  while !isempty(integrator.opts.saveat) && integrator.tdir*top(integrator.opts.saveat) <= integrator.tdir*integrator.t # Perform saveat
+    integrator.saveiter += 1; saved = true
+    curt = pop!(integrator.opts.saveat)
+    if integrator.opts.saveat!=integrator.t # If <t, interpolate
+      Θ = (curt - integrator.tprev)/integrator.dt
+      val = sde_interpolant(Θ,integrator,integrator.opts.save_idxs,Val{0}) # out of place, but force copy later
+      save_val = val
+      copyat_or_push!(integrator.sol.t,integrator.saveiter,curt)
+      copyat_or_push!(integrator.sol.u,integrator.saveiter,save_val,Val{false})
+      if typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm
+        copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
       end
-    end
-    if force_save || (integrator.opts.save_everystep &&
-      integrator.iter%integrator.opts.timeseries_steps==0)
-      integrator.saveiter += 1
+    else # ==t, just save
+      savedexactly = true
+      copyat_or_push!(integrator.sol.t,integrator.saveiter,integrator.t)
       if integrator.opts.save_idxs == nothing
         copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u)
       else
         copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})
       end
-      copyat_or_push!(integrator.sol.t,integrator.saveiter,integrator.t)
-      if typeof(integrator.alg) <: Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}
+      if typeof(alg) <: Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}
         copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
       end
     end
   end
+  if force_save || (integrator.opts.save_everystep &&
+    integrator.iter%integrator.opts.timeseries_steps==0)
+    integrator.saveiter += 1; saved, savedexactly = true, true
+    if integrator.opts.save_idxs == nothing
+      copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u)
+    else
+      copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})
+    end
+    copyat_or_push!(integrator.sol.t,integrator.saveiter,integrator.t)
+    if typeof(integrator.alg) <: Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}
+      copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
+    end
+  end
+  return saved, savedexactly
 end
 
 @inline function loopfooter!(integrator::SDEIntegrator)
