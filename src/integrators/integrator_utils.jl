@@ -74,7 +74,7 @@ end
   while !isempty(integrator.opts.saveat) && integrator.tdir*top(integrator.opts.saveat) <= integrator.tdir*integrator.t # Perform saveat
     integrator.saveiter += 1; saved = true
     curt = pop!(integrator.opts.saveat)
-    if integrator.opts.saveat!=integrator.t # If <t, interpolate
+    if curt!=integrator.t # If <t, interpolate
       Θ = (curt - integrator.tprev)/integrator.dt
       val = sde_interpolant(Θ,integrator,integrator.opts.save_idxs,Val{0}) # out of place, but force copy later
       save_val = val
@@ -91,7 +91,7 @@ end
       else
         copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})
       end
-      if typeof(alg) <: Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}
+      if typeof(integrator.alg) <: Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}
         copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
       end
     end
