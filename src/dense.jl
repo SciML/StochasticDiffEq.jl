@@ -152,7 +152,8 @@ times ts (sorted), with values timeseries and derivatives ks
     t = tvals[j]
     i = searchsortedfirst(@view(ts[i:end]),t,rev=tdir<0)+i-1 # It's in the interval ts[i-1] to ts[i]
     if ts[i] == t
-      k = continuity == :right && ts[i+1] == t ? i+1 : i
+      lasti = lastindex(ts)
+      k = continuity == :right && i+1 <= lasti && ts[i+1] == t ? i+1 : i
       if idxs == nothing
         vals[j] = timeseries[k]
       else
@@ -186,7 +187,8 @@ times ts (sorted), with values timeseries and derivatives ks
   tdir*tval < tdir*ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
   @inbounds i = searchsortedfirst(ts,tval,rev=tdir<0) # It's in the interval ts[i-1] to ts[i]
   @inbounds if ts[i] == tval
-    k = continuity == :right && ts[i+1] == tval ? i+1 : i
+    lasti = lastindex(ts)
+    k = continuity == :right && i+1 <= lasti && ts[i+1] == tval ? i+1 : i
     if idxs == nothing
       val = timeseries[k]
     else
@@ -213,7 +215,8 @@ end
   tdir*tval < tdir*ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
   @inbounds i = searchsortedfirst(ts,tval,rev=tdir<0) # It's in the interval ts[i-1] to ts[i]
   @inbounds if ts[i] == tval
-    k = continuity == :right && ts[i+1] == tval ? i+1 : i
+    lasti = lastindex(ts)
+    k = continuity == :right && i+1 <= lasti && ts[i+1] == tval ? i+1 : i
     if idxs == nothing
       copyto!(out,timeseries[k])
     else
@@ -243,7 +246,8 @@ end
     t = tvals[j]
     i = searchsortedfirst(@view(ts[i:end]),t,rev=tdir<0)+i-1 # It's in the interval ts[i-1] to ts[i]
     if ts[i] == t
-      k = continuity == :right && ts[i+1] == t ? i+1 : i
+      lasti = lastindex(ts)
+      k = continuity == :right && i+1 <= lasti && ts[i+1] == t ? i+1 : i
       if idxs == nothing
         vals[j] = timeseries[k]
       else
