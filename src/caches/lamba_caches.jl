@@ -1,5 +1,5 @@
 struct LambaEMConstantCache <: StochasticDiffEqConstantCache end
-struct LambaEMCache{uType,rateType,rateNoiseType,dWType} <: StochasticDiffEqMutableCache
+@cache struct LambaEMCache{uType,rateType,rateNoiseType,randType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   du1::rateType
@@ -8,11 +8,8 @@ struct LambaEMCache{uType,rateType,rateNoiseType,dWType} <: StochasticDiffEqMuta
   tmp::uType
   L::rateNoiseType
   gtmp::rateNoiseType
-  dW_cache::dWType
+  dW_cache::randType
 end
-
-u_cache(c::LambaEMCache) = ()
-du_cache(c::LambaEMCache) = (c.du1,c.du2,c.K,c.L)
 
 alg_cache(alg::LambaEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = LambaEMConstantCache()
 
@@ -30,7 +27,7 @@ function alg_cache(alg::LambaEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_proto
 end
 
 struct LambaEulerHeunConstantCache <: StochasticDiffEqConstantCache end
-struct LambaEulerHeunCache{uType,rateType,rateNoiseType,dWType} <: StochasticDiffEqMutableCache
+@cache struct LambaEulerHeunCache{uType,rateType,rateNoiseType,randType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   du1::rateType
@@ -39,11 +36,8 @@ struct LambaEulerHeunCache{uType,rateType,rateNoiseType,dWType} <: StochasticDif
   tmp::uType
   L::rateNoiseType
   gtmp::rateNoiseType
-  dW_cache::dWType
+  dW_cache::randType
 end
-
-u_cache(c::LambaEulerHeunCache) = ()
-du_cache(c::LambaEulerHeunCache) = (c.du1,c.du2,c.K,c.L)
 
 alg_cache(alg::LambaEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = LambaEulerHeunConstantCache()
 

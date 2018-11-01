@@ -75,7 +75,7 @@ DiffEqBase.@def oopnlcachefields begin
   _nlsolve = oop_nlsolver(alg.nlsolve)
 end
 
-mutable struct ImplicitEMCache{uType,rateType,J,W,JC,UF,N,noiseRateType,F,dWType} <: StochasticDiffEqMutableCache
+@cache mutable struct ImplicitEMCache{uType,rateType,JType,WType,JC,UF,N,noiseRateType,F,dWType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   du1::rateType
@@ -86,17 +86,14 @@ mutable struct ImplicitEMCache{uType,rateType,J,W,JC,UF,N,noiseRateType,F,dWType
   tmp::uType
   gtmp::noiseRateType
   gtmp2::rateType
-  J::J
-  W::W
+  J::JType
+  W::WType
   jac_config::JC
   linsolve::F
   uf::UF
   dW_cache::dWType
   nlsolve::N
 end
-
-u_cache(c::ImplicitEMCache)    = (c.uprev2,c.z,c.dz)
-du_cache(c::ImplicitEMCache)   = (c.k,c.fsalfirst)
 
 function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
@@ -128,7 +125,7 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_pr
   ImplicitEMConstantCache(uf,nlsolve)
 end
 
-mutable struct ImplicitEulerHeunCache{uType,rateType,J,W,JC,UF,N,noiseRateType,F,dWType} <: StochasticDiffEqMutableCache
+@cache mutable struct ImplicitEulerHeunCache{uType,rateType,JType,WType,JC,UF,N,noiseRateType,F,dWType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   du1::rateType
@@ -140,8 +137,8 @@ mutable struct ImplicitEulerHeunCache{uType,rateType,J,W,JC,UF,N,noiseRateType,F
   gtmp::noiseRateType
   gtmp2::rateType
   gtmp3::noiseRateType
-  J::J
-  W::W
+  J::JType
+  W::WType
   jac_config::JC
   linsolve::F
   uf::UF
@@ -183,7 +180,7 @@ function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_
   ImplicitEulerHeunConstantCache(uf,nlsolve)
 end
 
-mutable struct ImplicitRKMilCache{uType,rateType,J,W,JC,UF,N,noiseRateType,F} <: StochasticDiffEqMutableCache
+@cache mutable struct ImplicitRKMilCache{uType,rateType,JType,WType,JC,UF,N,noiseRateType,F} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   du1::rateType
@@ -195,16 +192,13 @@ mutable struct ImplicitRKMilCache{uType,rateType,J,W,JC,UF,N,noiseRateType,F} <:
   gtmp::noiseRateType
   gtmp2::noiseRateType
   gtmp3::noiseRateType
-  J::J
-  W::W
+  J::JType
+  W::WType
   jac_config::JC
   linsolve::F
   uf::UF
   nlsolve::N
 end
-
-u_cache(c::ImplicitRKMilCache)    = (c.uprev2,c.z,c.dz)
-du_cache(c::ImplicitRKMilCache)   = (c.k,c.fsalfirst)
 
 function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})

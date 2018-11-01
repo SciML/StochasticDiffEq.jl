@@ -1,5 +1,5 @@
-mutable struct ISSEMCache{uType,rateType,J,W,JC,UF,
-                          N,noiseRateType,F,dWType} <:
+@cache mutable struct ISSEMCache{uType,rateType,JType,WType,JC,UF,
+                          N,noiseRateType,F,randType} <:
                           StochasticDiffEqMutableCache
   u::uType
   uprev::uType
@@ -11,17 +11,14 @@ mutable struct ISSEMCache{uType,rateType,J,W,JC,UF,
   tmp::uType
   gtmp::noiseRateType
   gtmp2::rateType
-  J::J
-  W::W
+  J::JType
+  W::WType
   jac_config::JC
   linsolve::F
   uf::UF
   nlsolve::N
-  dW_cache::dWType
+  dW_cache::randType
 end
-
-u_cache(c::ISSEMCache)    = (c.uprev2,c.z,c.dz)
-du_cache(c::ISSEMCache)   = (c.k,c.fsalfirst)
 
 function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
@@ -52,8 +49,8 @@ function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototy
   ISSEMConstantCache(uf,nlsolve)
 end
 
-mutable struct ISSEulerHeunCache{uType,rateType,J,W,JC,UF,N,
-                                 noiseRateType,F,dWType} <:
+@cache mutable struct ISSEulerHeunCache{uType,rateType,JType,WType,JC,UF,N,
+                                 noiseRateType,F,randType} <:
                                  StochasticDiffEqMutableCache
   u::uType
   uprev::uType
@@ -66,17 +63,14 @@ mutable struct ISSEulerHeunCache{uType,rateType,J,W,JC,UF,N,
   gtmp::noiseRateType
   gtmp2::rateType
   gtmp3::noiseRateType
-  J::J
-  W::W
+  J::JType
+  W::WType
   jac_config::JC
   linsolve::F
   uf::UF
   nlsolve::N
-  dW_cache::dWType
+  dW_cache::randType
 end
-
-u_cache(c::ISSEulerHeunCache)    = (c.uprev2,c.z,c.dz)
-du_cache(c::ISSEulerHeunCache)   = (c.k,c.fsalfirst)
 
 function alg_cache(alg::ISSEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})

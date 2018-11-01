@@ -44,12 +44,12 @@ end
 
 #TODO: Bigger caches for most algorithms
 @inline DiffEqBase.get_tmp_cache(integrator::SDEIntegrator) = (integrator.cache.tmp,)
-user_cache(integrator::SDEIntegrator) = user_cache(integrator.cache)
-u_cache(integrator::SDEIntegrator) = u_cache(integrator.cache)
-du_cache(integrator::SDEIntegrator)= du_cache(integrator.cache)
-user_cache(c::StochasticDiffEqCache) = (c.u,c.uprev,c.tmp)
-full_cache(integrator::SDEIntegrator) = chain(user_cache(integrator),u_cache(integrator),du_cache(integrator.cache))
-default_non_user_cache(integrator::SDEIntegrator) = chain(u_cache(integrator),du_cache(integrator.cache))
+
+full_cache(integrator::SDEIntegrator) = full_cache(integrator.cache)
+ratenoise_cache(integrator::SDEIntegrator) = ratenoise_cache(integrator.cache)
+rand_cache(integrator::SDEIntegrator) = rand_cache(integrator.cache)
+jac_iter(integrator::SDEIntegrator) = jac_iter(integrator.cache)
+
 @inline function add_tstop!(integrator::SDEIntegrator,t)
   t < integrator.t && error("Tried to add a tstop that is behind the current time. This is strictly forbidden")
   push!(integrator.opts.tstops,t)
@@ -66,8 +66,12 @@ addat_non_user_cache!(integrator::SDEIntegrator,i) = addat_non_user_cache!(integ
 resize!(integrator::SDEIntegrator,i::Int) = resize!(integrator,integrator.cache,i)
 
 function resize!(integrator::SDEIntegrator,cache,i)
+  # This has to go first!
   resize_non_user_cache!(integrator,cache,i)
-  for c in user_cache(integrator)
+  for c in full_cache(integrator)
+    resize!(c,i)
+  end
+  for c in ratenoise_cache(integrator)
     resize!(c,i)
   end
 end
@@ -136,43 +140,49 @@ end
 
 function resize_non_user_cache!(integrator::SDEIntegrator,cache,i)
   bot_idx = length(integrator.u) + 1
-  resize_noise!(integrator,cache,bot_idx,i)
-  for c in default_non_user_cache(integrator)
-    resize!(c,i)
+  if DiffEqBase.is_diagonal_noise(integrator.sol.prob)
+    resize_noise!(integrator,cache,bot_idx,i)
+    for c in rand_cache(integrator)
+      resize!(c,i)
+    end
   end
 end
 
 function deleteat!(integrator::SDEIntegrator,idxs)
   deleteat_non_user_cache!(integrator,cache,idxs)
-  for c in user_cache(integrator)
+  for c in full_cache(integrator)
+    deleteat!(c,idxs)
+  end
+  for c in ratenoise_cache(integrator)
     deleteat!(c,idxs)
   end
 end
 
 function addat!(integrator::SDEIntegrator,idxs)
   addat_non_user_cache!(integrator,cache,idxs)
-  for c in user_cache(integrator)
+  for c in full_cache(integrator)
+    addat!(c,idxs)
+  end
+  for c in ratenoise_cache(integrator)
     addat!(c,idxs)
   end
 end
 
 function deleteat_non_user_cache!(integrator::SDEIntegrator,cache,idxs)
-  deleteat_noise!(integrator,cache,idxs)
-  i = length(integrator.u)
-  # Ordering doesn't matter in these caches
-  # So just resize
-  for c in default_non_user_cache(integrator)
-    resize!(c,i)
+  if DiffEqBase.is_diagonal_noise(integrator.sol.prob)
+    deleteat_noise!(integrator,cache,idxs)
+    for c in rand_cache(integrator)
+      deleteat!(c,idxs)
+    end
   end
 end
 
 function addat_non_user_cache!(integrator::SDEIntegrator,cache,idxs)
-  addat_noise!(integrator,cache,idxs)
-  i = length(integrator.u)
-  # Ordering doesn't matter in these caches
-  # So just resize
-  for c in default_non_user_cache(integrator)
-    resize!(c,i)
+  if DiffEqBase.is_diagonal_noise(integrator.sol.prob)
+    addat_noise!(integrator,cache,idxs)
+    for c in rand_cache(integrator)
+      addat!(c,idxs)
+    end
   end
 end
 

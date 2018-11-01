@@ -16,7 +16,7 @@ function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prot
   SKenCarpConstantCache(uf,nlsolve,tab)
 end
 
-mutable struct SKenCarpCache{uType,rateType,uNoUnitsType,J,W,UF,JC,N,Tab,F,kType,randType,rateNoiseType} <: StochasticDiffEqMutableCache
+@cache mutable struct SKenCarpCache{uType,rateType,uNoUnitsType,JType,WType,UF,JC,N,Tab,F,kType,randType,rateNoiseType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   du1::rateType
@@ -34,8 +34,8 @@ mutable struct SKenCarpCache{uType,rateType,uNoUnitsType,J,W,UF,JC,N,Tab,F,kType
   b::uType
   tmp::uType
   atmp::uNoUnitsType
-  J::J
-  W::W
+  J::JType
+  W::WType
   uf::UF
   jac_config::JC
   linsolve::F
