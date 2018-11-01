@@ -1,11 +1,10 @@
-
 struct IIF1MConstantCache{vecuType,rhsType,nl_rhsType} <: StochasticDiffEqConstantCache
   uhold::vecuType
   rhs::rhsType
   nl_rhs::nl_rhsType
 end
 
-struct IIF1MCache{uType,vecuType,DiffCacheType,rhsType,nl_rhsType,rateType,rateNoiseType,rateNoiseCollectionType,NoiseTmpType} <: StochasticDiffEqMutableCache
+@cache struct IIF1MCache{uType,vecuType,DiffCacheType,rhsType,nl_rhsType,rateType,rateNoiseType,rateNoiseCollectionType,NoiseTmpType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   uhold::vecuType
@@ -18,11 +17,6 @@ struct IIF1MCache{uType,vecuType,DiffCacheType,rhsType,nl_rhsType,rateType,rateN
   rtmp3::rateNoiseCollectionType
   noise_tmp::NoiseTmpType
 end
-
-u_cache(c::IIF1MCache)    = (c.uprev2,c.u_old)
-du_cache(c::IIF1MCache)   = (c.rtmp1,c.rtmp2,c.rtmp3,c.tmp)
-vecu_cache(c::IIF1MCache) = (c.uhold,)
-dual_cache(c::IIF1MCache) = (c.dual_cache,)
 
 function alg_cache(alg::IIF1M,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   uhold = Vector{typeof(u)}(undef, 1)
@@ -56,7 +50,7 @@ struct IIF2MConstantCache{vecuType,rhsType,nl_rhsType} <: StochasticDiffEqConsta
   nl_rhs::nl_rhsType
 end
 
-struct IIF2MCache{uType,vecuType,DiffCacheType,rhsType,nl_rhsType,rateType,rateNoiseType,rateNoiseCollectionType,NoiseTmpType} <: StochasticDiffEqMutableCache
+@cache struct IIF2MCache{uType,vecuType,DiffCacheType,rhsType,nl_rhsType,rateType,rateNoiseType,rateNoiseCollectionType,NoiseTmpType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   uhold::vecuType
@@ -69,11 +63,6 @@ struct IIF2MCache{uType,vecuType,DiffCacheType,rhsType,nl_rhsType,rateType,rateN
   rtmp3::rateNoiseCollectionType
   noise_tmp::NoiseTmpType
 end
-
-u_cache(c::IIF2MCache)    = (c.uprev2,c.u_old)
-du_cache(c::IIF2MCache)   = (c.rtmp1,c.rtmp2,c.rtmp3,c.tmp)
-vecu_cache(c::IIF2MCache) = (c.uhold,)
-dual_cache(c::IIF2MCache) = (c.dual_cache,)
 
 function alg_cache(alg::IIF2M,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   uhold = Vector{typeof(u)}(undef, 1)
@@ -106,7 +95,8 @@ struct IIF1MilConstantCache{vecuType,rhsType,nl_rhsType} <: StochasticDiffEqCons
   rhs::rhsType
   nl_rhs::nl_rhsType
 end
-struct IIF1MilCache{uType,vecuType,DiffCacheType,rhsType,nl_rhsType,rateType,rateNoiseType,rateNoiseCollectionType,NoiseTmpType} <: StochasticDiffEqMutableCache
+
+@cache struct IIF1MilCache{uType,vecuType,DiffCacheType,rhsType,nl_rhsType,rateType,rateNoiseType,rateNoiseCollectionType,NoiseTmpType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   uhold::vecuType
@@ -121,11 +111,6 @@ struct IIF1MilCache{uType,vecuType,DiffCacheType,rhsType,nl_rhsType,rateType,rat
   gtmp::rateNoiseType
   gtmp2::rateNoiseType
 end
-
-u_cache(c::IIF1MilCache)    = (c.uprev2,c.u_old)
-du_cache(c::IIF1MilCache)   = (c.rtmp1,c.rtmp2,c.rtmp3,c.tmp)
-vecu_cache(c::IIF1MilCache) = (c.uhold,)
-dual_cache(c::IIF1MilCache) = (c.dual_cache,)
 
 function alg_cache(alg::IIF1Mil,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   uhold = Vector{typeof(u)}(undef, 1)

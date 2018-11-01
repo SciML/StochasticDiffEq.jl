@@ -1,7 +1,7 @@
 struct SRA1ConstantCache <: StochasticDiffEqConstantCache end
 alg_cache(alg::SRA1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}}) = SRA1ConstantCache()
 
-struct SRA1Cache{randType,rateType,uType,rateNoiseType} <: StochasticDiffEqMutableCache
+@cache struct SRA1Cache{randType,rateType,uType,rateNoiseType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   chi2::randType
@@ -14,10 +14,6 @@ struct SRA1Cache{randType,rateType,uType,rateNoiseType} <: StochasticDiffEqMutab
   gpdt::rateNoiseType
   tmp::uType
 end
-
-u_cache(c::SRA1Cache) = ()
-du_cache(c::SRA1Cache) = (c.chi2,c.E₁,c.E₂,c.gt,c.k₁,c.k₂,c.gpdt)
-user_cache(c::SRA1Cache) = (c.u,c.uprev,c.tmp,c.tmp1)
 
 function alg_cache(alg::SRA1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   if typeof(ΔW) <: Union{SArray,Number}
@@ -65,13 +61,13 @@ function alg_cache(alg::SRA2,prob,u,ΔW,ΔZ,p,rate_prototype,
   SRA2ConstantCache(uBottomEltype)
 end
 
-struct SRA2Cache{uType,randType,tabType,NT,T} <: StochasticDiffEqMutableCache
+@cache struct SRA2Cache{uType,randType,tabType,rateNoiseType,T} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   chi2::randType
   tab::tabType
-  g1::NT
-  g2::NT
+  g1::rateNoiseType
+  g2::rateNoiseType
   k1::T
   k2::T
   E₁::T
@@ -211,14 +207,14 @@ function alg_cache(alg::SOSRA2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_protot
   SOSRA2ConstantCache(uBottomEltype)
 end
 
-struct ThreeStageSRACache{uType,randType,tabType,NT,T,GT} <: StochasticDiffEqMutableCache
+@cache struct ThreeStageSRACache{uType,randType,tabType,rateNoiseType,T,GT} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   chi2::randType
   tab::tabType
-  g1::NT
-  g2::NT
-  g3::NT
+  g1::rateNoiseType
+  g2::rateNoiseType
+  g3::rateNoiseType
   k1::T
   k2::T
   k3::T
@@ -320,7 +316,7 @@ function alg_cache(alg::SRA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype
   SRAConstantCache(alg.tableau,rate_prototype)
 end
 
-struct SRACache{uType,rateType,tabType,randType,rateNoiseType} <: StochasticDiffEqMutableCache
+@cache struct SRACache{uType,rateType,tabType,randType,rateNoiseType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   H0::Vector{uType}

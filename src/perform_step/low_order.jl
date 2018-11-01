@@ -20,7 +20,7 @@
 end
 
 @muladd function perform_step!(integrator,cache::EMCache,f=integrator.f)
-  @unpack rtmp1,rtmp2,rtmp3 = cache
+  @unpack rtmp1,rtmp2 = cache
   @unpack t,dt,uprev,u,W,p = integrator
   integrator.f(rtmp1,uprev,p,t)
 
@@ -35,12 +35,12 @@ end
   integrator.g(rtmp2,u,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
-    @. rtmp2 *= W.dW # rtmp2 === rtmp3
+    @. rtmp2 *= W.dW
+    @. u += rtmp2
   else
-    mul!(rtmp3,rtmp2,W.dW)
+    mul!(rtmp1,rtmp2,W.dW)
+    @. u += rtmp1
   end
-
-  @. u += rtmp3
 end
 
 @muladd function perform_step!(integrator,cache::EulerHeunConstantCache,f=integrator.f)

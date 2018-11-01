@@ -1,4 +1,4 @@
-using StochasticDiffEq, DiffEqBase
+using StochasticDiffEq, DiffEqBase, Random
 
 function f(du,u,p,t)
   for i in 1:length(u)
@@ -46,7 +46,6 @@ plot(p1,p2,layout=(2,1),size=(600,1000))
 Random.seed!(3)
 sol = solve(prob,EM(),callback=callback,dt=1/4)
 sol = solve(prob,RKMil(),callback=callback,dt=1/4)
-sol = solve(prob,SRI(),callback=callback)
 
 function g(du,u,p,t)
   for i in 1:length(u)
@@ -55,5 +54,4 @@ function g(du,u,p,t)
 end
 prob = SDEProblem(f,g,u0,tspan)
 
-sol = solve(prob,SRA(),callback=callback)
 sol = solve(prob,SRA1(),callback=callback)
