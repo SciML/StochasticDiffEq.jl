@@ -43,7 +43,17 @@ function set_proposed_dt!(integrator::SDEIntegrator,integrator2::SDEIntegrator)
 end
 
 #TODO: Bigger caches for most algorithms
-@inline DiffEqBase.get_tmp_cache(integrator::SDEIntegrator) = (integrator.cache.tmp,)
+@inline DiffEqBase.get_tmp_cache(integrator::SDEIntegrator) =
+  get_tmp_cache(integrator, integrator.alg, integrator.cache)
+# avoid method ambiguity
+for typ in (StochasticDiffEqAlgorithm,StochasticDiffEqNewtonAdaptiveAlgorithm)
+  @eval @inline DiffEqBase.get_tmp_cache(integrator::SDEIntegrator, alg::$typ, cache::StochasticDiffEqConstantCache) = nothing
+end
+@inline DiffEqBase.get_tmp_cache(integrator::SDEIntegrator, alg, cache) = (cache.tmp,)
+@inline DiffEqBase.get_tmp_cache(integrator::SDEIntegrator, alg::StochasticDiffEqNewtonAdaptiveAlgorithm, cache) =
+    (cache.tmp, cache.atmp)
+@inline DiffEqBase.get_tmp_cache(integrator::SDEIntegrator, alg::StochasticCompositeAlgorithm, cache) =
+    get_tmp_cache(integrator, alg.algs[1], cache.caches[1])
 
 full_cache(integrator::SDEIntegrator) = full_cache(integrator.cache)
 ratenoise_cache(integrator::SDEIntegrator) = ratenoise_cache(integrator.cache)
