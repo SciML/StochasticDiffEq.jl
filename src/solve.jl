@@ -157,7 +157,7 @@ function __init(
   end
   ts = convert(Vector{_tType},ts_init)
 
-  if !adaptive && save_everystep
+  if !adaptive && save_everystep && tspan[2]-tspan[1] != Inf
     dt == 0 ? steps = length(tstops) : steps = round(Int,(tspan[2]-tspan[1])/dt,RoundUp)
     sizehint!(timeseries,steps+1)
     sizehint!(ts,steps+1)
