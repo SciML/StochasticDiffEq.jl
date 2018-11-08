@@ -404,6 +404,11 @@ function solve!(integrator::SDEIntegrator)
   if has_analytic(f)
     DiffEqBase.calculate_solution_errors!(integrator.sol;timeseries_errors=integrator.opts.timeseries_errors,dense_errors=integrator.opts.dense_errors)
   end
+
+  if integrator.sol.retcode != :Default
+    return integrator.sol
+  end
+  
   integrator.sol = DiffEqBase.solution_new_retcode(integrator.sol,:Success)
   nothing
 end
