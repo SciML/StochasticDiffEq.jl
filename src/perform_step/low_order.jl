@@ -120,12 +120,12 @@ end
     ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
     mil_correction = ggprime.*(W.dW.^2)./2
   end
-  u = K+L*W.dW+mil_correction
+  u = K+L.*W.dW+mil_correction
   if integrator.opts.adaptive
     du2 = integrator.f(K,p,t+dt)
     Ed = dt*(du2 - du1)/2
-    En = W.dW^3 .* ((du2-L)/(integrator.sqdt))^2 / 6
-    integrator.EEst = integrator.opts.internalnorm((Ed + En)/((integrator.opts.abstol + max.(abs(uprev),abs(u))*integrator.opts.reltol)))
+    En = W.dW.^3 .* ((du2-L)/(integrator.sqdt)).^2 / 6
+    integrator.EEst = integrator.opts.internalnorm((Ed + En)/((integrator.opts.abstol .+ max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol)))
   end
   integrator.u = u
 end

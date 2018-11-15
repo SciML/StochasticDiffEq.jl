@@ -169,25 +169,25 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack a21,a31,a32,b21,b31,b32,c02,c03,c11,c12,c13,α1,α2,α3,beta11,beta12,beta13,beta21,beta22,beta23 = cache
 
-  chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
+  chi2 = .5*(W.dW .+ W.dZ/sqrt(3)) #I_(1,0)/h
 
   g1 = integrator.g(uprev,p,t+c11*dt)
   k1 = integrator.f(uprev,p,t)
 
-  H01 = uprev + dt*a21*k1 + chi2*b21*g1
+  H01 = uprev + dt*a21*k1 + b21*chi2.*g1
 
   g2 = integrator.g(H01,p,t+c12*dt)
   k2 = integrator.f(H01,p,t+c02*dt)
 
-  H02 = uprev + dt*(a31*k1 + a32*k2) + chi2*(b31*g1 + b32*g2)
+  H02 = uprev + dt*(a31*k1 + a32*k2) + chi2.*(b31*g1 + b32*g2)
 
   g3 = integrator.g(H02,p,t+c13*dt)
   k3 = integrator.f(H02,p,t+c03*dt)
 
   E₁ = dt*(α1*k1 + α2*k2 + α3*k3)
-  E₂ = chi2*(beta21*g1 + beta22*g2 + beta23*g3)
+  E₂ = chi2.*(beta21*g1 + beta22*g2 + beta23*g3)
 
-  u = uprev + E₁ + E₂ + W.dW*(beta11*g1 + beta12*g2 + beta13*g3)
+  u = uprev + E₁ + E₂ + W.dW.*(beta11*g1 + beta12*g2 + beta13*g3)
 
   if typeof(integrator.alg) <: StochasticCompositeAlgorithm && typeof(integrator.alg.algs[1]) <: SOSRA2
     ϱu = integrator.opts.internalnorm(k3 - k2)
@@ -197,7 +197,7 @@ end
 
   if integrator.opts.adaptive
     E₁ = dt*(k1 + k2 + k3)
-    integrator.EEst = integrator.opts.internalnorm((integrator.opts.delta*E₁+E₂)/(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol))
+    integrator.EEst = integrator.opts.internalnorm((integrator.opts.delta*E₁+E₂)/(integrator.opts.abstol .+ max(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol))
   end
   integrator.u = u
 end

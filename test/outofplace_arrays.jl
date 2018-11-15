@@ -41,4 +41,10 @@ using StochasticDiffEq, DiffEqNoiseProcess
   println("SKenCarp")
   integrator = init(prob, SKenCarp(); adaptive=false, dt=0.01)
   step!(integrator)
+  solve(prob, SOSRI(); adaptive=false, dt=0.01)
+  solve(prob, SOSRA(); adaptive=false, dt=0.01)
+  solve(prob, EM(); adaptive=false, dt=0.01)
+  solve(prob, RKMil(); adaptive=false, dt=0.01)
+  solve(prob, SOSRI2(); adaptive=false, dt=0.01)
+  solve(prob, SOSRA2(); adaptive=false, dt=0.01)
 end
