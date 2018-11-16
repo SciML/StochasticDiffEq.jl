@@ -32,6 +32,7 @@ u0 = [0.2]
 tspan = (0.0,100.0)
 prob = SDEProblem(f,g,u0,tspan)
 
+Random.seed!(3)
 sol = solve(prob,SRIW1(),callback=callback)
 
 #=
