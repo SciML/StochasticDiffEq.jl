@@ -48,7 +48,7 @@ macro cache(expr)
   ratenoise_vars = Expr[]
   for x in fields
     if x.args[2] == :uType || x.args[2] == :rateType ||
-       x.args[2] == :kType || x.args[2] == :uNoUnitsType
+       x.args[2] == :kType || x.args[2] == :uNoUnitsType #|| x.args[2] == :possibleRateType
       push!(cache_vars,:(c.$(x.args[1])))
     elseif x.args[2] == :JCType
       push!(cache_vars,:(c.$(x.args[1]).duals...))

@@ -392,26 +392,26 @@ function alg_cache(alg::SOSRI2,prob,u,ΔW,ΔZ,p,rate_prototype,
   SOSRI2ConstantCache(uBottomEltype)
 end
 
-@cache struct FourStageSRICache{uType,randType,tabType,NT,T} <: StochasticDiffEqMutableCache
+@cache struct FourStageSRICache{uType,randType,tabType,rateNoiseType,rateType,possibleRateType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   chi1::randType
   chi2::randType
   chi3::randType
   tab::tabType
-  g1::NT
-  g2::NT
-  g3::NT
-  g4::NT
-  k1::T
-  k2::T
-  k3::T
-  k4::T
-  E₁::T
-  E₂::T
-  tmp::T
-  H02::T
-  H03::T
+  g1::rateNoiseType
+  g2::rateNoiseType
+  g3::rateNoiseType
+  g4::rateNoiseType
+  k1::rateType
+  k2::rateType
+  k3::rateType
+  k4::rateType
+  E₁::rateType
+  E₂::rateType
+  tmp::rateType
+  H02::possibleRateType
+  H03::possibleRateType
 end
 
 function alg_cache(alg::SRIW2,prob,u,ΔW,ΔZ,p,rate_prototype,

@@ -207,7 +207,7 @@ function alg_cache(alg::SOSRA2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_protot
   SOSRA2ConstantCache(uBottomEltype)
 end
 
-@cache struct ThreeStageSRACache{uType,randType,tabType,rateNoiseType,T,GT} <: StochasticDiffEqMutableCache
+@cache struct ThreeStageSRACache{uType,randType,tabType,rateNoiseType,rateType,GT} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   chi2::randType
@@ -215,12 +215,12 @@ end
   g1::rateNoiseType
   g2::rateNoiseType
   g3::rateNoiseType
-  k1::T
-  k2::T
-  k3::T
-  E₁::T
-  E₂::T
-  tmp::T
+  k1::rateType
+  k2::rateType
+  k3::rateType
+  E₁::rateType
+  E₂::rateType
+  tmp::rateType
   gtmp::GT
 end
 
