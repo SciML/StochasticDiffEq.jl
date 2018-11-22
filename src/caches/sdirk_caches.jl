@@ -75,6 +75,17 @@ DiffEqBase.@def oopnlcachefields begin
   _nlsolve = oop_nlsolver(alg.nlsolve)
 end
 
+DiffEqBase.@def iipnlsolve begin
+  _nlsolve = typeof(alg.nlsolve).name.wrapper
+  nlcache = NLSolverCache(κ,tol,min_iter,max_iter,10000,new_W,z,W,γ,c,ηold,z₊,dz,tmp,b,k)
+  nlsolve = _nlsolve{true, typeof(nlcache)}(nlcache)
+end
+DiffEqBase.@def oopnlsolve begin
+  _nlsolve = typeof(alg.nlsolve).name.wrapper
+  nlcache = NLSolverCache(κ,tol,min_iter,max_iter,10000,new_W,z,W,γ,c,ηold,z₊,dz,tmp,b,k)
+  nlsolve = _nlsolve{false, typeof(nlcache)}(nlcache)
+end
+
 @cache mutable struct ImplicitEMCache{uType,rateType,JType,WType,JC,UF,N,noiseRateType,F,dWType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
@@ -108,7 +119,8 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_pr
     dW_cache = zero(ΔW)
   end
 
-  nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,alg.theta,zero(t),ηold,z₊,dz,tmp,b,k))
+  γ, c = alg.theta,zero(t)
+  @iipnlsolve
   ImplicitEMCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,J,W,jac_config,linsolve,uf,
                   dW_cache,nlsolve)
 end
@@ -121,7 +133,8 @@ end
 function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   @oopnlcachefields
-  nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,alg.theta,zero(t),ηold,z₊,dz,tmp,b,k))
+  γ, c = alg.theta,zero(t)
+  @oopnlsolve
   ImplicitEMConstantCache(uf,nlsolve)
 end
 
@@ -163,7 +176,8 @@ function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_
       dW_cache = zero(ΔW)
   end
 
-  nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,alg.theta,zero(t),ηold,z₊,dz,tmp,b,k))
+  γ, c = alg.theta,zero(t)
+  @iipnlsolve
   ImplicitEulerHeunCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,gtmp3,
                          J,W,jac_config,linsolve,uf,nlsolve,dW_cache)
 end
@@ -176,7 +190,8 @@ end
 function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   @oopnlcachefields
-  nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,alg.theta,zero(t),ηold,z₊,dz,tmp,b,k))
+  γ, c = alg.theta,zero(t)
+  @oopnlsolve
   ImplicitEulerHeunConstantCache(uf,nlsolve)
 end
 
@@ -207,7 +222,8 @@ function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate
   gtmp2 = zero(rate_prototype)
   gtmp3 = zero(rate_prototype)
 
-  nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,alg.theta,zero(t),ηold,z₊,dz,tmp,b,k))
+  γ, c = alg.theta,zero(t)
+  @iipnlsolve
   ImplicitRKMilCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,gtmp3,
                    J,W,jac_config,linsolve,uf,nlsolve)
 end
@@ -220,6 +236,7 @@ end
 function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   @oopnlcachefields
-  nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,100000,new_W,z,W,alg.theta,zero(t),ηold,z₊,dz,tmp,b,k))
+  γ, c = alg.theta,zero(t)
+  @oopnlsolve
   ImplicitRKMilConstantCache(uf,nlsolve)
 end
