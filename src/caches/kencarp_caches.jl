@@ -51,10 +51,10 @@ du_cache(c::SKenCarpCache)   = (c.k,c.fsalfirst)
 
 function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   @iipnlcachefields
-  atmp = fill!(similar(u,uEltypeNoUnits,axes(u)),0)
-  z₁ = similar(u,axes(u)); z₂ = similar(u,axes(u))
-  z₃ = similar(u,axes(u)); z₄ = z
-  dz = similar(u,axes(u))
+  atmp = fill!(similar(u,uEltypeNoUnits),0)
+  z₁ = similar(u); z₂ = similar(u)
+  z₃ = similar(u); z₄ = z
+  dz = similar(u)
   if typeof(f) <: SplitSDEFunction
     k1 = zero(u); k2 = zero(u)
     k3 = zero(u); k4 = zero(u)

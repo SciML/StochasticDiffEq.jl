@@ -408,7 +408,7 @@ function solve!(integrator::SDEIntegrator)
   if integrator.sol.retcode != :Default
     return integrator.sol
   end
-  
+
   integrator.sol = DiffEqBase.solution_new_retcode(integrator.sol,:Success)
   nothing
 end

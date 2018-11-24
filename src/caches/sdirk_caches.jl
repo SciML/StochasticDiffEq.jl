@@ -1,8 +1,8 @@
 DiffEqBase.@def iipnlcachefields begin
   nlcache = alg.nlsolve.cache
   @unpack κ,tol,max_iter,min_iter,new_W = nlcache
-  z = similar(u,axes(u))
-  dz = similar(u,axes(u)); tmp = similar(u,axes(u)); b = similar(u,axes(u))
+  z = similar(u)
+  dz = similar(u); tmp = similar(u); b = similar(u)
   fsalfirst = zero(rate_prototype)
   k = zero(rate_prototype)
   uToltype = real(uEltypeNoUnits)
