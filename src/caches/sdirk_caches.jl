@@ -42,7 +42,6 @@ DiffEqBase.@def iipnlcachefields begin
     reltol = 1e-1 # TODO: generalize
     tol = uToltype(min(0.03,first(reltol)^(0.5)))
   end
-  _nlsolve = alg.nlsolve
 end
 
 DiffEqBase.@def oopnlcachefields begin
@@ -72,7 +71,6 @@ DiffEqBase.@def oopnlcachefields begin
     tol = uToltype(min(0.03,first(reltol)^(0.5)))
   end
   z₊,dz,tmp,b,k = z,z,z,z,rate_prototype
-  _nlsolve = oop_nlsolver(alg.nlsolve)
 end
 
 DiffEqBase.@def iipnlsolve begin

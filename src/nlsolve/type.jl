@@ -48,7 +48,3 @@ function NLNewton(;kwargs...)
   nlcache = NLSolverCache(;kwargs...)
   NLNewton{true, typeof(nlcache)}(nlcache)
 end
-
-oop_nlsolver(s::NLFunctional{true}) = NLFunctional{false}(s.cache)
-oop_nlsolver(s::NLAnderson{true}) = NLAnderson{false}(s.cache, s.n)
-oop_nlsolver(s::NLNewton{true}) = NLNewton{false}(s.cache)
