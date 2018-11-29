@@ -2,13 +2,13 @@ using StochasticDiffEq, DiffEqBase, Random
 
 function f(du,u,p,t)
   for i in 1:length(u)
-    du[i] = (0.5/length(u))*u[i]
+    du[i] = (0.2/length(u))*u[i]
   end
 end
 
 function g(du,u,p,t)
   for i in 1:length(u)
-    du[i] = (0.5/length(u))*u[i]
+    du[i] = (0.2/length(u))*u[i]
   end
 end
 
