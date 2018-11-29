@@ -12,7 +12,8 @@ function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prot
     uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
   end
   tab = SKenCarpTableau(real(uBottomEltype),real(tTypeNoUnits))
-  nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,10000,new_W,z,W,tab.γ,tab.c3,ηold,z₊,dz,tmp,b,k))
+  γ, c = tab.γ,tab.c3
+  @oopnlsolve
   SKenCarpConstantCache(uf,nlsolve,tab)
 end
 
@@ -77,7 +78,8 @@ function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prot
 
   tab = SKenCarpTableau(real(uBottomEltype),real(tTypeNoUnits))
 
-  nlsolve = typeof(_nlsolve)(NLSolverCache(κ,tol,min_iter,max_iter,10000,new_W,z,W,tab.γ,tab.c3,ηold,z₊,dz,tmp,b,k))
+  γ, c = tab.γ,tab.c3
+  @iipnlsolve
   SKenCarpCache{typeof(u),typeof(rate_prototype),typeof(atmp),typeof(J),typeof(W),typeof(uf),
                 typeof(jac_config),typeof(nlsolve),typeof(tab),typeof(linsolve),typeof(k1),
               typeof(chi2),typeof(g1)}(
