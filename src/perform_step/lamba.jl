@@ -21,7 +21,7 @@
     ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
     En = ggprime.*(W.dW.^2 .- dt)./2
 
-    integrator.EEst = integrator.opts.internalnorm((Ed + En)/((integrator.opts.abstol + max.(abs(uprev),abs(u))*integrator.opts.reltol)))
+    integrator.EEst = integrator.opts.internalnorm((Ed + En)/((integrator.opts.abstol + max.(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol)))
   end
 
   integrator.u = u
@@ -111,7 +111,7 @@ end
     ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
     En = ggprime.*(W.dW.^2)./2
 
-    integrator.EEst = integrator.opts.internalnorm((Ed + En)/((integrator.opts.abstol + max.(abs(uprev),abs(u))*integrator.opts.reltol)))
+    integrator.EEst = integrator.opts.internalnorm((Ed + En)/((integrator.opts.abstol + max.(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol)))
   end
 
   integrator.u = u
