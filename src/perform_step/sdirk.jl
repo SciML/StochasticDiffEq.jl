@@ -241,7 +241,7 @@ end
 
     elseif typeof(cache) <: ImplicitRKMilCache
       # gtmp3 is ggprime
-      @. dz = abs(dW^3)*integrator.opts.internalnorm(gtmp3)^2 / 6
+      @. dz = integrator.opts.internalnorm(dW^3)*integrator.opts.internalnorm(gtmp3)^2 / 6
     end
 
     @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),

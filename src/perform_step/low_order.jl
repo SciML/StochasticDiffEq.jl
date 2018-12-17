@@ -146,7 +146,7 @@ end
   end
   @. u = K+L*W.dW + tmp
   if integrator.opts.adaptive
-    @. tmp = (tmp)/(integrator.opts.abstol + max(abs(uprev),abs(u))*integrator.opts.reltol)
+    @. tmp = (tmp)/(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
   integrator.u = u
@@ -176,7 +176,7 @@ end
     integrator.f(du2,K,p,t+dt)
     @. tmp += integrator.opts.internalnorm(dt*(du2 - du1)/2)
     @tight_loop_macros for (i,atol,rtol) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),Iterators.cycle(integrator.opts.reltol))
-      @inbounds tmp[i] = (tmp[i])/(atol + max(abs(uprev[i]),abs(u[i]))*rtol)
+      @inbounds tmp[i] = (tmp[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
     end
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
@@ -222,7 +222,7 @@ end
       @. tmp = integrator.opts.internalnorm(dt*(du2 - du1)/2) + En
 
       @tight_loop_macros for (i,atol,rtol) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),Iterators.cycle(integrator.opts.reltol))
-        @inbounds tmp[i] = (tmp[i])/(atol + max(abs(uprev[i]),abs(u[i]))*rtol)
+        @inbounds tmp[i] = (tmp[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
       end
       integrator.EEst = integrator.opts.internalnorm(tmp)
 
