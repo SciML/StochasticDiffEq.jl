@@ -95,7 +95,6 @@ end
   end
   tmp = K .+ noise
   gtmp2 = (1/2).*(L.+integrator.g(tmp,p,t+dt))
-
   if is_diagonal_noise(integrator.sol.prob)
     noise2 = gtmp2.*W.dW
   else

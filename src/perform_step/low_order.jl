@@ -52,8 +52,8 @@ end
   else
     noise = gtmp*W.dW
   end
-  gtmp2 = (1/2).*(gtmp.+integrator.g(tmp,p,t+dt))
   tmp = @. uprev + dt * ftmp + noise
+  gtmp2 = (gtmp .+ integrator.g(tmp,p,t+dt)) ./ 2
   if is_diagonal_noise(integrator.sol.prob)
     noise2 = gtmp2.*W.dW
   else
