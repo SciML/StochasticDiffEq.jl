@@ -18,10 +18,10 @@
     for j = 1:i-1
       integrator.f((t + c₀[j]*dt),H0[j],ftemp)
       integrator.g((t + c₁[j]*dt),H1[j],gtemp)
-      @. A0temp = @muladd A0temp + A₀[j,i]*ftemp
-      @. B0temp = @muladd B0temp + B₀[j,i]*gtemp
-      @. A1temp = @muladd A1temp + A₁[j,i]*ftemp
-      @. B1temp = @muladd B1temp + B₁[j,i]*gtemp
+      @. A0temp = A0temp + A₀[j,i] * ftemp
+      @. B0temp = B0temp + B₀[j,i] * gtemp
+      @. A1temp = A1temp + A₁[j,i] * ftemp
+      @. B1temp = B1temp + B₁[j,i] * gtemp
     end
     @. H0[i] = uprev + A0temp*dt + B0temp*chi2
     @. H1[i] = uprev + A1temp*dt + B1temp*integrator.sqdt
@@ -33,9 +33,9 @@
   for i = 1:stages
     integrator.f((t+c₀[i]*dt),H0[i],ftemp)
     integrator.g((t+c₁[i]*dt),H1[i],gtemp)
-    @. atemp = @muladd atemp + α[i]*ftemp
-    @. btemp = @muladd btemp + (β₁[i]*W.dW + β₂[i]*chi1)*gtemp
-    @. E₂    = @muladd E₂    + (β₃[i]*chi2 + β₄[i]*chi3)*gtemp
+    @. atemp = atemp + α[i] * ftemp
+    @. btemp = btemp + (β₁[i] * W.dW + β₂[i] * chi1) * gtemp
+    @. E₂    = E₂    + (β₃[i] * chi2 + β₄[i] * chi3) * gtemp
     if i <= error_terms
       @. E₁temp += ftemp
     end
@@ -127,12 +127,12 @@ end
   dto4 = dt/4
   @. fH01o4 = fH01/4
   @. g₁o2 = g₁/2
-  @. H0 =  @muladd uprev + 3*(fH01o4  + chi2*g₁o2)
-  @. H11 = @muladd uprev + fH01o4   + integrator.sqdt*g₁o2
-  @. H12 = @muladd uprev + fH01     - integrator.sqdt*g₁
+  @. H0 =  uprev + 3 * (fH01o4 + chi2 * g₁o2)
+  @. H11 = uprev + fH01o4 + integrator.sqdt * g₁o2
+  @. H12 = uprev + fH01 - integrator.sqdt * g₁
   integrator.g(t+dto4,H11,g₂)
   integrator.g(t+dt,H12,g₃)
-  @. H13 = @muladd uprev + fH01o4 + integrator.sqdt*(-5g₁ + 3g₂ + g₃/2)
+  @. H13 = uprev + fH01o4 + integrator.sqdt * (-5 * g₁ + 3 * g₂ + g₃ / 2)
 
   integrator.g(t+dto4,H13,g₄)
   integrator.f(fH02,H0,p,t+3dto4)
@@ -144,9 +144,9 @@ end
   @. Tg₃o3 = 2g₃o3
   @. mg₁ = -g₁
   @. E₁ = fH01+fH02
-  @. E₂ = @muladd chi2*(2g₁ - Fg₂o3 - Tg₃o3) + chi3*(2mg₁ + 5g₂o3 - Tg₃o3 + g₄)
+  @. E₂ = chi2 * (2 * g₁ - Fg₂o3 - Tg₃o3) + chi3 * (2 * mg₁ + 5 * g₂o3 - Tg₃o3 + g₄)
 
-  @. u = @muladd uprev +  (fH01 + 2fH02)/3 + W.dW*(mg₁ + Fg₂o3 + Tg₃o3) + chi1*(mg₁ + Fg₂o3 - g₃o3) + E₂
+  @. u = uprev +  (fH01 + 2 * fH02) / 3 + W.dW * (mg₁ + Fg₂o3 + Tg₃o3) + chi1 * (mg₁ + Fg₂o3 - g₃o3) + E₂
 
   if integrator.opts.adaptive
     @. tmp = (integrator.opts.delta*E₁+E₂)/(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol)
@@ -198,11 +198,14 @@ end
   @. E₁ = fH01+fH02
 
   @tight_loop_macros for i in eachindex(u)
-    @inbounds E₂[i] = @muladd chi2[i]*(2g₁[i] - Fg₂o3[i] - Tg₃o3[i]) + chi3[i]*(2mg₁[i] + 5g₂o3[i] - Tg₃o3[i] + g₄[i])
+    @inbounds E₂[i] = chi2[i] * (2 * g₁[i] - Fg₂o3[i] - Tg₃o3[i]) +
+      chi3[i] * (2 * mg₁[i] + 5 * g₂o3[i] - Tg₃o3[i] + g₄[i])
   end
 
   @tight_loop_macros for i in eachindex(u)
-    @inbounds u[i] = @muladd uprev[i] +  (fH01[i] + 2fH02[i])/3 + W.dW[i]*(mg₁[i] + Fg₂o3[i] + Tg₃o3[i]) + chi1[i]*(mg₁[i] + Fg₂o3[i] - g₃o3[i]) + E₂[i]
+    @inbounds u[i] = uprev[i] + (fH01[i] + 2 * fH02[i]) / 3 +
+      W.dW[i] * (mg₁[i] + Fg₂o3[i] + Tg₃o3[i]) + chi1[i] * (mg₁[i] + Fg₂o3[i] - g₃o3[i]) +
+      E₂[i]
   end
 
   if integrator.opts.adaptive
@@ -225,12 +228,12 @@ end
   fH01o4 = fH01/4
   dto4 = dt/4
   g₁o2 = g₁/2
-  H0 =  @muladd uprev + 3*(fH01o4  + chi2.*g₁o2)
-  H11 = @muladd uprev + fH01o4   + integrator.sqdt*g₁o2
-  H12 = @muladd uprev + fH01     - integrator.sqdt*g₁
+  H0 =  @. uprev + 3 * (fH01o4 + chi2 * g₁o2)
+  H11 = @. uprev + fH01o4 + integrator.sqdt * g₁o2
+  H12 = @. uprev + fH01 - integrator.sqdt * g₁
   g₂ = integrator.g(H11,p,t+dto4)
   g₃ = integrator.g(H12,p,t+dt)
-  H13 = @muladd uprev + fH01o4 + integrator.sqdt*(-5g₁ + 3g₂ + g₃/2)
+  H13 = @. uprev + fH01o4 + integrator.sqdt * (-5 * g₁ + 3 * g₂ + g₃ / 2)
 
 
   g₄ = integrator.g(H13,p,t+dto4)
@@ -242,7 +245,7 @@ end
   Tg₃o3 = 2g₃o3
   mg₁ = -g₁
   E₁ = fH01+fH02
-  E₂ = @muladd chi2.*(2g₁ - Fg₂o3 - Tg₃o3) + chi3.*(2mg₁ + 5g₂o3 - Tg₃o3 + g₄)
+  E₂ = @. chi2 * (2 * g₁ - Fg₂o3 - Tg₃o3) + chi3 * (2 * mg₁ + 5 * g₂o3 - Tg₃o3 + g₄)
 
   u = uprev + (fH01 + 2fH02)/3 + W.dW.*(mg₁ + Fg₂o3 + Tg₃o3) + chi1.*(mg₁ + Fg₂o3 - g₃o3) + E₂
   if integrator.opts.adaptive
@@ -260,31 +263,36 @@ end
 
   fill!(H0,zero(typeof(u)))
   fill!(H1,zero(typeof(u)))
-  for i = 1:stages
+  @inbounds for i in 1:stages
     A0temp = zero(u)
     B0temp = zero(u)
     A1temp = zero(u)
     B1temp = zero(u)
-    for j = 1:i-1
-      @inbounds A0temp = @muladd A0temp + A₀[j,i]*integrator.f(H0[j],p,t + c₀[j]*dt)
-      @inbounds B0temp = @muladd B0temp + B₀[j,i]*integrator.g(H1[j],p,t + c₁[j]*dt)
-      @inbounds A1temp = @muladd A1temp + A₁[j,i]*integrator.f(H0[j],p,t + c₀[j]*dt)
-      @inbounds B1temp = @muladd B1temp + B₁[j,i]*integrator.g(H1[j],p,t + c₁[j]*dt)
+    for j in 1:i-1
+      ftmp = integrator.f(H0[j],p,t + c₀[j]*dt)
+      A0temp = @. A0temp + A₀[j,i] * ftmp
+      A1temp = @. A1temp + A₁[j,i] * ftmp
+
+      gtmp = integrator.g(H1[j],p,t + c₁[j]*dt)
+      B0temp = @. B0temp + B₀[j,i] * gtmp
+      B1temp = @. B1temp + B₁[j,i] * gtmp
     end
-    @inbounds H0[i] = @muladd uprev + A0temp*dt + B0temp.*chi2
-    @inbounds H1[i] = @muladd uprev + A1temp*dt + B1temp*integrator.sqdt
+    H0[i] = @. uprev + dt * A0temp + chi2 * B0temp
+    H1[i] = @. uprev + dt * A1temp + integrator.sqdt * B1temp
   end
   atemp = zero(u)
   btemp = zero(u)
   E₂    = zero(u)
   E₁temp= zero(u)
-  for i = 1:stages
-    @inbounds ftemp = integrator.f(H0[i],p,t+c₀[i]*dt)
-    @inbounds atemp = @muladd atemp + α[i]*ftemp
-    @inbounds btemp = @muladd btemp + (β₁[i]*W.dW + β₂[i]*chi1).*integrator.g(H1[i],p,t+c₁[i]*dt)
-    @inbounds E₂    = @muladd E₂    + (β₃[i]*chi2 + β₄[i]*chi3).*integrator.g(H1[i],p,t+c₁[i]*dt)
+  @inbounds for i in 1:stages
+    ftmp = integrator.f(H0[i],p,t+c₀[i]*dt)
+    atemp = @. atemp + α[i] * ftmp
+
+    gtmp = integrator.g(H1[i],p,t+c₁[i]*dt)
+    btemp = @. btemp + (β₁[i] * W.dW + β₂[i] * chi1) * gtmp
+    E₂ = @. E₂ + (β₃[i] * chi2 + β₄[i] * chi3) * gtmp
     if i <= error_terms #1 or 2
-      E₁temp += ftemp
+      E₁temp = E₁temp .+ ftmp
     end
   end
   E₁ = dt*E₁temp

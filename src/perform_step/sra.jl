@@ -292,10 +292,10 @@ end
     for j = 1:i-1
       integrator.f((t + c₀[j]*dt),H0[j],ftmp)
       integrator.g((t + c₁[j]*dt),H0[j],gtmp)
-      @. A0temp = @muladd A0temp + A₀[j,i]*ftmp
-      @. B0temp = @muladd B0temp + B₀[j,i]*gtmp
+      @. A0temp = A0temp + A₀[j,i] * ftmp
+      @. B0temp = B0temp + B₀[j,i] * gtmp
     end
-    @. H0[i] = @muladd uprev + A0temp*dt + B0temp*chi2
+    @. H0[i] = uprev + dt * A0temp + chi2 * B0temp
   end
   fill!(atemp ,zero(eltype(integrator.u)))
   fill!(btemp ,zero(eltype(integrator.u)))
@@ -305,13 +305,13 @@ end
   for i = 1:stages
     integrator.f((t+c₀[i]*dt),H0[i],ftmp)
     integrator.g((t+c₁[i]*dt),H0[i],gtmp)
-    @. atemp  =  @muladd atemp  + α[i]*ftmp
-    @. btemp  =  @muladd btemp  + (β₁[i]*W.dW)*gtmp
-    @. E₂     =  @muladd E₂     + (β₂[i]*chi2)*gtmp
+    @. atemp  =  atemp  + α[i] * ftmp
+    @. btemp  =  btemp  + (β₁[i] * W.dW) * gtmp
+    @. E₂     =  E₂     + (β₂[i] * chi2) * gtmp
     @. E₁temp =  E₁temp +  ftmp
   end
   @. E₁ = dt*E₁temp
-  @. u = @muladd uprev + dt*atemp + btemp + E₂
+  @. u = uprev + dt * atemp + btemp + E₂
 
   if integrator.opts.adaptive
     @. tmp = (integrator.opts.delta*E₁+E₂)/(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol)
@@ -341,16 +341,16 @@ end
     for j = 1:i-1
       integrator.f(ftmp,H0[j],p,t + c₀[j]*dt)
       integrator.g(gtmp,H0[j],p,t + c₁[j]*dt)
-      @. A0temp = @muladd A0temp + A₀[j,i]*ftmp
+      @. A0temp = A0temp + A₀[j,i] * ftmp
       if is_diagonal_noise(integrator.sol.prob)
-        @. B0temp = @muladd B0temp + B₀[j,i]*gtmp*chi2
+        @. B0temp = B0temp + B₀[j,i] * chi2 * gtmp
       else
         mul!(E₁temp,gtmp,chi2)
-        @. B0temp = @muladd B0temp + B₀[j,i]*E₁temp
+        @. B0temp = B0temp + B₀[j,i] * E₁temp
       end
     end
 
-    @. H0[i] = uprev + A0temp*dt + B0temp
+    @. H0[i] = uprev + dt * A0temp + B0temp
   end
   fill!(atemp ,zero(eltype(integrator.u)))
   fill!(btemp ,zero(eltype(integrator.u)))
@@ -361,16 +361,16 @@ end
     integrator.f(ftmp,H0[i],p,t+c₀[i]*dt)
     integrator.g(gtmp,H0[i],p,t+c₁[i]*dt)
     if is_diagonal_noise(integrator.sol.prob)
-      @. btemp = @muladd btemp + β₁[i]*W.dW*gtmp
+      @. btemp = btemp + β₁[i]*W.dW*gtmp
     else
       mul!(E₁temp,gtmp,W.dW)
-      @. btemp = @muladd btemp + β₁[i]*E₁temp
+      @. btemp = btemp + β₁[i]*E₁temp
     end
     if is_diagonal_noise(integrator.sol.prob)
-      @. E₂ = @muladd E₂ + β₂[i]*chi2*gtmp
+      @. E₂ = E₂ + β₂[i]*chi2*gtmp
     else
       mul!(E₁temp,gtmp,chi2)
-      @. E₂ = @muladd E₂ + β₂[i]*E₁temp
+      @. E₂ = E₂ + β₂[i]*E₁temp
     end
 
     @. atemp  =  atemp  + α[i]*ftmp
@@ -399,8 +399,8 @@ end
     A0temp = zero(u)
     B0temp = zero(u)
     for j = 1:i-1
-      A0temp = @muladd A0temp + A₀[j,i]*integrator.f(H0[j],p,t + c₀[j]*dt)
-      B0temp = @muladd B0temp + B₀[j,i]*integrator.g(H0[j],p,t + c₁[j]*dt) #H0[..,i] argument ignored
+      A0temp = A0temp .+ A₀[j,i] .* integrator.f(H0[j],p,t + c₀[j]*dt)
+      B0temp = B0temp .+ B₀[j,i] .* integrator.g(H0[j],p,t + c₁[j]*dt) #H0[..,i] argument ignored
     end
 
     H0[i] = uprev + A0temp*dt + B0temp.*chi2
@@ -412,14 +412,16 @@ end
   E₁temp= zero(u)
 
   for i = 1:stages
-    ftemp = integrator.f(H0[i],p,t+c₀[i]*dt)
-    E₁temp =  E₁temp +  ftemp
-    atemp  =  @muladd atemp  + α[i]*ftemp
-    btemp  =  @muladd btemp  + (β₁[i]*W.dW ).* integrator.g(H0[i],p,t+c₁[i]*dt) #H0[i] argument ignored
-    E₂     =  @muladd E₂     + (β₂[i]*chi2).*  integrator.g(H0[i],p,t+c₁[i]*dt) #H0[i] argument ignored
+    ftmp = integrator.f(H0[i],p,t+c₀[i]*dt)
+    E₁temp = E₁temp .+ ftmp
+    atemp  = @. atemp + α[i] * ftmp
+
+    gtmp = integrator.g(H0[i], p, t + c₁[i] * dt) #H0[i] argument ignored
+    btemp  = @. btemp + (β₁[i] * W.dW) * gtmp
+    E₂     = @. E₂ + (β₂[i] * chi2) * gtmp
   end
 
-  u = @muladd uprev + dt*atemp + btemp + E₂
+  u = @. uprev + dt * atemp + btemp + E₂
 
   if integrator.opts.adaptive
     E₁ = dt*E₁temp
