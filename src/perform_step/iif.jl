@@ -103,7 +103,8 @@ end
 
   if typeof(cache) <: IIF2MCache
     integrator.f.f2(rtmp1,uprev,p,t)
-    @. rtmp3 = @muladd 0.5dt*rtmp1 + rtmp3
+    dto2 = dt / 2
+    @. rtmp3 = dto2 * rtmp1 + rtmp3
   end
 
   A = integrator.f.f1(rtmp1,uprev,p,t)
@@ -169,7 +170,8 @@ end
 
   if typeof(cache) <: IIF2MCache
     integrator.f.f2(t,uprev,rtmp1)
-    @. rtmp1 = @muladd 0.5dt*rtmp1 + uprev + rtmp3
+    dto2 = dt / 2
+    @. rtmp1 = dto2 * rtmp1 + uprev + rtmp3
     mul!(tmp,M,rtmp1)
   elseif !(typeof(cache) <: IIF1MilCache)
     @. rtmp1 = uprev + rtmp3

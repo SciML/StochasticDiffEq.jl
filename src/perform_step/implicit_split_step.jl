@@ -63,8 +63,8 @@
     Ed = dt*(J*ftmp)/2
 
     if typeof(cache) <: SplitStepEulerConstantCache
-      K = @muladd uprev .+ dt.*ftmp
-      utilde =  K + L*integrator.sqdt
+      K = @. uprev + dt * ftmp
+      utilde =  @. K + integrator.sqdt * L
       ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
       En = ggprime .* (integrator.W.dW.^2 .- dt)./2
     elseif typeof(cache) <: ISSEulerHeunConstantCache
@@ -182,7 +182,7 @@ end
       end
 
       if typeof(cache) <: ISSEMCache
-        @. z = @muladd uprev + dt*tmp + g_sized*integrator.sqdt
+        @. z = uprev + dt*tmp + integrator.sqdt * g_sized
 
         if !is_diagonal_noise(integrator.sol.prob)
           integrator.g(gtmp,z,p,t)
@@ -198,7 +198,7 @@ end
         end
 
       elseif typeof(cache) <: ISSEulerHeunCache
-        @. z = @muladd uprev + g_sized*integrator.sqdt
+        @. z = uprev + integrator.sqdt * g_sized
 
         if !is_diagonal_noise(integrator.sol.prob)
           integrator.g(gtmp,z,p,t)

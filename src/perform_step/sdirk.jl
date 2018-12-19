@@ -31,7 +31,7 @@
   if typeof(cache) <: ImplicitRKMilConstantCache || integrator.opts.adaptive == true
     if alg_interpretation(alg) == :Ito ||
        typeof(cache) <: ImplicitEMConstantCache
-      K = @muladd uprev .+ dt.*ftmp
+      K = @. uprev + dt * ftmp
       utilde =  K + L*integrator.sqdt
       ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
       mil_correction = ggprime .* (integrator.W.dW.^2 .- dt)./2
@@ -146,12 +146,12 @@ end
   if typeof(cache) <: ImplicitRKMilCache
     gtmp3 = cache.gtmp3
     if alg_interpretation(alg) == :Ito
-      @. z = @muladd uprev + dt*tmp + gtmp*integrator.sqdt
+      @. z = uprev + dt * tmp + integrator.sqdt * gtmp
       integrator.g(gtmp3,z,p,t)
       @. gtmp3 = (gtmp3-gtmp)/(integrator.sqdt) # ggprime approximation
       @. gtmp2 += gtmp3*(dW.^2 - dt)/2
     elseif alg_interpretation(alg) == :Stratonovich
-      @. z = @muladd uprev + gtmp*integrator.sqdt
+      @. z = uprev + integrator.sqdt * gtmp
       integrator.g(gtmp3,z,p,t)
       @. gtmp3 = (gtmp3-gtmp)/(integrator.sqdt) # ggprime approximation
       @. gtmp2 += gtmp3*(dW.^2)/2
@@ -206,7 +206,7 @@ end
       end
 
       if typeof(cache) <: ImplicitEMCache
-        @. z = @muladd uprev + dt*tmp + g_sized*integrator.sqdt
+        @. z = uprev + dt * tmp + integrator.sqdt * g_sized
 
         if !is_diagonal_noise(integrator.sol.prob)
           integrator.g(gtmp,z,p,t)
@@ -222,7 +222,7 @@ end
         end
 
       elseif typeof(cache) <: ImplicitEulerHeunCache
-        @. z = @muladd uprev + g_sized*integrator.sqdt
+        @. z = uprev + integrator.sqdt * g_sized
 
         if !is_diagonal_noise(integrator.sol.prob)
           integrator.g(gtmp,z,p,t)

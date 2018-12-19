@@ -1,7 +1,7 @@
 @muladd function perform_step!(integrator,cache::EMConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
 
-  K = @muladd uprev + dt*integrator.f(uprev,p,t)
+  K = uprev .+ dt .* integrator.f(uprev,p,t)
 
   if is_split_step(integrator.alg)
     u_choice = K
@@ -24,7 +24,7 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   integrator.f(rtmp1,uprev,p,t)
 
-  @. u = @muladd uprev + dt*rtmp1
+  @. u = uprev + dt * rtmp1
 
   if is_split_step(integrator.alg)
     u_choice = u
@@ -52,14 +52,14 @@ end
   else
     noise = gtmp*W.dW
   end
-  tmp = @muladd uprev + ftmp*dt + noise
-  gtmp2 = (1/2).*(gtmp.+integrator.g(tmp,p,t+dt))
+  tmp = @. uprev + dt * ftmp + noise
+  gtmp2 = (gtmp .+ integrator.g(tmp,p,t+dt)) ./ 2
   if is_diagonal_noise(integrator.sol.prob)
     noise2 = gtmp2.*W.dW
   else
     noise2 = gtmp2*W.dW
   end
-  u = @muladd uprev + (1/2)*dt*(ftmp+integrator.f(tmp,p,t+dt)) + noise2
+  u = uprev .+ (dt / 2) .* (ftmp .+ integrator.f(tmp,p,t+dt)) .+ noise2
   integrator.u = u
 end
 
@@ -75,7 +75,7 @@ end
     mul!(nrtmp,gtmp1,W.dW)
   end
 
-  @. tmp = @muladd uprev + ftmp1*dt + nrtmp
+  @. tmp = uprev + dt * ftmp1 + nrtmp
 
   integrator.f(ftmp2,tmp,p,t+dt)
   integrator.g(gtmp2,tmp,p,t+dt)
@@ -87,13 +87,13 @@ end
     mul!(nrtmp,gtmp1,W.dW)
   end
 
-  dto2 = dt*(1/2)
-  @. u = @muladd uprev + dto2*(ftmp1+ftmp2) + nrtmp
+  dto2 = dt / 2
+  @. u = uprev + dto2 * (ftmp1 + ftmp2) + nrtmp
 end
 
 @muladd function perform_step!(integrator,cache::RandomEMConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
-  u = @muladd uprev + dt*integrator.f(uprev,p,t,W.dW)
+  u = uprev .+ dt .* integrator.f(uprev,p,t,W.dW)
   integrator.u = u
 end
 
@@ -101,14 +101,14 @@ end
   @unpack rtmp = cache
   @unpack t,dt,uprev,u,W,p = integrator
   integrator.f(rtmp,uprev,p,t,W.dW)
-  @. u = @muladd uprev + dt*rtmp
+  @. u = uprev + dt * rtmp
   integrator.u = u
 end
 
 @muladd function perform_step!(integrator,cache::RKMilConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
   du1 = integrator.f(uprev,p,t)
-  K = @muladd uprev + dt*du1
+  K = @. uprev + dt * du1
   L = integrator.g(uprev,p,t)
   mil_correction = zero(u)
   if alg_interpretation(integrator.alg) == :Ito
@@ -136,8 +136,8 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   integrator.f(du1,uprev,p,t)
   integrator.g(L,uprev,p,t)
-  @. K = @muladd uprev + dt*du1
-  @. tmp = @muladd K + L*integrator.sqdt
+  @. K = uprev + dt * du1
+  @. tmp = K + integrator.sqdt * L
   integrator.g(du2,tmp,p,t)
   if alg_interpretation(integrator.alg) == :Ito
     @. tmp = (du2-L)/(2integrator.sqdt)*(W.dW^2 - dt)
@@ -158,14 +158,14 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   integrator.f(du1,uprev,p,t)
   integrator.g(L,uprev,p,t)
-  @. K = @muladd uprev + dt*du1
+  @. K = uprev + dt * du1
   @. du2 = zero(eltype(u)) # This makes it safe to re-use the array
   if alg_interpretation(integrator.alg) == :Ito
-    @. tmp = @muladd K + L*integrator.sqdt
+    @. tmp = K + integrator.sqdt * L
     integrator.g(du2,tmp,p,t)
     @. tmp = (du2-L)/(2integrator.sqdt)*(W.dW.^2 - dt)
   elseif alg_interpretation(integrator.alg) == :Stratonovich
-    @. tmp = @muladd uprev + L*integrator.sqdt
+    @. tmp = uprev + integrator.sqdt * L
     integrator.g(du2,tmp,p,t)
     @. tmp = (du2-L)/(2integrator.sqdt)*(W.dW.^2)
   end

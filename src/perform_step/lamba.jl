@@ -1,7 +1,7 @@
 @muladd function perform_step!(integrator,cache::LambaEMConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
   du1 = integrator.f(uprev,p,t)
-  K = @muladd uprev + dt*du1
+  K = @. uprev + dt * du1
 
   if is_split_step(integrator.alg)
     L = integrator.g(uprev,p,t+dt)
@@ -32,7 +32,7 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
 
   integrator.f(du1,uprev,p,t)
-  @. K = @muladd uprev + dt*du1
+  @. K = uprev + dt * du1
 
   if is_split_step(integrator.alg)
     integrator.g(L,K,p,t+dt)
@@ -57,7 +57,7 @@ end
     end
 
     if !is_diagonal_noise(integrator.sol.prob)
-      @. tmp = @muladd K + g_sized*integrator.sqdt
+      @. tmp = K + integrator.sqdt * g_sized
       integrator.g(gtmp,tmp,p,t)
       g_sized2 = norm(gtmp,2)
       @. dW_cache = W.dW.^2 - dt
@@ -65,7 +65,7 @@ end
       En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
       @. tmp = En
     else
-      @. tmp = @muladd K + L*integrator.sqdt
+      @. tmp = K + integrator.sqdt * L
       integrator.g(gtmp,tmp,p,t)
       @. tmp = (gtmp-L)/(2integrator.sqdt)*(W.dW.^2 - dt)
     end
@@ -85,7 +85,7 @@ end
 @muladd function perform_step!(integrator,cache::LambaEulerHeunConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
   du1 = integrator.f(uprev,p,t)
-  K = @muladd uprev + dt*du1
+  K = uprev + dt * du1
   L = integrator.g(uprev,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
@@ -93,7 +93,7 @@ end
   else
     noise = L*W.dW
   end
-  tmp = @muladd K+L*W.dW
+  tmp = K .+ noise
   gtmp2 = (1/2).*(L.+integrator.g(tmp,p,t+dt))
   if is_diagonal_noise(integrator.sol.prob)
     noise2 = gtmp2.*W.dW
@@ -101,7 +101,7 @@ end
     noise2 = gtmp2*W.dW
   end
 
-  u = @muladd uprev + (1/2)*dt*(du1+integrator.f(tmp,p,t+dt)) + noise2
+  u = uprev .+ (dt / 2) .* (du1 .+ integrator.f(tmp,p,t+dt)) .+ noise2
 
   if integrator.opts.adaptive
     du2 = integrator.f(K,p,t+dt)
@@ -122,7 +122,7 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   integrator.f(du1,uprev,p,t)
   integrator.g(L,uprev,p,t)
-  @. K = @muladd uprev + dt*du1
+  @. K = uprev + dt * du1
 
   if is_diagonal_noise(integrator.sol.prob)
     @. tmp=L*W.dW
@@ -154,7 +154,7 @@ end
     end
 
     if !is_diagonal_noise(integrator.sol.prob)
-      @. tmp = @muladd uprev + g_sized*integrator.sqdt
+      @. tmp = uprev + integrator.sqdt * g_sized
       integrator.g(gtmp,tmp,p,t)
       g_sized2 = norm(gtmp,2)
       @. dW_cache = W.dW.^2
@@ -162,7 +162,7 @@ end
       En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
       @. tmp = En
     else
-      @. tmp = @muladd uprev + L*integrator.sqdt
+      @. tmp = uprev + integrator.sqdt * L
       integrator.g(gtmp,tmp,p,t)
       @. tmp = (gtmp-L)/(2integrator.sqdt)*(W.dW.^2)
     end
