@@ -128,7 +128,10 @@
 
     E₁ = z₁ + z₂ + z₃ + z₄
 
-    integrator.EEst = integrator.opts.internalnorm((integrator.opts.delta*E₁+E₂)./(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
+    resids = calculate_residuals(E₁, E₂, uprev, u, integrator.opts.abstol,
+                                 integrator.opts.reltol, integrator.opts.delta,
+                                 integrator.opts.internalnorm)
+    integrator.EEst = integrator.opts.internalnorm(resids)
   end
 
   integrator.u = u
@@ -340,10 +343,9 @@ end
 
     @. E₁ = z₁ + z₂ + z₃ + z₄
 
-    @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
-                       Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
-      @inbounds tmp[i] = (δ*E₁[i]+E₂[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
-    end
+    calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
+                         integrator.opts.reltol, integrator.opts.delta,
+                         integrator.opts.internalnorm)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
 end

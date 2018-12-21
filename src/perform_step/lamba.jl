@@ -21,7 +21,10 @@
     ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
     En = ggprime.*(W.dW.^2 .- dt)./2
 
-    integrator.EEst = integrator.opts.internalnorm((Ed + En)/((integrator.opts.abstol + max.(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol)))
+    resids = calculate_residuals(Ed, En, uprev, u, integrator.opts.abstol,
+                                 integrator.opts.reltol, integrator.opts.delta,
+                                 integrator.opts.internalnorm)
+    integrator.EEst = integrator.opts.internalnorm(resids)
   end
 
   integrator.u = u
@@ -72,12 +75,10 @@ end
 
     # Ed
     integrator.f(du2,K,p,t+dt)
-    @. tmp += integrator.opts.internalnorm(dt*(du2 - du1)/2)
+    @. tmp += integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2)
 
-
-    @tight_loop_macros for (i,atol,rtol) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),Iterators.cycle(integrator.opts.reltol))
-      @inbounds tmp[i] = (tmp[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
-    end
+    calculate_residuals!(tmp, tmp, uprev, u, integrator.opts.abstol,
+                         integrator.opts.reltol, integrator.opts.internalnorm)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
 end
@@ -111,7 +112,10 @@ end
     ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
     En = ggprime.*(W.dW.^2)./2
 
-    integrator.EEst = integrator.opts.internalnorm((Ed + En)/((integrator.opts.abstol + max.(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol)))
+    resids = calculate_residuals(Ed, En, uprev, u, integrator.opts.abstol,
+                                 integrator.opts.reltol, integrator.opts.delta,
+                                 integrator.opts.internalnorm)
+    integrator.EEst = integrator.opts.internalnorm(resids)
   end
 
   integrator.u = u
@@ -169,12 +173,10 @@ end
 
     # Ed
     integrator.f(du2,K,p,t+dt)
-    @. tmp += integrator.opts.internalnorm(dt*(du2 - du1)/2)
+    @. tmp += integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2)
 
-
-    @tight_loop_macros for (i,atol,rtol) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),Iterators.cycle(integrator.opts.reltol))
-      @inbounds tmp[i] = (tmp[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
-    end
+    calculate_residuals!(tmp, tmp, uprev, u, integrator.opts.abstol,
+                         integrator.opts.reltol, integrator.opts.internalnorm)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
 end
