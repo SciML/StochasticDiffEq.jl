@@ -73,16 +73,17 @@
       En = ggprime.*(integrator.W.dW.^2)./2
     end
 
-    tmp = Ed+En
-    integrator.EEst = integrator.opts.internalnorm(tmp./(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
+    resids = calculate_residuals(Ed, En, uprev, u, integrator.opts.abstol,
+                                 integrator.opts.reltol, integrator.opts.delta,
+                                 integrator.opts.internalnorm)
+    integrator.EEst = integrator.opts.internalnorm(resids)
   end
 
   integrator.u = u
 end
 
-@muladd function perform_step!(integrator,
-                               cache::Union{ISSEMCache,
-                                            ISSEulerHeunCache},
+@muladd function perform_step!(integrator, cache::Union{ISSEMCache,
+                                                        ISSEulerHeunCache},
                                f=integrator.f)
   @unpack t,dt,uprev,u,p = integrator
   @unpack uf,du1,dz,z,k,J,W,jac_config,gtmp,gtmp2,tmp,tmp,dW_cache = cache
@@ -216,10 +217,9 @@ end
 
     end
 
-    @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
-                            Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
-      @inbounds tmp[i] = (k[i]+dz[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
-    end
+    calculate_residuals!(tmp, k, dz, uprev, u, integrator.opts.abstol,
+                         integrator.opts.reltol, integrator.opts.delta,
+                         integrator.opts.internalnorm)
     integrator.EEst = integrator.opts.internalnorm(tmp)
 
   end

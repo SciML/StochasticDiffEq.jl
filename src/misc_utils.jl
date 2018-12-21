@@ -39,6 +39,94 @@ end
 get_chunksize(x) = 0
 get_chunksize(x::NLSOLVEJL_SETUP{CS,AD}) where {CS,AD} = CS
 
+"""
+    calculate_residuals(ũ, u₀, u₁, α, ρ, scalarnorm)
+
+Return element-wise residuals
+```math
+\\frac{ũ}{α+\\max{scalarnorm(u₀),scalarnorm(u₁)}*ρ}.
+```
+"""
+@inline @muladd function calculate_residuals(ũ::Number, u₀::Number, u₁::Number, α::Real,
+                                             ρ::Real, scalarnorm)
+    ũ / (α + max(scalarnorm(u₀), scalarnorm(u₁)) * ρ)
+end
+
+"""
+    calculate_residuals(E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm)
+
+Return element-wise residuals
+```math
+\\frac{δ E₁ + E₂}{α+\\max{scalarnorm(u₀),scalarnorm(u₁)}*ρ}.
+```
+"""
+@inline @muladd function calculate_residuals(E₁::Number, E₂::Number, u₀::Number, u₁::Number,
+                                             α::Real, ρ::Real, δ::Number, scalarnorm)
+    (δ * E₁ + E₂) / (α + max(scalarnorm(u₀), scalarnorm(u₁)) * ρ)
+end
+
+"""
+    calculate_residuals!(out, ũ, u₀, u₁, α, ρ, scalarnorm)
+
+Same as [`calculate_residuals`](@ref) but save result in `out`.
+"""
+@inline function calculate_residuals!(out, ũ, u₀, u₁, α, ρ, scalarnorm)
+  @. out = calculate_residuals(ũ, u₀, u₁, α, ρ, scalarnorm)
+  out
+end
+
+@inline function calculate_residuals!(out::Array{<:Number}, ũ::Array{<:Number},
+                                      u₀::Array{<:Number}, u₁::Array{<:Number}, α::Real,
+                                      ρ::Real, scalarnorm)
+  @tight_loop_macros @inbounds for i in eachindex(out)
+    out[i] = calculate_residuals(ũ[i], u₀[i], u₁[i], α, ρ, scalarnorm)
+  end
+  out
+end
+
+@inline function calculate_residuals(ũ, u₀, u₁, α, ρ, scalarnorm)
+  @. calculate_residuals(ũ, u₀, u₁, α, ρ, scalarnorm)
+end
+
+@inline function calculate_residuals(ũ::Array{<:Number}, u₀::Array{<:Number},
+                                     u₁::Array{<:Number}, α::Real, ρ::Real, scalarnorm)
+  out = similar(ũ)
+  calculate_residuals!(out, ũ, u₀, u₁, α, ρ, scalarnorm)
+  out
+end
+
+"""
+    calculate_residuals!(out, E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm)
+
+Same as [`calculate_residuals`](@ref) but save result in `out`.
+"""
+@inline function calculate_residuals!(out, E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm)
+  @. out = calculate_residuals(E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm)
+  out
+end
+
+@inline function calculate_residuals!(out::Array{<:Number}, E₁::Array{<:Number},
+                                      E₂::Array{<:Number}, u₀::Array{<:Number},
+                                      u₁::Array{<:Number}, α::Real, ρ::Real, δ::Number,
+                                      scalarnorm)
+  @tight_loop_macros @inbounds for i in eachindex(out)
+      out[i] = calculate_residuals(E₁[i], E₂[i], u₀[i], u₁[i], α, ρ, δ, scalarnorm)
+  end
+  out
+end
+
+@inline function calculate_residuals(E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm)
+  @. calculate_residuals(E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm)
+end
+
+@inline function calculate_residuals(E₁::Array{<:Number}, E₂::Array{<:Number},
+                                     u₀::Array{<:Number}, u₁::Array{<:Number}, α::Real,
+                                     ρ::Real, δ::Number, scalarnorm)
+    out = similar(u₀)
+    calculate_residuals!(out, E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm)
+    out
+end
+
 macro cache(expr)
   name = expr.args[2].args[1].args[1]
   fields = expr.args[3].args[2:2:end]

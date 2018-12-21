@@ -125,7 +125,11 @@ end
     du2 = integrator.f(K,p,t+dt)
     Ed = dt*(du2 - du1)/2
     En = W.dW.^3 .* ((du2-L)/(integrator.sqdt)).^2 / 6
-    integrator.EEst = integrator.opts.internalnorm((Ed + En)/((integrator.opts.abstol .+ max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol)))
+
+    resids = calculate_residuals(Ed, En, uprev, u, integrator.opts.abstol,
+                                 integrator.opts.reltol, integrator.opts.delta,
+                                 integrator.opts.internalnorm)
+    integrator.EEst = integrator.opts.internalnorm(resids)
   end
   integrator.u = u
 end
@@ -174,10 +178,10 @@ end
     @. tmp = integrator.opts.internalnorm(W.dW^3)*
              integrator.opts.internalnorm((du2-L)/(integrator.sqdt))^2 / 6
     integrator.f(du2,K,p,t+dt)
-    @. tmp += integrator.opts.internalnorm(dt*(du2 - du1)/2)
-    @tight_loop_macros for (i,atol,rtol) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),Iterators.cycle(integrator.opts.reltol))
-      @inbounds tmp[i] = (tmp[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
-    end
+    @. tmp += integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1)/2)
+
+    calculate_residuals!(tmp, tmp, uprev, u, integrator.opts.abstol,
+                         integrator.opts.reltol, integrator.opts.internalnorm)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
 end
@@ -219,11 +223,10 @@ end
   if integrator.opts.adaptive
       En = integrator.opts.internalnorm(W.dW)^3*ggprime_norm^2 / 6
       integrator.f(du2,K,p,t+dt)
-      @. tmp = integrator.opts.internalnorm(dt*(du2 - du1)/2) + En
+      @. tmp = integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2) + En
 
-      @tight_loop_macros for (i,atol,rtol) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),Iterators.cycle(integrator.opts.reltol))
-        @inbounds tmp[i] = (tmp[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
-      end
+      calculate_residuals!(tmp, tmp, uprev, u, integrator.opts.abstol,
+                           integrator.opts.reltol, integrator.opts.internalnorm)
       integrator.EEst = integrator.opts.internalnorm(tmp)
 
   end

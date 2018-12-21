@@ -4,14 +4,16 @@
   chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   k₁ = dt*integrator.f(uprev,p,t)
   k₂ = dt*integrator.f(uprev+3k₁/4 + 3chi2.*gpdt/2,p,t+3dt/4)
-  E₁ = k₁ + k₂
   E₂ = chi2.*(integrator.g(uprev,p,t)-gpdt) #Only for additive!
+  u = @. uprev + k₁ / 3 + 2 * k₂ / 3 + E₂ + W.dW * gpdt
 
   if integrator.opts.adaptive
-    u = uprev + k₁/3 + 2k₂/3 + E₂ + W.dW.*gpdt
-    integrator.EEst = integrator.opts.internalnorm((integrator.opts.delta*E₁+E₂)./(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
-  else
-    u = uprev + k₁/3 + 2k₂/3 + E₂ + W.dW.*gpdt
+    E₁ = k₁ .+ k₂
+
+    resids = calculate_residuals(E₁, E₂, uprev, u, integrator.opts.abstol,
+                                 integrator.opts.reltol, integrator.opts.delta,
+                                 integrator.opts.internalnorm)
+    integrator.EEst = integrator.opts.internalnorm(resids)
   end
   integrator.u = u
 end
@@ -28,13 +30,16 @@ end
 
   integrator.f(t+3dt/4,tmp1,k₂); k₂*=dt
 
-  @. E₁ = k₁ + k₂
   @. E₂ = chi2*(gt-gpdt) #Only for additive!
 
   @. u = uprev + k₁/3 + 2k₂/3 + E₂ + W.dW*gpdt
 
   if integrator.opts.adaptive
-    @. tmp = (integrator.opts.delta*E₁+E₂)/(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol)
+    @. E₁ = k₁ + k₂
+
+    calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
+                         integrator.opts.reltol, integrator.opts.delta,
+                         integrator.opts.internalnorm)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
   integrator.u = u
@@ -66,7 +71,6 @@ end
   integrator.f(k₂,tmp1,p,t+3dt/4); k₂*=dt
 
   for i in eachindex(u)
-    @inbounds E₁[i] = k₁[i] + k₂[i]
     @inbounds E₂[i] = chi2[i]*(gt[i]-gpdt[i]) #Only for additive!
   end
 
@@ -81,10 +85,11 @@ end
   end
 
   if integrator.opts.adaptive
-    @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
-						  Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
-      @inbounds tmp[i] = (δ*E₁[i]+E₂[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
-    end
+    @. E₁ = k₁ + k₂
+
+    calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
+                         integrator.opts.reltol, integrator.opts.delta,
+                         integrator.opts.internalnorm)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
 end
@@ -108,8 +113,12 @@ end
   u = uprev + E₁ + E₂ + W.dW*(beta12*g2)
 
   if integrator.opts.adaptive
-    E₁ = dt*(k1 + k2)
-    integrator.EEst = integrator.opts.internalnorm((integrator.opts.delta*E₁+E₂)./(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
+    E₁ = @. dt * (k1 + k2)
+
+    resids = calculate_residuals(E₁, E₂, uprev, u, integrator.opts.abstol,
+                                 integrator.opts.reltol, integrator.opts.delta,
+                                 integrator.opts.internalnorm)
+    integrator.EEst = integrator.opts.internalnorm(resids)
   end
   integrator.u = u
 end
@@ -156,11 +165,11 @@ end
   end
 
   if integrator.opts.adaptive
-    @. E₁ = dt*(k1 + k2)
-    @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
-						  Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
-      @inbounds tmp[i] = (δ*E₁[i]+E₂[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
-    end
+    @. E₁ = dt * (k1 + k2)
+
+    calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
+                         integrator.opts.reltol, integrator.opts.delta,
+                         integrator.opts.internalnorm)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
 end
@@ -196,8 +205,12 @@ end
   end
 
   if integrator.opts.adaptive
-    E₁ = dt*(k1 + k2 + k3)
-    integrator.EEst = integrator.opts.internalnorm((integrator.opts.delta*E₁+E₂)/(integrator.opts.abstol .+ max(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol))
+    E₁ = @. dt * (k1 + k2 + k3)
+
+    resids = calculate_residuals(E₁, E₂, uprev, u, integrator.opts.abstol,
+                                 integrator.opts.reltol, integrator.opts.delta,
+                                 integrator.opts.internalnorm)
+    integrator.EEst = integrator.opts.internalnorm(resids)
   end
   integrator.u = u
 end
@@ -268,11 +281,11 @@ end
   end
 
   if integrator.opts.adaptive
-    @. E₁ = dt*(k1 + k2 + k3)
-    @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
-						  Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
-      @inbounds tmp[i] = (δ*E₁[i]+E₂[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
-    end
+    @. E₁ = dt * (k1 + k2 + k3)
+
+    calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
+                         integrator.opts.reltol, integrator.opts.delta,
+                         integrator.opts.internalnorm)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
 end
@@ -310,11 +323,14 @@ end
     @. E₂     =  E₂     + (β₂[i] * chi2) * gtmp
     @. E₁temp =  E₁temp +  ftmp
   end
-  @. E₁ = dt*E₁temp
   @. u = uprev + dt * atemp + btemp + E₂
 
   if integrator.opts.adaptive
-    @. tmp = (integrator.opts.delta*E₁+E₂)/(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol)
+    @. E₁ = dt*E₁temp
+
+    calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
+                         integrator.opts.reltol, integrator.opts.delta,
+                         integrator.opts.internalnorm)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
   integrator.u = u
@@ -377,14 +393,14 @@ end
     @. E₁temp =  E₁temp +  ftmp
   end
 
-  @. E₁ = dt*E₁temp
   @. u = uprev + dt*atemp + btemp + E₂
 
   if integrator.opts.adaptive
-    @tight_loop_macros for (i,atol,rtol,δ) in zip(eachindex(u),Iterators.cycle(integrator.opts.abstol),
-						  Iterators.cycle(integrator.opts.reltol),Iterators.cycle(integrator.opts.delta))
-      @inbounds tmp[i] = (δ*E₁[i]+E₂[i])/(atol + max(integrator.opts.internalnorm(uprev[i]),integrator.opts.internalnorm(u[i]))*rtol)
-    end
+    @. E₁ = dt * E₁temp
+
+    calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
+                         integrator.opts.reltol, integrator.opts.delta,
+                         integrator.opts.internalnorm)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
 end
@@ -424,8 +440,12 @@ end
   u = @. uprev + dt * atemp + btemp + E₂
 
   if integrator.opts.adaptive
-    E₁ = dt*E₁temp
-    integrator.EEst = integrator.opts.internalnorm((integrator.opts.delta*E₁+E₂)./(integrator.opts.abstol + max.(integrator.opts.internalnorm.(uprev),integrator.opts.internalnorm.(u))*integrator.opts.reltol))
+    E₁ = @. dt * E₁temp
+
+    resids = calculate_residuals(E₁, E₂, uprev, u, integrator.opts.abstol,
+                                 integrator.opts.reltol, integrator.opts.delta,
+                                 integrator.opts.internalnorm)
+    integrator.EEst = integrator.opts.internalnorm(resids)
   end
   integrator.u = u
 end
