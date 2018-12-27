@@ -93,16 +93,15 @@ end
 
 @muladd function perform_step!(integrator,cache::RandomEMConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
-  u = uprev .+ dt .* integrator.f(uprev,p,t,W.dW)
+  u = uprev .+ dt .* integrator.f(uprev,p,t,W.curW)
   integrator.u = u
 end
 
 @muladd function perform_step!(integrator,cache::RandomEMCache,f=integrator.f)
   @unpack rtmp = cache
   @unpack t,dt,uprev,u,W,p = integrator
-  integrator.f(rtmp,uprev,p,t,W.dW)
+  integrator.f(rtmp,uprev,p,t,W.curW)
   @. u = uprev + dt * rtmp
-  integrator.u = u
 end
 
 @muladd function perform_step!(integrator,cache::RKMilConstantCache,f=integrator.f)
