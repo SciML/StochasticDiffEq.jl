@@ -14,7 +14,7 @@ function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,intern
     end
   else
     f₀ = zero(u0)
-    if prob.noise_rate_prototype != nothing
+    if prob.noise_rate_prototype !== nothing
       g₀ = zero(prob.noise_rate_prototype)
     else
       g₀ = zero(u0)
@@ -44,7 +44,7 @@ function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,intern
     g₁ = 3g(u₁,p,t+tdir*dt₀)
   else
     f₁ = zero(u0)
-    if prob.noise_rate_prototype != nothing
+    if prob.noise_rate_prototype !== nothing
       g₁ = zero(prob.noise_rate_prototype)
     else
       g₁ = zero(u0)

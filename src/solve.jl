@@ -50,7 +50,7 @@ function __init(
   seed = UInt64(0),
   kwargs...) where {uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},ND,recompile_flag}
 
-  if save_timeseries != nothing
+  if save_timeseries !== nothing
     @warn("save_timeseries is deprecated. Use save_everystep instead")
     save_everystep = save_timeseries
   end
@@ -141,7 +141,7 @@ function __init(
   tTypeNoUnits   = typeof(recursive_one(t))
 
   ### Algorithm-specific defaults ###
-  # if save_idxs == nothing
+  # if save_idxs === nothing
   #   ksEltype = Vector{rateType}
   # else
   #   ks_prototype = rate_prototype[save_idxs]
@@ -149,7 +149,7 @@ function __init(
   # end
 
   # Have to convert incase passed in wrong.
-  if save_idxs == nothing
+  if save_idxs === nothing
     timeseries = convert(Vector{uType},timeseries_init)
   else
     u_initial = u[save_idxs]
@@ -178,7 +178,7 @@ function __init(
   if save_start
     saveiter = 1
     copyat_or_push!(ts,1,t)
-    if save_idxs == nothing
+    if save_idxs === nothing
       copyat_or_push!(timeseries,1,u)
       # copyat_or_push!(ks,1,[rate_prototype])
     else

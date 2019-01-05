@@ -310,7 +310,7 @@ function DiffEqBase.reinit!(integrator::SDEIntegrator,u0 = integrator.sol.prob.u
     end
     resize!(integrator.sol.u,resize_start)
     resize!(integrator.sol.t,resize_start)
-    if integrator.sol.u_analytic != nothing
+    if integrator.sol.u_analytic !== nothing
       resize!(integrator.sol.u_analytic,0)
     end
     if typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm

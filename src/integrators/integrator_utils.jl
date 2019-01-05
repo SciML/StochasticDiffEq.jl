@@ -86,7 +86,7 @@ end
     else # ==t, just save
       savedexactly = true
       copyat_or_push!(integrator.sol.t,integrator.saveiter,integrator.t)
-      if integrator.opts.save_idxs == nothing
+      if integrator.opts.save_idxs === nothing
         copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u)
       else
         copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})
@@ -99,7 +99,7 @@ end
   if force_save || (integrator.opts.save_everystep &&
     integrator.iter%integrator.opts.timeseries_steps==0)
     integrator.saveiter += 1; saved, savedexactly = true, true
-    if integrator.opts.save_idxs == nothing
+    if integrator.opts.save_idxs === nothing
       copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u)
     else
       copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})
@@ -183,7 +183,7 @@ end
   if integrator.opts.save_end && (integrator.saveiter == 0 || integrator.sol.t[integrator.saveiter] != integrator.t)
     integrator.saveiter += 1
     copyat_or_push!(integrator.sol.t,integrator.saveiter,integrator.t)
-    if integrator.opts.save_idxs == nothing
+    if integrator.opts.save_idxs === nothing
       copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u)
     else
       copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})

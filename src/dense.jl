@@ -1,7 +1,7 @@
 ## Extrapolations are currently just constant
 
 function sde_extrapolant!(out,Θ,integrator::DEIntegrator,idxs,deriv::Type)
-  if idxs == nothing
+  if idxs === nothing
     recursivecopy!(out,integrator.u)
   else
     out[idxs] .= @view integrator.u[idxs]
@@ -9,7 +9,7 @@ function sde_extrapolant!(out,Θ,integrator::DEIntegrator,idxs,deriv::Type)
 end
 
 function sde_extrapolant(Θ,integrator::DEIntegrator,idxs,deriv::Type)
-  if idxs == nothing
+  if idxs === nothing
     return integrator.u
   else
     return integrator.u[idxs]
@@ -42,13 +42,13 @@ end
 
 @muladd function sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv::Type{Val{0}})
   Θm1 = (1-Θ)
-  if out == nothing
-    if idxs == nothing
+  if out === nothing
+    if idxs === nothing
       return @. Θm1*u0 + Θ*u1
     else
       return @. Θm1*u0[idxs] + Θ*u1[idxs]
     end
-  elseif idxs == nothing
+  elseif idxs === nothing
     @. out = Θm1*u0 + Θ*u1
   else
     @views @. out = Θm1*u0[idxs] + Θ*u1[idxs]
@@ -56,13 +56,13 @@ end
 end
 
 function sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv::Type{Val{1}})
-  if out == nothing
-    if idxs == nothing
+  if out === nothing
+    if idxs === nothing
       return @. (u1-u0)/dt
     else
       return @. (u1[idxs]-u0[idxs])/dt
     end
-  elseif idxs == nothing
+  elseif idxs === nothing
     @. out = (u1-u0)/dt
   else
     @views @. out = (u1[idxs]-u0[idxs])/dt
@@ -154,13 +154,13 @@ times ts (sorted), with values timeseries and derivatives ks
     if ts[i] == t
       lasti = lastindex(ts)
       k = continuity == :right && i+1 <= lasti && ts[i+1] == t ? i+1 : i
-      if idxs == nothing
+      if idxs === nothing
         vals[j] = timeseries[k]
       else
         vals[j] = timeseries[k][idxs]
       end
     elseif ts[i-1] == t # Can happen if it's the first value!
-      if idxs == nothing
+      if idxs === nothing
         vals[j] = timeseries[i-1]
       else
         vals[j] = timeseries[i-1][idxs]
@@ -189,13 +189,13 @@ times ts (sorted), with values timeseries and derivatives ks
   @inbounds if ts[i] == tval
     lasti = lastindex(ts)
     k = continuity == :right && i+1 <= lasti && ts[i+1] == tval ? i+1 : i
-    if idxs == nothing
+    if idxs === nothing
       val = timeseries[k]
     else
       val = timeseries[k][idxs]
     end
   elseif ts[i-1] == tval # Can happen if it's the first value!
-    if idxs == nothing
+    if idxs === nothing
       val = timeseries[i-1]
     else
       val = timeseries[i-1][idxs]
@@ -217,13 +217,13 @@ end
   @inbounds if ts[i] == tval
     lasti = lastindex(ts)
     k = continuity == :right && i+1 <= lasti && ts[i+1] == tval ? i+1 : i
-    if idxs == nothing
+    if idxs === nothing
       copyto!(out,timeseries[k])
     else
       copyto!(out,timeseries[k][idxs])
     end
   elseif ts[i-1] == tval # Can happen if it's the first value!
-    if idxs == nothing
+    if idxs === nothing
       copyto!(out,timeseries[i-1])
     else
       copyto!(out,timeseries[i-1][idxs])
@@ -248,13 +248,13 @@ end
     if ts[i] == t
       lasti = lastindex(ts)
       k = continuity == :right && i+1 <= lasti && ts[i+1] == t ? i+1 : i
-      if idxs == nothing
+      if idxs === nothing
         vals[j] = timeseries[k]
       else
         vals[j] = timeseries[k][idxs]
       end
     elseif ts[i-1] == t # Can happen if it's the first value!
-      if idxs == nothing
+      if idxs === nothing
         vals[j] = timeseries[i-1]
       else
         vals[j] = timeseries[i-1][idxs]

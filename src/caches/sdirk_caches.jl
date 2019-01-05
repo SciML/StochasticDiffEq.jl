@@ -9,7 +9,7 @@ DiffEqBase.@def iipnlcachefields begin
   ηold = one(uToltype)
 
   if typeof(alg.nlsolve) <: NLNewton
-    if DiffEqBase.has_jac(f) && !DiffEqBase.has_invW(f) && f.jac_prototype != nothing
+    if DiffEqBase.has_jac(f) && !DiffEqBase.has_invW(f) && f.jac_prototype !== nothing
       W = WOperator(f, zero(t))
       J = nothing # is J = W.J better?
     else
@@ -31,12 +31,12 @@ DiffEqBase.@def iipnlcachefields begin
     z₊ = similar(z)
   end
 
-  if κ != nothing
+  if κ !== nothing
     κ = uToltype(nlcache.κ)
   else
     κ = uToltype(1//100)
   end
-  if tol != nothing
+  if tol !== nothing
     tol = uToltype(nlcache.tol)
   else
     reltol = 1e-1 # TODO: generalize
@@ -61,12 +61,12 @@ DiffEqBase.@def oopnlcachefields begin
     W = typeof(u) <: Number ? u : Matrix{uEltypeNoUnits}(undef, 0, 0) # uEltype?
   end
 
-  if κ != nothing
+  if κ !== nothing
     κ = uToltype(κ)
   else
     κ = uToltype(1//100)
   end
-  if tol == nothing
+  if tol === nothing
     reltol = 1e-1 # TODO: generalize
     tol = uToltype(min(0.03,first(reltol)^(0.5)))
   end

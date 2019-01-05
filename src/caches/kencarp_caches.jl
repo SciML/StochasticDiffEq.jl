@@ -6,7 +6,7 @@ end
 
 function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   @oopnlcachefields
-  if uf != nothing && typeof(f) <: SplitSDEFunction
+  if uf !== nothing && typeof(f) <: SplitSDEFunction
     uf = DiffEqDiffTools.UDerivativeWrapper(f.f1,t,p)
   else
     uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)

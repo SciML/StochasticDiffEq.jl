@@ -129,7 +129,7 @@ end
 set_gamma!(W::WOperator, gamma) = (W.gamma = gamma; W)
 DiffEqBase.update_coefficients!(W::WOperator,u,p,t) = (update_coefficients!(W.J,u,p,t); W)
 function Base.convert(::Type{AbstractMatrix}, W::WOperator)
-  if W._concrete_form == nothing
+  if W._concrete_form === nothing
     # Allocating
     W._concrete_form = W.mass_matrix - W.gamma * convert(AbstractMatrix,W.J)
   else
@@ -153,7 +153,7 @@ function Base.:\(W::WOperator, x::Union{AbstractVecOrMat,Number})
   end
 end
 function LinearAlgebra.mul!(Y::AbstractVecOrMat, W::WOperator, B::AbstractVecOrMat)
-  if W._func_cache == nothing
+  if W._func_cache === nothing
     # Allocate cache only if needed
     W._func_cache = Vector{eltype(W)}(undef, size(Y, 1))
   end
@@ -183,7 +183,7 @@ function calc_W!(integrator, cache::StochasticDiffEqMutableCache, γdt, repeat_s
       # skip calculation of inv(W) if step is repeated
       !repeat_step && f.invW(W,uprev,p,γdt,t) # W == inverse W
       is_compos && calc_J!(integrator, cache, true)
-    elseif has_jac(f) && f.jac_prototype != nothing
+    elseif has_jac(f) && f.jac_prototype !== nothing
       # skip calculation of J if step is repeated
       if repeat_step || (!integrator.last_stepfail && nlcache.nl_iters == 1 && nlcache.ηold < alg.new_jac_conv_bound)
         new_jac = false
