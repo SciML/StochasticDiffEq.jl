@@ -21,7 +21,7 @@
 end
 
 function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   @iipnlcachefields
   gtmp = zero(noise_rate_prototype)
   if is_diagonal_noise(prob)
@@ -44,7 +44,7 @@ mutable struct ISSEMConstantCache{F,N} <: StochasticDiffEqConstantCache
 end
 
 function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
+                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   @oopnlcachefields
   γ, c = alg.theta,zero(t)
   @oopnlsolve
@@ -75,7 +75,7 @@ end
 end
 
 function alg_cache(alg::ISSEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
   @iipnlcachefields
 
   gtmp = zero(noise_rate_prototype)
@@ -101,7 +101,7 @@ mutable struct ISSEulerHeunConstantCache{F,N} <: StochasticDiffEqConstantCache
 end
 
 function alg_cache(alg::ISSEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
+                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
   @oopnlcachefields
   γ, c = alg.theta,zero(t)
   @oopnlsolve

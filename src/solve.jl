@@ -304,7 +304,7 @@ function __init(
 
   rateType = typeof(u/t) ## Can be different if united
 
-  cache = alg_cache(alg,prob,u,W.dW,W.dZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltype,tTypeNoUnits,uprev,f,t,Val{isinplace})
+  cache = alg_cache(alg,prob,u,W.dW,W.dZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,Val{isinplace})
 
   id = LinearInterpolationData(timeseries,ts)
 
