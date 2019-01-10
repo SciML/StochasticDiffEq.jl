@@ -26,7 +26,7 @@ function __init(
   dense = save_everystep && isempty(saveat),
   calck = (!isempty(setdiff(saveat,tstops)) || dense),
   adaptive=isadaptive(alg),gamma=9//10,
-  abstol=1e-2,reltol=1e-2,
+  abstol=nothing,reltol=nothing,
   qmax=qmax_default(alg),qmin=qmin_default(alg),
   failfactor = 2,
   qoldinit=1//10^4, fullnormalize=true,
@@ -93,6 +93,26 @@ function __init(
   u0 = prob.u0
   uBottomEltype = recursive_bottom_eltype(u0)
   uBottomEltypeNoUnits = recursive_unitless_bottom_eltype(u0)
+
+  if abstol === nothing
+    if uBottomEltypeNoUnits == uBottomEltype
+      abstol_internal = real(convert(uBottomEltype,oneunit(uBottomEltype)*1//10^2))
+    else
+      abstol_internal = real.(oneunit.(u).*1//10^2)
+    end
+  else
+    abstol_internal = real.(abstol)
+  end
+
+  if reltol === nothing
+    if uBottomEltypeNoUnits == uBottomEltype
+      reltol_internal = real(convert(uBottomEltype,oneunit(uBottomEltype)*1//10^2))
+    else
+      reltol_internal = real.(oneunit.(u).*1//10^2)
+    end
+  else
+    reltol_internal = real.(reltol)
+  end
 
   if typeof(prob.u0) <: Array
     u = recursivecopy(prob.u0)
@@ -188,21 +208,28 @@ function __init(
   else
     saveiter = 0
   end
-
-  opts = SDEOptions(maxiters,timeseries_steps,save_everystep,adaptive,map(real(uBottomEltype),abstol),
-    map(real(uBottomEltypeNoUnits),reltol),tTypeNoUnits(gamma),tTypeNoUnits(qmax),tTypeNoUnits(qmin),
-    tTypeNoUnits(failfactor),
-    dtmax,dtmin,internalnorm,save_idxs,
-    tstops_internal,saveat_internal,d_discontinuities_internal,
-    tstops,saveat,d_discontinuities,
-    userdata,
-    progress,progress_steps,
-    progress_name,progress_message,
-    timeseries_errors,dense_errors,
-    tTypeNoUnits(beta1),tTypeNoUnits(beta2),map(uBottomEltypeNoUnits,delta),tTypeNoUnits(qoldinit),
-    dense,save_on,save_start,save_end,save_noise,
-    callbacks_internal,isoutofdomain,unstable_check,verbose,calck,force_dtmin,
-    advance_to_tstop,stop_at_next_tstop)
+  
+  opts = SDEOptions(maxiters,timeseries_steps,save_everystep,
+                    adaptive,abstol_internal,
+                    reltol_internal,convert(tTypeNoUnits,gamma),
+                    convert(tTypeNoUnits,qmax),convert(tTypeNoUnits,qmin),
+                    convert(tTypeNoUnits,failfactor),
+                    dtmax,dtmin,internalnorm,save_idxs,
+                    tstops_internal,saveat_internal,
+                    d_discontinuities_internal,
+                    tstops,saveat,d_discontinuities,
+                    userdata,
+                    progress,progress_steps,
+                    progress_name,progress_message,
+                    timeseries_errors,dense_errors,
+                    convert(tTypeNoUnits,beta1),
+                    convert(tTypeNoUnits,beta2),
+                    convert.(uBottomEltypeNoUnits,delta),
+                    convert(tTypeNoUnits,qoldinit),
+                    dense,save_on,save_start,save_end,save_noise,
+                    callbacks_internal,isoutofdomain,unstable_check,
+                    verbose,calck,force_dtmin,
+                    advance_to_tstop,stop_at_next_tstop)
 
   progress && @logmsg(-1,progress_name,_id=_id = :StochasticDiffEq,progress=0)
 
