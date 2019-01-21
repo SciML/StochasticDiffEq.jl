@@ -114,14 +114,10 @@ function __init(
     reltol_internal = real.(reltol)
   end
 
-  if typeof(prob.u0) <: Array
-    u = recursivecopy(prob.u0)
-  elseif typeof(prob.u0) <: Number
-    u = prob.u0
-  elseif typeof(prob.u0) <: Tuple
+  if typeof(prob.u0) <: Tuple
     u = ArrayPartition(prob.u0,Val{true})
   else
-    u = deepcopy(prob.u0)
+    u = recursivecopy(prob.u0)
   end
 
   ks = Vector{uType}()
@@ -235,12 +231,8 @@ function __init(
 
   # k = rateType[]
 
-  if uType <: Array
-    uprev = copy(u)
-  else
-    uprev = deepcopy(u)
-  end
-
+  uprev = recursivecopy(u)
+  
   dtcache = _tType(dt)
   dtchangeable = true
 
