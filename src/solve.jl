@@ -231,12 +231,8 @@ function __init(
 
   # k = rateType[]
 
-  if uType <: Array
-    uprev = copy(u)
-  else
-    uprev = deepcopy(u)
-  end
-
+  uprev = recursivecopy(u)
+  
   dtcache = _tType(dt)
   dtchangeable = true
 
