@@ -1,69 +1,74 @@
-function __solve(
-  prob::AbstractRODEProblem,
-alg::algType,timeseries=[],ts=[],ks=[],recompile::Type{Val{recompile_flag}}=Val{true};
-kwargs...) where {algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},recompile_flag}
-
-  integrator = __init(prob,alg,timeseries,ts,ks,recompile;kwargs...)
+function DiffEqBase.__solve(prob::DiffEqBase.AbstractRODEProblem,
+                            alg::Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},
+                            timeseries=[],ts=[],
+                            recompile::Type{Val{recompile_flag}}=Val{true};
+                            kwargs...) where recompile_flag
+  integrator = DiffEqBase.__init(prob,alg,timeseries,ts,recompile;kwargs...)
   solve!(integrator)
   integrator.sol
 end
 
-function __init(
-  prob::AbstractRODEProblem{uType,tType,isinplace,ND},
-  alg::algType,timeseries_init=uType[],ts_init=eltype(tType)[],ks_init=[],
+function DiffEqBase.__init(
+  prob::DiffEqBase.AbstractRODEProblem,
+  alg::Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},timeseries_init=typeof(prob.u0)[],
+  ts_init=eltype(prob.tspan)[],
   recompile::Type{Val{recompile_flag}}=Val{true};
-  dt = eltype(tType)(0),
-  timeseries_steps::Int = 1,
-  saveat = eltype(tType)[],tstops = eltype(tType)[],d_discontinuities= eltype(tType)[],
-  save_timeseries = nothing,
+  timeseries_steps = 1,
+  saveat = eltype(prob.tspan)[],
+  tstops = eltype(prob.tspan)[],
+  d_discontinuities= eltype(prob.tspan)[],
+  save_idxs = nothing,
   save_everystep = isempty(saveat),
   save_noise = save_everystep && typeof(prob.f) <: Tuple ?
-               has_analytic(prob.f[1]) : has_analytic(prob.f),
-  save_idxs = nothing,
+               DiffEqBase.has_analytic(prob.f[1]) : DiffEqBase.has_analytic(prob.f),
   save_on = true,
   save_start = save_everystep || isempty(saveat) || typeof(saveat) <: Number ? true : prob.tspan[1] in saveat,
   save_end = save_everystep || isempty(saveat) || typeof(saveat) <: Number ? true : prob.tspan[2] in saveat,
+  callback=nothing,
   dense = save_everystep && isempty(saveat),
   calck = (!isempty(setdiff(saveat,tstops)) || dense),
-  adaptive=isadaptive(alg),gamma=9//10,
-  abstol=nothing,reltol=nothing,
+  dt = eltype(prob.tspan)(0),
+  adaptive = isadaptive(alg),
+  gamma=9//10,
+  abstol=nothing,
+  reltol=nothing,
   qmax=qmax_default(alg),qmin=qmin_default(alg),
-  failfactor = 2,
   qoldinit=1//10^4, fullnormalize=true,
+  failfactor = 2,
   beta2=beta2_default(alg),
   beta1=beta1_default(alg,beta2),
-  delta=1//6,maxiters = 1e9,
-  dtmax=eltype(tType)((prob.tspan[end]-prob.tspan[1])),
-  dtmin=eltype(tType) <: AbstractFloat ? eps(eltype(tType)) : eltype(tType)(1//10^(10)),
-  internalnorm=ODE_DEFAULT_NORM,
-  unstable_check = ODE_DEFAULT_UNSTABLE_CHECK,
+  delta=1//6,
+  maxiters = 1000000,
+  dtmax=eltype(prob.tspan)((prob.tspan[end]-prob.tspan[1])),
+  dtmin = typeof(one(eltype(prob.tspan))) <: AbstractFloat ? 10*eps(eltype(prob.tspan)) :
+          typeof(one(eltype(prob.tspan))) <: Integer ? 0 :
+          eltype(prob.tspan)(1//10^(10)),
+  internalnorm = ODE_DEFAULT_NORM,
   isoutofdomain = ODE_DEFAULT_ISOUTOFDOMAIN,
+  unstable_check = ODE_DEFAULT_UNSTABLE_CHECK,
   verbose = true,force_dtmin = false,
-  advance_to_tstop = false,stop_at_next_tstop=false,
-  progress_steps=1000,
-  progress=false, progress_message = ODE_DEFAULT_PROG_MESSAGE,
-  progress_name="SDE",
-  userdata=nothing,callback=nothing,
-  initialize_save = true,
   timeseries_errors = true, dense_errors=false,
+  advance_to_tstop = false,stop_at_next_tstop=false,
+  initialize_save = true,
+  progress=false,progress_steps=1000,progress_name="SDE",
+  progress_message = ODE_DEFAULT_PROG_MESSAGE,
+  userdata=nothing,
   initialize_integrator=true,
-  seed = UInt64(0),
-  kwargs...) where {uType,tType,isinplace,algType<:Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},ND,recompile_flag}
-
-  if save_timeseries !== nothing
-    @warn("save_timeseries is deprecated. Use save_everystep instead")
-    save_everystep = save_timeseries
-  end
+  seed = UInt64(0),kwargs...) where recompile_flag
 
   if typeof(prob.f)<:Tuple
-    if min((mm != I for mm in prob.f.mass_matrix)...)
+    if any(mm != I for mm in prob.f.mass_matrix)
       error("This solver is not able to use mass matrices.")
     end
   elseif prob.f.mass_matrix != I && !alg_mass_matrix_compatible(alg)
     error("This solver is not able to use mass matrices.")
   end
 
-  if (typeof(prob.noise)<:NoiseProcess) && typeof(prob.noise.bridge)<:Nothing && adaptive
+  if !isempty(saveat) && dense
+    @warn("Dense output is incompatible with saveat. Please use the SavingCallback from the Callback Library to mix the two behaviors.")
+  end
+
+  if typeof(prob.noise)<:NoiseProcess && prob.noise.bridge === nothing && adaptive
     error("Bridge function must be given for adaptivity. Either declare this function in noise process or set adaptive=false")
   end
 
@@ -71,28 +76,37 @@ function __init(
     error("The algorithm is not compatible with the chosen noise type. Please see the documentation on the solver methods")
   end
 
+  progress && @logmsg(-1,progress_name,_id=_id = :StochasticDiffEq,progress=0)
+
+  tType = eltype(prob.tspan)
   noise = prob.noise
   tspan = prob.tspan
-  p = prob.p
   tdir = sign(tspan[end]-tspan[1])
-  _tType = eltype(tType)
 
-  T = _tType(tspan[2])
-  t = _tType(tspan[1])
+  t = tspan[1]
 
-  if !adaptive && dt == _tType(0) && isempty(tstops)
+  if !adaptive && iszero(dt) && isempty(tstops)
       error("Fixed timestep methods require a choice of dt or choosing the tstops")
   end
 
   f = prob.f
-  if typeof(prob) <: AbstractSDEProblem
-    g = prob.g
+  p = prob.p
+  g = prob isa DiffEqBase.AbstractSDEProblem ? prob.g : nothing
+
+  if typeof(prob.u0) <: Tuple
+    u = ArrayPartition(prob.u0,Val{true})
   else
-    g = nothing
+    u = recursivecopy(prob.u0)
   end
-  u0 = prob.u0
-  uBottomEltype = recursive_bottom_eltype(u0)
-  uBottomEltypeNoUnits = recursive_unitless_bottom_eltype(u0)
+
+  uType = typeof(u)
+  uBottomEltype = recursive_bottom_eltype(u)
+  uBottomEltypeNoUnits = recursive_unitless_bottom_eltype(u)
+
+  ks = Vector{uType}(undef, 0)
+
+  uEltypeNoUnits = recursive_unitless_eltype(u)
+  tTypeNoUnits   = typeof(one(tType))
 
   if abstol === nothing
     if uBottomEltypeNoUnits == uBottomEltype
@@ -114,34 +128,30 @@ function __init(
     reltol_internal = real.(reltol)
   end
 
-  if typeof(prob.u0) <: Tuple
-    u = ArrayPartition(prob.u0,Val{true})
-  else
-    u = recursivecopy(prob.u0)
-  end
-
-  ks = Vector{uType}()
-
-  order = alg_order(alg)
-
-  if typeof(alg) <: SRI || typeof(alg) <: SRA
-    order = alg.tableau.order
-  end
-
-  dtmax > 0 && tdir < 0 && (dtmax *= tdir) # Allow positive dtmax, but auto-convert
+  dtmax > zero(dtmax) && tdir < 0 && (dtmax *= tdir) # Allow positive dtmax, but auto-convert
   # dtmin is all abs => does not care about sign already.
 
-  if typeof(u) <: AbstractArray
-    rate_prototype = similar(u/zero(t))
+  order = typeof(alg) <: SRI || typeof(alg) <: SRA ? alg.tableau.order : alg_order(alg)
+
+  if isinplace(prob) && typeof(u) <: AbstractArray && eltype(u) <: Number && uBottomEltypeNoUnits == uBottomEltype # Could this be more efficient for other arrays?
+    if !(typeof(u) <: ArrayPartition)
+      rate_prototype = similar(u,typeof(oneunit(uBottomEltype)/oneunit(tType)))
+    else
+      rate_prototype = similar(u, typeof.(oneunit.(recursive_bottom_eltype.(u.x))./oneunit(tType))...)
+    end
   else
-    rate_prototype = u/zero(t)
+    if uBottomEltypeNoUnits == uBottomEltype
+      rate_prototype = u
+    else # has units!
+      rate_prototype = u/oneunit(tType)
+    end
   end
   rateType = typeof(rate_prototype) ## Can be different if united
 
-  if ND <: Nothing
+  if is_diagonal_noise(prob)
     noise_rate_prototype = rate_prototype
   else
-    if typeof(prob) <: AbstractSDEProblem
+    if prob isa DiffEqBase.AbstractSDEProblem
       noise_rate_prototype = prob.noise_rate_prototype
     else
       noise_rate_prototype = prob.rand_prototype
@@ -149,12 +159,9 @@ function __init(
   end
 
   tstops_internal, saveat_internal, d_discontinuities_internal =
-    tstop_saveat_disc_handling(tstops,saveat,d_discontinuities,tdir,tspan,_tType)
+    tstop_saveat_disc_handling(tstops,saveat,d_discontinuities,tdir,tspan,tType)
 
   callbacks_internal = CallbackSet(callback,prob.callback)
-
-  uEltypeNoUnits = recursive_unitless_eltype(u0)
-  tTypeNoUnits   = typeof(recursive_one(t))
 
   ### Algorithm-specific defaults ###
   # if save_idxs === nothing
@@ -171,15 +178,16 @@ function __init(
     u_initial = u[save_idxs]
     timeseries = convert(Vector{typeof(u_initial)},timeseries_init)
   end
-  ts = convert(Vector{_tType},ts_init)
+  ts = convert(Vector{tType},ts_init)
+  alg_choice = Int[]
 
   if !adaptive && save_everystep && tspan[2]-tspan[1] != Inf
-    dt == 0 ? steps = length(tstops) : steps = round(Int,(tspan[2]-tspan[1])/dt,RoundUp)
+    iszero(dt) ? steps = length(tstops) : steps = ceil(Int,internalnorm((tspan[2]-tspan[1])/dt))
     sizehint!(timeseries,steps+1)
     sizehint!(ts,steps+1)
   elseif save_everystep
-    sizehint!(timeseries,10000)
-    sizehint!(ts,10000)
+    sizehint!(timeseries,50)
+    sizehint!(ts,50)
   elseif !isempty(saveat_internal)
     sizehint!(timeseries,length(saveat_internal)+1)
     sizehint!(ts,length(saveat_internal)+1)
@@ -188,67 +196,35 @@ function __init(
     sizehint!(ts,2)
   end
 
-  #ks = convert(Vector{ksEltype},ks_init)
-  alg_choice = Int[]
-
   if save_start
-    saveiter = 1
+    saveiter = 1 # Starts at 1 so first save is at 2
     copyat_or_push!(ts,1,t)
     if save_idxs === nothing
       copyat_or_push!(timeseries,1,u)
-      # copyat_or_push!(ks,1,[rate_prototype])
     else
       copyat_or_push!(timeseries,1,u_initial,Val{false})
-      # copyat_or_push!(ks,1,[ks_prototype])
     end
   else
     saveiter = 0
   end
 
-  opts = SDEOptions(maxiters,timeseries_steps,save_everystep,
-                    adaptive,abstol_internal,
-                    reltol_internal,convert(tTypeNoUnits,gamma),
-                    convert(tTypeNoUnits,qmax),convert(tTypeNoUnits,qmin),
-                    convert(tTypeNoUnits,failfactor),
-                    dtmax,dtmin,internalnorm,save_idxs,
-                    tstops_internal,saveat_internal,
-                    d_discontinuities_internal,
-                    tstops,saveat,d_discontinuities,
-                    userdata,
-                    progress,progress_steps,
-                    progress_name,progress_message,
-                    timeseries_errors,dense_errors,
-                    convert(tTypeNoUnits,beta1),
-                    convert(tTypeNoUnits,beta2),
-                    convert.(uBottomEltypeNoUnits,delta),
-                    convert(tTypeNoUnits,qoldinit),
-                    dense,save_on,save_start,save_end,save_noise,
-                    callbacks_internal,isoutofdomain,unstable_check,
-                    verbose,calck,force_dtmin,
-                    advance_to_tstop,stop_at_next_tstop)
-
-  progress && @logmsg(-1,progress_name,_id=_id = :StochasticDiffEq,progress=0)
-
-  # k = rateType[]
+  QT = tTypeNoUnits <: Integer ? typeof(qmin) : tTypeNoUnits
 
   uprev = recursivecopy(u)
-  
-  dtcache = _tType(dt)
-  dtchangeable = true
 
   if !(uType <: AbstractArray)
     rand_prototype = zero(u/u) # Strip units and type info
     randType = typeof(rand_prototype)
   else
     randElType = typeof(recursive_one(u)) # Strip units and type info
-    if ND <: Nothing # noise_dim isn't set, so it's diagonal
+    if is_diagonal_noise(prob)
       if typeof(u) <: SArray
         rand_prototype = zero(u) # TODO: Array{randElType} for units
       else
         rand_prototype = similar(Array{randElType},axes(u))
         fill!(rand_prototype,zero(randElType))
       end
-    elseif typeof(prob) <: AbstractSDEProblem
+    elseif prob isa DiffEqBase.AbstractSDEProblem
       rand_prototype = similar(Vector{randElType},size(noise_rate_prototype,2))
       fill!(rand_prototype,zero(randElType))
     else
@@ -257,11 +233,11 @@ function __init(
     randType = typeof(rand_prototype) # Strip units and type info
   end
 
-  seed == 0 ? (prob.seed == 0 ? _seed = rand(UInt64) : _seed = prob.seed) : _seed = seed
+  _seed = iszero(seed) ? (iszero(prob.seed) ? rand(UInt64) : prob.seed) : seed
 
-  if typeof(prob.noise) <: Nothing
-    isadaptive(alg) ? rswm = RSWM(adaptivealg=:RSwM3) : rswm = RSWM(adaptivealg=:RSwM1)
-    if isinplace
+  if prob.noise === nothing
+    rswm = isadaptive(alg) ? RSWM(adaptivealg=:RSwM3) : RSWM(adaptivealg=:RSwM1)
+    if isinplace(prob)
       if alg_needs_extra_process(alg)
         W = WienerProcess!(t,rand_prototype,rand_prototype,
                            save_everystep=save_noise,
@@ -305,39 +281,40 @@ function __init(
     end
   end
 
-  eigen_est = 1/oneunit(_tType)
-  EEst = tTypeNoUnits(1)
-  q = tTypeNoUnits(1)
-  just_hit_tstop = false
-  isout = false
-  accept_step = false
-  u_modified = false
-  last_stepfail = false
-  force_stepfail = false
-  event_last_time = 0
-  last_event_error = zero(uBottomEltype)
-  tprev = t
-  iter = 0
-  success_iter = 0
-  q11 = tTypeNoUnits(1)
-
-  rateType = typeof(u/t) ## Can be different if united
-
-  cache = alg_cache(alg,prob,u,W.dW,W.dZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,Val{isinplace})
+  cache = alg_cache(alg,prob,u,W.dW,W.dZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,Val{isinplace(prob)})
 
   id = LinearInterpolationData(timeseries,ts)
 
-  alg_choice = Int[]
+  opts = SDEOptions(maxiters,timeseries_steps,save_everystep,
+                    adaptive,abstol_internal,
+                    reltol_internal,QT(gamma),
+                    QT(qmax),QT(qmin),
+                    QT(failfactor),
+                    tType(dtmax),tType(dtmin),internalnorm,save_idxs,
+                    tstops_internal,saveat_internal,
+                    d_discontinuities_internal,
+                    tstops,saveat,d_discontinuities,
+                    userdata,
+                    progress,progress_steps,
+                    progress_name,progress_message,
+                    timeseries_errors,dense_errors,
+                    QT(beta1),QT(beta2),
+                    convert.(uBottomEltypeNoUnits,delta),
+                    QT(qoldinit),
+                    dense,save_on,save_start,save_end,save_noise,
+                    callbacks_internal,isoutofdomain,unstable_check,
+                    verbose,calck,force_dtmin,
+                    advance_to_tstop,stop_at_next_tstop)
 
   if typeof(alg) <: Union{StochasticDiffEqCompositeAlgorithm,
                           StochasticDiffEqRODECompositeAlgorithm}
-    sol = build_solution(prob,alg,ts,timeseries,W=W,
-                  calculate_error = false, alg_choice=alg_choice,
-                  interp = id, dense = dense, seed = _seed)
+    sol = DiffEqBase.build_solution(prob,alg,ts,timeseries,W=W,
+                                    calculate_error = false, alg_choice=alg_choice,
+                                    interp = id, dense = dense, seed = _seed)
   else
-    sol = build_solution(prob,alg,ts,timeseries,W=W,
-                  calculate_error = false,
-                  interp = id, dense = dense, seed = _seed)
+    sol = DiffEqBase.build_solution(prob,alg,ts,timeseries,W=W,
+                                    calculate_error = false,
+                                    interp = id, dense = dense, seed = _seed)
   end
 
   if recompile_flag == true
@@ -348,44 +325,50 @@ function __init(
   else
     FType = Function
     GType = Function
-    SolType = AbstractODESolution
-    cacheType =  OrdinaryDiffEqCache
+    SolType = DiffEqBase.AbstractRODESolution
+    cacheType = StochasticDiffEqCache
   end
 
-  integrator =    SDEIntegrator{typeof(alg),uType,uBottomEltype,_tType,typeof(p),
-                  typeof(eigen_est),tTypeNoUnits,
+  tprev = t
+  dtcache = tType(dt)
+  iter = 0
+  u_modified = false
+  eigen_est = 1/oneunit(tType) # rate/state = (state/time)/state = 1/t units
+  EEst = tTypeNoUnits(1)
+  just_hit_tstop = false
+  isout = false
+  accept_step = false
+  force_stepfail = false
+  last_stepfail = false
+  event_last_time = 0
+  last_event_error = zero(uBottomEltypeNoUnits)
+  dtchangeable = true
+  q11 = tTypeNoUnits(1)
+  success_iter = 0
+  q = tTypeNoUnits(1)
+
+  integrator =    SDEIntegrator{typeof(alg),uType,uBottomEltype,tType,typeof(p),
+                  typeof(eigen_est),QT,
                   uEltypeNoUnits,typeof(W),rateType,typeof(sol),typeof(cache),
                   FType,GType,typeof(opts),typeof(noise),typeof(last_event_error)}(
-                  f,g,noise,uprev,tprev,t,u,p,_tType(dt),_tType(dt),_tType(dt),dtcache,T,tdir,
+                  f,g,noise,uprev,tprev,t,u,p,tType(dt),tType(dt),tType(dt),dtcache,tspan[2],tdir,
                   just_hit_tstop,isout,event_last_time,last_event_error,accept_step,
                   last_stepfail,force_stepfail,
                   dtchangeable,u_modified,
                   saveiter,
                   alg,sol,
-                  cache,_tType(dt),W,
+                  cache,tType(dt),W,
                   opts,iter,success_iter,eigen_est,EEst,q,
-                  tTypeNoUnits(qoldinit),q11)
+                  QT(qoldinit),q11)
 
   if initialize_integrator
-    initialize_callbacks!(integrator)
+    initialize_callbacks!(integrator, initialize_save)
     initialize!(integrator,integrator.cache)
     save_start && typeof(alg) <: Union{StochasticDiffEqCompositeAlgorithm,
                                        StochasticDiffEqRODECompositeAlgorithm} && copyat_or_push!(alg_choice,1,integrator.cache.current)
   end
 
-  if integrator.dt == zero(integrator.dt) && integrator.opts.adaptive
-    auto_dt_reset!(integrator)
-    if sign(integrator.dt)!=integrator.tdir && integrator.dt!=_tType(0) && !isnan(integrator.dt)
-      error("Automatic dt setting has the wrong sign. Exiting. Please report this error.")
-    end
-    if isnan(integrator.dt)
-      if verbose
-        @warn("Automatic dt set the starting dt as NaN, causing instability.")
-      end
-    end
-  elseif integrator.opts.adaptive && integrator.dt > zero(integrator.dt) && integrator.tdir < 0
-    integrator.dt *= integrator.tdir # Allow positive dt, but auto-convert
-  end
+  handle_dt!(integrator)
 
   ## Modify the first dt for tstops
   modify_dt_for_tstops!(integrator)
@@ -395,15 +378,16 @@ function __init(
   integrator.W.dt = integrator.dt
   DiffEqNoiseProcess.setup_next_step!(integrator.W)
 
-
   integrator
 end
 
-function solve!(integrator::SDEIntegrator)
+function DiffEqBase.solve!(integrator::SDEIntegrator)
   @inbounds while !isempty(integrator.opts.tstops)
     while integrator.tdir*integrator.t < integrator.tdir*top(integrator.opts.tstops)
       loopheader!(integrator)
-      @sde_exit_conditions
+      if check_error!(integrator) != :Success
+        return integrator.sol
+      end
       perform_step!(integrator,integrator.cache)
       loopfooter!(integrator)
       if isempty(integrator.opts.tstops)
@@ -414,25 +398,34 @@ function solve!(integrator::SDEIntegrator)
   end
   postamble!(integrator)
 
-  if typeof(integrator.sol.prob.f) <: Tuple
-    f = integrator.sol.prob.f[1]
-  else
-    f = integrator.sol.prob.f
-  end
+  f = typeof(integrator.sol.prob.f) <: Tuple ? integrator.sol.prob.f[1] : integrator.sol.prob.f
 
-  if has_analytic(f)
+  if DiffEqBase.has_analytic(f)
     DiffEqBase.calculate_solution_errors!(integrator.sol;timeseries_errors=integrator.opts.timeseries_errors,dense_errors=integrator.opts.dense_errors)
   end
-
   if integrator.sol.retcode != :Default
     return integrator.sol
   end
-
   integrator.sol = DiffEqBase.solution_new_retcode(integrator.sol,:Success)
-  nothing
 end
 
 # Helpers
+
+function handle_dt!(integrator)
+  if iszero(integrator.dt) && integrator.opts.adaptive
+    auto_dt_reset!(integrator)
+    if sign(integrator.dt)!=integrator.tdir && !iszero(integrator.dt) && !isnan(integrator.dt)
+      error("Automatic dt setting has the wrong sign. Exiting. Please report this error.")
+    end
+    if isnan(integrator.dt)
+      if integrator.opts.verbose
+        @warn("Automatic dt set the starting dt as NaN, causing instability.")
+      end
+    end
+  elseif integrator.opts.adaptive && integrator.dt > zero(integrator.dt) && integrator.tdir < 0
+    integrator.dt *= integrator.tdir # Allow positive dt, but auto-convert
+  end
+end
 
 function tstop_saveat_disc_handling(tstops,saveat,d_discontinuities,tdir,tspan,tType)
 

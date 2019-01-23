@@ -1,4 +1,4 @@
-struct RODECompositeSolution{T,N,uType,uType2,EType,tType,randType,P,A,IType} <: AbstractRODESolution{T,N}
+struct RODECompositeSolution{T,N,uType,uType2,EType,tType,randType,P,A,IType} <: DiffEqBase.AbstractRODESolution{T,N}
   u::uType
   u_analytic::uType2
   errors::EType
@@ -16,8 +16,8 @@ end
 (sol::RODECompositeSolution)(t,deriv::Type=Val{0};idxs=nothing,continuity=:left) = sol.interp(t,idxs,deriv,sol.prob.p,continuity)
 (sol::RODECompositeSolution)(v,t,deriv::Type=Val{0};idxs=nothing,continuity=:left) = sol.interp(v,t,idxs,deriv,sol.prob.p,continuity)
 
-function build_solution(
-        prob::AbstractRODEProblem,
+function DiffEqBase.build_solution(
+        prob::DiffEqBase.AbstractRODEProblem,
         alg::Union{StochasticDiffEqCompositeAlgorithm,
                    StochasticDiffEqRODECompositeAlgorithm},t,u;
         W=[],timeseries_errors=length(u)>2,
@@ -40,7 +40,7 @@ function build_solution(
     f = prob.f
   end
 
-  if has_analytic(f)
+  if DiffEqBase.has_analytic(f)
     u_analytic = Vector{typeof(prob.u0)}()
     errors = Dict{Symbol,real(eltype(prob.u0))}()
     sol = RODECompositeSolution{T,N,typeof(u),typeof(u_analytic),typeof(errors),typeof(t),typeof(W),

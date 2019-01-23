@@ -62,12 +62,6 @@ end
 last_step_failed(integrator::SDEIntegrator) =
   integrator.last_stepfail && !integrator.opts.adaptive
 
-@def sde_exit_conditions begin
-  if check_error!(integrator) != :Success
-    return integrator.sol
-  end
-end
-
 @inline function savevalues!(integrator::SDEIntegrator,force_save=false)::Tuple{Bool,Bool}
   saved, savedexactly = false, false
   !integrator.opts.save_on && return saved, savedexactly
