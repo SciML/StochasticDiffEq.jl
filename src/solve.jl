@@ -34,7 +34,7 @@ function __init(
   beta1=beta1_default(alg,beta2),
   delta=1//6,maxiters = 1e9,
   dtmax=eltype(tType)((prob.tspan[end]-prob.tspan[1])),
-  dtmin=eltype(tType) <: AbstractFloat ? eltype(tType)*eps(eltype(tType)) : eltype(tType)(1//10^(10)),
+  dtmin=eltype(tType) <: AbstractFloat ? eps(eltype(tType)) : eltype(tType)(1//10^(10)),
   internalnorm=ODE_DEFAULT_NORM,
   unstable_check = ODE_DEFAULT_UNSTABLE_CHECK,
   isoutofdomain = ODE_DEFAULT_ISOUTOFDOMAIN,
