@@ -131,8 +131,6 @@ function DiffEqBase.__init(
   dtmax > zero(dtmax) && tdir < 0 && (dtmax *= tdir) # Allow positive dtmax, but auto-convert
   # dtmin is all abs => does not care about sign already.
 
-  order = typeof(alg) <: SRI || typeof(alg) <: SRA ? alg.tableau.order : alg_order(alg)
-
   if isinplace(prob) && typeof(u) <: AbstractArray && eltype(u) <: Number && uBottomEltypeNoUnits == uBottomEltype # Could this be more efficient for other arrays?
     if !(typeof(u) <: ArrayPartition)
       rate_prototype = similar(u,typeof(oneunit(uBottomEltype)/oneunit(tType)))
