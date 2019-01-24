@@ -323,9 +323,12 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack a021,a031,a032,a041,a042,a043,a121,a131,a132,a141,a142,a143,b021,b031,b032,b041,b042,b043,b121,b131,b132,b141,b142,b143,c02,c03,c04,c11,c12,c13,c14,α1,α2,α3,α4,beta11,beta12,beta13,beta14,beta21,beta22,beta23,beta24,beta31,beta32,beta33,beta34,beta41,beta42,beta43,beta44 = cache
 
-  chi1 = .5*(W.dW.^2 .- dt)/integrator.sqdt #I_(1,1)/sqrt(h)
-  chi2 = .5*(W.dW .+ W.dZ/sqrt(3)) #I_(1,0)/h
-  chi3 = 1/6 * (W.dW.^3 .- 3*W.dW*dt)/dt #I_(1,1,1)/h
+  chi1 = (W.dW.^2 .- dt)/(2integrator.sqdt) #I_(1,1)/sqrt(h)
+  chi2 = (W.dW .+ W.dZ/(2convert(typeof(t),sqrt(3)))) #I_(1,0)/h
+  chi3 = (W.dW.^3 .- 3*W.dW*dt)/(6dt) #I_(1,1,1)/h
+
+
+  @show .5*(W.dW.^2 .- dt)
 
   k1 = integrator.f(uprev,p,t)
   g1 = integrator.g(uprev,p,t+c11*dt)

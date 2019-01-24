@@ -219,8 +219,9 @@ function DiffEqBase.__init(
       if typeof(u) <: SArray
         rand_prototype = zero(u) # TODO: Array{randElType} for units
       else
-        rand_prototype = similar(Array{randElType},axes(u))
-        fill!(rand_prototype,zero(randElType))
+        rand_prototype = (u .- u)./sqrt(dt)
+        #rand_prototype = similar(Array{randElType},axes(u))
+        #fill!(rand_prototype,zero(randElType))
       end
     elseif prob isa DiffEqBase.AbstractSDEProblem
       rand_prototype = similar(Vector{randElType},size(noise_rate_prototype,2))
