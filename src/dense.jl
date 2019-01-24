@@ -78,7 +78,7 @@ function sde_interpolant(Θ,dt,u0::AbstractArray,u1,idxs,deriv::Type)
     S = promote_type(typeof(oneunit(Θ) * oneunit(eltype(u0))), # Θ*u0
                      typeof(oneunit(eltype(u0)) / oneunit(dt))) # u1/dt
 
-    if typeof(idxs) <: Nothing
+    if idxs === nothing
       out = similar(u0, S)
     else
       out = similar(u0, S, axes(idxs))
