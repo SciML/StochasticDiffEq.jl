@@ -327,9 +327,6 @@ end
   chi2 = (W.dW .+ W.dZ/(2convert(typeof(t),sqrt(3)))) #I_(1,0)/h
   chi3 = (W.dW.^3 .- 3*W.dW*dt)/(6dt) #I_(1,1,1)/h
 
-
-  @show .5*(W.dW.^2 .- dt)
-
   k1 = integrator.f(uprev,p,t)
   g1 = integrator.g(uprev,p,t+c11*dt)
 

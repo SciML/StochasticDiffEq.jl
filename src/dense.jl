@@ -20,35 +20,29 @@ function sde_interpolant!(out,Θ,integrator::DEIntegrator,idxs,deriv::Type)
   sde_interpolant!(out,Θ,integrator.dt,integrator.uprev,integrator.u,idxs,deriv)
 end
 
-function sde_interpolant(Θ,integrator::DEIntegrator,idxs,deriv::Type)
+function sde_interpolant(Θ,integrator::DEIntegrator,idxs,deriv::Type{T}) where T
   sde_interpolant(Θ,integrator.dt,integrator.uprev,integrator.u,idxs,deriv)
 end
 
-@muladd function sde_interpolant(Θ,dt,u0::Number,u1,idxs::Nothing,deriv::Type{Val{0}})
+@muladd function sde_interpolant(Θ,dt,u0,u1,idxs::Nothing,deriv::Type{Val{0}})
   @. (1-Θ)*u0 + Θ*u1
 end
 
-@muladd function sde_interpolant(Θ,dt,u0::Number,u1,idxs,deriv::Type{Val{0}})
+@muladd function sde_interpolant(Θ,dt,u0,u1,idxs,deriv::Type{Val{0}})
   @. (1-Θ)*u0[idxs] + Θ*u1[idxs]
 end
 
-function sde_interpolant(Θ,dt,u0::Number,u1,idxs::Nothing,deriv::Type{Val{1}})
+function sde_interpolant(Θ,dt,u0,u1,idxs::Nothing,deriv::Type{Val{1}})
   @. (u1-u0)/dt
 end
 
-function sde_interpolant(Θ,dt,u0::Number,u1,idxs,deriv::Type{Val{1}})
+function sde_interpolant(Θ,dt,u0,u1,idxs,deriv::Type{Val{1}})
   @. (u1[idxs]-u0[idxs])/dt
 end
 
 @muladd function sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv::Type{Val{0}})
   Θm1 = (1-Θ)
-  if out === nothing
-    if idxs === nothing
-      return @. Θm1*u0 + Θ*u1
-    else
-      return @. Θm1*u0[idxs] + Θ*u1[idxs]
-    end
-  elseif idxs === nothing
+  if idxs === nothing
     @. out = Θm1*u0 + Θ*u1
   else
     @views @. out = Θm1*u0[idxs] + Θ*u1[idxs]
@@ -56,35 +50,10 @@ end
 end
 
 function sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv::Type{Val{1}})
-  if out === nothing
-    if idxs === nothing
-      return @. (u1-u0)/dt
-    else
-      return @. (u1[idxs]-u0[idxs])/dt
-    end
-  elseif idxs === nothing
+  if idxs === nothing
     @. out = (u1-u0)/dt
   else
     @views @. out = (u1[idxs]-u0[idxs])/dt
-  end
-end
-
-function sde_interpolant(Θ,dt,u0::AbstractArray,u1,idxs,deriv::Type)
-  if typeof(idxs) <: Number
-    return sde_interpolant!(nothing,Θ,dt,u0,u1,idxs,deriv)
-  else
-    # determine output type
-    # required for calculation of time derivatives with autodifferentiation
-    S = promote_type(typeof(oneunit(Θ) * oneunit(eltype(u0))), # Θ*u0
-                     typeof(oneunit(eltype(u0)) / oneunit(dt))) # u1/dt
-
-    if idxs === nothing
-      out = similar(u0, S)
-    else
-      out = similar(u0, S, axes(idxs))
-    end
-    sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv)
-    return out
   end
 end
 
