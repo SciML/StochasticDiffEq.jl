@@ -91,3 +91,9 @@ sim4 = test_convergence(dts,prob,SOSRI(),numMonte=100)
 
 sim4 = test_convergence(dts,prob,SOSRI2(),numMonte=100)
 @test abs(sim4.𝒪est[:final]-1.5) < 0.3
+
+# 2D oop
+f_oop(u,p,t) = u
+g_oop(u,p,t) = u
+prob = SDEProblem(f_oop, g_oop, ones(2, 2), (0., 1.))
+@test_nowarn solve(prob, ImplicitEM())
