@@ -46,7 +46,7 @@ function (S::NLNewton{false})(integrator)
   tstep = t + c*dt
   u = tmp + theta*z
   b = dt.*f(u, p, tstep) .- z
-  dz = reshape(W \ vec(b), axes(b))
+  dz = _reshape(W \ _vec(b), axes(b))
   ndz = integrator.opts.internalnorm(dz)
   z = z + dz
 
@@ -59,7 +59,7 @@ function (S::NLNewton{false})(integrator)
     iter += 1
     u = tmp + theta*z
     b = dt.*f(u, p, tstep) .- z
-    dz = reshape(W \ vec(b), axes(b))
+    dz = _reshape(W \ _vec(b), axes(b))
     ndzprev = ndz
     ndz = integrator.opts.internalnorm(dz)
     θ = ndz/ndzprev
