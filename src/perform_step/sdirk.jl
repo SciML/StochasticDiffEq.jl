@@ -76,7 +76,7 @@
 
   if integrator.opts.adaptive
 
-    Ed = dt*(J*ftmp)/2
+    Ed = _reshape(dt*(J*_vec(ftmp))/2, axes(ftmp))
     if typeof(cache) <: Union{ImplicitEMConstantCache,ImplicitEulerHeunConstantCache}
         En = mil_correction
     else
