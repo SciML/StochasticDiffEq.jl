@@ -14,21 +14,21 @@ BenchmarkTools.DEFAULT_PARAMETERS.samples = 100
   Random.seed!(100)
   sol = solve(quick_prob,SRIW1(),dt=(1/2)^(18),progress_steps=Int(1e5),
         adaptivealg=:RSwM3,progress=false,qmax=4,save_everystep=false,
-        timeseries_steps=1000,abstol=1e-5,reltol=1e-3)
+        saveat=0.1,abstol=1e-5,reltol=1e-3)
 end
 
 using ProfileView
 Random.seed!(100)
 @profile sol = solve(quick_prob,SRIW1(),dt=(1/2)^(18),progress_steps=Int(1e5),
       adaptivealg=:RSwM3,progress=false,qmax=4,save_everystep=false,
-      timeseries_steps=1000,abstol=1e-5,reltol=1e-3)
+      saveat=0.1,abstol=1e-5,reltol=1e-3)
 
 ProfileView.view()
 
 Random.seed!(100)
 @time sol = solve(quick_prob,SRIW1(),dt=(1/2)^(18),progress_steps=Int(1e5),
       progress=false,qmax=4,save_everystep=false,
-      timeseries_steps=1000,abstol=1e-5,reltol=1e-3)
+      saveat=0.1,abstol=1e-5,reltol=1e-3)
 
 println(sol.u[end])
 
@@ -37,7 +37,7 @@ println(sol.u[end])
 Random.seed!(100)
 @time integrator = init(quick_prob,SRIW1(),dt=(1/2)^(18),progress_steps=Int(1e5),
       adaptivealg=:RSwM3,progress=false,qmax=4,save_everystep=false,
-      timeseries_steps=1000,abstol=1e-5,reltol=1e-3)
+      saveat=0.1,abstol=1e-5,reltol=1e-3)
 
 @time StochasticDiffEq.solve!(integrator)
 

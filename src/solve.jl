@@ -13,7 +13,6 @@ function DiffEqBase.__init(
   alg::Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},timeseries_init=typeof(prob.u0)[],
   ts_init=eltype(prob.tspan)[],
   recompile::Type{Val{recompile_flag}}=Val{true};
-  timeseries_steps = 1,
   saveat = eltype(prob.tspan)[],
   tstops = eltype(prob.tspan)[],
   d_discontinuities= eltype(prob.tspan)[],
@@ -238,13 +237,11 @@ function DiffEqBase.__init(
       if alg_needs_extra_process(alg)
         W = WienerProcess!(t,rand_prototype,rand_prototype,
                            save_everystep=save_noise,
-                           timeseries_steps=timeseries_steps,
                            rswm=rswm,
                            rng = Xorshifts.Xoroshiro128Plus(_seed))
       else
         W = WienerProcess!(t,rand_prototype,
                            save_everystep=save_noise,
-                           timeseries_steps=timeseries_steps,
                            rswm=rswm,
                            rng = Xorshifts.Xoroshiro128Plus(_seed))
       end
@@ -252,13 +249,11 @@ function DiffEqBase.__init(
       if alg_needs_extra_process(alg)
         W = WienerProcess(t,rand_prototype,rand_prototype,
                            save_everystep=save_noise,
-                           timeseries_steps=timeseries_steps,
                            rswm=rswm,
                            rng = Xorshifts.Xoroshiro128Plus(_seed))
       else
         W = WienerProcess(t,rand_prototype,
                            save_everystep=save_noise,
-                           timeseries_steps=timeseries_steps,
                            rswm=rswm,
                            rng = Xorshifts.Xoroshiro128Plus(_seed))
       end
@@ -282,7 +277,7 @@ function DiffEqBase.__init(
 
   id = LinearInterpolationData(timeseries,ts)
 
-  opts = SDEOptions(maxiters,timeseries_steps,save_everystep,
+  opts = SDEOptions(maxiters,save_everystep,
                     adaptive,abstol_internal,
                     reltol_internal,QT(gamma),
                     QT(qmax),QT(qmin),

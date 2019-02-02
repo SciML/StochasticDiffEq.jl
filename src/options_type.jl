@@ -1,7 +1,6 @@
 mutable struct SDEOptions{tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsType,ECType,SType,MI,A,R,D,
            tcache,savecache,disccache}
   maxiters::MI
-  timeseries_steps::Int
   save_everystep::Bool
   adaptive::Bool
   abstol::A
