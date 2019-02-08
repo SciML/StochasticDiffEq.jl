@@ -2,7 +2,7 @@ function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,intern
   f = prob.f
   g = prob.g
   p = prob.p
-  d₀ = internalnorm(u0./(abstol.+internalnorm.(u0).*reltol))
+  d₀ = internalnorm(u0./(abstol.+internalnorm.(u0,t).*reltol,t))
   if !isinplace(prob)
     f₀ = f(u0,p,t)
     if any(isnan.(f₀))
@@ -29,7 +29,7 @@ function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,intern
     end
   end
 
-  d₁ = internalnorm(max.(internalnorm.(f₀.+g₀),internalnorm.(f₀.-g₀))./(abstol.+internalnorm.(u0).*reltol))
+  d₁ = internalnorm(max.(internalnorm.(f₀.+g₀,t),internalnorm.(f₀.-g₀,t))./(abstol.+internalnorm.(u0,t).*reltol),t)
   T0 = typeof(d₀)
   T1 = typeof(d₁)
   if d₀ < T0(1//10^(5)) || d₁ < T1(1//10^(5))
@@ -52,8 +52,8 @@ function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,intern
     f(f₁,u0,p,t)
     g(g₁,u0,p,t); g₁.*=3
   end
-  ΔgMax = max.(internalnorm.(g₀.-g₁),internalnorm.(g₀.+g₁))
-  d₂ = internalnorm(max.(internalnorm.(f₁.-f₀.+ΔgMax),internalnorm.(f₁.-f₀.-ΔgMax))./(abstol.+internalnorm.(u0).*reltol))./dt₀
+  ΔgMax = max.(internalnorm.(g₀.-g₁,t),internalnorm.(g₀.+g₁,t))
+  d₂ = internalnorm(max.(internalnorm.(f₁.-f₀.+ΔgMax,t),internalnorm.(f₁.-f₀.-ΔgMax,t))./(abstol.+internalnorm.(u0,t).*reltol),t)./dt₀
   if max(d₁,d₂)<=T1(1//Int64(10)^(15))
     dt₁ = max(tType(1//10^(6)),dt₀*1//10^(3))
   else

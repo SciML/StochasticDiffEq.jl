@@ -130,8 +130,8 @@
 
     resids = calculate_residuals(E₁, E₂, uprev, u, integrator.opts.abstol,
                                  integrator.opts.reltol, integrator.opts.delta,
-                                 integrator.opts.internalnorm)
-    integrator.EEst = integrator.opts.internalnorm(resids)
+                                 integrator.opts.internalnorm,t)
+    integrator.EEst = integrator.opts.internalnorm(resids,t)
   end
 
   integrator.u = u

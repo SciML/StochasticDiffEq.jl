@@ -41,7 +41,7 @@ function (S::NLFunctional{false})(integrator)
   u = tmp + γ*z
   z₊ = dt*f(u, p, tstep)
   dz = z₊ - z
-  ndz = integrator.opts.internalnorm(dz)
+  ndz = integrator.opts.internalnorm(dz,t)
   z = z₊
 
   η = nlcache.ηold
@@ -55,7 +55,7 @@ function (S::NLFunctional{false})(integrator)
     z₊ = dt*f(u, p, tstep)
     dz = z₊ - z
     ndzprev = ndz
-    ndz = integrator.opts.internalnorm(dz)
+    ndz = integrator.opts.internalnorm(dz,t)
     θ = ndz/ndzprev
     if θ > 1 || ndz*(θ^(max_iter - iter)/(1-θ)) > κtol
       fail_convergence = true
@@ -100,7 +100,7 @@ function (S::NLFunctional{true})(integrator)
   end
   @. dz = z₊ - z
   @. z = z₊
-  ndz = integrator.opts.internalnorm(dz)
+  ndz = integrator.opts.internalnorm(dz,t)
 
   η = nlcache.ηold
   do_functional = true # TODO: this makes `min_iter` ≥ 2
@@ -119,7 +119,7 @@ function (S::NLFunctional{true})(integrator)
     end
     @. dz = z₊ - z
     ndzprev = ndz
-    ndz = integrator.opts.internalnorm(dz)
+    ndz = integrator.opts.internalnorm(dz,t)
     θ = ndz/ndzprev
     if θ > 1 || ndz*(θ^(max_iter - iter)/(1-θ)) > κtol
       fail_convergence = true

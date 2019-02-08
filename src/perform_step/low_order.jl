@@ -180,7 +180,7 @@ end
     @. tmp += integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1)/2)
 
     calculate_residuals!(tmp, tmp, uprev, u, integrator.opts.abstol,
-                         integrator.opts.reltol, integrator.opts.internalnorm)
+                         integrator.opts.reltol, integrator.opts.internalnorm, t)
     integrator.EEst = integrator.opts.internalnorm(tmp)
   end
 end
@@ -225,7 +225,7 @@ end
       @. tmp = integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2) + En
 
       calculate_residuals!(tmp, tmp, uprev, u, integrator.opts.abstol,
-                           integrator.opts.reltol, integrator.opts.internalnorm)
+                           integrator.opts.reltol, integrator.opts.internalnorm, t)
       integrator.EEst = integrator.opts.internalnorm(tmp)
 
   end

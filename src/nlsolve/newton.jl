@@ -47,7 +47,7 @@ function (S::NLNewton{false})(integrator)
   u = tmp + theta*z
   b = dt.*f(u, p, tstep) .- z
   dz = _reshape(W \ _vec(b), axes(b))
-  ndz = integrator.opts.internalnorm(dz)
+  ndz = integrator.opts.internalnorm(dz,t)
   z = z + dz
 
   η = max(nlcache.ηold,eps(eltype(integrator.opts.reltol)))^(0.8)
@@ -61,7 +61,7 @@ function (S::NLNewton{false})(integrator)
     b = dt.*f(u, p, tstep) .- z
     dz = _reshape(W \ _vec(b), axes(b))
     ndzprev = ndz
-    ndz = integrator.opts.internalnorm(dz)
+    ndz = integrator.opts.internalnorm(dz,t)
     θ = ndz/ndzprev
     if θ > 1 || ndz*(θ^(max_iter - iter)/(1-θ)) > κtol
       fail_convergence = true
@@ -105,7 +105,7 @@ function (S::NLNewton{true})(integrator)
   else
     cache.linsolve(vec(dz),W,vec(b),new_W)
   end
-  ndz = integrator.opts.internalnorm(dz)
+  ndz = integrator.opts.internalnorm(dz,t)
   z .+= dz
 
   η = max(nlcache.ηold,eps(eltype(integrator.opts.reltol)))^(0.8)
@@ -129,7 +129,7 @@ function (S::NLNewton{true})(integrator)
       cache.linsolve(vec(dz),W,vec(b),false)
     end
     ndzprev = ndz
-    ndz = integrator.opts.internalnorm(dz)
+    ndz = integrator.opts.internalnorm(dz,t)
     θ = ndz/ndzprev
     if θ > 1 || ndz*(θ^(max_iter - iter)/(1-θ)) > κtol
       fail_convergence = true
