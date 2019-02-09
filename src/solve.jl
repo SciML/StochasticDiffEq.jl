@@ -53,7 +53,7 @@ function DiffEqBase.__init(
   progress_message = ODE_DEFAULT_PROG_MESSAGE,
   userdata=nothing,
   initialize_integrator=true,
-  seed = UInt64(0),kwargs...) where recompile_flag
+  seed = UInt64(0), alias_u0=false, kwargs...) where recompile_flag
 
   if typeof(prob.f)<:Tuple
     if any(mm != I for mm in prob.f.mass_matrix)
@@ -95,7 +95,11 @@ function DiffEqBase.__init(
   if typeof(prob.u0) <: Tuple
     u = ArrayPartition(prob.u0,Val{true})
   else
-    u = recursivecopy(prob.u0)
+    if alias_u0
+      u = prob.u0
+    else
+      u = recursivecopy(prob.u0)
+    end
   end
 
   uType = typeof(u)
