@@ -80,14 +80,14 @@
     if typeof(cache) <: Union{ImplicitEMConstantCache,ImplicitEulerHeunConstantCache}
         En = mil_correction
     else
-        En = integrator.opts.internalnorm.(integrator.W.dW.^3) .*
-             integrator.opts.internalnorm.(ggprime).^2 ./ 6
+        En = integrator.opts.internalnorm.(integrator.W.dW.^3, t) .*
+             integrator.opts.internalnorm.(ggprime, t).^2 ./ 6
     end
 
     resids = calculate_residuals(Ed, En, uprev, u, integrator.opts.abstol,
                                  integrator.opts.reltol, integrator.opts.delta,
-                                 integrator.opts.internalnorm)
-    integrator.EEst = integrator.opts.internalnorm(resids)
+                                 integrator.opts.internalnorm, t)
+    integrator.EEst = integrator.opts.internalnorm(resids, t)
   end
 
   integrator.u = u
@@ -214,7 +214,7 @@ end
           integrator.g(gtmp,z,p,t)
           g_sized2 = norm(gtmp,2)
           @. dW_cache = dW.^2 - dt
-          diff_tmp = integrator.opts.internalnorm(dW_cache)
+          diff_tmp = integrator.opts.internalnorm(dW_cache, t)
           En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
           @. dz = En
         else
@@ -230,7 +230,7 @@ end
           integrator.g(gtmp,z,p,t)
           g_sized2 = norm(gtmp,2)
           @. dW_cache = dW.^2
-          diff_tmp = integrator.opts.internalnorm(dW_cache)
+          diff_tmp = integrator.opts.internalnorm(dW_cache, t)
           En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
           @. dz = En
         else
@@ -243,13 +243,13 @@ end
 
     elseif typeof(cache) <: ImplicitRKMilCache
       # gtmp3 is ggprime
-      @. dz = integrator.opts.internalnorm(dW^3)*integrator.opts.internalnorm(gtmp3)^2 / 6
+      @. dz = integrator.opts.internalnorm(dW^3, t)*integrator.opts.internalnorm(gtmp3, t)^2 / 6
     end
 
     calculate_residuals!(tmp, k, dz, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,
-                         integrator.opts.internalnorm)
-    integrator.EEst = integrator.opts.internalnorm(tmp)
+                         integrator.opts.internalnorm, t)
+    integrator.EEst = integrator.opts.internalnorm(tmp, t)
 
   end
 end

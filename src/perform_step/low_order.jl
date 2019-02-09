@@ -127,8 +127,8 @@ end
 
     resids = calculate_residuals(Ed, En, uprev, u, integrator.opts.abstol,
                                  integrator.opts.reltol, integrator.opts.delta,
-                                 integrator.opts.internalnorm)
-    integrator.EEst = integrator.opts.internalnorm(resids)
+                                 integrator.opts.internalnorm, t)
+    integrator.EEst = integrator.opts.internalnorm(resids, t)
   end
   integrator.u = u
 end
@@ -149,8 +149,8 @@ end
   end
   @. u = K+L*W.dW + tmp
   if integrator.opts.adaptive
-    @. tmp = (tmp)/(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev),integrator.opts.internalnorm(u))*integrator.opts.reltol)
-    integrator.EEst = integrator.opts.internalnorm(tmp)
+    @. tmp = (tmp)/(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev,t),integrator.opts.internalnorm(u,t))*integrator.opts.reltol)
+    integrator.EEst = integrator.opts.internalnorm(tmp,t)
   end
   integrator.u = u
 end
@@ -174,14 +174,14 @@ end
   end
   @. u = K+L*W.dW + tmp
   if integrator.opts.adaptive
-    @. tmp = integrator.opts.internalnorm(W.dW^3)*
-             integrator.opts.internalnorm((du2-L)/(integrator.sqdt))^2 / 6
+    @. tmp = integrator.opts.internalnorm(W.dW^3,t)*
+             integrator.opts.internalnorm((du2-L)/(integrator.sqdt),t)^2 / 6
     integrator.f(du2,K,p,t+dt)
-    @. tmp += integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1)/2)
+    @. tmp += integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1)/2,t)
 
     calculate_residuals!(tmp, tmp, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.internalnorm, t)
-    integrator.EEst = integrator.opts.internalnorm(tmp)
+    integrator.EEst = integrator.opts.internalnorm(tmp, t)
   end
 end
 
@@ -211,7 +211,7 @@ end
     g(gtmp,Kj,p,t)
     @. Dgj = (gtmp - L)/sqdt
     if integrator.opts.adaptive
-        ggprime_norm += integrator.opts.internalnorm(Dgj)
+        ggprime_norm += integrator.opts.internalnorm(Dgj,t)
     end
     mul!(tmp,Dgj,@view(I[:,j]))
     mil_correction .+= tmp
@@ -220,13 +220,13 @@ end
   @. u .= uprev + dt*du1 + tmp + mil_correction
 
   if integrator.opts.adaptive
-      En = integrator.opts.internalnorm(W.dW)^3*ggprime_norm^2 / 6
+      En = integrator.opts.internalnorm(W.dW,t)^3*ggprime_norm^2 / 6
       integrator.f(du2,K,p,t+dt)
-      @. tmp = integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2) + En
+      @. tmp = integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2,t) + En
 
       calculate_residuals!(tmp, tmp, uprev, u, integrator.opts.abstol,
                            integrator.opts.reltol, integrator.opts.internalnorm, t)
-      integrator.EEst = integrator.opts.internalnorm(tmp)
+      integrator.EEst = integrator.opts.internalnorm(tmp,t)
 
   end
 end

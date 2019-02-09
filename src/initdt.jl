@@ -2,7 +2,7 @@ function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,intern
   f = prob.f
   g = prob.g
   p = prob.p
-  d₀ = internalnorm(u0./(abstol.+internalnorm.(u0,t).*reltol,t))
+  d₀ = internalnorm(u0./(abstol.+internalnorm.(u0,t).*reltol),t)
   if !isinplace(prob)
     f₀ = f(u0,p,t)
     if any(isnan.(f₀))

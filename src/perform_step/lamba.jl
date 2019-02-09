@@ -23,8 +23,8 @@
 
     resids = calculate_residuals(Ed, En, uprev, u, integrator.opts.abstol,
                                  integrator.opts.reltol, integrator.opts.delta,
-                                 integrator.opts.internalnorm)
-    integrator.EEst = integrator.opts.internalnorm(resids)
+                                 integrator.opts.internalnorm, t)
+    integrator.EEst = integrator.opts.internalnorm(resids, t)
   end
 
   integrator.u = u
@@ -64,7 +64,7 @@ end
       integrator.g(gtmp,tmp,p,t)
       g_sized2 = norm(gtmp,2)
       @. dW_cache = W.dW.^2 - dt
-      diff_tmp = integrator.opts.internalnorm(dW_cache)
+      diff_tmp = integrator.opts.internalnorm(dW_cache, t)
       En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
       @. tmp = En
     else
@@ -75,7 +75,7 @@ end
 
     # Ed
     integrator.f(du2,K,p,t+dt)
-    @. tmp += integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2)
+    @. tmp += integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2, t)
 
     calculate_residuals!(tmp, tmp, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.internalnorm, t)
@@ -114,8 +114,8 @@ end
 
     resids = calculate_residuals(Ed, En, uprev, u, integrator.opts.abstol,
                                  integrator.opts.reltol, integrator.opts.delta,
-                                 integrator.opts.internalnorm)
-    integrator.EEst = integrator.opts.internalnorm(resids)
+                                 integrator.opts.internalnorm, t)
+    integrator.EEst = integrator.opts.internalnorm(resids, t)
   end
 
   integrator.u = u
@@ -162,7 +162,7 @@ end
       integrator.g(gtmp,tmp,p,t)
       g_sized2 = norm(gtmp,2)
       @. dW_cache = W.dW.^2
-      diff_tmp = integrator.opts.internalnorm(dW_cache)
+      diff_tmp = integrator.opts.internalnorm(dW_cache, t)
       En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
       @. tmp = En
     else
@@ -173,10 +173,10 @@ end
 
     # Ed
     integrator.f(du2,K,p,t+dt)
-    @. tmp += integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2)
+    @. tmp += integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2, t)
 
     calculate_residuals!(tmp, tmp, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.internalnorm, t)
-    integrator.EEst = integrator.opts.internalnorm(tmp)
+    integrator.EEst = integrator.opts.internalnorm(tmp, t)
   end
 end

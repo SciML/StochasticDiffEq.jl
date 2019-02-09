@@ -189,7 +189,7 @@ end
           integrator.g(gtmp,z,p,t)
           g_sized2 = norm(gtmp,2)
           @. dW_cache = dW.^2 - dt
-          diff_tmp = integrator.opts.internalnorm(dW_cache)
+          diff_tmp = integrator.opts.internalnorm(dW_cache,t)
           En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
           @. dz = En
         else
@@ -205,7 +205,7 @@ end
           integrator.g(gtmp,z,p,t)
           g_sized2 = norm(gtmp,2)
           @. dW_cache = dW.^2
-          diff_tmp = integrator.opts.internalnorm(dW_cache)
+          diff_tmp = integrator.opts.internalnorm(dW_cache,t)
           En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
           @. dz = En
         else
@@ -219,7 +219,7 @@ end
 
     calculate_residuals!(tmp, k, dz, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,
-                         integrator.opts.internalnorm)
+                         integrator.opts.internalnorm,t)
     integrator.EEst = integrator.opts.internalnorm(tmp,t)
 
   end

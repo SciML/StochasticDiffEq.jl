@@ -345,7 +345,7 @@ end
 
     calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,
-                         integrator.opts.internalnorm)
-    integrator.EEst = integrator.opts.internalnorm(tmp)
+                         integrator.opts.internalnorm, t)
+    integrator.EEst = integrator.opts.internalnorm(tmp, t)
   end
 end

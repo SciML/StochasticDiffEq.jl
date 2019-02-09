@@ -48,8 +48,8 @@
 
     calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,
-                         integrator.opts.internalnorm)
-    integrator.EEst = integrator.opts.internalnorm(tmp)
+                         integrator.opts.internalnorm, t)
+    integrator.EEst = integrator.opts.internalnorm(tmp, t)
   end
   integrator.u = u
 end
@@ -112,8 +112,8 @@ end
 
     calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,
-                         integrator.opts.internalnorm)
-    integrator.EEst = integrator.opts.internalnorm(tmp)
+                         integrator.opts.internalnorm, t)
+    integrator.EEst = integrator.opts.internalnorm(tmp, t)
   end
 end
 
@@ -155,8 +155,8 @@ end
 
     calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,
-                         integrator.opts.internalnorm)
-    integrator.EEst = integrator.opts.internalnorm(tmp)
+                         integrator.opts.internalnorm, t)
+    integrator.EEst = integrator.opts.internalnorm(tmp, t)
   end
   integrator.u = u
 end
@@ -218,8 +218,8 @@ end
 
     calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,
-                         integrator.opts.internalnorm)
-    integrator.EEst = integrator.opts.internalnorm(tmp)
+                         integrator.opts.internalnorm, t)
+    integrator.EEst = integrator.opts.internalnorm(tmp, t)
   end
 end
 
@@ -258,8 +258,8 @@ end
 
     resids = calculate_residuals(E₁, E₂, uprev, u, integrator.opts.abstol,
                                  integrator.opts.reltol, integrator.opts.delta,
-                                 integrator.opts.internalnorm)
-    integrator.EEst = integrator.opts.internalnorm(resids)
+                                 integrator.opts.internalnorm, t)
+    integrator.EEst = integrator.opts.internalnorm(resids, t)
   end
   integrator.u = u
 end
@@ -313,8 +313,8 @@ end
 
     resids = calculate_residuals(E₁, E₂, uprev, u, integrator.opts.abstol,
                                  integrator.opts.reltol, integrator.opts.delta,
-                                 integrator.opts.internalnorm)
-    integrator.EEst = integrator.opts.internalnorm(resids)
+                                 integrator.opts.internalnorm, t)
+    integrator.EEst = integrator.opts.internalnorm(resids, t)
   end
   integrator.u = u
 end
@@ -355,8 +355,8 @@ end
   E₁ = dt*(k1 + k2 + k3 + k4)
 
   if typeof(integrator.alg) <: StochasticCompositeAlgorithm && typeof(integrator.alg.algs[1]) <: SOSRI2
-    ϱu = integrator.opts.internalnorm(k4 - k3)
-    ϱd = integrator.opts.internalnorm(H03 - H02)
+    ϱu = integrator.opts.internalnorm(k4 - k3, t)
+    ϱd = integrator.opts.internalnorm(H03 - H02, t)
     integrator.eigen_est = ϱu/ϱd
   end
 
@@ -366,8 +366,8 @@ end
 
     resids = calculate_residuals(E₁, E₂, uprev, u, integrator.opts.abstol,
                                  integrator.opts.reltol, integrator.opts.delta,
-                                 integrator.opts.internalnorm)
-    integrator.EEst = integrator.opts.internalnorm(resids)
+                                 integrator.opts.internalnorm, t)
+    integrator.EEst = integrator.opts.internalnorm(resids, t)
   end
   integrator.u = u
 end
@@ -419,9 +419,9 @@ end
 
   if typeof(integrator.alg) <: StochasticCompositeAlgorithm && typeof(integrator.alg.algs[1]) <: SOSRI2
     @. tmp = k4 - k3
-    ϱu = integrator.opts.internalnorm(tmp)
+    ϱu = integrator.opts.internalnorm(tmp, t)
     @. tmp = H03 - H02
-    ϱd = integrator.opts.internalnorm(tmp)
+    ϱd = integrator.opts.internalnorm(tmp, t)
     integrator.eigen_est = ϱu/ϱd
   end
 
@@ -435,7 +435,7 @@ end
 
     calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,
-                         integrator.opts.internalnorm)
-    integrator.EEst = integrator.opts.internalnorm(tmp)
+                         integrator.opts.internalnorm, t)
+    integrator.EEst = integrator.opts.internalnorm(tmp, t)
   end
 end

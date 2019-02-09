@@ -183,7 +183,7 @@ function DiffEqBase.__init(
   alg_choice = Int[]
 
   if !adaptive && save_everystep && tspan[2]-tspan[1] != Inf
-    iszero(dt) ? steps = length(tstops) : steps = ceil(Int,internalnorm((tspan[2]-tspan[1])/dt))
+    iszero(dt) ? steps = length(tstops) : steps = ceil(Int,internalnorm((tspan[2]-tspan[1])/dt,tspan[1]))
     sizehint!(timeseries,steps+1)
     sizehint!(ts,steps+1)
   elseif save_everystep
