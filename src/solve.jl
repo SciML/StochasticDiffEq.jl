@@ -205,6 +205,9 @@ function DiffEqBase.__init(
     else
       copyat_or_push!(timeseries,1,u_initial,Val{false})
     end
+    if typeof(alg) <: StochasticDiffEqCompositeAlgorithm
+      copyat_or_push!(alg_choice,1,1)
+    end
   else
     saveiter = 0
   end
