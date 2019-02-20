@@ -1,6 +1,6 @@
 function DiffEqBase.__solve(prob::DiffEqBase.AbstractRODEProblem,
                             alg::Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},
-                            timeseries=[],ts=[],
+                            timeseries=[],ts=[],ks=nothing, # needed for variable rate
                             recompile::Type{Val{recompile_flag}}=Val{true};
                             kwargs...) where recompile_flag
   integrator = DiffEqBase.__init(prob,alg,timeseries,ts,recompile;kwargs...)
@@ -12,6 +12,7 @@ function DiffEqBase.__init(
   prob::DiffEqBase.AbstractRODEProblem,
   alg::Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},timeseries_init=typeof(prob.u0)[],
   ts_init=eltype(prob.tspan)[],
+  ks_init=nothing,
   recompile::Type{Val{recompile_flag}}=Val{true};
   saveat = eltype(prob.tspan)[],
   tstops = eltype(prob.tspan)[],
