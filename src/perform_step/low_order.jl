@@ -32,7 +32,7 @@ end
     u_choice = uprev
   end
 
-  integrator.g(rtmp2,u,p,t)
+  integrator.g(rtmp2,u_choice,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
     @. rtmp2 *= W.dW
