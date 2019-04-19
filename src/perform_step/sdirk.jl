@@ -4,8 +4,7 @@
                                             ImplicitRKMilConstantCache},
                                             f=integrator.f)
   @unpack t,dt,uprev,u,p = integrator
-  @unpack uf = cache
-  nlsolve! = cache.nlsolve; nlcache = nlsolve!.cache
+  @unpack uf, nlsolver = cache
   alg = unwrap_alg(integrator, true)
   theta = alg.theta
   alg.symplectic ? a = dt/2 : a = dt
@@ -13,8 +12,8 @@
   repeat_step = false
   if nlsolve! isa NLNewton
     uf.t = t
-    J, nlcache.W = calc_W!(integrator, cache, γdt, repeat_step)
   end
+  J = update_W!(integrator, cache, γdt, repeat_step)
 
   # TODO: Stochastic extrapolants?
   u = uprev
@@ -50,9 +49,9 @@
   else
     z = dt*ftmp # linear extrapolation
   end
-  nlcache.z = z
+  nlsolver.z = z
 
-  nlcache.c = a
+  nlsolver.c = a
   if alg.symplectic
     # u = uprev + z then  u = (uprev+u)/2 = (uprev+uprev+z)/2 = uprev + z/2
     #u = uprev + z/2 + gtmp/2
@@ -61,8 +60,9 @@
     #u = uprev + dt*(1-theta)*ftmp + theta*z + gtmp
     tmp = uprev + dt*(1-theta)*ftmp + gtmp
   end
-  nlcache.tmp = tmp
-  (z, η, iter, fail_convergence) = nlsolve!(integrator); fail_convergence && return nothing
+  nlsolver.tmp = tmp
+  z = nlsolve!(integrator, cache)
+  nlsolvefail(nlsolver) && return nothing
 
   if alg.symplectic
     u = uprev + z + gtmp
@@ -71,8 +71,8 @@
     u = tmp + theta*z
   end
 
-  nlcache.ηold = η
-  nlcache.nl_iters = iter
+  nlsolver.ηold = η
+  nlsolver.nl_iters = iter
 
   if integrator.opts.adaptive
 
@@ -100,8 +100,7 @@ end
                                             ImplicitRKMilCache},
                                f=integrator.f)
   @unpack t,dt,uprev,u,p = integrator
-  @unpack du1,dz,z,k,J,W,jac_config,gtmp,gtmp2,tmp = cache
-  nlsolve! = cache.nlsolve; nlcache = nlsolve!.cache
+  @unpack du1,dz,z,k,J,W,jac_config,gtmp,gtmp2,tmp,nlsolver = cache
   alg = unwrap_alg(integrator, true)
   alg.symplectic ? a = dt/2 : a = dt
   dW = integrator.W.dW
@@ -118,7 +117,7 @@ end
     copyto!(u,uprev)
   end
 
-  nlsolve! isa NLNewton && calc_W!(integrator, cache, dt, repeat_step)
+  update_W!(integrator, cache, dt, repeat_step)
 
   ##############################################################################
 
@@ -168,7 +167,7 @@ end
     @. z = dt*tmp # linear extrapolation
   end
 
-  nlcache.c = a
+  nlsolver.c = a
   if alg.symplectic
     #@. u = uprev + z/2 + gtmp2/2
     @. tmp = uprev + gtmp2/2
@@ -176,7 +175,7 @@ end
     #@. u = uprev + dt*(1-theta)*tmp + theta*z + gtmp2
     @. tmp = uprev + dt*(1-theta)*tmp + gtmp2
   end
-  z,η,iter,fail_convergence = nlsolve!(integrator)
+  z = nlsolve!(integrator, cache)
 
   if alg.symplectic
     @. u = uprev + z + gtmp2
@@ -184,8 +183,8 @@ end
     @. u = tmp + theta*z
   end
 
-  nlcache.ηold = η
-  nlcache.nl_iters = iter
+  nlsolver.ηold = η
+  nlsolver.nl_iters = iter
 
   if integrator.opts.adaptive
 

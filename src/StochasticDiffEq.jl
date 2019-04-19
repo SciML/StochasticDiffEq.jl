@@ -37,7 +37,7 @@ module StochasticDiffEq
                      u_modified!,savevalues!,add_tstop!,add_saveat!,set_reltol!,
                      set_abstol!, postamble!, last_step_failed, has_invW, has_jac
 
-  using DiffEqBase: check_error!, is_diagonal_noise
+  using DiffEqBase: check_error!, is_diagonal_noise, @..
 
   const CompiledFloats = Union{Float32,Float64}
 
@@ -50,9 +50,9 @@ module StochasticDiffEq
   include("options_type.jl")
   include("derivative_wrappers.jl")
   include("interp_func.jl")
-  include("nlsolve/type.jl")
-  include("nlsolve/newton.jl")
-  include("nlsolve/functional.jl")
+  # include("nlsolve/type.jl")
+  # include("nlsolve/newton.jl")
+  # include("nlsolve/functional.jl")
   include("caches/cache_types.jl")
   include("caches/basic_method_caches.jl")
   include("caches/lamba_caches.jl")

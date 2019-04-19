@@ -3,8 +3,7 @@
                                             ISSEulerHeunConstantCache},
                                             f=integrator.f)
   @unpack t,dt,uprev,u,p = integrator
-  @unpack uf = cache
-  nlsolve! = cache.nlsolve; nlcache = nlsolve!.cache
+  @unpack uf, nlsolver = cache
   alg = unwrap_alg(integrator, true)
   theta = alg.theta
   alg.symplectic ? a = dt/2 : a = dt
@@ -13,10 +12,10 @@
   u = uprev
 
   repeat_step = false
-  if nlsolve! isa NLNewton
+  if isnewton(nlsolver)
     uf.t = t
-    J, nlcache.W = calc_W!(integrator, cache, dt*theta, repeat_step)
   end
+  J = update_W!(integrator, cache, dt*theta, repeat_step)
 
   L = integrator.g(uprev,p,t)
   ftmp = integrator.f(uprev,p,t)
@@ -26,9 +25,9 @@
   else
     z = dt*ftmp # linear extrapolation
   end
-  nlcache.z = z
+  nlsolver.z = z
 
-  nlcache.c = a
+  nlsolver.c = a
   if alg.symplectic
     # u = uprev + z then  u = (uprev+u)/2 = (uprev+uprev+z)/2 = uprev + z/2
     #u = uprev + z/2
@@ -38,7 +37,8 @@
   end
   nlcache.tmp = tmp
 
-  (z, η, iter, fail_convergence) = nlsolve!(integrator); fail_convergence && return nothing
+  z = nlsolve!(integrator, cache)
+  nlsolvefail(nlsolver) && return nothing
 
   if alg.symplectic
     u = tmp + z
@@ -86,8 +86,7 @@ end
                                                         ISSEulerHeunCache},
                                f=integrator.f)
   @unpack t,dt,uprev,u,p = integrator
-  @unpack uf,du1,dz,z,k,J,W,jac_config,gtmp,gtmp2,tmp,tmp,dW_cache = cache
-  nlsolve! = cache.nlsolve; nlcache = nlsolve!.cache
+  @unpack uf,du1,dz,z,k,J,W,jac_config,gtmp,gtmp2,tmp,tmp,dW_cache,nlsolver = cache
   alg = unwrap_alg(integrator, true)
   alg.symplectic ? a = dt/2 : a = dt
   dW = integrator.W.dW
@@ -104,7 +103,7 @@ end
     copyto!(u,uprev)
   end
 
-  nlsolve! isa NLNewton && calc_W!(integrator, cache, dt, repeat_step)
+  update_W!(integrator, cache, dt, repeat_step)
 
   integrator.f(tmp,uprev,p,t)
 
@@ -122,7 +121,8 @@ end
     @. tmp = uprev + dt*(1-theta)*tmp
   end
   nlcache.c = a
-  (z, η, iter, fail_convergence) = nlsolve!(integrator); fail_convergence && return nothing
+  z = nlsolve!(integrator, cache)
+  nlsolvefail(nlsolver) && return nothing
 
   if alg.symplectic
     @. u = uprev + z
@@ -131,8 +131,8 @@ end
     @. u = tmp + theta*z
   end
 
-  nlcache.ηold = η
-  nlcache.nl_iters = iter
+  nlsolver.ηold = η
+  nlsolver.nl_iters = iter
 
   ##############################################################################
 

@@ -47,7 +47,7 @@ Return element-wise residuals
 \\frac{ũ}{α+\\max{scalarnorm(u₀),scalarnorm(u₁)}*ρ}.
 ```
 """
-@inline @muladd function calculate_residuals(ũ::Number, u₀::Number, u₁::Number, α::Real,
+@inline @muladd function DiffEqBase.calculate_residuals(ũ::Number, u₀::Number, u₁::Number, α::Real,
                                              ρ::Real, scalarnorm, t)
     ũ / (α + max(scalarnorm(u₀,t), scalarnorm(u₁,t)) * ρ)
 end
@@ -60,7 +60,7 @@ Return element-wise residuals
 \\frac{δ E₁ + E₂}{α+\\max{scalarnorm(u₀),scalarnorm(u₁)}*ρ}.
 ```
 """
-@inline @muladd function calculate_residuals(E₁::Number, E₂::Number, u₀::Number, u₁::Number,
+@inline @muladd function DiffEqBase.calculate_residuals(E₁::Number, E₂::Number, u₀::Number, u₁::Number,
                                              α::Real, ρ::Real, δ::Number, scalarnorm, t)
     (δ * E₁ + E₂) / (α + max(scalarnorm(u₀,t), scalarnorm(u₁,t)) * ρ)
 end
@@ -70,28 +70,28 @@ end
 
 Same as [`calculate_residuals`](@ref) but save result in `out`.
 """
-@inline function calculate_residuals!(out, ũ, u₀, u₁, α, ρ, scalarnorm, t)
-  @. out = calculate_residuals(ũ, u₀, u₁, α, ρ, scalarnorm, t)
+@inline function DiffEqBase.calculate_residuals!(out, ũ, u₀, u₁, α, ρ, scalarnorm, t)
+  @. out = DiffEqBase.calculate_residuals(ũ, u₀, u₁, α, ρ, scalarnorm, t)
   out
 end
 
-@inline function calculate_residuals!(out::Array{<:Number}, ũ::Array{<:Number},
+@inline function DiffEqBase.calculate_residuals!(out::Array{<:Number}, ũ::Array{<:Number},
                                       u₀::Array{<:Number}, u₁::Array{<:Number}, α::Real,
                                       ρ::Real, scalarnorm, t)
   @tight_loop_macros @inbounds for i in eachindex(out)
-    out[i] = calculate_residuals(ũ[i], u₀[i], u₁[i], α, ρ, scalarnorm, t)
+    out[i] = DiffEqBase.calculate_residuals(ũ[i], u₀[i], u₁[i], α, ρ, scalarnorm, t)
   end
   out
 end
 
-@inline function calculate_residuals(ũ, u₀, u₁, α, ρ, scalarnorm, t)
-  @. calculate_residuals(ũ, u₀, u₁, α, ρ, scalarnorm, ts)
+@inline function DiffEqBase.calculate_residuals(ũ, u₀, u₁, α, ρ, scalarnorm, t)
+  @. DiffEqBase.calculate_residuals(ũ, u₀, u₁, α, ρ, scalarnorm, ts)
 end
 
-@inline function calculate_residuals(ũ::Array{<:Number}, u₀::Array{<:Number},
+@inline function DiffEqBase.calculate_residuals(ũ::Array{<:Number}, u₀::Array{<:Number},
                                      u₁::Array{<:Number}, α::Real, ρ::Real, scalarnorm, t)
   out = similar(ũ)
-  calculate_residuals!(out, ũ, u₀, u₁, α, ρ, scalarnorm, t)
+  DiffEqBase.calculate_residuals!(out, ũ, u₀, u₁, α, ρ, scalarnorm, t)
   out
 end
 
@@ -100,30 +100,30 @@ end
 
 Same as [`calculate_residuals`](@ref) but save result in `out`.
 """
-@inline function calculate_residuals!(out, E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm, t)
-  @. out = calculate_residuals(E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm, t)
+@inline function DiffEqBase.calculate_residuals!(out, E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm, t)
+  @. out = DiffEqBase.calculate_residuals(E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm, t)
   out
 end
 
-@inline function calculate_residuals!(out::Array{<:Number}, E₁::Array{<:Number},
+@inline function DiffEqBase.calculate_residuals!(out::Array{<:Number}, E₁::Array{<:Number},
                                       E₂::Array{<:Number}, u₀::Array{<:Number},
                                       u₁::Array{<:Number}, α::Real, ρ::Real, δ::Number,
                                       scalarnorm, t)
   @tight_loop_macros @inbounds for i in eachindex(out)
-      out[i] = calculate_residuals(E₁[i], E₂[i], u₀[i], u₁[i], α, ρ, δ, scalarnorm, t)
+      out[i] = DiffEqBase.calculate_residuals(E₁[i], E₂[i], u₀[i], u₁[i], α, ρ, δ, scalarnorm, t)
   end
   out
 end
 
-@inline function calculate_residuals(E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm, t)
-  @. calculate_residuals(E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm, t)
+@inline function DiffEqBase.calculate_residuals(E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm, t)
+  @. DiffEqBase.calculate_residuals(E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm, t)
 end
 
-@inline function calculate_residuals(E₁::Array{<:Number}, E₂::Array{<:Number},
+@inline function DiffEqBase.calculate_residuals(E₁::Array{<:Number}, E₂::Array{<:Number},
                                      u₀::Array{<:Number}, u₁::Array{<:Number}, α::Real,
                                      ρ::Real, δ::Number, scalarnorm, t)
     out = similar(u₀)
-    calculate_residuals!(out, E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm, t)
+    DiffEqBase.calculate_residuals!(out, E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm, t)
     out
 end
 

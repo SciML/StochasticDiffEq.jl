@@ -1,11 +1,10 @@
 mutable struct SKenCarpConstantCache{F,N,Tab} <: StochasticDiffEqConstantCache
   uf::F
-  nlsolve::N
+  nlsolver::N
   tab::Tab
 end
 
 function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  @oopnlcachefields
   if uf !== nothing && typeof(f) <: SplitSDEFunction
     uf = DiffEqDiffTools.UDerivativeWrapper(f.f1,t,p)
   else
@@ -14,7 +13,7 @@ function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prot
   tab = SKenCarpTableau(real(uBottomEltypeNoUnits),real(tTypeNoUnits))
   γ, c = tab.γ,tab.c3
   @oopnlsolve
-  SKenCarpConstantCache(uf,nlsolve,tab)
+  SKenCarpConstantCache(uf,nlsolver,tab)
 end
 
 @cache mutable struct SKenCarpCache{uType,rateType,uNoUnitsType,JType,WType,UF,JC,N,Tab,F,kType,randType,rateNoiseType} <: StochasticDiffEqMutableCache
@@ -40,7 +39,7 @@ end
   uf::UF
   jac_config::JC
   linsolve::F
-  nlsolve::N
+  nlsolver::N
   tab::Tab
   chi2::randType
   g1::rateNoiseType
@@ -51,7 +50,6 @@ u_cache(c::SKenCarpCache)    = (c.z₁,c.z₂,c.z₃,c.z₄,c.dz)
 du_cache(c::SKenCarpCache)   = (c.k,c.fsalfirst)
 
 function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
-  @iipnlcachefields
   atmp = fill!(similar(u,uEltypeNoUnits),0)
   z₁ = similar(u); z₂ = similar(u)
   z₃ = similar(u); z₄ = z
