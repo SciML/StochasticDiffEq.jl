@@ -5,14 +5,14 @@ mutable struct SKenCarpConstantCache{F,N,Tab} <: StochasticDiffEqConstantCache
 end
 
 function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
+  tab = SKenCarpTableau(real(uBottomEltypeNoUnits),real(tTypeNoUnits))
+  γ, c = tab.γ,tab.c3
+  @oopnlsolve
   if uf !== nothing && typeof(f) <: SplitSDEFunction
     uf = DiffEqDiffTools.UDerivativeWrapper(f.f1,t,p)
   else
     uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
   end
-  tab = SKenCarpTableau(real(uBottomEltypeNoUnits),real(tTypeNoUnits))
-  γ, c = tab.γ,tab.c3
-  @oopnlsolve
   SKenCarpConstantCache(uf,nlsolver,tab)
 end
 

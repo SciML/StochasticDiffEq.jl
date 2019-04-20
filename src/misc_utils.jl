@@ -169,3 +169,4 @@ _reshape(v::AbstractVector, siz) = v
 _vec(v) = vec(v)
 _vec(v::Number) = v
 _vec(v::AbstractVector) = v
+islinear(f) = f isa DiffEqBase.AbstractDiffEqLinearOperator && is_constant(f)

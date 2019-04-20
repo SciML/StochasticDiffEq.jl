@@ -71,9 +71,6 @@
     u = tmp + theta*z
   end
 
-  nlsolver.ηold = η
-  nlsolver.nl_iters = iter
-
   if integrator.opts.adaptive
 
     Ed = _reshape(dt*(J*_vec(ftmp))/2, axes(ftmp))
@@ -182,9 +179,6 @@ end
   else
     @. u = tmp + theta*z
   end
-
-  nlsolver.ηold = η
-  nlsolver.nl_iters = iter
 
   if integrator.opts.adaptive
 

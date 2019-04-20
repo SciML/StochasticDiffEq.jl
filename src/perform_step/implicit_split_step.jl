@@ -55,9 +55,6 @@
 
   u += gtmp
 
-  nlcache.ηold = η
-  nlcache.nl_iters = iter
-
   if integrator.opts.adaptive
 
     Ed = dt*(J*ftmp)/2
@@ -130,9 +127,6 @@ end
     #@. u = uprev + dt*(1-theta)*tmp + theta*z
     @. u = tmp + theta*z
   end
-
-  nlsolver.ηold = η
-  nlsolver.nl_iters = iter
 
   ##############################################################################
 

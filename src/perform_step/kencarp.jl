@@ -109,9 +109,6 @@
 
   ################################### Finalize
 
-  nlsolver.ηold = η
-  nlsolver.nl_iters = iter
-
   if integrator.opts.adaptive
 
     #=
@@ -303,9 +300,6 @@ end
   end
 
   ################################### Finalize
-
-  nlsolver.ηold = η
-  nlsolver.nl_iters = iter
 
   if integrator.opts.adaptive
 
