@@ -256,7 +256,7 @@ function do_newJ(integrator, alg::T, cache, repeat_step)::Bool where T
   repeat_step && return false
   !alg_can_repeat_jac(alg) && return true
   isnewton = T <: Union{StochasticDiffEqNewtonAdaptiveAlgorithm, StochasticDiffEqNewtonAlgorithm}
-  isnewton && ( nlstatus = get_status(cache.nlsolver) )
+  isnewton && ( nlstatus = DiffEqBase.get_status(cache.nlsolver) )
   nlsolvefail(nlstatus) && return true
   # reuse J when there is fast convergence
   fastconvergence = nlstatus === FastConvergence
@@ -347,7 +347,7 @@ function calc_W!(integrator, cache::StochasticDiffEqMutableCache, dtgamma, repea
     new_W && jacobian2W!(W, mass_matrix, dtgamma, J, W_transform)
   end
   if isnewton
-    set_new_W!(cache.nlsolver, new_W) && set_W_dt!(cache.nlsolver, dt)
+    set_new_W!(cache.nlsolver, new_W) && DiffEqBase.set_W_dt!(cache.nlsolver, dt)
   end
   # new_W && (integrator.destats.nw += 1)
   return nothing
@@ -396,7 +396,7 @@ end
 function update_W!(nlsolver::NLSolver, integrator, cache::StochasticDiffEqConstantCache, dt, repeat_step)
   J, W = calc_W!(integrator, cache, dt, repeat_step)
   if isnewton(nlsolver)
-    set_W!(nlsolver, W)
+    DiffEqBase.set_W!(nlsolver, W)
   end
   J
 end

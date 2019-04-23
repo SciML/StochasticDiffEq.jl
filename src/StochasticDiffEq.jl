@@ -38,6 +38,14 @@ module StochasticDiffEq
                      set_abstol!, postamble!, last_step_failed, has_invW, has_jac
 
   using DiffEqBase: check_error!, is_diagonal_noise, @..
+  using DiffEqBase: nlsolvefail, isnewton, set_new_W!, get_W, @iipnlsolve, @oopnlsolve
+
+  using DiffEqBase: NLSolver
+
+  using DiffEqBase: FastConvergence, Convergence, SlowConvergence, VerySlowConvergence, Divergence
+
+  import DiffEqBase: calculate_residuals, calculate_residuals!, nlsolve_f, unwrap_cache
+
 
   const CompiledFloats = Union{Float32,Float64}
 
@@ -67,6 +75,7 @@ module StochasticDiffEq
   include("dense.jl")
   include("alg_utils.jl")
   include("integrators/integrator_utils.jl")
+  include("cache_utils.jl")
   include("integrators/integrator_interface.jl")
   include("iterator_interface.jl")
   include("composite_solution.jl")
