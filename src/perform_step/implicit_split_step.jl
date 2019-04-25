@@ -35,7 +35,7 @@
   else
     tmp = uprev + dt*(1-theta)*ftmp
   end
-  nlcache.tmp = tmp
+  nlsolver.tmp = tmp
 
   z = nlsolve!(integrator, cache)
   nlsolvefail(nlsolver) && return nothing
@@ -117,7 +117,7 @@ end
     #@. u = uprev + dt*(1-theta)*tmp + theta*z
     @. tmp = uprev + dt*(1-theta)*tmp
   end
-  nlcache.c = a
+  nlsolver.c = a
   z = nlsolve!(integrator, cache)
   nlsolvefail(nlsolver) && return nothing
 

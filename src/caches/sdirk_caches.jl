@@ -19,7 +19,7 @@
 end
 
 function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
   gtmp = zero(noise_rate_prototype)
   if is_diagonal_noise(prob)
     gtmp2 = gtmp
@@ -41,7 +41,7 @@ mutable struct ImplicitEMConstantCache{F,N} <: StochasticDiffEqConstantCache
 end
 
 function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
+                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   γ, c = alg.theta,zero(t)
   @oopnlsolve
   ImplicitEMConstantCache(uf,nlsolver)
@@ -72,7 +72,7 @@ u_cache(c::ImplicitEulerHeunCache)    = (c.uprev2,c.z,c.dz)
 du_cache(c::ImplicitEulerHeunCache)   = (c.k,c.fsalfirst)
 
 function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
   gtmp = zero(noise_rate_prototype)
   gtmp2 = zero(rate_prototype)
 
@@ -96,7 +96,7 @@ mutable struct ImplicitEulerHeunConstantCache{F,N} <: StochasticDiffEqConstantCa
 end
 
 function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
+                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   γ, c = alg.theta,zero(t)
   @oopnlsolve
   ImplicitEulerHeunConstantCache(uf,nlsolver)
@@ -123,7 +123,7 @@ end
 end
 
 function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
+                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
   gtmp = zero(noise_rate_prototype)
   gtmp2 = zero(rate_prototype)
   gtmp3 = zero(rate_prototype)
@@ -140,7 +140,7 @@ mutable struct ImplicitRKMilConstantCache{F,N} <: StochasticDiffEqConstantCache
 end
 
 function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
+                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   γ, c = alg.theta,zero(t)
   @oopnlsolve
   ImplicitRKMilConstantCache(uf,nlsolver)
