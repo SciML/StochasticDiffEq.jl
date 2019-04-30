@@ -44,8 +44,8 @@ end
 
 function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
-  @oopnlsolve
   γ, c = alg.theta,zero(t)
+  @oopnlsolve
   ISSEMConstantCache(uf,nlsolver)
 end
 

@@ -261,7 +261,7 @@ end
   nlsolver.z = z₄
 
   z₄ = nlsolve!(integrator, cache)
-  fail_convergence && return nothing
+  nlsolvefail(nlsolver) && return nothing
 
   g(g4,u,p,t+dt)
 

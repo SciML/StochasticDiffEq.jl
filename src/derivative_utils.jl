@@ -131,7 +131,7 @@ mutable struct WOperator{T,
 end
 function WOperator(f::DiffEqBase.AbstractSDEFunction, gamma, inplace; transform=false)
   @assert DiffEqBase.has_jac(f) "f needs to have an associated jacobian"
-  if isa(f, Union{SplitFunction, DynamicalSDEFunction})
+  if isa(f, SplitFunction)
     error("WOperator does not support $(typeof(f)) yet")
   end
   # Convert mass matrix, if needed

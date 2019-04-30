@@ -191,19 +191,19 @@ end
 
 function alg_cache(alg::SRA3,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,
-                   f,t,::Type{Val{false}})
+                   f,t,dt,::Type{Val{false}})
   SRA3ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 function alg_cache(alg::SOSRA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,
-                   f,t,::Type{Val{false}})
+                   f,t,dt,::Type{Val{false}})
   SOSRAConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 function alg_cache(alg::SOSRA2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,
-                   f,t,::Type{Val{false}})
+                   f,t,dt,::Type{Val{false}})
   SOSRA2ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 

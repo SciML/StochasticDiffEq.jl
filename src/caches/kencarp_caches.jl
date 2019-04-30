@@ -50,6 +50,10 @@ u_cache(c::SKenCarpCache)    = (c.z₁,c.z₂,c.z₃,c.z₄,c.dz)
 du_cache(c::SKenCarpCache)   = (c.k,c.fsalfirst)
 
 function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  tab = SKenCarpTableau(real(uBottomEltypeNoUnits),real(tTypeNoUnits))
+  γ, c = tab.γ,tab.c3
+  @iipnlsolve
+
   atmp = fill!(similar(u,uEltypeNoUnits),0)
   z₁ = similar(u); z₂ = similar(u)
   z₃ = similar(u); z₄ = z
@@ -74,13 +78,9 @@ function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prot
 
   g1 = zero(noise_rate_prototype); g4 = zero(noise_rate_prototype)
 
-  tab = SKenCarpTableau(real(uBottomEltypeNoUnits),real(tTypeNoUnits))
-
-  γ, c = tab.γ,tab.c3
-  @iipnlsolve
   SKenCarpCache{typeof(u),typeof(rate_prototype),typeof(atmp),typeof(J),typeof(W),typeof(uf),
-                typeof(jac_config),typeof(nlsolve),typeof(tab),typeof(linsolve),typeof(k1),
+                typeof(jac_config),typeof(nlsolver),typeof(tab),typeof(linsolve),typeof(k1),
               typeof(chi2),typeof(g1)}(
               u,uprev,du1,fsalfirst,k,z₁,z₂,z₃,z₄,k1,k2,k3,k4,dz,b,tmp,atmp,J,
-              W,uf,jac_config,linsolve,nlsolve,tab,chi2,g1,g4)
+              W,uf,jac_config,linsolve,nlsolver,tab,chi2,g1,g4)
 end
