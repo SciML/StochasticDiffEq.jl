@@ -14,8 +14,8 @@
   repeat_step = false
   if isnewton(nlsolver)
     uf.t = t
+    J = update_W!(integrator, cache, dt*theta, repeat_step)
   end
-  J = update_W!(integrator, cache, dt*theta, repeat_step)
 
   L = integrator.g(uprev,p,t)
   ftmp = integrator.f(uprev,p,t)
@@ -57,6 +57,10 @@
 
   if integrator.opts.adaptive
 
+    if !isnewton(nlsolver)
+      is_compos = isa(integrator.alg, StochasticDiffEqCompositeAlgorithm)
+      J = calc_J(integrator,cache,is_compos)
+    end
     Ed = dt*(J*ftmp)/2
 
     if typeof(cache) <: SplitStepEulerConstantCache

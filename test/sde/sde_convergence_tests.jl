@@ -102,7 +102,7 @@ sim10 = test_convergence(dts,prob,SKenCarp(),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-2) < 0.3
 sim10 = test_convergence(dts,prob,SKenCarp(nlsolve=StochasticDiffEq.NLFunctional()),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-2) < 0.3
-sim11 = test_convergence(dts,prob,SKenCarp(nlsolve=StochasticDiffEq.NLNewton(min_iter=3)),numMonte=Int(1e1))
+sim11 = test_convergence(dts,prob,SKenCarp(nlsolve=StochasticDiffEq.NLNewton()),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-2) < 0.3
 
 sim2 = test_convergence(dts,prob,SRA(tableau=StochasticDiffEq.constructSRA2()),numMonte=Int(1e1))

@@ -46,6 +46,9 @@ function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototy
                    uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   γ, c = alg.theta,zero(t)
   @oopnlsolve
+  if !DiffEqBase.has_jac(f) && !isnewton(nlsolver)
+    uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
+  end
   ISSEMConstantCache(uf,nlsolver)
 end
 
@@ -101,5 +104,8 @@ function alg_cache(alg::ISSEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
                    uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   γ, c = alg.theta,zero(t)
   @oopnlsolve
+  if !DiffEqBase.has_jac(f) && !isnewton(nlsolver)
+    uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
+  end
   ISSEulerHeunConstantCache(uf,nlsolver)
 end

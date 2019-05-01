@@ -394,9 +394,10 @@ function update_W!(nlsolver::NLSolver, integrator, cache::StochasticDiffEqMutabl
 end
 
 function update_W!(nlsolver::NLSolver, integrator, cache::StochasticDiffEqConstantCache, dt, repeat_step)
-  J, W = calc_W!(integrator, cache, dt, repeat_step)
   if isnewton(nlsolver)
+    J, W = calc_W!(integrator, cache, dt, repeat_step)
     DiffEqBase.set_W!(nlsolver, W)
+    return J
   end
-  J
+  nothing
 end

@@ -10,10 +10,10 @@
   alg.symplectic ? a = dt/2 : a = dt
   γdt = dt*theta
   repeat_step = false
-  if nlsolve! isa NLNewton
+  if isnewton(nlsolver)
     uf.t = t
+    J = update_W!(integrator, cache, γdt, repeat_step)
   end
-  J = update_W!(integrator, cache, γdt, repeat_step)
 
   # TODO: Stochastic extrapolants?
   u = uprev
@@ -72,6 +72,11 @@
   end
 
   if integrator.opts.adaptive
+
+    if !isnewton(nlsolver)
+      is_compos = isa(integrator.alg, StochasticDiffEqCompositeAlgorithm)
+      J = calc_J(integrator,cache,is_compos)
+    end
 
     Ed = _reshape(dt*(J*_vec(ftmp))/2, axes(ftmp))
     if typeof(cache) <: Union{ImplicitEMConstantCache,ImplicitEulerHeunConstantCache}
