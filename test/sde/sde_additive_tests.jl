@@ -46,20 +46,20 @@ println("Convergence Test on MultiDimAdditive")
 dts = (1/2) .^ (7:-1:4) #14->7 good plot
 
 sim = test_convergence(dts,prob,SRA(),numMonte=5)
-@test abs(sim.𝒪est[:l2]-2) < 0.1
+@test abs(sim.𝒪est[:l2]-2) < 0.15
 sim2 = test_convergence(dts,prob,SRA1(),numMonte=5)
-@test abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!
+@test abs(sim2.𝒪est[:l∞]-2) <.15 #High tolerance since low dts for testing!
 sim2 = test_convergence(dts,prob,SRA2(),numMonte=5)
-@test abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!
+@test abs(sim2.𝒪est[:l∞]-2) <.15 #High tolerance since low dts for testing!
 sim2 = test_convergence(dts,prob,SRA3(),numMonte=5)
-@test abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!
+@test abs(sim2.𝒪est[:l∞]-2) <.15 #High tolerance since low dts for testing!
 sim2 = test_convergence(dts,prob,SOSRA(),numMonte=10)
-@test abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!
+@test abs(sim2.𝒪est[:l∞]-2) <.15 #High tolerance since low dts for testing!
 sim2 = test_convergence(dts,prob,SOSRA2(),numMonte=5)
-@test abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!
+@test abs(sim2.𝒪est[:l∞]-2) <.15 #High tolerance since low dts for testing!
 dts = (1/2) .^ (11:-1:7) #14->7 good plot
 Random.seed!(100)
 sim2 = test_convergence(dts,prob,SKenCarp(),numMonte=20)
-@test_broken abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!
+@test_broken abs(sim2.𝒪est[:l∞]-2) <.15 #High tolerance since low dts for testing!
 sim2 = test_convergence(dts,prob,SKenCarp(nlsolve=StochasticDiffEq.NLNewton()),numMonte=20)
-@test_broken abs(sim2.𝒪est[:l∞]-2) <.1 #High tolerance since low dts for testing!
+@test_broken abs(sim2.𝒪est[:l∞]-2) <.15 #High tolerance since low dts for testing!
