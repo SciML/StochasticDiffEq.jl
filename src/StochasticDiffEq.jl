@@ -37,7 +37,7 @@ module StochasticDiffEq
                      u_modified!,savevalues!,add_tstop!,add_saveat!,set_reltol!,
                      set_abstol!, postamble!, last_step_failed, has_invW, has_jac
 
-  using DiffEqBase: check_error!, is_diagonal_noise
+  using DiffEqBase: check_error!, is_diagonal_noise, @..
 
   const CompiledFloats = Union{Float32,Float64}
 
