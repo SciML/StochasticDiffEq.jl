@@ -38,20 +38,16 @@ module StochasticDiffEq
                      set_abstol!, postamble!, last_step_failed, has_invW, has_jac
 
   using DiffEqBase: check_error!, is_diagonal_noise, @..
-  using DiffEqBase: nlsolvefail, isnewton, set_new_W!, get_W, @iipnlsolve, @oopnlsolve
+  using DiffEqBase: nlsolvefail, isnewton, set_new_W!, get_W, @iipnlsolve, @oopnlsolve, _vec, _reshape
 
   using DiffEqBase: NLSolver
 
   using DiffEqBase: FastConvergence, Convergence, SlowConvergence, VerySlowConvergence, Divergence
 
-  import DiffEqBase: calculate_residuals, calculate_residuals!, nlsolve_f, unwrap_cache
+  import DiffEqBase: calculate_residuals, calculate_residuals!, nlsolve_f, unwrap_cache, @tight_loop_macros, islinear
 
 
   const CompiledFloats = Union{Float32,Float64}
-
-  macro tight_loop_macros(ex)
-   :($(esc(ex)))
-  end
 
   include("misc_utils.jl")
   include("algorithms.jl")
