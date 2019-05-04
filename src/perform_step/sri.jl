@@ -3,9 +3,9 @@
   @unpack c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄,stages,error_terms = cache.tab
   @unpack H0,H1,A0temp,A1temp,B0temp,B1temp,A0temp2,A1temp2,B0temp2,B1temp2,atemp,btemp,E₁,E₂,E₁temp,ftemp,gtemp,chi1,chi2,chi3,tmp = cache
   @unpack t,dt,uprev,u,W,p = integrator
-  @. chi1 = .5*(W.dW.^2 - dt)/integrator.sqdt #I_(1,1)/sqrt(h)
-  @. chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
-  @. chi3 = 1/6 * (W.dW.^3 - 3*W.dW*dt)/dt #I_(1,1,1)/h
+  @.. chi1 = .5*(W.dW.^2 - dt)/integrator.sqdt #I_(1,1)/sqrt(h)
+  @.. chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
+  @.. chi3 = 1/6 * (W.dW.^3 - 3*W.dW*dt)/dt #I_(1,1,1)/h
   for i=1:stages
     fill!(H0[i],zero(eltype(integrator.u)))
     fill!(H1[i],zero(eltype(integrator.u)))
@@ -18,13 +18,13 @@
     for j = 1:i-1
       integrator.f((t + c₀[j]*dt),H0[j],ftemp)
       integrator.g((t + c₁[j]*dt),H1[j],gtemp)
-      @. A0temp = A0temp + A₀[j,i] * ftemp
-      @. B0temp = B0temp + B₀[j,i] * gtemp
-      @. A1temp = A1temp + A₁[j,i] * ftemp
-      @. B1temp = B1temp + B₁[j,i] * gtemp
+      @.. A0temp = A0temp + A₀[j,i] * ftemp
+      @.. B0temp = B0temp + B₀[j,i] * gtemp
+      @.. A1temp = A1temp + A₁[j,i] * ftemp
+      @.. B1temp = B1temp + B₁[j,i] * gtemp
     end
-    @. H0[i] = uprev + A0temp*dt + B0temp*chi2
-    @. H1[i] = uprev + A1temp*dt + B1temp*integrator.sqdt
+    @.. H0[i] = uprev + A0temp*dt + B0temp*chi2
+    @.. H1[i] = uprev + A1temp*dt + B1temp*integrator.sqdt
   end
   fill!(atemp,zero(eltype(integrator.u)))
   fill!(btemp,zero(eltype(integrator.u)))
@@ -33,18 +33,18 @@
   for i = 1:stages
     integrator.f((t+c₀[i]*dt),H0[i],ftemp)
     integrator.g((t+c₁[i]*dt),H1[i],gtemp)
-    @. atemp = atemp + α[i] * ftemp
-    @. btemp = btemp + (β₁[i] * W.dW + β₂[i] * chi1) * gtemp
-    @. E₂    = E₂    + (β₃[i] * chi2 + β₄[i] * chi3) * gtemp
+    @.. atemp = atemp + α[i] * ftemp
+    @.. btemp = btemp + (β₁[i] * W.dW + β₂[i] * chi1) * gtemp
+    @.. E₂    = E₂    + (β₃[i] * chi2 + β₄[i] * chi3) * gtemp
     if i <= error_terms
-      @. E₁temp += ftemp
+      @.. E₁temp += ftemp
     end
   end
 
-  @. u = uprev + (dt*atemp + btemp) + E₂
+  @.. u = uprev + (dt*atemp + btemp) + E₂
 
   if integrator.opts.adaptive
-    @. E₁ = dt * E₁temp
+    @.. E₁ = dt * E₁temp
 
     calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,
@@ -65,9 +65,9 @@ end
     chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
     chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   else
-    @. chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
-    @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
-    @. chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
+    @.. chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
+    @.. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    @.. chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   end
 
   for i=1:stages
@@ -82,13 +82,13 @@ end
     for j = 1:i-1
       integrator.f(ftemp,H0[j],p,t + c₀[j]*dt)
       integrator.g(gtemp,H1[j],p,t + c₁[j]*dt)
-      @. A0temp = A0temp + A₀[j,i]*ftemp
-      @. B0temp = B0temp + B₀[j,i]*gtemp
-      @. A1temp = A1temp + A₁[j,i]*ftemp
-      @. B1temp = B1temp + B₁[j,i]*gtemp
+      @.. A0temp = A0temp + A₀[j,i]*ftemp
+      @.. B0temp = B0temp + B₀[j,i]*gtemp
+      @.. A1temp = A1temp + A₁[j,i]*ftemp
+      @.. B1temp = B1temp + B₁[j,i]*gtemp
     end
-    @. H0[i] = uprev + A0temp*dt + B0temp*chi2
-    @. H1[i] = uprev + A1temp*dt + B1temp*integrator.sqdt
+    @.. H0[i] = uprev + A0temp*dt + B0temp*chi2
+    @.. H1[i] = uprev + A1temp*dt + B1temp*integrator.sqdt
   end
   fill!(atemp,zero(eltype(integrator.u)))
   fill!(btemp,zero(eltype(integrator.u)))
@@ -97,18 +97,18 @@ end
   for i = 1:stages
     integrator.f(ftemp,H0[i],p,t+c₀[i]*dt)
     integrator.g(gtemp,H1[i],p,t+c₁[i]*dt)
-    @. atemp = atemp + α[i]*ftemp
-    @. btemp = btemp + (β₁[i]*W.dW + β₂[i]*chi1)*gtemp
-    @. E₂    = E₂    + (β₃[i]*chi2 + β₄[i]*chi3)*gtemp
+    @.. atemp = atemp + α[i]*ftemp
+    @.. btemp = btemp + (β₁[i]*W.dW + β₂[i]*chi1)*gtemp
+    @.. E₂    = E₂    + (β₃[i]*chi2 + β₄[i]*chi3)*gtemp
     if i <= error_terms
-      @. E₁temp += ftemp
+      @.. E₁temp += ftemp
     end
   end
 
-  @. u = uprev + (dt*atemp + btemp) + E₂
+  @.. u = uprev + (dt*atemp + btemp) + E₂
 
   if integrator.opts.adaptive
-    @. E₁ = dt * E₁temp
+    @.. E₁ = dt * E₁temp
 
     calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,
@@ -121,37 +121,37 @@ end
 @muladd function perform_step!(integrator,cache::SRIW1Cache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack chi1,chi2,chi3,fH01o4,g₁o2,H0,H11,H12,H13,g₂o3,Fg₂o3,g₃o3,Tg₃o3,mg₁,E₁,E₂,fH01,fH02,g₁,g₂,g₃,g₄,tmp = cache
-  @. chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
-  @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
-  @. chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
+  @.. chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
+  @.. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+  @.. chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   integrator.f(fH01,uprev,p,t)
-  @. fH01 = dt*fH01
+  @.. fH01 = dt*fH01
   integrator.g(t,uprev,g₁)
   dto4 = dt/4
-  @. fH01o4 = fH01/4
-  @. g₁o2 = g₁/2
-  @. H0 =  uprev + 3 * (fH01o4 + chi2 * g₁o2)
-  @. H11 = uprev + fH01o4 + integrator.sqdt * g₁o2
-  @. H12 = uprev + fH01 - integrator.sqdt * g₁
+  @.. fH01o4 = fH01/4
+  @.. g₁o2 = g₁/2
+  @.. H0 =  uprev + 3 * (fH01o4 + chi2 * g₁o2)
+  @.. H11 = uprev + fH01o4 + integrator.sqdt * g₁o2
+  @.. H12 = uprev + fH01 - integrator.sqdt * g₁
   integrator.g(t+dto4,H11,g₂)
   integrator.g(t+dt,H12,g₃)
-  @. H13 = uprev + fH01o4 + integrator.sqdt * (-5 * g₁ + 3 * g₂ + g₃ / 2)
+  @.. H13 = uprev + fH01o4 + integrator.sqdt * (-5 * g₁ + 3 * g₂ + g₃ / 2)
 
   integrator.g(t+dto4,H13,g₄)
   integrator.f(fH02,H0,p,t+3dto4)
 
-  @. fH02 = fH02*dt
-  @. g₂o3 = g₂/3
-  @. Fg₂o3 = 4g₂o3
-  @. g₃o3 = g₃/3
-  @. Tg₃o3 = 2g₃o3
-  @. mg₁ = -g₁
-  @. E₂ = chi2 * (2 * g₁ - Fg₂o3 - Tg₃o3) + chi3 * (2 * mg₁ + 5 * g₂o3 - Tg₃o3 + g₄)
+  @.. fH02 = fH02*dt
+  @.. g₂o3 = g₂/3
+  @.. Fg₂o3 = 4g₂o3
+  @.. g₃o3 = g₃/3
+  @.. Tg₃o3 = 2g₃o3
+  @.. mg₁ = -g₁
+  @.. E₂ = chi2 * (2 * g₁ - Fg₂o3 - Tg₃o3) + chi3 * (2 * mg₁ + 5 * g₂o3 - Tg₃o3 + g₄)
 
-  @. u = uprev +  (fH01 + 2 * fH02) / 3 + W.dW * (mg₁ + Fg₂o3 + Tg₃o3) + chi1 * (mg₁ + Fg₂o3 - g₃o3) + E₂
+  @.. u = uprev +  (fH01 + 2 * fH02) / 3 + W.dW * (mg₁ + Fg₂o3 + Tg₃o3) + chi1 * (mg₁ + Fg₂o3 - g₃o3) + E₂
 
   if integrator.opts.adaptive
-    @. E₁ = fH01 + fH02
+    @.. E₁ = fH01 + fH02
 
     calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,
@@ -171,36 +171,36 @@ end
     chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
     chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   else
-    @. chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
-    @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
-    @. chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
+    @.. chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
+    @.. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    @.. chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   end
 
   integrator.f(fH01,uprev,p,t)
-  @. fH01 = dt*fH01
+  @.. fH01 = dt*fH01
   integrator.g(g₁,uprev,p,t)
   dto4 = dt/4
 
-  @. fH01o4 = fH01/4
-  @. g₁o2 = g₁/2
-  @. H0 =  uprev + 3*(fH01o4  + chi2*g₁o2)
-  @. H11 = uprev + fH01o4   + integrator.sqdt*g₁o2
-  @. H12 = uprev + fH01     - integrator.sqdt*g₁
+  @.. fH01o4 = fH01/4
+  @.. g₁o2 = g₁/2
+  @.. H0 =  uprev + 3*(fH01o4  + chi2*g₁o2)
+  @.. H11 = uprev + fH01o4   + integrator.sqdt*g₁o2
+  @.. H12 = uprev + fH01     - integrator.sqdt*g₁
 
   integrator.g(g₂,H11,p,t+dto4)
   integrator.g(g₃,H12,p,t+dt)
 
-  @. H13 = uprev + fH01o4 + integrator.sqdt*(-5g₁ + 3g₂ + g₃/2)
+  @.. H13 = uprev + fH01o4 + integrator.sqdt*(-5g₁ + 3g₂ + g₃/2)
 
   integrator.g(g₄,H13,p,t+dto4)
   integrator.f(fH02,H0,p,t+3dto4)
 
-  @. fH02 = fH02*dt
-  @. g₂o3 = g₂/3
-  @. Fg₂o3 = 4g₂o3
-  @. g₃o3 = g₃/3
-  @. Tg₃o3 = 2g₃o3
-  @. mg₁ = -g₁
+  @.. fH02 = fH02*dt
+  @.. g₂o3 = g₂/3
+  @.. Fg₂o3 = 4g₂o3
+  @.. g₃o3 = g₃/3
+  @.. Tg₃o3 = 2g₃o3
+  @.. mg₁ = -g₁
 
   @tight_loop_macros for i in eachindex(u)
     @inbounds E₂[i] = chi2[i] * (2 * g₁[i] - Fg₂o3[i] - Tg₃o3[i]) +
@@ -214,7 +214,7 @@ end
   end
 
   if integrator.opts.adaptive
-    @. E₁ = fH01 + fH02
+    @.. E₁ = fH01 + fH02
 
     calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,
@@ -234,12 +234,12 @@ end
   fH01o4 = fH01/4
   dto4 = dt/4
   g₁o2 = g₁/2
-  H0 =  @. uprev + 3 * (fH01o4 + chi2 * g₁o2)
-  H11 = @. uprev + fH01o4 + integrator.sqdt * g₁o2
-  H12 = @. uprev + fH01 - integrator.sqdt * g₁
+  H0 =  @.. uprev + 3 * (fH01o4 + chi2 * g₁o2)
+  H11 = @.. uprev + fH01o4 + integrator.sqdt * g₁o2
+  H12 = @.. uprev + fH01 - integrator.sqdt * g₁
   g₂ = integrator.g(H11,p,t+dto4)
   g₃ = integrator.g(H12,p,t+dt)
-  H13 = @. uprev + fH01o4 + integrator.sqdt * (-5 * g₁ + 3 * g₂ + g₃ / 2)
+  H13 = @.. uprev + fH01o4 + integrator.sqdt * (-5 * g₁ + 3 * g₂ + g₃ / 2)
 
 
   g₄ = integrator.g(H13,p,t+dto4)
@@ -250,7 +250,7 @@ end
   g₃o3 = g₃/3
   Tg₃o3 = 2g₃o3
   mg₁ = -g₁
-  E₂ = @. chi2 * (2 * g₁ - Fg₂o3 - Tg₃o3) + chi3 * (2 * mg₁ + 5 * g₂o3 - Tg₃o3 + g₄)
+  E₂ = @.. chi2 * (2 * g₁ - Fg₂o3 - Tg₃o3) + chi3 * (2 * mg₁ + 5 * g₂o3 - Tg₃o3 + g₄)
 
   u = uprev + (fH01 + 2fH02)/3 + W.dW.*(mg₁ + Fg₂o3 + Tg₃o3) + chi1.*(mg₁ + Fg₂o3 - g₃o3) + E₂
   if integrator.opts.adaptive
@@ -280,15 +280,15 @@ end
     B1temp = zero(u)
     for j in 1:i-1
       ftmp = integrator.f(H0[j],p,t + c₀[j]*dt)
-      A0temp = @. A0temp + A₀[j,i] * ftmp
-      A1temp = @. A1temp + A₁[j,i] * ftmp
+      A0temp = @.. A0temp + A₀[j,i] * ftmp
+      A1temp = @.. A1temp + A₁[j,i] * ftmp
 
       gtmp = integrator.g(H1[j],p,t + c₁[j]*dt)
-      B0temp = @. B0temp + B₀[j,i] * gtmp
-      B1temp = @. B1temp + B₁[j,i] * gtmp
+      B0temp = @.. B0temp + B₀[j,i] * gtmp
+      B1temp = @.. B1temp + B₁[j,i] * gtmp
     end
-    H0[i] = @. uprev + dt * A0temp + chi2 * B0temp
-    H1[i] = @. uprev + dt * A1temp + integrator.sqdt * B1temp
+    H0[i] = @.. uprev + dt * A0temp + chi2 * B0temp
+    H1[i] = @.. uprev + dt * A1temp + integrator.sqdt * B1temp
   end
   atemp = zero(u)
   btemp = zero(u)
@@ -296,11 +296,11 @@ end
   E₁temp= zero(u)
   @inbounds for i in 1:stages
     ftmp = integrator.f(H0[i],p,t+c₀[i]*dt)
-    atemp = @. atemp + α[i] * ftmp
+    atemp = @.. atemp + α[i] * ftmp
 
     gtmp = integrator.g(H1[i],p,t+c₁[i]*dt)
-    btemp = @. btemp + (β₁[i] * W.dW + β₂[i] * chi1) * gtmp
-    E₂ = @. E₂ + (β₃[i] * chi2 + β₄[i] * chi3) * gtmp
+    btemp = @.. btemp + (β₁[i] * W.dW + β₂[i] * chi1) * gtmp
+    E₂ = @.. E₂ + (β₃[i] * chi2 + β₄[i] * chi3) * gtmp
     if i <= error_terms #1 or 2
       E₁temp = E₁temp .+ ftmp
     end
@@ -362,7 +362,7 @@ end
 
 
   if integrator.opts.adaptive
-    E₁ = @. dt * (k1 + k2 + k3 + k4)
+    E₁ = @.. dt * (k1 + k2 + k3 + k4)
 
     resids = calculate_residuals(E₁, E₂, uprev, u, integrator.opts.abstol,
                                  integrator.opts.reltol, integrator.opts.delta,
@@ -384,18 +384,18 @@ end
     chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
     chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   else
-    @. chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
-    @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
-    @. chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
+    @.. chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
+    @.. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    @.. chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   end
 
   integrator.f(k1,uprev,p,t)
   integrator.g(g1,uprev,p,t+c11*dt)
 
-  @. tmp = uprev + dt*a021*k1 + chi2*b021*g1
+  @.. tmp = uprev + dt*a021*k1 + chi2*b021*g1
   integrator.f(k2,tmp,p,t+c02*dt)
 
-  @. tmp = uprev + dt*a121*k1 + sqdt*b121*g1
+  @.. tmp = uprev + dt*a121*k1 + sqdt*b121*g1
   integrator.g(g2,tmp,p,t+c12*dt)
 
   for i in eachindex(u)
@@ -418,9 +418,9 @@ end
   integrator.g(g4,tmp,p,t+c14*dt)
 
   if typeof(integrator.alg) <: StochasticCompositeAlgorithm && typeof(integrator.alg.algs[1]) <: SOSRI2
-    @. tmp = k4 - k3
+    @.. tmp = k4 - k3
     ϱu = integrator.opts.internalnorm(tmp, t)
-    @. tmp = H03 - H02
+    @.. tmp = H03 - H02
     ϱd = integrator.opts.internalnorm(tmp, t)
     integrator.eigen_est = ϱu/ϱd
   end
@@ -431,7 +431,7 @@ end
   end
 
   if integrator.opts.adaptive
-    @. E₁ = dt * (k1 + k2 + k3 + k4)
+    @.. E₁ = dt * (k1 + k2 + k3 + k4)
 
     calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,

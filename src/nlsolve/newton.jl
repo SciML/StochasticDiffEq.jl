@@ -92,13 +92,13 @@ function (S::NLNewton{true})(integrator)
   # initial step of NLNewton iteration
   iter = 1
   tstep = t + c*dt
-  @. u = tmp + γ*z
+  @.. u = tmp + γ*z
   f(k, u, p, tstep)
   if mass_matrix == I
-    @. b = dt*k - z
+    @.. b = dt*k - z
   else
     mul!(vec(b),mass_matrix,vec(z))
-    @. b = dt*k - b
+    @.. b = dt*k - b
   end
   if DiffEqBase.DiffEqBase.has_invW(f)
     mul!(vec(dz),W,vec(b)) # Here W is actually invW
@@ -115,13 +115,13 @@ function (S::NLNewton{true})(integrator)
   fail_convergence = false
   while (do_newton || iter < min_iter) && iter < max_iter
     iter += 1
-    @. u = tmp + γ*z
+    @.. u = tmp + γ*z
     f(k, u, p, tstep)
     if mass_matrix == I
-      @. b = dt*k - z
+      @.. b = dt*k - z
     else
       mul!(vec(b),mass_matrix,vec(z))
-      @. b = dt*k - b
+      @.. b = dt*k - b
     end
     if DiffEqBase.DiffEqBase.has_invW(f)
       mul!(vec(dz),W,vec(b)) # Here W is actually invW

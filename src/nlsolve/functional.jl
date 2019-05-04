@@ -90,16 +90,16 @@ function (S::NLFunctional{true})(integrator)
   # initial step of functional iteration
   iter = 1
   tstep = t + c*dt
-  @. u = tmp + γ*z
+  @.. u = tmp + γ*z
   f(k, u, p, tstep)
   if mass_matrix == I
-    @. z₊ = dt*k
+    @.. z₊ = dt*k
   else
-    @. ztmp = dt*k
+    @.. ztmp = dt*k
     mul!(z₊, mass_matrix, ztmp)
   end
-  @. dz = z₊ - z
-  @. z = z₊
+  @.. dz = z₊ - z
+  @.. z = z₊
   ndz = integrator.opts.internalnorm(dz,t)
 
   η = nlcache.ηold
@@ -109,15 +109,15 @@ function (S::NLFunctional{true})(integrator)
   fail_convergence = false
   while (do_functional || iter < min_iter) && iter < max_iter
     iter += 1
-    @. u = tmp + γ*z
+    @.. u = tmp + γ*z
     f(k, u, p, tstep)
     if mass_matrix == I
-      @. z₊ = dt*k
+      @.. z₊ = dt*k
     else
-      @. ztmp = dt*k
+      @.. ztmp = dt*k
       mul!(z₊, mass_matrix, ztmp)
     end
-    @. dz = z₊ - z
+    @.. dz = z₊ - z
     ndzprev = ndz
     ndz = integrator.opts.internalnorm(dz,t)
     θ = ndz/ndzprev
@@ -127,7 +127,7 @@ function (S::NLFunctional{true})(integrator)
     end
     η = θ/(1-θ)
     do_functional = (η*ndz > κtol)
-    @. z = z₊
+    @.. z = z₊
   end
 
   if (iter >= max_iter && do_functional) || fail_convergence

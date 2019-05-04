@@ -164,7 +164,7 @@ end
   if typeof(integrator.W.dW) <: Union{SArray,Number}
     chi2 = (integrator.W.dW + integrator.W.dZ/sqrt(3))/2 #I_(1,0)/h
   else
-    @. chi2 = (integrator.W.dW + integrator.W.dZ/sqrt(3))/2 #I_(1,0)/h
+    @.. chi2 = (integrator.W.dW + integrator.W.dZ/sqrt(3))/2 #I_(1,0)/h
   end
 
   # precalculations
@@ -184,17 +184,17 @@ end
   g(g1,uprev,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
-    @. z₄ = chi2*g1 # use z₄ as storage for the g1*chi2
+    @.. z₄ = chi2*g1 # use z₄ as storage for the g1*chi2
   else
     mul!(z₄,g1,chi2) # use z₄ as storage for the g1*chi2
   end
 
-  @. tmp = uprev + γ*z₁ + nb021*z₄
+  @.. tmp = uprev + γ*z₁ + nb021*z₄
 
   if alg.extrapolant == :min_correct
-    @. z₂ = zero(eltype(dz))
+    @.. z₂ = zero(eltype(dz))
   elseif alg.extrapolant == :trivial
-    @. z₂ = z₁
+    @.. z₂ = z₁
   end
   nlcache.z = z₂
   nlcache.c = 2γ
@@ -206,7 +206,7 @@ end
       f2(k1,integrator.uprev,integrator.p,integrator.t)
       k1 .*= dt
     end
-    @. tmp += ea21*k1
+    @.. tmp += ea21*k1
   end
 
   (z₂, η, iter, fail_convergence) = nlsolve!(integrator); fail_convergence && return nothing
@@ -216,20 +216,20 @@ end
   nlcache.c = c3
 
   if typeof(integrator.f) <: SplitSDEFunction
-    @. u = tmp + γ*z₂
+    @.. u = tmp + γ*z₂
     f2(k2,u,p,t + 2γ*dt); k2 .*= dt
-    #@. tmp = uprev + a31*z₁ + a32*z₂ + ea31*k1 + ea32*k2
+    #@.. tmp = uprev + a31*z₁ + a32*z₂ + ea31*k1 + ea32*k2
     for i in eachindex(tmp)
       @inbounds tmp[i] = uprev[i] + a31*z₁[i] + a32*z₂[i] + ea31*k1[i] + ea32*k2[i]
     end
   else
-    @. tmp = uprev + a31*z₁ + a32*z₂
+    @.. tmp = uprev + a31*z₁ + a32*z₂
   end
 
   if alg.extrapolant == :min_correct
-    @. z₃ = zero(eltype(dz))
+    @.. z₃ = zero(eltype(dz))
   elseif alg.extrapolant == :trivial
-    @. z₃ = z₂
+    @.. z₃ = z₂
   end
   nlcache.z = z₃
 
@@ -240,23 +240,23 @@ end
   nlcache.c = one(nlcache.c)
 
   if typeof(integrator.f) <: SplitSDEFunction
-    @. u = tmp + γ*z₃
+    @.. u = tmp + γ*z₃
     f2(k3,u,p,t + c3*dt); k3 .*= dt
     # z₄ is storage for the g1*chi2 from earlier
-    #@. tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + ea41*k1 + ea42*k2 + ea43*k3
+    #@.. tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + ea41*k1 + ea42*k2 + ea43*k3
     for i in eachindex(tmp)
       @inbounds tmp[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + ea41*k1[i] + ea42*k2[i] + ea43*k3[i] + nb043*z₄[i]
     end
   else
     @unpack α41,α42 = cache.tab
     # z₄ is storage for the g1*chi2
-    @. tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + nb043*z₄
+    @.. tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + nb043*z₄
   end
 
   if alg.extrapolant == :min_correct
-    @. z₄ = zero(eltype(dz))
+    @.. z₄ = zero(eltype(dz))
   elseif alg.extrapolant == :trivial
-    @. z₄ = z₂
+    @.. z₄ = z₂
   end
   nlcache.z = z₄
 
@@ -265,11 +265,11 @@ end
   g(g4,u,p,t+dt)
 
   if typeof(integrator.f) <: SplitSDEFunction
-    @. u = tmp + γ*z₄
+    @.. u = tmp + γ*z₄
     f2(k4,u,p,t+dt); k4 .*= dt
     if is_diagonal_noise(integrator.sol.prob)
-      @. E₂ = chi2*(g1-g4)
-      #@. u = uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + eb1*k1 + eb2*k2 + eb3*k3 + eb4*k4 + integrator.W.dW*g4 + chi2*(g1-g4)
+      @.. E₂ = chi2*(g1-g4)
+      #@.. u = uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + eb1*k1 + eb2*k2 + eb3*k3 + eb4*k4 + integrator.W.dW*g4 + chi2*(g1-g4)
       for i in eachindex(u)
         @inbounds u[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + γ*z₄[i] + eb1*k1[i] + eb2*k2[i] + eb3*k3[i] + eb4*k4[i] + integrator.W.dW[i]*g4[i] + E₂[i]
       end
@@ -283,8 +283,8 @@ end
     end
   else
     if is_diagonal_noise(integrator.sol.prob)
-      @. E₂ = chi2*(g1-g4)
-      #@. u = uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + integrator.W.dW*g4 + chi2*(g1-g4)
+      @.. E₂ = chi2*(g1-g4)
+      #@.. u = uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + integrator.W.dW*g4 + chi2*(g1-g4)
       for i in eachindex(u)
         @inbounds u[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + γ*z₄[i] + integrator.W.dW[i]*g4[i] + E₂[i]
       end
@@ -308,26 +308,26 @@ end
     #=
     if typeof(integrator.f) <: SplitSDEFunction
       if is_diagonal_noise(integrator.sol.prob)
-        #@. dz = btilde1*z₁  + btilde2*z₂  + btilde3*z₃ + btilde4*z₄ + ebtilde1*k1 + ebtilde2*k2 + ebtilde3*k3 + ebtilde4*k4
+        #@.. dz = btilde1*z₁  + btilde2*z₂  + btilde3*z₃ + btilde4*z₄ + ebtilde1*k1 + ebtilde2*k2 + ebtilde3*k3 + ebtilde4*k4
         for i in eachindex(dz)
           @inbounds dz[i] = btilde1*z₁[i] + btilde2*z₂[i] + btilde3*z₃[i] + btilde4*z₄[i] + ebtilde1*k1[i] + ebtilde2*k2[i] + ebtilde3*k3[i] + ebtilde4*k4[i] + chi2[i]*(g1[i]-g4[i])
         end
       else
         # dz already holds mul!(dz,g1,chi2)!
-        #@. dz += btilde1*z₁ + btilde2*z₂ + btilde3*z₃ + btilde4*z₄ + ebtilde1*k1 + ebtilde2*k2 + ebtilde3*k3 + ebtilde4*k4
+        #@.. dz += btilde1*z₁ + btilde2*z₂ + btilde3*z₃ + btilde4*z₄ + ebtilde1*k1 + ebtilde2*k2 + ebtilde3*k3 + ebtilde4*k4
         for i in eachindex(dz)
           @inbounds dz[i] += btilde1*z₁[i] + btilde2*z₂[i] + btilde3*z₃[i] + btilde4*z₄[i] + ebtilde1*k1[i] + ebtilde2*k2[i] + ebtilde3*k3[i] + ebtilde4*k4[i]
         end
       end
     else
       if is_diagonal_noise(integrator.sol.prob)
-        #@. dz = btilde1*z₁ + btilde2*z₂ + btilde3*z₃ + btilde4*z₄ + chi2*(g1-g4)
+        #@.. dz = btilde1*z₁ + btilde2*z₂ + btilde3*z₃ + btilde4*z₄ + chi2*(g1-g4)
         for i in eachindex(dz)
           @inbounds dz[i] = btilde1*z₁[i] + btilde2*z₂[i] + btilde3*z₃[i] + btilde4*z₄[i] + chi2[i]*(g1[i]-g4[i])
         end
       else
         # dz already holds mul!(dz,g1,chi2)!
-        @. dz += btilde1*z₁ + btilde2*z₂ + btilde3*z₃ + btilde4*z₄
+        @.. dz += btilde1*z₁ + btilde2*z₂ + btilde3*z₃ + btilde4*z₄
       end
     end
     if alg.smooth_est # From Shampine
@@ -341,7 +341,7 @@ end
     end
     =#
 
-    @. E₁ = z₁ + z₂ + z₃ + z₄
+    @.. E₁ = z₁ + z₂ + z₃ + z₄
 
     calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,

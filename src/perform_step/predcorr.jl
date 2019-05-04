@@ -37,13 +37,13 @@ end
   ggprime(bbprimetmp,uprev,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
-    @. gtmp *= dW
+    @.. gtmp *= dW
   else
     mul!(gdWtmp,gtmp,dW)
   end
 
-  @. utmp = uprev + ftmp*dt + gdWtmp
-  @. u = uprev + (1-theta)*(ftmp- eta*bbprimetmp)*dt + (1-eta)*gdWtmp
+  @.. utmp = uprev + ftmp*dt + gdWtmp
+  @.. u = uprev + (1-theta)*(ftmp- eta*bbprimetmp)*dt + (1-eta)*gdWtmp
 
   tnp1 = t + dt
   f(ftmp,utmp,p,tnp1)
@@ -51,10 +51,10 @@ end
   ggprime(bbprimetmp,utmp,p,tnp1)
 
   if is_diagonal_noise(integrator.sol.prob)
-    @. gtmp *= dW
+    @.. gtmp *= dW
   else
     mul!(gdWtmp,gtmp,dW)
   end
 
-  @. u += theta*(ftmp - eta*bbprimetmp)*dt + eta*gdWtmp
+  @.. u += theta*(ftmp - eta*bbprimetmp)*dt + eta*gdWtmp
 end

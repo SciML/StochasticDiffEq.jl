@@ -5,7 +5,7 @@
   k₁ = dt*integrator.f(uprev,p,t)
   k₂ = dt*integrator.f(uprev+3k₁/4 + 3chi2.*gpdt/2,p,t+3dt/4)
   E₂ = chi2.*(integrator.g(uprev,p,t)-gpdt) #Only for additive!
-  u = @. uprev + k₁ / 3 + 2 * k₂ / 3 + E₂ + W.dW * gpdt
+  u = @.. uprev + k₁ / 3 + 2 * k₂ / 3 + E₂ + W.dW * gpdt
 
   if integrator.opts.adaptive
     E₁ = k₁ .+ k₂
@@ -25,17 +25,17 @@ end
   integrator.g(t,uprev,gt)
   integrator.g(t+dt,uprev,gpdt)
   integrator.f(t,uprev,k₁); k₁*=dt
-  @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
-  @. tmp1 = uprev+3k₁/4 + 3chi2*gpdt/2
+  @.. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+  @.. tmp1 = uprev+3k₁/4 + 3chi2*gpdt/2
 
   integrator.f(t+3dt/4,tmp1,k₂); k₂*=dt
 
-  @. E₂ = chi2*(gt-gpdt) #Only for additive!
+  @.. E₂ = chi2*(gt-gpdt) #Only for additive!
 
-  @. u = uprev + k₁/3 + 2k₂/3 + E₂ + W.dW*gpdt
+  @.. u = uprev + k₁/3 + 2k₂/3 + E₂ + W.dW*gpdt
 
   if integrator.opts.adaptive
-    @. E₁ = k₁ + k₂
+    @.. E₁ = k₁ + k₂
 
     calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,
@@ -55,11 +55,11 @@ end
   if typeof(W.dW) <: Union{SArray,Number}
     chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   else
-    @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    @.. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   end
 
   if is_diagonal_noise(integrator.sol.prob)
-    @. E₁ = chi2*gpdt
+    @.. E₁ = chi2*gpdt
   else
     mul!(E₁,gpdt,chi2)
   end
@@ -75,7 +75,7 @@ end
   end
 
   if is_diagonal_noise(integrator.sol.prob)
-    @. tmp1 = W.dW*gpdt
+    @.. tmp1 = W.dW*gpdt
   else
     mul!(tmp1,gpdt,W.dW)
   end
@@ -85,7 +85,7 @@ end
   end
 
   if integrator.opts.adaptive
-    @. E₁ = k₁ + k₂
+    @.. E₁ = k₁ + k₂
 
     calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,
@@ -113,7 +113,7 @@ end
   u = uprev + E₁ + E₂ + W.dW*(beta12*g2)
 
   if integrator.opts.adaptive
-    E₁ = @. dt * (k1 + k2)
+    E₁ = @.. dt * (k1 + k2)
 
     resids = calculate_residuals(E₁, E₂, uprev, u, integrator.opts.abstol,
                                  integrator.opts.reltol, integrator.opts.delta,
@@ -132,30 +132,30 @@ end
   if typeof(W.dW) <: Union{SArray,Number}
     chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   else
-    @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    @.. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   end
 
   integrator.g(g1,uprev,p,t+c11*dt)
   integrator.f(k1,uprev,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
-    @. H01 = uprev + dt*a21*k1 + chi2*b21*g1
+    @.. H01 = uprev + dt*a21*k1 + chi2*b21*g1
   else
     mul!(E₁,g1,chi2)
-    @. H01 = uprev + dt*a21*k1 + b21*E₁
+    @.. H01 = uprev + dt*a21*k1 + b21*E₁
   end
 
   integrator.g(g2,H01,p,t+c12*dt)
   integrator.f(k2,H01,p,t+c02*dt)
 
   if is_diagonal_noise(integrator.sol.prob)
-    @. E₂ = chi2*(beta21*g1 + beta22*g2)
-    #@. u = uprev + dt*(α1*k1 + α2*k2) + E₂ + W.dW*(beta12*g2)
+    @.. E₂ = chi2*(beta21*g1 + beta22*g2)
+    #@.. u = uprev + dt*(α1*k1 + α2*k2) + E₂ + W.dW*(beta12*g2)
     for i in eachindex(u)
       @inbounds u[i] = uprev[i] + dt*(α1*k1[i] + α2*k2[i]) + E₂[i] + W.dW[i]*(beta12*g2[i])
     end
   else
-    @. g1 = beta21*g1 + beta22*g2
+    @.. g1 = beta21*g1 + beta22*g2
     mul!(E₂,g1,chi2)
     g2 .*= beta12
     mul!(E₁,g2,W.dW)
@@ -165,7 +165,7 @@ end
   end
 
   if integrator.opts.adaptive
-    @. E₁ = dt * (k1 + k2)
+    @.. E₁ = dt * (k1 + k2)
 
     calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,
@@ -205,7 +205,7 @@ end
   end
 
   if integrator.opts.adaptive
-    E₁ = @. dt * (k1 + k2 + k3)
+    E₁ = @.. dt * (k1 + k2 + k3)
 
     resids = calculate_residuals(E₁, E₂, uprev, u, integrator.opts.abstol,
                                  integrator.opts.reltol, integrator.opts.delta,
@@ -225,17 +225,17 @@ end
   if typeof(W.dW) <: Union{SArray,Number}
     chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   else
-    @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    @.. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   end
 
   integrator.g(g1,uprev,p,t+c11*dt)
   integrator.f(k1,uprev,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
-    @. H01 = uprev + dt*a21*k1 + chi2*b21*g1
+    @.. H01 = uprev + dt*a21*k1 + chi2*b21*g1
   else
     mul!(E₁,g1,chi2)
-    @. H01 = uprev + dt*a21*k1 + b21*E₁
+    @.. H01 = uprev + dt*a21*k1 + b21*E₁
   end
 
   integrator.g(g2,H01,p,t+c12*dt)
@@ -246,7 +246,7 @@ end
       H02[i] = uprev[i] + dt*(a31*k1[i] + a32*k2[i]) + chi2[i]*(b31*g1[i] + b32*g2[i])
     end
   else
-    @. gtmp = b31*g1 + b32*g2
+    @.. gtmp = b31*g1 + b32*g2
     mul!(E₁,gtmp,chi2)
     for i in eachindex(u)
       H02[i] = uprev[i] + dt*(a31*k1[i] + a32*k2[i]) + E₁[i]
@@ -257,15 +257,15 @@ end
   integrator.f(k3,H02,p,t+c03*dt)
 
   if is_diagonal_noise(integrator.sol.prob)
-    @. E₂ = chi2*(beta21*g1 + beta22*g2 + beta23*g3)
-    #@. u = uprev + dt*(α1*k1 + α2*k2 + α3*k3) + E₂ + W.dW*(beta11*g1 + beta12*g2 + beta13*g3)
+    @.. E₂ = chi2*(beta21*g1 + beta22*g2 + beta23*g3)
+    #@.. u = uprev + dt*(α1*k1 + α2*k2 + α3*k3) + E₂ + W.dW*(beta11*g1 + beta12*g2 + beta13*g3)
     for i in eachindex(u)
       @inbounds u[i] = uprev[i] + dt*(α1*k1[i] + α2*k2[i] + α3*k3[i]) + E₂[i] + W.dW[i]*(beta11*g1[i] + beta12*g2[i] + beta13*g3[i])
     end
   else
-    @. gtmp = beta21*g1 + beta22*g2 + beta23*g3
+    @.. gtmp = beta21*g1 + beta22*g2 + beta23*g3
     mul!(E₂,gtmp,chi2)
-    @. gtmp = beta11*g1 + beta12*g2 + beta13*g3
+    @.. gtmp = beta11*g1 + beta12*g2 + beta13*g3
     mul!(E₁,gtmp,W.dW)
     for i in eachindex(u)
       @inbounds u[i] = uprev[i] + dt*(α1*k1[i] + α2*k2[i] + α3*k3[i]) + E₂[i] + E₁[i]
@@ -273,15 +273,15 @@ end
   end
 
   if typeof(integrator.alg) <: StochasticCompositeAlgorithm && typeof(integrator.alg.algs[1]) <: SOSRA2
-    @. tmp = k3 - k2
+    @.. tmp = k3 - k2
     ϱu = integrator.opts.internalnorm(tmp, t)
-    @. tmp = H02 - H01
+    @.. tmp = H02 - H01
     ϱd = integrator.opts.internalnorm(tmp, t)
     integrator.eigen_est = ϱu/ϱd
   end
 
   if integrator.opts.adaptive
-    @. E₁ = dt * (k1 + k2 + k3)
+    @.. E₁ = dt * (k1 + k2 + k3)
 
     calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,
@@ -295,7 +295,7 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂,tmp = cache
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages = cache.tab
-  @. chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
+  @.. chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
   for i in 1:stages
     fill!(H0[i],zero(eltype(integrator.u)))
   end
@@ -305,10 +305,10 @@ end
     for j = 1:i-1
       integrator.f((t + c₀[j]*dt),H0[j],ftmp)
       integrator.g((t + c₁[j]*dt),H0[j],gtmp)
-      @. A0temp = A0temp + A₀[j,i] * ftmp
-      @. B0temp = B0temp + B₀[j,i] * gtmp
+      @.. A0temp = A0temp + A₀[j,i] * ftmp
+      @.. B0temp = B0temp + B₀[j,i] * gtmp
     end
-    @. H0[i] = uprev + dt * A0temp + chi2 * B0temp
+    @.. H0[i] = uprev + dt * A0temp + chi2 * B0temp
   end
   fill!(atemp ,zero(eltype(integrator.u)))
   fill!(btemp ,zero(eltype(integrator.u)))
@@ -318,15 +318,15 @@ end
   for i = 1:stages
     integrator.f((t+c₀[i]*dt),H0[i],ftmp)
     integrator.g((t+c₁[i]*dt),H0[i],gtmp)
-    @. atemp  =  atemp  + α[i] * ftmp
-    @. btemp  =  btemp  + (β₁[i] * W.dW) * gtmp
-    @. E₂     =  E₂     + (β₂[i] * chi2) * gtmp
-    @. E₁temp =  E₁temp +  ftmp
+    @.. atemp  =  atemp  + α[i] * ftmp
+    @.. btemp  =  btemp  + (β₁[i] * W.dW) * gtmp
+    @.. E₂     =  E₂     + (β₂[i] * chi2) * gtmp
+    @.. E₁temp =  E₁temp +  ftmp
   end
-  @. u = uprev + dt * atemp + btemp + E₂
+  @.. u = uprev + dt * atemp + btemp + E₂
 
   if integrator.opts.adaptive
-    @. E₁ = dt*E₁temp
+    @.. E₁ = dt*E₁temp
 
     calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,
@@ -345,7 +345,7 @@ end
   if typeof(W.dW) <: Union{SArray,Number}
     chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   else
-    @. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    @.. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
   end
 
   for i in 1:stages
@@ -357,16 +357,16 @@ end
     for j = 1:i-1
       integrator.f(ftmp,H0[j],p,t + c₀[j]*dt)
       integrator.g(gtmp,H0[j],p,t + c₁[j]*dt)
-      @. A0temp = A0temp + A₀[j,i] * ftmp
+      @.. A0temp = A0temp + A₀[j,i] * ftmp
       if is_diagonal_noise(integrator.sol.prob)
-        @. B0temp = B0temp + B₀[j,i] * chi2 * gtmp
+        @.. B0temp = B0temp + B₀[j,i] * chi2 * gtmp
       else
         mul!(E₁temp,gtmp,chi2)
-        @. B0temp = B0temp + B₀[j,i] * E₁temp
+        @.. B0temp = B0temp + B₀[j,i] * E₁temp
       end
     end
 
-    @. H0[i] = uprev + dt * A0temp + B0temp
+    @.. H0[i] = uprev + dt * A0temp + B0temp
   end
   fill!(atemp ,zero(eltype(integrator.u)))
   fill!(btemp ,zero(eltype(integrator.u)))
@@ -377,26 +377,26 @@ end
     integrator.f(ftmp,H0[i],p,t+c₀[i]*dt)
     integrator.g(gtmp,H0[i],p,t+c₁[i]*dt)
     if is_diagonal_noise(integrator.sol.prob)
-      @. btemp = btemp + β₁[i]*W.dW*gtmp
+      @.. btemp = btemp + β₁[i]*W.dW*gtmp
     else
       mul!(E₁temp,gtmp,W.dW)
-      @. btemp = btemp + β₁[i]*E₁temp
+      @.. btemp = btemp + β₁[i]*E₁temp
     end
     if is_diagonal_noise(integrator.sol.prob)
-      @. E₂ = E₂ + β₂[i]*chi2*gtmp
+      @.. E₂ = E₂ + β₂[i]*chi2*gtmp
     else
       mul!(E₁temp,gtmp,chi2)
-      @. E₂ = E₂ + β₂[i]*E₁temp
+      @.. E₂ = E₂ + β₂[i]*E₁temp
     end
 
-    @. atemp  =  atemp  + α[i]*ftmp
-    @. E₁temp =  E₁temp +  ftmp
+    @.. atemp  =  atemp  + α[i]*ftmp
+    @.. E₁temp =  E₁temp +  ftmp
   end
 
-  @. u = uprev + dt*atemp + btemp + E₂
+  @.. u = uprev + dt*atemp + btemp + E₂
 
   if integrator.opts.adaptive
-    @. E₁ = dt * E₁temp
+    @.. E₁ = dt * E₁temp
 
     calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,
@@ -430,17 +430,17 @@ end
   for i = 1:stages
     ftmp = integrator.f(H0[i],p,t+c₀[i]*dt)
     E₁temp = E₁temp .+ ftmp
-    atemp  = @. atemp + α[i] * ftmp
+    atemp  = @.. atemp + α[i] * ftmp
 
     gtmp = integrator.g(H0[i], p, t + c₁[i] * dt) #H0[i] argument ignored
-    btemp  = @. btemp + (β₁[i] * W.dW) * gtmp
-    E₂     = @. E₂ + (β₂[i] * chi2) * gtmp
+    btemp  = @.. btemp + (β₁[i] * W.dW) * gtmp
+    E₂     = @.. E₂ + (β₂[i] * chi2) * gtmp
   end
 
-  u = @. uprev + dt * atemp + btemp + E₂
+  u = @.. uprev + dt * atemp + btemp + E₂
 
   if integrator.opts.adaptive
-    E₁ = @. dt * E₁temp
+    E₁ = @.. dt * E₁temp
 
     resids = calculate_residuals(E₁, E₂, uprev, u, integrator.opts.abstol,
                                  integrator.opts.reltol, integrator.opts.delta,

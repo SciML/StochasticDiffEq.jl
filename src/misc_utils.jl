@@ -71,7 +71,7 @@ end
 Same as [`calculate_residuals`](@ref) but save result in `out`.
 """
 @inline function calculate_residuals!(out, ũ, u₀, u₁, α, ρ, scalarnorm, t)
-  @. out = calculate_residuals(ũ, u₀, u₁, α, ρ, scalarnorm, t)
+  @.. out = calculate_residuals(ũ, u₀, u₁, α, ρ, scalarnorm, t)
   out
 end
 
@@ -85,7 +85,7 @@ end
 end
 
 @inline function calculate_residuals(ũ, u₀, u₁, α, ρ, scalarnorm, t)
-  @. calculate_residuals(ũ, u₀, u₁, α, ρ, scalarnorm, ts)
+  @.. calculate_residuals(ũ, u₀, u₁, α, ρ, scalarnorm, ts)
 end
 
 @inline function calculate_residuals(ũ::Array{<:Number}, u₀::Array{<:Number},
@@ -101,7 +101,7 @@ end
 Same as [`calculate_residuals`](@ref) but save result in `out`.
 """
 @inline function calculate_residuals!(out, E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm, t)
-  @. out = calculate_residuals(E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm, t)
+  @.. out = calculate_residuals(E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm, t)
   out
 end
 
@@ -116,7 +116,7 @@ end
 end
 
 @inline function calculate_residuals(E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm, t)
-  @. calculate_residuals(E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm, t)
+  @.. calculate_residuals(E₁, E₂, u₀, u₁, α, ρ, δ, scalarnorm, t)
 end
 
 @inline function calculate_residuals(E₁::Array{<:Number}, E₂::Array{<:Number},

@@ -351,7 +351,7 @@ end
 end
 
 @inline function DiffEqBase.get_du!(out,integrator::SDEIntegrator)
-  @. out = (integrator.u - integrator.uprev) / integrator.dt
+  @.. out = (integrator.u - integrator.uprev) / integrator.dt
 end
 
 function DiffEqBase.set_t!(integrator::SDEIntegrator, t::Real)

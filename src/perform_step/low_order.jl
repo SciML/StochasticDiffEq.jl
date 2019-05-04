@@ -24,7 +24,7 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   integrator.f(rtmp1,uprev,p,t)
 
-  @. u = uprev + dt * rtmp1
+  @.. u = uprev + dt * rtmp1
 
   if is_split_step(integrator.alg)
     u_choice = u
@@ -35,11 +35,11 @@ end
   integrator.g(rtmp2,u_choice,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
-    @. rtmp2 *= W.dW
-    @. u += rtmp2
+    @.. rtmp2 *= W.dW
+    @.. u += rtmp2
   else
     mul!(rtmp1,rtmp2,W.dW)
-    @. u += rtmp1
+    @.. u += rtmp1
   end
 end
 
@@ -52,7 +52,7 @@ end
   else
     noise = gtmp*W.dW
   end
-  tmp = @. uprev + dt * ftmp + noise
+  tmp = @.. uprev + dt * ftmp + noise
   gtmp2 = (gtmp .+ integrator.g(tmp,p,t+dt)) ./ 2
   if is_diagonal_noise(integrator.sol.prob)
     noise2 = gtmp2.*W.dW
@@ -70,25 +70,25 @@ end
   integrator.g(gtmp1,uprev,p,t)
 
   if is_diagonal_noise(integrator.sol.prob)
-    @. nrtmp=gtmp1*W.dW
+    @.. nrtmp=gtmp1*W.dW
   else
     mul!(nrtmp,gtmp1,W.dW)
   end
 
-  @. tmp = uprev + dt * ftmp1 + nrtmp
+  @.. tmp = uprev + dt * ftmp1 + nrtmp
 
   integrator.f(ftmp2,tmp,p,t+dt)
   integrator.g(gtmp2,tmp,p,t+dt)
 
   if is_diagonal_noise(integrator.sol.prob)
-    @. nrtmp=(1/2)*W.dW*(gtmp1+gtmp2)
+    @.. nrtmp=(1/2)*W.dW*(gtmp1+gtmp2)
   else
-    @. gtmp1 = (1/2)*(gtmp1+gtmp2)
+    @.. gtmp1 = (1/2)*(gtmp1+gtmp2)
     mul!(nrtmp,gtmp1,W.dW)
   end
 
   dto2 = dt / 2
-  @. u = uprev + dto2 * (ftmp1 + ftmp2) + nrtmp
+  @.. u = uprev + dto2 * (ftmp1 + ftmp2) + nrtmp
 end
 
 @muladd function perform_step!(integrator,cache::RandomEMConstantCache,f=integrator.f)
@@ -101,13 +101,13 @@ end
   @unpack rtmp = cache
   @unpack t,dt,uprev,u,W,p = integrator
   integrator.f(rtmp,uprev,p,t,W.curW)
-  @. u = uprev + dt * rtmp
+  @.. u = uprev + dt * rtmp
 end
 
 @muladd function perform_step!(integrator,cache::RKMilConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
   du1 = integrator.f(uprev,p,t)
-  K = @. uprev + dt * du1
+  K = @.. uprev + dt * du1
   L = integrator.g(uprev,p,t)
   mil_correction = zero(u)
   if alg_interpretation(integrator.alg) == :Ito
@@ -139,17 +139,17 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   integrator.f(du1,uprev,p,t)
   integrator.g(L,uprev,p,t)
-  @. K = uprev + dt * du1
-  @. tmp = K + integrator.sqdt * L
+  @.. K = uprev + dt * du1
+  @.. tmp = K + integrator.sqdt * L
   integrator.g(du2,tmp,p,t)
   if alg_interpretation(integrator.alg) == :Ito
-    @. tmp = (du2-L)/(2integrator.sqdt)*(W.dW^2 - dt)
+    @.. tmp = (du2-L)/(2integrator.sqdt)*(W.dW^2 - dt)
   elseif alg_interpretation(integrator.alg) == :Stratonovich
-    @. tmp = (du2-L)/(2integrator.sqdt)*(W.dW^2)
+    @.. tmp = (du2-L)/(2integrator.sqdt)*(W.dW^2)
   end
-  @. u = K+L*W.dW + tmp
+  @.. u = K+L*W.dW + tmp
   if integrator.opts.adaptive
-    @. tmp = (tmp)/(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev,t),integrator.opts.internalnorm(u,t))*integrator.opts.reltol)
+    @.. tmp = (tmp)/(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev,t),integrator.opts.internalnorm(u,t))*integrator.opts.reltol)
     integrator.EEst = integrator.opts.internalnorm(tmp,t)
   end
   integrator.u = u
@@ -161,23 +161,23 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   integrator.f(du1,uprev,p,t)
   integrator.g(L,uprev,p,t)
-  @. K = uprev + dt * du1
-  @. du2 = zero(eltype(u)) # This makes it safe to re-use the array
+  @.. K = uprev + dt * du1
+  @.. du2 = zero(eltype(u)) # This makes it safe to re-use the array
   if alg_interpretation(integrator.alg) == :Ito
-    @. tmp = K + integrator.sqdt * L
+    @.. tmp = K + integrator.sqdt * L
     integrator.g(du2,tmp,p,t)
-    @. tmp = (du2-L)/(2integrator.sqdt)*(W.dW.^2 - dt)
+    @.. tmp = (du2-L)/(2integrator.sqdt)*(W.dW.^2 - dt)
   elseif alg_interpretation(integrator.alg) == :Stratonovich
-    @. tmp = uprev + integrator.sqdt * L
+    @.. tmp = uprev + integrator.sqdt * L
     integrator.g(du2,tmp,p,t)
-    @. tmp = (du2-L)/(2integrator.sqdt)*(W.dW.^2)
+    @.. tmp = (du2-L)/(2integrator.sqdt)*(W.dW.^2)
   end
-  @. u = K+L*W.dW + tmp
+  @.. u = K+L*W.dW + tmp
   if integrator.opts.adaptive
-    @. tmp = integrator.opts.internalnorm(W.dW^3,t)*
+    @.. tmp = integrator.opts.internalnorm(W.dW^3,t)*
              integrator.opts.internalnorm((du2-L)/(integrator.sqdt),t)^2 / 6
     integrator.f(du2,K,p,t+dt)
-    @. tmp += integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1)/2,t)
+    @.. tmp += integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1)/2,t)
 
     calculate_residuals!(tmp, tmp, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.internalnorm, t)
@@ -194,7 +194,7 @@ end
 
   ggprime_norm = 0.0
 
-  @. mil_correction = zero(u)
+  @.. mil_correction = zero(u)
   for i=1:length(dW),j=1:length(dW)
       I[j,i] = 0.5*dW[i]*dW[j]
       if alg_interpretation(integrator.alg) == :Ito
@@ -206,10 +206,10 @@ end
   integrator.g(L,uprev,p,t)
 
   for j = 1:length(uprev)
-    @. Kj = uprev + dt*du1 + sqdt*@view(L[:,j]) # This works too
+    @.. Kj = uprev + dt*du1 + sqdt*@view(L[:,j]) # This works too
     #Kj .= uprev .+ sqdt*L[:,j]
     g(gtmp,Kj,p,t)
-    @. Dgj = (gtmp - L)/sqdt
+    @.. Dgj = (gtmp - L)/sqdt
     if integrator.opts.adaptive
         ggprime_norm += integrator.opts.internalnorm(Dgj,t)
     end
@@ -217,12 +217,12 @@ end
     mil_correction .+= tmp
   end
   mul!(tmp,L,dW)
-  @. u .= uprev + dt*du1 + tmp + mil_correction
+  @.. u .= uprev + dt*du1 + tmp + mil_correction
 
   if integrator.opts.adaptive
       En = integrator.opts.internalnorm(W.dW,t)^3*ggprime_norm^2 / 6
       integrator.f(du2,K,p,t+dt)
-      @. tmp = integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2,t) + En
+      @.. tmp = integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2,t) + En
 
       calculate_residuals!(tmp, tmp, uprev, u, integrator.opts.abstol,
                            integrator.opts.reltol, integrator.opts.internalnorm, t)
