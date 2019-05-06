@@ -38,6 +38,7 @@ module StochasticDiffEq
                      set_abstol!, postamble!, last_step_failed, has_invW, has_jac
 
   using DiffEqBase: check_error!, is_diagonal_noise, @..
+
   using DiffEqBase: nlsolvefail, isnewton, set_new_W!, get_W, @iipnlsolve, @oopnlsolve, _vec, _reshape
 
   using DiffEqBase: NLSolver

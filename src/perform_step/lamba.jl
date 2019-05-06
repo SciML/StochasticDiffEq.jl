@@ -1,7 +1,7 @@
 @muladd function perform_step!(integrator,cache::LambaEMConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
   du1 = integrator.f(uprev,p,t)
-  K = @. uprev + dt * du1
+  K = @.. uprev + dt * du1
 
   if is_split_step(integrator.alg)
     L = integrator.g(uprev,p,t+dt)
@@ -35,7 +35,7 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
 
   integrator.f(du1,uprev,p,t)
-  @. K = uprev + dt * du1
+  @.. K = uprev + dt * du1
 
   if is_split_step(integrator.alg)
     integrator.g(L,K,p,t+dt)
@@ -44,12 +44,12 @@ end
   end
 
   if is_diagonal_noise(integrator.sol.prob)
-    @. tmp=L*W.dW
+    @.. tmp=L*W.dW
   else
     mul!(tmp,L,W.dW)
   end
 
-  @. u = K+tmp
+  @.. u = K+tmp
 
   if integrator.opts.adaptive
 
@@ -60,22 +60,22 @@ end
     end
 
     if !is_diagonal_noise(integrator.sol.prob)
-      @. tmp = K + integrator.sqdt * g_sized
+      @.. tmp = K + integrator.sqdt * g_sized
       integrator.g(gtmp,tmp,p,t)
       g_sized2 = norm(gtmp,2)
-      @. dW_cache = W.dW.^2 - dt
+      @.. dW_cache = W.dW.^2 - dt
       diff_tmp = integrator.opts.internalnorm(dW_cache, t)
       En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
-      @. tmp = En
+      @.. tmp = En
     else
-      @. tmp = K + integrator.sqdt * L
+      @.. tmp = K + integrator.sqdt * L
       integrator.g(gtmp,tmp,p,t)
-      @. tmp = (gtmp-L)/(2integrator.sqdt)*(W.dW.^2 - dt)
+      @.. tmp = (gtmp-L)/(2integrator.sqdt)*(W.dW.^2 - dt)
     end
 
     # Ed
     integrator.f(du2,K,p,t+dt)
-    @. tmp += integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2, t)
+    @.. tmp += integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2, t)
 
     calculate_residuals!(tmp, tmp, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.internalnorm, t)
@@ -126,28 +126,28 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   integrator.f(du1,uprev,p,t)
   integrator.g(L,uprev,p,t)
-  @. K = uprev + dt * du1
+  @.. K = uprev + dt * du1
 
   if is_diagonal_noise(integrator.sol.prob)
-    @. tmp=L*W.dW
+    @.. tmp=L*W.dW
   else
     mul!(tmp,L,W.dW)
   end
 
-  @. tmp = K+tmp
+  @.. tmp = K+tmp
 
   integrator.f(du2,tmp,p,t+dt)
   integrator.g(gtmp,tmp,p,t+dt)
 
   if is_diagonal_noise(integrator.sol.prob)
-    @. tmp=(1/2)*W.dW*(L+gtmp)
+    @.. tmp=(1/2)*W.dW*(L+gtmp)
   else
-    @. gtmp = (1/2)*(L+gtmp)
+    @.. gtmp = (1/2)*(L+gtmp)
     mul!(tmp,gtmp,W.dW)
   end
 
   dto2 = dt*(1/2)
-  @. u = uprev + dto2*(du1+du2) + tmp
+  @.. u = uprev + dto2*(du1+du2) + tmp
 
   if integrator.opts.adaptive
 
@@ -158,22 +158,22 @@ end
     end
 
     if !is_diagonal_noise(integrator.sol.prob)
-      @. tmp = uprev + integrator.sqdt * g_sized
+      @.. tmp = uprev + integrator.sqdt * g_sized
       integrator.g(gtmp,tmp,p,t)
       g_sized2 = norm(gtmp,2)
-      @. dW_cache = W.dW.^2
+      @.. dW_cache = W.dW.^2
       diff_tmp = integrator.opts.internalnorm(dW_cache, t)
       En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
-      @. tmp = En
+      @.. tmp = En
     else
-      @. tmp = uprev + integrator.sqdt * L
+      @.. tmp = uprev + integrator.sqdt * L
       integrator.g(gtmp,tmp,p,t)
-      @. tmp = (gtmp-L)/(2integrator.sqdt)*(W.dW.^2)
+      @.. tmp = (gtmp-L)/(2integrator.sqdt)*(W.dW.^2)
     end
 
     # Ed
     integrator.f(du2,K,p,t+dt)
-    @. tmp += integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2, t)
+    @.. tmp += integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2, t)
 
     calculate_residuals!(tmp, tmp, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.internalnorm, t)

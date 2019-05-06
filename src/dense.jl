@@ -25,35 +25,35 @@ function sde_interpolant(Θ,integrator::DEIntegrator,idxs,deriv::Type{T}) where 
 end
 
 @muladd function sde_interpolant(Θ,dt,u0,u1,idxs::Nothing,deriv::Type{Val{0}})
-  @. (1-Θ)*u0 + Θ*u1
+  @.. (1-Θ)*u0 + Θ*u1
 end
 
 @muladd function sde_interpolant(Θ,dt,u0,u1,idxs,deriv::Type{Val{0}})
-  @. (1-Θ)*u0[idxs] + Θ*u1[idxs]
+  @.. (1-Θ)*u0[idxs] + Θ*u1[idxs]
 end
 
 function sde_interpolant(Θ,dt,u0,u1,idxs::Nothing,deriv::Type{Val{1}})
-  @. (u1-u0)/dt
+  @.. (u1-u0)/dt
 end
 
 function sde_interpolant(Θ,dt,u0,u1,idxs,deriv::Type{Val{1}})
-  @. (u1[idxs]-u0[idxs])/dt
+  @.. (u1[idxs]-u0[idxs])/dt
 end
 
 @muladd function sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv::Type{Val{0}})
   Θm1 = (1-Θ)
   if idxs === nothing
-    @. out = Θm1*u0 + Θ*u1
+    @.. out = Θm1*u0 + Θ*u1
   else
-    @views @. out = Θm1*u0[idxs] + Θ*u1[idxs]
+    @views @.. out = Θm1*u0[idxs] + Θ*u1[idxs]
   end
 end
 
 function sde_interpolant!(out,Θ,dt,u0,u1,idxs,deriv::Type{Val{1}})
   if idxs === nothing
-    @. out = (u1-u0)/dt
+    @.. out = (u1-u0)/dt
   else
-    @views @. out = (u1[idxs]-u0[idxs])/dt
+    @views @.. out = (u1[idxs]-u0[idxs])/dt
   end
 end
 

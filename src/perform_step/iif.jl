@@ -65,7 +65,7 @@ function (f::RHS_IIF1)(resid,u)
   _du = get_du(f.dual_cache, eltype(u))
   du = reinterpret(eltype(u),_du)
   f.f.f2(du,reshape(u,f.sizeu),f.p,f.t+f.dt)
-  @. resid = u - f.tmp - f.dt*du
+  @.. resid = u - f.tmp - f.dt*du
 end
 
 mutable struct RHS_IIF2{F,uType,tType,DiffCacheType,SizeType,P} <: Function
@@ -81,7 +81,7 @@ function (f::RHS_IIF2)(resid,u)
   _du = get_du(f.dual_cache, eltype(u))
   du = reinterpret(eltype(u),_du)
   f.f.f2(du,reshape(u,f.sizeu),f.p,f.t+f.dt)
-  @. resid = u - f.tmp - 0.5f.dt*du
+  @.. resid = u - f.tmp - 0.5f.dt*du
 end
 
 @muladd function perform_step!(integrator,cache::Union{IIF1MCache,IIF2MCache},f=integrator.f)
@@ -104,7 +104,7 @@ end
   if typeof(cache) <: IIF2MCache
     integrator.f.f2(rtmp1,uprev,p,t)
     dto2 = dt / 2
-    @. rtmp3 = dto2 * rtmp1 + rtmp3
+    @.. rtmp3 = dto2 * rtmp1 + rtmp3
   end
 
   A = integrator.f.f1(rtmp1,uprev,p,t)
@@ -171,10 +171,10 @@ end
   if typeof(cache) <: IIF2MCache
     integrator.f.f2(t,uprev,rtmp1)
     dto2 = dt / 2
-    @. rtmp1 = dto2 * rtmp1 + uprev + rtmp3
+    @.. rtmp1 = dto2 * rtmp1 + uprev + rtmp3
     mul!(tmp,M,rtmp1)
   elseif !(typeof(cache) <: IIF1MilCache)
-    @. rtmp1 = uprev + rtmp3
+    @.. rtmp1 = uprev + rtmp3
     mul!(tmp,M,rtmp1)
   else
     mul!(tmp,M,uprev)
