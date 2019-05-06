@@ -44,7 +44,7 @@ module StochasticDiffEq
 
   using DiffEqBase: FastConvergence, Convergence, SlowConvergence, VerySlowConvergence, Divergence
 
-  import DiffEqBase: calculate_residuals, calculate_residuals!, nlsolve_f, unwrap_cache, @tight_loop_macros, islinear
+  import DiffEqBase: calculate_residuals, calculate_residuals!, nlsolve_f, unwrap_cache, islinear
 
 
   const CompiledFloats = Union{Float32,Float64}
