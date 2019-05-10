@@ -141,3 +141,6 @@ function unwrap_alg(integrator, is_nlsolve)
     return alg.algs[integrator.cache.current]
   end
 end
+
+issplit(::StochasticDiffEqAlgorithm) = false
+issplit(::SplitSDEAlgorithms) = true

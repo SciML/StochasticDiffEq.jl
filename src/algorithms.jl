@@ -255,3 +255,5 @@ struct StochasticCompositeAlgorithm{T,F} <: StochasticDiffEqCompositeAlgorithm
 end
 
 struct RandomEM <: StochasticDiffEqRODEAlgorithm end
+
+const SplitSDEAlgorithms = Union{IIF1M,IIF2M,IIF1Mil,SKenCarp,SplitEM}
