@@ -60,6 +60,6 @@ sim2 = test_convergence(dts,prob,SOSRA2(),numMonte=5)
 dts = (1/2) .^ (11:-1:7) #14->7 good plot
 Random.seed!(100)
 sim2 = test_convergence(dts,prob,SKenCarp(),numMonte=20)
-@test_broken abs(sim2.𝒪est[:l∞]-2) <.15 #High tolerance since low dts for testing!
-sim2 = test_convergence(dts,prob,SKenCarp(nlsolve=StochasticDiffEq.NLNewton()),numMonte=20)
-@test_broken abs(sim2.𝒪est[:l∞]-2) <.15 #High tolerance since low dts for testing!
+@test abs(sim2.𝒪est[:l∞]-2) <.15 #High tolerance since low dts for testing!
+sim2 = test_convergence(dts,prob,SKenCarp(nlsolve=StochasticDiffEq.NLFunctional()),numMonte=20)
+@test abs(sim2.𝒪est[:l∞]-2) <.15 #High tolerance since low dts for testing!
