@@ -131,7 +131,7 @@ mutable struct WOperator{T,
 end
 function WOperator(f::DiffEqBase.AbstractSDEFunction, gamma, inplace; transform=false)
   @assert DiffEqBase.has_jac(f) "f needs to have an associated jacobian"
-  if isa(f, SplitFunction)
+  if isa(f, SplitSDEFunction)
     error("WOperator does not support $(typeof(f)) yet")
   end
   # Convert mass matrix, if needed
@@ -317,7 +317,7 @@ function calc_W!(integrator, cache::StochasticDiffEqMutableCache, dtgamma, repea
   # we only want to factorize the linear operator once
   new_jac = true
   new_W = true
-  if (f isa SDEFunction && islinear(f.f)) || (f isa SplitFunction && islinear(f.f1.f))
+  if (f isa SDEFunction && islinear(f.f)) || (f isa SplitSDEFunction && islinear(f.f1.f))
     new_jac = false
     @goto J2W # Jump to W calculation directly, because we already have J
   end
@@ -361,7 +361,7 @@ function calc_W!(integrator, cache::StochasticDiffEqConstantCache, dtgamma, repe
   # calculate W
   uf.t = t
   is_compos = typeof(integrator.alg) <: StochasticCompositeAlgorithm
-  if (f isa SDEFunction && islinear(f.f)) || (f isa SplitFunction && islinear(f.f1.f))
+  if (f isa SDEFunction && islinear(f.f)) || (f isa SplitSDEFunction && islinear(f.f1.f))
     J = f.f1.f
     W = WOperator(mass_matrix, dtgamma, J, false; transform=W_transform)
   elseif DiffEqBase.has_jac(f)
