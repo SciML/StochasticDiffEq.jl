@@ -99,7 +99,7 @@ sim8 = test_convergence(dts,prob,SOSRA(),numMonte=Int(1e1))
 sim9 = test_convergence(dts,prob,SOSRA2(),numMonte=Int(1e1))
 @test abs(sim9.𝒪est[:final]-2) < 0.3
 print(".")
-dts = (1/2) .^ (10:-1:4) #14->7 good plot
+dts = (1/2) .^ (10:-1:5) #14->7 good plot
 sim10 = test_convergence(dts,prob,SKenCarp(),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-2) < 0.3
 sim10 = test_convergence(dts,prob,SKenCarp(nlsolve=StochasticDiffEq.NLFunctional()),numMonte=Int(1e1))
