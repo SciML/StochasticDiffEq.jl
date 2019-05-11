@@ -80,6 +80,7 @@ sim3 = test_convergence(dts,prob,SRI(),numMonte=Int(1e1))
 @test abs(sim3.𝒪est[:final]-2) < 0.3
 sim3 = test_convergence(dts,prob,SRIW2(),numMonte=Int(1e1))
 @test abs(sim3.𝒪est[:final]-2) < 0.3
+print(".")
 sim3 = test_convergence(dts,prob,SOSRI(),numMonte=Int(1e1))
 @test abs(sim3.𝒪est[:final]-2) < 0.3
 sim3 = test_convergence(dts,prob,SOSRI2(),numMonte=Int(1e1))
@@ -97,6 +98,7 @@ sim8 = test_convergence(dts,prob,SOSRA(),numMonte=Int(1e1))
 @test abs(sim8.𝒪est[:final]-2) < 0.3
 sim9 = test_convergence(dts,prob,SOSRA2(),numMonte=Int(1e1))
 @test abs(sim9.𝒪est[:final]-2) < 0.3
+print(".")
 dts = (1/2) .^ (10:-1:4) #14->7 good plot
 sim10 = test_convergence(dts,prob,SKenCarp(),numMonte=Int(1e1))
 @test abs(sim10.𝒪est[:final]-1.5) < 0.3
@@ -113,3 +115,4 @@ sim6 = test_convergence(dts,prob,SRIW1(),numMonte=Int(1e1))
 @test abs(sim6.𝒪est[:final]-2) < 0.3
 sim2 = test_convergence(dts,prob,SRA(tableau=StochasticDiffEq.constructExplicitSKenCarp()),numMonte=Int(1e1))
 @test abs(sim2.𝒪est[:final]-2) < 0.3
+println(".")
