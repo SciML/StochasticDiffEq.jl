@@ -3,14 +3,19 @@ using StochasticDiffEq, LinearAlgebra, SparseArrays, Random, Test, DiffEqOperato
 
 @testset "Derivative Utilities" begin
   @testset "WOperator" begin
-    Random.seed!(0); y = zeros(2); b = rand(2)
-    mm = I; _J = rand(2,2)
-    W = WOperator(mm, 1.0, DiffEqArrayOperator(_J))
-    set_gamma!(W, 2.0)
-    _W = mm - 2.0 * _J
-    @test convert(AbstractMatrix,W) ≈ _W
-    @test W * b ≈ _W * b
-    mul!(y, W, b); @test y ≈ _W * b
+    Random.seed!(123)
+    y = zeros(2); b = rand(2)
+    mm = rand(2, 2)
+    for _J in [rand(2, 2), Diagonal(rand(2))]
+      _Ws = [-mm + 2.0 * _J, -mm/2.0 + _J]
+      for inplace in (true, false), (_W, W_transform) in zip(_Ws, [false, true])
+        W = WOperator(mm, 1.0, DiffEqArrayOperator(_J), inplace, transform=W_transform)
+        set_gamma!(W, 2.0)
+        @test convert(AbstractMatrix,W) ≈ _W
+        @test W * b ≈ _W * b
+        mul!(y, W, b); @test y ≈ _W * b
+      end
+    end
   end
 
   @testset "calc_W!" begin
@@ -18,7 +23,7 @@ using StochasticDiffEq, LinearAlgebra, SparseArrays, Random, Test, DiffEqOperato
     mm = [2.0 0.0; 0.0 1.0]
     u0 = [1.0, 1.0]; tmp = zeros(2)
     tspan = (0.0,1.0); dt = 0.01
-    concrete_W = mm - dt * A
+    concrete_W = -mm + dt * A
 
     # Out-of-place
     _f = (u,p,t) -> A*u; _g = (u,p,t) -> σ*u

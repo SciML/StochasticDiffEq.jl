@@ -71,4 +71,4 @@ plot!(T, avg3)
 =#
 
 @test maximum(avg1-avg2) < 0.02
-@test maximum(avg1-avg3) < 0.02
+@test maximum(avg1-avg3) < 0.03

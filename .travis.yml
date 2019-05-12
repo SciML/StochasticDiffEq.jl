@@ -8,7 +8,9 @@ julia:
   - nightly
 env:
   - GROUP=Interface
+  - GROUP=Interface2
   - GROUP=AlgConvergence
+  - GROUP=AlgConvergence2
 matrix:
   allow_failures:
     - julia: nightly

@@ -296,28 +296,16 @@ end
   if isinplace(integrator.noise)
     integrator.noise(integrator.ΔWtilde,integrator)
     if add1 != 0
-      #@.. integrator.ΔWtilde = add1 + scaling*integrator.ΔWtilde
-      @tight_loop_macros for i in eachinex(integrator.u)
-        @inbounds integrator.ΔWtilde[i] = add1[i] + scaling*integrator.ΔWtilde[i]
-      end
+      @.. integrator.ΔWtilde = add1 + scaling*integrator.ΔWtilde
     else
-      #@.. integrator.ΔWtilde = scaling*integrator.ΔWtilde
-      @tight_loop_macros for i in eachinex(integrator.u)
-        @inbounds integrator.ΔWtilde[i] = scaling*integrator.ΔWtilde[i]
-      end
+      @.. integrator.ΔWtilde = scaling*integrator.ΔWtilde
     end
     if alg_needs_extra_process(integrator.alg)
       integrator.noise(integrator.ΔZtilde,integrator)
       if add2 != 0
-        #@.. integrator.ΔZtilde = add2 + scaling*integrator.ΔZtilde
-        @tight_loop_macros for i in eachinex(integrator.u)
-          @inbounds integrator.ΔZtilde[i] = add2[i] + scaling*integrator.ΔZtilde[i]
-        end
+        @.. integrator.ΔZtilde = add2 + scaling*integrator.ΔZtilde
       else
-        #@.. integrator.ΔZtilde = scaling*integrator.ΔZtilde
-        @tight_loop_macros for i in eachinex(integrator.u)
-          @inbounds integrator.ΔZtilde[i] = scaling*integrator.ΔZtilde[i]
-        end
+        @.. integrator.ΔZtilde = scaling*integrator.ΔZtilde
       end
     end
   else
@@ -344,3 +332,10 @@ end
 end
 
 @inline initialize!(integrator,cache::StochasticDiffEqCache,f=integrator.f) = nothing
+
+nlsolve!(integrator, cache) = DiffEqBase.nlsolve!(cache.nlsolver, cache.nlsolver.cache, integrator)
+
+
+DiffEqBase.nlsolve_f(f, alg) = f isa SplitSDEFunction && issplit(alg) ? f.f1 : f
+DiffEqBase.nlsolve_f(integrator) =
+  nlsolve_f(integrator.f, unwrap_alg(integrator, true))

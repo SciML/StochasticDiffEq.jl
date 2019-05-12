@@ -1,10 +1,9 @@
 @muladd function perform_step!(integrator, cache::SKenCarpConstantCache, f=integrator.f)
   @unpack t,dt,uprev,u,g,p = integrator
-  uf = cache.uf
+  @unpack uf, nlsolver = cache
   @unpack γ,a31,a32,a41,a42,a43,btilde1,btilde2,btilde3,btilde4,c3,α31,α32 = cache.tab
   @unpack ea21,ea31,ea32,ea41,ea42,ea43,eb1,eb2,eb3,eb4,ebtilde1,ebtilde2,ebtilde3,ebtilde4 = cache.tab
   @unpack nb021,nb043 = cache.tab
-  nlsolve! = cache.nlsolve; nlcache = nlsolve!.cache
   alg = unwrap_alg(integrator, true)
 
   chi2 = (integrator.W.dW + integrator.W.dZ/sqrt(3))/2 #I_(1,0)/h
@@ -21,13 +20,13 @@
 
   # calculate W
   repeat_step = false
-  if nlsolve! isa NLNewton
+  if isnewton(nlsolver)
     uf.t = t
-    J, nlcache.W = calc_W!(integrator, cache, γdt, repeat_step)
   end
+  J = update_W!(integrator, cache, γdt, repeat_step)
 
   z₁ = dt*f( uprev,p,t)
-  nlcache.c = 2*γ
+  nlsolver.c = 2*γ
 
   g1 = g(uprev,p,t)
   tmp = uprev + γ*z₁ + nb021*chi2.*g1
@@ -36,21 +35,22 @@
     k1 = dt*f2(uprev,p,t)
     tmp += ea21*k1
   end
-  nlcache.tmp = tmp
+  nlsolver.tmp = tmp
 
   if alg.extrapolant == :min_correct
     z₂ = zero(z₁)
   elseif alg.extrapolant == :trivial
     z₂ = z₁
   end
-  nlcache.z = z₂
+  nlsolver.z = z₂
 
-  (z₂, η, iter, fail_convergence) = nlsolve!(integrator); fail_convergence && return nothing
+  z₂ = nlsolve!(integrator, cache)
+  nlsolvefail(nlsolver) && return nothing
 
 
   ################################## Solve Step 3
 
-  nlcache.c = c3
+  nlsolver.c = c3
   if typeof(integrator.f) <: SplitSDEFunction
     u = tmp + γ*z₂
     k2 = dt*f2(u,p,t + 2γ*dt)
@@ -58,20 +58,21 @@
   else
     tmp = uprev + a31*z₁ + a32*z₂
   end
-  nlcache.tmp = tmp
+  nlsolver.tmp = tmp
 
   if alg.extrapolant == :min_correct
     z₃ = zero(z₂)
   elseif alg.extrapolant == :trivial
     z₃ = z₂
   end
-  nlcache.z = z₃
+  nlsolver.z = z₃
 
-  (z₃, η, iter, fail_convergence) = nlsolve!(integrator); fail_convergence && return nothing
+  z₃ = nlsolve!(integrator, cache)
+  nlsolvefail(nlsolver) && return nothing
 
   ################################## Solve Step 4
 
-  nlcache.c = one(nlcache.c)
+  nlsolver.c = one(nlsolver.c)
 
   # Note: Can use g1 since c13 = 0 => g3 == g1
 
@@ -82,16 +83,17 @@
   else
     tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + nb043*chi2.*g1
   end
-  nlcache.tmp = tmp
+  nlsolver.tmp = tmp
 
   if alg.extrapolant == :min_correct
     z₄ = zero(z₂)
   elseif alg.extrapolant == :trivial
     z₄ = z₂
   end
-  nlcache.z = z₄
+  nlsolver.z = z₄
 
-  (z₄, η, iter, fail_convergence) = nlsolve!(integrator); fail_convergence && return nothing
+  z₄ = nlsolve!(integrator, cache)
+  nlsolvefail(nlsolver) && return nothing
 
   u = tmp + γ*z₄
   g4 = g(uprev,p,t+dt)
@@ -106,9 +108,6 @@
   end
 
   ################################### Finalize
-
-  nlcache.ηold = η
-  nlcache.nl_iters = iter
 
   if integrator.opts.adaptive
 
@@ -141,13 +140,12 @@ end
   repeat_step=false
   @unpack t,dt,uprev,u,g,p = integrator
   @unpack uf,du1,dz,z₁,z₂,z₃,z₄,k1,k2,k3,k4,k,b,J,W,jac_config,tmp,atmp = cache
-  @unpack g1,g4,chi2 = cache
+  @unpack g1,g4,chi2,nlsolver = cache
   @unpack γ,a31,a32,a41,a42,a43,btilde1,btilde2,btilde3,btilde4,c3,α31,α32 = cache.tab
   @unpack ea21,ea31,ea32,ea41,ea42,ea43,eb1,eb2,eb3,eb4 = cache.tab
   @unpack ebtilde1,ebtilde2,ebtilde3,ebtilde4 = cache.tab
   @unpack nb021,nb043 = cache.tab
   alg = unwrap_alg(integrator, true)
-  nlsolve! = cache.nlsolve; nlcache = nlsolve!.cache
 
   # Some aliases
 
@@ -171,7 +169,7 @@ end
 
   γdt = γ*dt
 
-  nlsolve! isa NLNewton && calc_W!(integrator, cache, γdt, repeat_step)
+  update_W!(integrator, cache, γdt, repeat_step)
 
   if !repeat_step && !integrator.last_stepfail
     f(z₁, integrator.uprev, p, integrator.t)
@@ -196,8 +194,8 @@ end
   elseif alg.extrapolant == :trivial
     @.. z₂ = z₁
   end
-  nlcache.z = z₂
-  nlcache.c = 2γ
+  nlsolver.z = z₂
+  nlsolver.c = 2γ
 
 
   if typeof(integrator.f) <: SplitSDEFunction
@@ -209,11 +207,12 @@ end
     @.. tmp += ea21*k1
   end
 
-  (z₂, η, iter, fail_convergence) = nlsolve!(integrator); fail_convergence && return nothing
+  z₂ = nlsolve!(integrator, cache)
+  nlsolvefail(nlsolver) && return nothing
 
   ################################## Solve Step 3
 
-  nlcache.c = c3
+  nlsolver.c = c3
 
   if typeof(integrator.f) <: SplitSDEFunction
     @.. u = tmp + γ*z₂
@@ -231,13 +230,14 @@ end
   elseif alg.extrapolant == :trivial
     @.. z₃ = z₂
   end
-  nlcache.z = z₃
+  nlsolver.z = z₃
 
-  (z₃, η, iter, fail_convergence) = nlsolve!(integrator); fail_convergence && return nothing
+  z₃ = nlsolve!(integrator, cache)
+  nlsolvefail(nlsolver) && return nothing
 
   ################################## Solve Step 4
 
-  nlcache.c = one(nlcache.c)
+  nlsolver.c = one(nlsolver.c)
 
   if typeof(integrator.f) <: SplitSDEFunction
     @.. u = tmp + γ*z₃
@@ -258,9 +258,10 @@ end
   elseif alg.extrapolant == :trivial
     @.. z₄ = z₂
   end
-  nlcache.z = z₄
+  nlsolver.z = z₄
 
-  (z₄, η, iter, fail_convergence) = nlsolve!(integrator); fail_convergence && return nothing
+  z₄ = nlsolve!(integrator, cache)
+  nlsolvefail(nlsolver) && return nothing
 
   g(g4,u,p,t+dt)
 
@@ -299,9 +300,6 @@ end
   end
 
   ################################### Finalize
-
-  nlcache.ηold = η
-  nlcache.nl_iters = iter
 
   if integrator.opts.adaptive
 

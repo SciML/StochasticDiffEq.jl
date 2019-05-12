@@ -27,7 +27,7 @@ dts = 1 ./ 2 .^ (14:-1:7)
 
 println("First Test")
 Random.seed!(100)
-sim  = test_convergence(dts,prob2,EM(),numMonte=100)
+sim  = test_convergence(dts,prob2,EM(),numMonte=150)
 @test abs(sim.𝒪est[:l2]-0.5) < 0.1
 
 # using Plots; plot(sim)

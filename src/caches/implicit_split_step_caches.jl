@@ -16,13 +16,14 @@
   jac_config::JC
   linsolve::F
   uf::UF
-  nlsolve::N
+  nlsolver::N
   dW_cache::randType
 end
 
 function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
-  @iipnlcachefields
+                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  γ, c = alg.theta,zero(t)
+  @iipnlsolve
   gtmp = zero(noise_rate_prototype)
   if is_diagonal_noise(prob)
     gtmp2 = gtmp
@@ -32,23 +33,23 @@ function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototy
     dW_cache = zero(ΔW)
   end
 
-  γ, c = alg.theta,zero(t)
-  @iipnlsolve
   ISSEMCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,J,W,jac_config,linsolve,uf,
-                  nlsolve,dW_cache)
+                  nlsolver,dW_cache)
 end
 
 mutable struct ISSEMConstantCache{F,N} <: StochasticDiffEqConstantCache
   uf::F
-  nlsolve::N
+  nlsolver::N
 end
 
 function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  @oopnlcachefields
+                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   γ, c = alg.theta,zero(t)
   @oopnlsolve
-  ISSEMConstantCache(uf,nlsolve)
+  if !DiffEqBase.has_jac(f) && !isnewton(nlsolver)
+    uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
+  end
+  ISSEMConstantCache(uf,nlsolver)
 end
 
 @cache mutable struct ISSEulerHeunCache{uType,rateType,JType,WType,JC,UF,N,
@@ -70,13 +71,14 @@ end
   jac_config::JC
   linsolve::F
   uf::UF
-  nlsolve::N
+  nlsolver::N
   dW_cache::randType
 end
 
 function alg_cache(alg::ISSEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{true}})
-  @iipnlcachefields
+                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  γ, c = alg.theta,zero(t)
+  @iipnlsolve
 
   gtmp = zero(noise_rate_prototype)
   gtmp2 = zero(rate_prototype)
@@ -89,21 +91,21 @@ function alg_cache(alg::ISSEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
       dW_cache = zero(ΔW)
   end
 
-  γ, c = alg.theta,zero(t)
-  @iipnlsolve
   ISSEulerHeunCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,gtmp3,
-                         J,W,jac_config,linsolve,uf,nlsolve,dW_cache)
+                         J,W,jac_config,linsolve,uf,nlsolver,dW_cache)
 end
 
 mutable struct ISSEulerHeunConstantCache{F,N} <: StochasticDiffEqConstantCache
   uf::F
-  nlsolve::N
+  nlsolver::N
 end
 
 function alg_cache(alg::ISSEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
-                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,::Type{Val{false}})
-  @oopnlcachefields
+                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   γ, c = alg.theta,zero(t)
   @oopnlsolve
-  ISSEulerHeunConstantCache(uf,nlsolve)
+  if !DiffEqBase.has_jac(f) && !isnewton(nlsolver)
+    uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
+  end
+  ISSEulerHeunConstantCache(uf,nlsolver)
 end

@@ -108,6 +108,8 @@ get_chunksize(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}) wh
 
 alg_mass_matrix_compatible(alg::StochasticDiffEqAlgorithm) = false
 
+alg_can_repeat_jac(alg::StochasticDiffEqAlgorithm) = true
+
 function alg_mass_matrix_compatible(alg::Union{StochasticDiffEqNewtonAlgorithm,StochasticDiffEqNewtonAdaptiveAlgorithm})
     if alg.symplectic
         return true
@@ -139,3 +141,6 @@ function unwrap_alg(integrator, is_nlsolve)
     return alg.algs[integrator.cache.current]
   end
 end
+
+issplit(::StochasticDiffEqAlgorithm) = false
+issplit(::SplitSDEAlgorithms) = true

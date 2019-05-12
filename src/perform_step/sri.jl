@@ -202,16 +202,9 @@ end
   @.. Tg₃o3 = 2g₃o3
   @.. mg₁ = -g₁
 
-  @tight_loop_macros for i in eachindex(u)
-    @inbounds E₂[i] = chi2[i] * (2 * g₁[i] - Fg₂o3[i] - Tg₃o3[i]) +
-      chi3[i] * (2 * mg₁[i] + 5 * g₂o3[i] - Tg₃o3[i] + g₄[i])
-  end
+  @.. E₂ = chi2 * (2 * g₁ - Fg₂o3 - Tg₃o3) + chi3 * (2 * mg₁ + 5 * g₂o3 - Tg₃o3 + g₄)
 
-  @tight_loop_macros for i in eachindex(u)
-    @inbounds u[i] = uprev[i] + (fH01[i] + 2 * fH02[i]) / 3 +
-      W.dW[i] * (mg₁[i] + Fg₂o3[i] + Tg₃o3[i]) + chi1[i] * (mg₁[i] + Fg₂o3[i] - g₃o3[i]) +
-      E₂[i]
-  end
+  @.. u = uprev + (fH01 + 2 * fH02) / 3 + W.dW * (mg₁ + Fg₂o3 + Tg₃o3) + chi1 * (mg₁ + Fg₂o3 - g₃o3) + E₂
 
   if integrator.opts.adaptive
     @.. E₁ = fH01 + fH02

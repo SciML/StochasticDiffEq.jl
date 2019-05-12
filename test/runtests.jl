@@ -33,6 +33,9 @@ is_APPVEYOR = ( Sys.iswindows() && haskey(ENV,"APPVEYOR") )
     @time @testset "Composite Tests" begin include("composite_algorithm_test.jl") end
     @time @testset "Events Tests" begin include("events_test.jl") end
     @time @testset "Cache Tests" begin include("cache_test.jl") end
+  end
+
+  if group == "All" || group == "Interface2"
     @time @testset "Element-wise Tolerances Tests" begin include("tolerances_tests.jl") end
     @time @testset "Zero'd Noise Tests" begin include("zerod_noise_test.jl") end
     #@time @testset "Scalar Tests" begin include("scalar_noise.jl") end # Fails because of bounds checks
@@ -50,6 +53,9 @@ is_APPVEYOR = ( Sys.iswindows() && haskey(ENV,"APPVEYOR") )
     @time @testset "Non-diagonal SDE Tests" begin include("nondiagonal_tests.jl") end
     @time @testset "Rossler Order Tests" begin include("sde/sde_rosslerorder_tests.jl") end
     @time @testset "Convergence Tests" begin include("sde/sde_convergence_tests.jl") end
+  end
+
+  if !is_APPVEYOR && (group == "All" || group == "AlgConvergence2")
     @time @testset "Split Tests" begin include("split_tests.jl") end
     @time @testset "Stratonovich Convergence Tests" begin include("stratonovich_convergence_tests.jl") end
     @time @testset "IIF Convergence Tests" begin include("iif_methods.jl") end

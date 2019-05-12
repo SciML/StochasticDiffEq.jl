@@ -281,7 +281,7 @@ function DiffEqBase.__init(
     end
   end
 
-  cache = alg_cache(alg,prob,u,W.dW,W.dZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,Val{isinplace(prob)})
+  cache = alg_cache(alg,prob,u,W.dW,W.dZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,Val{isinplace(prob)})
 
   id = LinearInterpolationData(timeseries,ts)
 
