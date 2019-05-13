@@ -116,7 +116,4 @@ module StochasticDiffEq
 
   #Misc Tools
   export checkSRIOrder, checkSRAOrder,  constructSRIW1, constructSRA1
-
-  #export NLFunctional, NLNewton, NLAnderson
-
 end # module
