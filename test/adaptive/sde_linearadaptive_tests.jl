@@ -16,10 +16,10 @@ for i in 1:2
   ## SRIW1
 
   Random.seed!(100)
-  sol =solve(probs[i],SRI(error_terms=2),dt=1/2^(4),abstol=1,reltol=0)
+  sol =solve(probs[i],SRI(error_terms=2),dt=1/2^(4),abstol=1,reltol=0,delta=1/6)
   err1 = sol.errors[:final]
 
-  sol2 =solve(probs[i],SRI(error_terms=2),dt=1/2^(4),abstol=1e-1,reltol=0)
+  sol2 =solve(probs[i],SRI(error_terms=2),dt=1/2^(4),abstol=1e-1,reltol=0,delta=1/6)
   err2 = sol2.errors[:final]
 
 #  No bigfloat RNG
@@ -27,7 +27,7 @@ for i in 1:2
 #  err3 = sol3.errors[:final]
 #  @test err1 > err3
 
-  sol4 =solve(probs[i],SRI(error_terms=2),dt=1/2^(4),abstol=1e-3,reltol=0)
+  sol4 =solve(probs[i],SRI(error_terms=2),dt=1/2^(4),abstol=1e-3,reltol=0,delta=1/6)
   err4 = sol4.errors[:final]
   @test err2 > err4
 

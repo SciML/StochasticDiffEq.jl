@@ -37,7 +37,7 @@ function DiffEqBase.__init(
   failfactor = 2,
   beta2=beta2_default(alg),
   beta1=beta1_default(alg,beta2),
-  delta=1//6,
+  delta=delta_default(alg),
   maxiters = 1000000,
   dtmax=eltype(prob.tspan)((prob.tspan[end]-prob.tspan[1])),
   dtmin = typeof(one(eltype(prob.tspan))) <: AbstractFloat ? eps(eltype(prob.tspan)) :
