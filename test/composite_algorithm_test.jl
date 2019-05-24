@@ -15,7 +15,7 @@ Random.seed!(100)
 @test sol1(0.8) == sol2(0.8)
 
 Random.seed!(100)
-integrator1 = init(prob,alg_double2)
+integrator1 = init(prob,alg_double2,delta=1/6)
 Random.seed!(100)
 integrator2 = init(prob,SRI(),delta=1/6)
 Random.seed!(100)
