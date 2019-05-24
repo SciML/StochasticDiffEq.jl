@@ -149,7 +149,7 @@ function DiffEqBase.__init(
     end
   end
   rateType = typeof(rate_prototype) ## Can be different if united
-  
+
   if is_diagonal_noise(prob)
     noise_rate_prototype = rate_prototype
   else
@@ -221,7 +221,7 @@ function DiffEqBase.__init(
     rand_prototype = zero(u/u) # Strip units and type info
     randType = typeof(rand_prototype)
   else
-    randElType = one(uBottomEltypeNoUnits) # Strip units and type info
+    randElType = uBottomEltypeNoUnits # Strip units and type info
     if is_diagonal_noise(prob)
       if typeof(u) <: SArray
         rand_prototype = zero(u) # TODO: Array{randElType} for units
