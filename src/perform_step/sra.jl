@@ -62,15 +62,19 @@ end
 
   if is_diagonal_noise(integrator.sol.prob)
     @.. E₁ = chi2*gpdt
+    @.. E₂ = chi2*(gt-gpdt) #Only for additive!
   else
     mul!(E₁,gpdt,chi2)
+    @.. gt -= gpdt
+    mul!(E₂,gt,chi2)
   end
 
   @.. tmp1 = uprev+3k₁/4 + 3E₁/2
 
-  integrator.f(k₂,tmp1,p,t+3dt/4); k₂*=dt
+  integrator.f(k₂,tmp1,p,t+3dt/4); @.. k₂*=dt
 
-  @.. E₂ = chi2*(gt-gpdt) #Only for additive!
+
+
 
   if is_diagonal_noise(integrator.sol.prob)
     @.. tmp1 = W.dW*gpdt
