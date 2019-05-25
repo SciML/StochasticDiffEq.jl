@@ -6,7 +6,8 @@
   @unpack nb021,nb043 = cache.tab
   alg = unwrap_alg(integrator, true)
 
-  chi2 = (integrator.W.dW + integrator.W.dZ/sqrt(3))/2 #I_(1,0)/h
+  sqrt3 = sqrt(3one(eltype(integrator.W.dW)))
+  chi2 = (integrator.W.dW + integrator.W.dZ/sqrt3)/2 #I_(1,0)/h
 
   if typeof(integrator.f) <: SplitSDEFunction
     f = integrator.f.f1
@@ -159,10 +160,11 @@ end
     f = integrator.f
   end
 
+  sqrt3 = sqrt(3one(eltype(integrator.W.dW)))
   if typeof(integrator.W.dW) <: Union{SArray,Number}
-    chi2 = (integrator.W.dW + integrator.W.dZ/sqrt(3))/2 #I_(1,0)/h
+    chi2 = (integrator.W.dW + integrator.W.dZ/sqrt3)/2 #I_(1,0)/h
   else
-    @.. chi2 = (integrator.W.dW + integrator.W.dZ/sqrt(3))/2 #I_(1,0)/h
+    @.. chi2 = (integrator.W.dW + integrator.W.dZ/sqrt3)/2 #I_(1,0)/h
   end
 
   # precalculations
@@ -217,10 +219,7 @@ end
   if typeof(integrator.f) <: SplitSDEFunction
     @.. u = tmp + γ*z₂
     f2(k2,u,p,t + 2γ*dt); k2 .*= dt
-    #@.. tmp = uprev + a31*z₁ + a32*z₂ + ea31*k1 + ea32*k2
-    for i in eachindex(tmp)
-      @inbounds tmp[i] = uprev[i] + a31*z₁[i] + a32*z₂[i] + ea31*k1[i] + ea32*k2[i]
-    end
+    @.. tmp = uprev + a31*z₁ + a32*z₂ + ea31*k1 + ea32*k2
   else
     @.. tmp = uprev + a31*z₁ + a32*z₂
   end
@@ -243,10 +242,7 @@ end
     @.. u = tmp + γ*z₃
     f2(k3,u,p,t + c3*dt); k3 .*= dt
     # z₄ is storage for the g1*chi2 from earlier
-    #@.. tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + ea41*k1 + ea42*k2 + ea43*k3
-    for i in eachindex(tmp)
-      @inbounds tmp[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + ea41*k1[i] + ea42*k2[i] + ea43*k3[i] + nb043*z₄[i]
-    end
+    @.. tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + ea41*k1 + ea42*k2 + ea43*k3 + nb043*z₄
   else
     @unpack α41,α42 = cache.tab
     # z₄ is storage for the g1*chi2
@@ -270,32 +266,22 @@ end
     f2(k4,u,p,t+dt); k4 .*= dt
     if is_diagonal_noise(integrator.sol.prob)
       @.. E₂ = chi2*(g1-g4)
-      #@.. u = uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + eb1*k1 + eb2*k2 + eb3*k3 + eb4*k4 + integrator.W.dW*g4 + chi2*(g1-g4)
-      for i in eachindex(u)
-        @inbounds u[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + γ*z₄[i] + eb1*k1[i] + eb2*k2[i] + eb3*k3[i] + eb4*k4[i] + integrator.W.dW[i]*g4[i] + E₂[i]
-      end
+      @.. u = uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + eb1*k1 + eb2*k2 + eb3*k3 + eb4*k4 + integrator.W.dW*g4 + E₂
     else
       g1 .-= g4
       mul!(E₂,g1,chi2)
       mul!(tmp,g4,integrator.W.dW)
-      for i in eachindex(u)
-        @inbounds u[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + γ*z₄[i] + eb1*k1[i] + eb2*k2[i] + eb3*k3[i] + eb4*k4[i] + tmp[i] + E₂[i]
-      end
+      @.. u = uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + eb1*k1 + eb2*k2 + eb3*k3 + eb4*k4 + tmp + E₂
     end
   else
     if is_diagonal_noise(integrator.sol.prob)
       @.. E₂ = chi2*(g1-g4)
-      #@.. u = uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + integrator.W.dW*g4 + chi2*(g1-g4)
-      for i in eachindex(u)
-        @inbounds u[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + γ*z₄[i] + integrator.W.dW[i]*g4[i] + E₂[i]
-      end
+      @.. u = uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + integrator.W.dW*g4 + E₂
     else
       g1 .-= g4
       mul!(E₂,g1,chi2)
       mul!(tmp,g4,integrator.W.dW)
-      for i in eachindex(u)
-        @inbounds u[i] = uprev[i] + a41*z₁[i] + a42*z₂[i] + a43*z₃[i] + γ*z₄[i] + tmp[i] + E₂[i]
-      end
+      @.. u = uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + tmp + E₂
     end
   end
 

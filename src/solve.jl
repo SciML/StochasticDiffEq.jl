@@ -137,7 +137,7 @@ function DiffEqBase.__init(
 
   if isinplace(prob) && typeof(u) <: AbstractArray && eltype(u) <: Number && uBottomEltypeNoUnits == uBottomEltype # Could this be more efficient for other arrays?
     if !(typeof(u) <: ArrayPartition)
-      rate_prototype = similar(u,typeof(oneunit(uBottomEltype)/oneunit(tType)))
+      rate_prototype = recursivecopy(u)
     else
       rate_prototype = similar(u, typeof.(oneunit.(recursive_bottom_eltype.(u.x))./oneunit(tType))...)
     end
@@ -221,7 +221,7 @@ function DiffEqBase.__init(
     rand_prototype = zero(u/u) # Strip units and type info
     randType = typeof(rand_prototype)
   else
-    randElType = typeof(recursive_one(u)) # Strip units and type info
+    randElType = uBottomEltypeNoUnits # Strip units and type info
     if is_diagonal_noise(prob)
       if typeof(u) <: SArray
         rand_prototype = zero(u) # TODO: Array{randElType} for units

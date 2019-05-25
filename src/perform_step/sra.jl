@@ -1,7 +1,8 @@
 @muladd function perform_step!(integrator,cache::SRA1ConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
   gpdt = integrator.g(uprev,p,t+dt)
-  chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+  sqrt3 = sqrt(3one(eltype(W.dW)))
+  chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
   k₁ = dt*integrator.f(uprev,p,t)
   k₂ = dt*integrator.f(uprev+3k₁/4 + 3chi2.*gpdt/2,p,t+3dt/4)
   E₂ = chi2.*(integrator.g(uprev,p,t)-gpdt) #Only for additive!
@@ -25,7 +26,7 @@ end
   integrator.g(t,uprev,gt)
   integrator.g(t+dt,uprev,gpdt)
   integrator.f(t,uprev,k₁); k₁*=dt
-  @.. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+  @.. chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
   @.. tmp1 = uprev+3k₁/4 + 3chi2*gpdt/2
 
   integrator.f(t+3dt/4,tmp1,k₂); k₂*=dt
@@ -52,27 +53,28 @@ end
   integrator.g(gt,uprev,p,t)
   integrator.g(gpdt,uprev,p,t+dt)
   integrator.f(k₁,uprev,p,t); k₁*=dt
+  sqrt3 = sqrt(3one(eltype(W.dW)))
   if typeof(W.dW) <: Union{SArray,Number}
-    chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
   else
-    @.. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    @.. chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
   end
 
   if is_diagonal_noise(integrator.sol.prob)
     @.. E₁ = chi2*gpdt
+    @.. E₂ = chi2*(gt-gpdt) #Only for additive!
   else
     mul!(E₁,gpdt,chi2)
+    @.. gt -= gpdt
+    mul!(E₂,gt,chi2)
   end
 
-  for i in eachindex(u)
-    @inbounds tmp1[i] = uprev[i]+3k₁[i]/4 + 3E₁[i]/2
-  end
+  @.. tmp1 = uprev+3k₁/4 + 3E₁/2
 
-  integrator.f(k₂,tmp1,p,t+3dt/4); k₂*=dt
+  integrator.f(k₂,tmp1,p,t+3dt/4); @.. k₂*=dt
 
-  for i in eachindex(u)
-    @inbounds E₂[i] = chi2[i]*(gt[i]-gpdt[i]) #Only for additive!
-  end
+
+
 
   if is_diagonal_noise(integrator.sol.prob)
     @.. tmp1 = W.dW*gpdt
@@ -80,9 +82,7 @@ end
     mul!(tmp1,gpdt,W.dW)
   end
 
-  for i in eachindex(u)
-    @inbounds u[i] = uprev[i] + k₁[i]/3 + 2k₂[i]/3 + E₂[i] + tmp1[i]
-  end
+  @.. u = uprev + k₁/3 + 2k₂/3 + E₂ + tmp1
 
   if integrator.opts.adaptive
     @.. E₁ = k₁ + k₂
@@ -97,8 +97,8 @@ end
 @muladd function perform_step!(integrator,cache::SRA2ConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack a21,b21,c02,c11,c12,α1,α2,beta12,beta21,beta22 = cache
-
-  chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
+  sqrt3 = sqrt(3one(eltype(W.dW)))
+  chi2 = .5*(W.dW + W.dZ/sqrt3) #I_(1,0)/h
 
   g1 = integrator.g(uprev,p,t+c11*dt)
   k1 = integrator.f(uprev,p,t)
@@ -128,11 +128,11 @@ end
   @unpack chi2,tab,g1,g2,k1,k2,E₁,E₂,tmp = cache
   @unpack a21,b21,c02,c11,c12,α1,α2,beta12,beta21,beta22 = cache.tab
   H01 = E₁
-
+  sqrt3 = sqrt(3one(eltype(W.dW)))
   if typeof(W.dW) <: Union{SArray,Number}
-    chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
   else
-    @.. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    @.. chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
   end
 
   integrator.g(g1,uprev,p,t+c11*dt)
@@ -150,18 +150,13 @@ end
 
   if is_diagonal_noise(integrator.sol.prob)
     @.. E₂ = chi2*(beta21*g1 + beta22*g2)
-    #@.. u = uprev + dt*(α1*k1 + α2*k2) + E₂ + W.dW*(beta12*g2)
-    for i in eachindex(u)
-      @inbounds u[i] = uprev[i] + dt*(α1*k1[i] + α2*k2[i]) + E₂[i] + W.dW[i]*(beta12*g2[i])
-    end
+    @.. u = uprev + dt*(α1*k1 + α2*k2) + E₂ + W.dW*(beta12*g2)
   else
     @.. g1 = beta21*g1 + beta22*g2
     mul!(E₂,g1,chi2)
     g2 .*= beta12
     mul!(E₁,g2,W.dW)
-    for i in eachindex(u)
-      @inbounds u[i] = uprev[i] + dt*(α1*k1[i] + α2*k2[i]) + E₂[i] + E₁[i]
-    end
+    @.. u = uprev + dt*(α1*k1 + α2*k2) + E₂ + E₁
   end
 
   if integrator.opts.adaptive
@@ -177,8 +172,8 @@ end
 @muladd function perform_step!(integrator,cache::ThreeStageSRAConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack a21,a31,a32,b21,b31,b32,c02,c03,c11,c12,c13,α1,α2,α3,beta11,beta12,beta13,beta21,beta22,beta23 = cache
-
-  chi2 = .5*(W.dW .+ W.dZ/sqrt(3)) #I_(1,0)/h
+  sqrt3 = sqrt(3one(eltype(W.dW)))
+  chi2 = .5*(W.dW .+ W.dZ/sqrt3) #I_(1,0)/h
 
   g1 = integrator.g(uprev,p,t+c11*dt)
   k1 = integrator.f(uprev,p,t)
@@ -221,11 +216,11 @@ end
   @unpack a21,a31,a32,b21,b31,b32,c02,c03,c11,c12,c13,α1,α2,α3,beta11,beta12,beta13,beta21,beta22,beta23 = cache.tab
 
   H01 = E₁; H02 = E₁
-
+  sqrt3 = sqrt(3one(eltype(W.dW)))
   if typeof(W.dW) <: Union{SArray,Number}
-    chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
   else
-    @.. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    @.. chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
   end
 
   integrator.g(g1,uprev,p,t+c11*dt)
@@ -242,15 +237,11 @@ end
   integrator.f(k2,H01,p,t+c02*dt)
 
   if is_diagonal_noise(integrator.sol.prob)
-    for i in eachindex(u)
-      H02[i] = uprev[i] + dt*(a31*k1[i] + a32*k2[i]) + chi2[i]*(b31*g1[i] + b32*g2[i])
-    end
+    @.. H02 = uprev + dt*(a31*k1 + a32*k2) + chi2*(b31*g1 + b32*g2)
   else
     @.. gtmp = b31*g1 + b32*g2
     mul!(E₁,gtmp,chi2)
-    for i in eachindex(u)
-      H02[i] = uprev[i] + dt*(a31*k1[i] + a32*k2[i]) + E₁[i]
-    end
+    @.. H02 = uprev + dt*(a31*k1 + a32*k2) + E₁
   end
 
   integrator.g(g3,H02,p,t+c13*dt)
@@ -258,18 +249,13 @@ end
 
   if is_diagonal_noise(integrator.sol.prob)
     @.. E₂ = chi2*(beta21*g1 + beta22*g2 + beta23*g3)
-    #@.. u = uprev + dt*(α1*k1 + α2*k2 + α3*k3) + E₂ + W.dW*(beta11*g1 + beta12*g2 + beta13*g3)
-    for i in eachindex(u)
-      @inbounds u[i] = uprev[i] + dt*(α1*k1[i] + α2*k2[i] + α3*k3[i]) + E₂[i] + W.dW[i]*(beta11*g1[i] + beta12*g2[i] + beta13*g3[i])
-    end
+    @.. u = uprev + dt*(α1*k1 + α2*k2 + α3*k3) + E₂ + W.dW*(beta11*g1 + beta12*g2 + beta13*g3)
   else
     @.. gtmp = beta21*g1 + beta22*g2 + beta23*g3
     mul!(E₂,gtmp,chi2)
     @.. gtmp = beta11*g1 + beta12*g2 + beta13*g3
     mul!(E₁,gtmp,W.dW)
-    for i in eachindex(u)
-      @inbounds u[i] = uprev[i] + dt*(α1*k1[i] + α2*k2[i] + α3*k3[i]) + E₂[i] + E₁[i]
-    end
+    u = uprev + dt*(α1*k1 + α2*k2 + α3*k3) + E₂ + E₁
   end
 
   if typeof(integrator.alg) <: StochasticCompositeAlgorithm && typeof(integrator.alg.algs[1]) <: SOSRA2
@@ -295,7 +281,7 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂,tmp = cache
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages = cache.tab
-  @.. chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
+  @.. chi2 = .5*(W.dW + W.dZ/sqrt3) #I_(1,0)/h
   for i in 1:stages
     fill!(H0[i],zero(eltype(integrator.u)))
   end
@@ -341,11 +327,11 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂,tmp = cache
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages = cache.tab
-
+  sqrt3 = sqrt(3one(eltype(W.dW)))
   if typeof(W.dW) <: Union{SArray,Number}
-    chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
   else
-    @.. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    @.. chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
   end
 
   for i in 1:stages
@@ -408,7 +394,8 @@ end
 @muladd function perform_step!(integrator,cache::SRAConstantCache,f=integrator.f)
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages,H0 = cache
   @unpack t,dt,uprev,u,W,p = integrator
-  chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
+  sqrt3 = sqrt(3one(eltype(W.dW)))
+  chi2 = .5*(W.dW + W.dZ/sqrt3) #I_(1,0)/h
   H0[:]=fill(zero(u),stages)
 
   for i = 1:stages

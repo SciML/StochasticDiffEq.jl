@@ -4,7 +4,7 @@
   @unpack H0,H1,A0temp,A1temp,B0temp,B1temp,A0temp2,A1temp2,B0temp2,B1temp2,atemp,btemp,E₁,E₂,E₁temp,ftemp,gtemp,chi1,chi2,chi3,tmp = cache
   @unpack t,dt,uprev,u,W,p = integrator
   @.. chi1 = .5*(W.dW.^2 - dt)/integrator.sqdt #I_(1,1)/sqrt(h)
-  @.. chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
+  @.. chi2 = .5*(W.dW + W.dZ/sqrt3) #I_(1,0)/h
   @.. chi3 = 1/6 * (W.dW.^3 - 3*W.dW*dt)/dt #I_(1,1,1)/h
   for i=1:stages
     fill!(H0[i],zero(eltype(integrator.u)))
@@ -60,13 +60,14 @@ end
   @unpack H0,H1,A0temp,A1temp,B0temp,B1temp,A0temp2,A1temp2,B0temp2,B1temp2,atemp,btemp,E₁,E₂,E₁temp,ftemp,gtemp,chi1,chi2,chi3,tmp = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
+  sqrt3 = sqrt(3one(eltype(W.dW)))
   if typeof(W.dW) <: Union{SArray,Number}
     chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
-    chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
     chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   else
     @.. chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
-    @.. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    @.. chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
     @.. chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   end
 
@@ -122,7 +123,7 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack chi1,chi2,chi3,fH01o4,g₁o2,H0,H11,H12,H13,g₂o3,Fg₂o3,g₃o3,Tg₃o3,mg₁,E₁,E₂,fH01,fH02,g₁,g₂,g₃,g₄,tmp = cache
   @.. chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
-  @.. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+  @.. chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
   @.. chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   integrator.f(fH01,uprev,p,t)
   @.. fH01 = dt*fH01
@@ -166,13 +167,14 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack chi1,chi2,chi3,fH01o4,g₁o2,H0,H11,H12,H13,g₂o3,Fg₂o3,g₃o3,Tg₃o3,mg₁,E₁,E₂,fH01,fH02,g₁,g₂,g₃,g₄,tmp = cache
 
+  sqrt3 = sqrt(3one(eltype(W.dW)))
   if typeof(W.dW) <: Union{SArray,Number}
     chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
-    chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
     chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   else
     @.. chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
-    @.. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    @.. chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
     @.. chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   end
 
@@ -218,8 +220,9 @@ end
 
 @muladd function perform_step!(integrator,cache::SRIW1ConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
+  sqrt3 = sqrt(3one(eltype(W.dW)))
   chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
-  chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+  chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
   chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   fH01 = dt*integrator.f(uprev,p,t)
 
@@ -260,8 +263,9 @@ end
 @muladd function perform_step!(integrator,cache::SRIConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄,stages,H0,H1,error_terms = cache
+  sqrt3 = sqrt(3one(eltype(W.dW)))
   chi1 = .5*(W.dW.^2 - dt)/integrator.sqdt #I_(1,1)/sqrt(h)
-  chi2 = .5*(W.dW + W.dZ/sqrt(3)) #I_(1,0)/h
+  chi2 = .5*(W.dW + W.dZ/sqrt3) #I_(1,0)/h
   chi3 = 1/6 * (W.dW.^3 - 3*W.dW*dt)/dt #I_(1,1,1)/h
 
   fill!(H0,zero(typeof(u)))
@@ -316,8 +320,9 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack a021,a031,a032,a041,a042,a043,a121,a131,a132,a141,a142,a143,b021,b031,b032,b041,b042,b043,b121,b131,b132,b141,b142,b143,c02,c03,c04,c11,c12,c13,c14,α1,α2,α3,α4,beta11,beta12,beta13,beta14,beta21,beta22,beta23,beta24,beta31,beta32,beta33,beta34,beta41,beta42,beta43,beta44 = cache
 
+  sqrt3 = sqrt(3one(eltype(W.dW)))
   chi1 = (W.dW.^2 .- dt)/(2integrator.sqdt) #I_(1,1)/sqrt(h)
-  chi2 = (W.dW .+ W.dZ./(convert(typeof(t),sqrt(3))))./2 #I_(1,0)/h
+  chi2 = (W.dW .+ W.dZ./sqrt3)./2 #I_(1,0)/h
   chi3 = (W.dW.^3 .- 3*W.dW*dt)/(6dt) #I_(1,1,1)/h
 
   k1 = integrator.f(uprev,p,t)
@@ -371,14 +376,14 @@ end
   @unpack a021,a031,a032,a041,a042,a043,a121,a131,a132,a141,a142,a143,b021,b031,b032,b041,b042,b043,b121,b131,b132,b141,b142,b143,c02,c03,c04,c11,c12,c13,c14,α1,α2,α3,α4,beta11,beta12,beta13,beta14,beta21,beta22,beta23,beta24,beta31,beta32,beta33,beta34,beta41,beta42,beta43,beta44 = cache.tab
 
   sqdt = integrator.sqdt
-
+  sqrt3 = sqrt(3one(eltype(W.dW)))
   if typeof(W.dW) <: Union{SArray,Number}
     chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
-    chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
     chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   else
     @.. chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
-    @.. chi2 = (W.dW + W.dZ/sqrt(3))/2 #I_(1,0)/h
+    @.. chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
     @.. chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   end
 
@@ -391,23 +396,15 @@ end
   @.. tmp = uprev + dt*a121*k1 + sqdt*b121*g1
   integrator.g(g2,tmp,p,t+c12*dt)
 
-  for i in eachindex(u)
-    @inbounds H02[i] = uprev[i] + dt*(a031*k1[i] + a032*k2[i]) + chi2[i]*(b031*g1[i] + b032*g2[i])
-  end
+  @.. H02 = uprev + dt*(a031*k1 + a032*k2) + chi2*(b031*g1 + b032*g2)
   integrator.f(k3,H02,p,t+c03*dt)
-  for i in eachindex(u)
-    @inbounds tmp[i] = uprev[i] + dt*(a131*k1[i] + a132*k2[i]) + sqdt*(b131*g1[i] + b132*g2[i])
-  end
+  @.. tmp = uprev + dt*(a131*k1 + a132*k2) + sqdt*(b131*g1 + b132*g2)
   integrator.g(g3,tmp,p,t+c13*dt)
 
-  for i in eachindex(u)
-    @inbounds H03[i] = uprev[i] + dt*(a041*k1[i] + a042*k2[i] + a043*k3[i]) + chi2[i]*(b041*g1[i] + b042*g2[i] + b043*g3[i])
-  end
+  @.. H03 = uprev + dt*(a041*k1 + a042*k2 + a043*k3) + chi2*(b041*g1 + b042*g2 + b043*g3)
   integrator.f(k4,H03,p,t+c04*dt)
 
-  for i in eachindex(u)
-    @inbounds tmp[i] = uprev[i] + dt*(a141*k1[i] + a142*k2[i] + a143*k3[i]) + sqdt*(b141*g1[i] + b142*g2[i] + b143*g3[i])
-  end
+  @.. tmp = uprev + dt*(a141*k1 + a142*k2 + a143*k3) + sqdt*(b141*g1 + b142*g2 + b143*g3)
   integrator.g(g4,tmp,p,t+c14*dt)
 
   if typeof(integrator.alg) <: StochasticCompositeAlgorithm && typeof(integrator.alg.algs[1]) <: SOSRI2
@@ -418,10 +415,8 @@ end
     integrator.eigen_est = ϱu/ϱd
   end
 
-  for i in eachindex(u)
-    @inbounds E₂[i] = chi2[i]*(beta31*g1[i] + beta32*g2[i] + beta33*g3[i] + beta34*g4[i]) + chi3[i]*(beta41*g1[i] + beta42*g2[i] + beta43*g3[i] + beta44*g4[i])
-    @inbounds u[i] = uprev[i] + dt*(α1*k1[i] + α2*k2[i] + α3*k3[i] + α4*k4[i]) + E₂[i] + W.dW[i]*(beta11*g1[i] + beta12*g2[i] + beta13*g3[i] + beta14*g4[i]) + chi1[i]*(beta21*g1[i] + beta22*g2[i] + beta23*g3[i] + beta24*g4[i])
-  end
+  @.. E₂ = chi2*(beta31*g1 + beta32*g2 + beta33*g3 + beta34*g4) + chi3*(beta41*g1 + beta42*g2 + beta43*g3 + beta44*g4)
+  @.. u = uprev + dt*(α1*k1 + α2*k2 + α3*k3 + α4*k4) + E₂ + W.dW*(beta11*g1 + beta12*g2 + beta13*g3 + beta14*g4) + chi1*(beta21*g1 + beta22*g2 + beta23*g3 + beta24*g4)
 
   if integrator.opts.adaptive
     @.. E₁ = dt * (k1 + k2 + k3 + k4)
