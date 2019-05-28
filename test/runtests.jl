@@ -39,7 +39,7 @@ is_APPVEYOR = ( Sys.iswindows() && haskey(ENV,"APPVEYOR") )
   if group == "All" || group == "Interface2"
     @time @testset "Element-wise Tolerances Tests" begin include("tolerances_tests.jl") end
     @time @testset "Zero'd Noise Tests" begin include("zerod_noise_test.jl") end
-    #@time @testset "Scalar Tests" begin include("scalar_noise.jl") end # Fails because of bounds checks
+    @time @testset "Scalar Tests" begin include("scalar_noise.jl") end
     @time @testset "Stiffness Detection Test" begin include("stiffness_detection_test.jl") end
     @time @testset "Adaptive SDE Linear Tests" begin include("adaptive/sde_linearadaptive_tests.jl") end
     @time @testset "Multiple Dimension Linear Adaptive Test" begin include("adaptive/sde_twodimlinearadaptive_tests.jl") end

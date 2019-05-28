@@ -1,4 +1,4 @@
-using StochasticDiffEq, DiffEqNoiseProcess
+using StochasticDiffEq, DiffEqNoiseProcess, Test
 
 f(du,u,p,t) = (du .= u)
 g(du,u,p,t) = (du .= u)
