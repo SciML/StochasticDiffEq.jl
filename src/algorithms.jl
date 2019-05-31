@@ -32,6 +32,7 @@ RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
 
 struct WangLi3SMil_A <: StochasticDiffEqAlgorithm end
 struct WangLi3SMil_B <: StochasticDiffEqAlgorithm end
+struct WangLi3SMil_C <: StochasticDiffEqAlgorithm end
 
 ###############################################################################
 
