@@ -93,7 +93,7 @@ module StochasticDiffEq
    export StochasticDiffEqAlgorithm, StochasticDiffEqAdaptiveAlgorithm,
           StochasticCompositeAlgorithm
 
-  export EM, LambaEM, PCEuler, RKMil, WangLi3SMil_A, WangLi3SMil_B, WangLi3SMil_C, WangLi3SMil_D, SRA, SRI, SRIW1,
+  export EM, LambaEM, PCEuler, RKMil, WangLi3SMil_A, WangLi3SMil_B, WangLi3SMil_C, WangLi3SMil_D, WangLi3SMil_E, SRA, SRI, SRIW1,
          SRA1, SRA2, SRA3,
          SOSRA, SOSRA2, RKMilCommute,
          SRIW2, SOSRI, SOSRI2, SKenCarp,

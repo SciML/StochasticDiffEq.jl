@@ -187,3 +187,21 @@ function alg_cache(alg::WangLi3SMil_D,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate
   tmp = zero(u)
   WangLi3SMil_DCache(u,uprev,k,k₁,tmp)
 end
+
+struct WangLi3SMil_EConstantCache <: StochasticDiffEqConstantCache end
+@cache struct WangLi3SMil_ECache{uType,rateType} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+  k::rateType
+  k₁::rateType
+  tmp::uType
+end
+
+alg_cache(alg::WangLi3SMil_E,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}}) = WangLi3SMil_EConstantCache()
+
+function alg_cache(alg::WangLi3SMil_E,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  k = zero(rate_prototype)
+  k₁ = zero(rate_prototype)
+  tmp = zero(u)
+  WangLi3SMil_ECache(u,uprev,k,k₁,tmp)
+end
