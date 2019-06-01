@@ -77,6 +77,28 @@ sim = test_convergence(dts,prob,ImplicitRKMil(nlsolve=StochasticDiffEq.NLFunctio
 sim2 = test_convergence(dts,prob,RKMil(),numMonte=100)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 
+print(".")
+
+sim2 = test_convergence(dts,prob,WangLi3SMil_A(),numMonte=100)
+@test abs(sim2.𝒪est[:l∞]-1) < 0.2
+
+sim2 = test_convergence(dts,prob,WangLi3SMil_B(),numMonte=100)
+@test abs(sim2.𝒪est[:l∞]-1) < 0.2
+
+sim2 = test_convergence(dts,prob,WangLi3SMil_C(),numMonte=100)
+@test abs(sim2.𝒪est[:l∞]-1) < 0.2
+
+sim2 = test_convergence(dts,prob,WangLi3SMil_D(),numMonte=100)
+@test abs(sim2.𝒪est[:l∞]-1) < 0.2
+
+sim2 = test_convergence(dts,prob,WangLi3SMil_E(),numMonte=100)
+@test abs(sim2.𝒪est[:l∞]-1) < 0.2
+
+sim2 = test_convergence(dts,prob,WangLi3SMil_F(),numMonte=100)
+@test abs(sim2.𝒪est[:l∞]-1) < 0.2
+
+print(".")
+
 sim3 = test_convergence(dts,prob,SRI(),numMonte=10)
 @test abs(sim3.𝒪est[:final]-1.5) < 0.3
 

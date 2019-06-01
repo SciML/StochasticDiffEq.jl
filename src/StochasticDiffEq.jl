@@ -57,6 +57,7 @@ module StochasticDiffEq
   include("interp_func.jl")
   include("caches/cache_types.jl")
   include("caches/basic_method_caches.jl")
+  include("caches/explicit_3s_mil_methods.jl")
   include("caches/lamba_caches.jl")
   include("caches/iif_caches.jl")
   include("caches/sdirk_caches.jl")
@@ -76,6 +77,7 @@ module StochasticDiffEq
   include("solve.jl")
   include("initdt.jl")
   include("perform_step/low_order.jl")
+  include("perform_step/explicit_3s_mil_methods.jl")
   include("perform_step/lamba.jl")
   include("perform_step/iif.jl")
   include("perform_step/sri.jl")
@@ -93,7 +95,7 @@ module StochasticDiffEq
    export StochasticDiffEqAlgorithm, StochasticDiffEqAdaptiveAlgorithm,
           StochasticCompositeAlgorithm
 
-  export EM, LambaEM, PCEuler, RKMil, SRA, SRI, SRIW1,
+  export EM, LambaEM, PCEuler, RKMil, WangLi3SMil_A, WangLi3SMil_B, WangLi3SMil_C, WangLi3SMil_D, WangLi3SMil_E, WangLi3SMil_F, SRA, SRI, SRIW1,
          SRA1, SRA2, SRA3,
          SOSRA, SOSRA2, RKMilCommute,
          SRIW2, SOSRI, SOSRI2, SKenCarp,
