@@ -18,7 +18,7 @@
   β  = -γ
 
   uᵢ₋₂ = copy(uprev)
-  fᵢ₋₁ = integrator.f(uprev,p,t)
+  k = integrator.f(uprev,p,t)
   Tᵢ₋₂ = one(eltype(u))
   Tᵢ₋₁ = ω₀
   Tᵢ   = Tᵢ₋₁
@@ -27,15 +27,15 @@
   tᵢ₋₂ = t
 
   #stage 1
-  uᵢ₋₁ = uprev + (dt*ω₁/ω₀)*fᵢ₋₁
+  uᵢ₋₁ = uprev + (dt*ω₁/ω₀)*k
 
-  for i in 2:(mdeg)
+  for i in 2:mdeg
     Tᵢ = 2*ω₀*Tᵢ₋₁ - Tᵢ₋₂
     μ   = 2*ω₁*Tᵢ₋₁/Tᵢ
     ν   = 2*ω₀*Tᵢ₋₁/Tᵢ
     κ = - Tᵢ₋₂/Tᵢ
-    fᵢ₋₁ = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
-    u = dt*μ*fᵢ₋₁ + ν*uᵢ₋₁ + κ*uᵢ₋₂
+    k = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
+    u = dt*μ*k + ν*uᵢ₋₁ + κ*uᵢ₋₂
     (i == mdeg - 1) && (gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁); u = α*W.dW*gₘ₋₂)
     (i == mdeg) && (gₘ₋₁ = integrator.g(uᵢ₋₁,p,tᵢ₋₁); u = β*W.dW*gₘ₋₂ + γ*W.dW*gₘ₋₁)
     if i < mdeg
@@ -52,7 +52,7 @@
 end
 
 @muladd function perform_step!(integrator,cache::SROCK_1Cache,f=integrator.f)
-  @unpack uᵢ₋₁,fᵢ₋₁, gₘ₋₁, gₘ₋₂ = cache
+  @unpack uᵢ₋₁,k, gₘ₋₁, gₘ₋₂ = cache
   @unpack t,dt,uprev,u,W,p = integrator
   ccache = cache.constantcache
   maxeig!(integrator, cache)
@@ -73,7 +73,7 @@ end
   β  = -γ
 
   @.. uᵢ₋₂ = uprev
-  integrator.f(fᵢ₋₁,uprev,p,t)
+  integrator.f(k,uprev,p,t)
   Tᵢ₋₂ = one(eltype(u))
   Tᵢ₋₁ = ω₀
   Tᵢ   = Tᵢ₋₁
@@ -82,15 +82,15 @@ end
   tᵢ₋₂ = t
 
   #stage 1
-  @.. uᵢ₋₁ = uprev + (dt*ω₁/ω₀)*fᵢ₋₁
+  @.. uᵢ₋₁ = uprev + (dt*ω₁/ω₀)*k
 
-  for i in 2:(mdeg)
+  for i in 2:mdeg
     Tᵢ = 2*ω₀*Tᵢ₋₁ - Tᵢ₋₂
     μ   = 2*ω₁*Tᵢ₋₁/Tᵢ
     ν   = 2*ω₀*Tᵢ₋₁/Tᵢ
     κ = - Tᵢ₋₂/Tᵢ
-    integrator.f(fᵢ₋₁,uᵢ₋₁,p,tᵢ₋₁)
-    @.. u = dt*μ*fᵢ₋₁ + ν*uᵢ₋₁ + κ*uᵢ₋₂
+    integrator.f(k,uᵢ₋₁,p,tᵢ₋₁)
+    @.. u = dt*μ*k + ν*uᵢ₋₁ + κ*uᵢ₋₂
     (i == mdeg - 1) && (integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁); @.. u += α*W.dW*gₘ₋₂)
     (i == mdeg) && (integrator.g(gₘ₋₁,uᵢ₋₁,p,tᵢ₋₁); @.. u = β*W.dW*gₘ₋₂ + γ*W.dW*gₘ₋₁)
     if i < mdeg
