@@ -34,7 +34,7 @@ function maxeig!(integrator, cache::StochasticDiffEqConstantCache)
     z *= quot
   else
     dz_u = pert
-    z = dz_u
+    z = dz_u*ones(z)
   end # endif
   # Start power iteration
   integrator.eigen_est = 0
@@ -58,12 +58,10 @@ function maxeig!(integrator, cache::StochasticDiffEqConstantCache)
       z = uprev + quot*tmp
     else
       # An arbitrary change on `z`
-      nind = length(z)
-      if (nind != 1)
-        ind = 1 + iter % nind
-        z[ind] = uprev[ind] - (z[ind] - uprev[ind])
+      if typeof(z) <: Number
+        z *= -1
       else
-        z = -z
+        Random.shuffle!(z)
       end
     end
   end
@@ -108,7 +106,7 @@ function maxeig!(integrator, cache::StochasticDiffEqMutableCache)
     @.. z *= quot
   else
     dz_u = pert
-    @.. z = dz_u
+    @.. z = dz_u*ones(z)
   end # endif
   # Start power iteration
   integrator.eigen_est = 0
@@ -132,12 +130,10 @@ function maxeig!(integrator, cache::StochasticDiffEqMutableCache)
       @.. z = uprev + quot*atmp
     else
       # An arbitrary change on `z`
-      nind = length(uprev)
-      if (nind != 1)
-        ind = 1 + iter % nind
-        z[ind] = uprev[ind] - (z[ind] - uprev[ind])
+      if typeof(z) <: Number
+        z *= -1
       else
-        z = -z
+        Random.shuffle!(z)
       end
     end
   end
@@ -145,64 +141,15 @@ function maxeig!(integrator, cache::StochasticDiffEqMutableCache)
 end
 
 
-# """
-#     choosedeg!(cache) -> nothing
-#
-# Calculate `mdeg = ms[deg_index]` (the degree of the Chebyshev polynomial)
-# and `cache.start` (the start index of recurrence parameters for that
-# degree), where `recf` are the `μ,κ` pairs
-# for the `mdeg` degree method. The `κ` for `stage-1` for every degree
-# is 0 therefore it's not included in `recf`
-#   """
-# function choosedeg!(cache::T) where T
-#   isconst = T <: OrdinaryDiffEqConstantCache
-#   isconst || ( cache = cache.constantcache )
-#   start = 1
-#   @inbounds for i in 1:size(cache.ms,1)
-#     if cache.ms[i] >= cache.mdeg
-#       cache.deg_index = i
-#       cache.mdeg = cache.ms[i]
-#       cache.start = start
-#       break
-#     end
-#     start += cache.ms[i]*2 - 1
-#   end
-#   return nothing
-# end
-#
-#
-# function choosedeg_SERK!(integrator,cache::T) where T
-#   isconst = T <: OrdinaryDiffEqConstantCache
-#   isconst || ( cache = cache.constantcache )
-#   @unpack ms = cache
-#   start = 1
-#   @inbounds for i in 1:size(ms,1)
-#     if ms[i] < cache.mdeg
-#       start += ms[i]+1
-#     else
-#       cache.start = start
-#       cache.mdeg = ms[i]
-#       break
-#     end
-#   end
-#   if integrator.alg isa ESERK5
-#     if cache.mdeg <= 20
-#       cache.internal_deg = 2
-#     elseif cache.mdeg <= 50
-#       cache.internal_deg = 5
-#     elseif cache.mdeg <= 100
-#       cache.internal_deg = 10
-#     elseif cache.mdeg <= 500
-#       cache.internal_deg = 50
-#     elseif cache.mdeg <= 1000
-#       cache.internal_deg = 100
-#     elseif cache.mdeg <= 2000
-#       cache.internal_deg = 200
-#     end
-#   end
-#
-#   if integrator.alg isa SERK2v2
-#     cache.internal_deg = cache.mdeg/10
-#   end
-#   return nothing
-# end
+function choose_deg!(integrator,cache::T) where T
+  isconst = T <: StochasticDiffEqConstantCache
+  isconst || ( cache = cache.constantcache )
+  @inbounds for i in 1:size(cache.ms,1)
+    if cache.ms[i] <= cache.mdeg
+      cache.optimal_η = cache.mη[i]
+    else
+      break
+    end
+  end
+  return nothing
+end
