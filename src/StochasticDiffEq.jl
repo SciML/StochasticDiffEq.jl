@@ -66,6 +66,7 @@ module StochasticDiffEq
   include("caches/rossler_caches.jl")
   include("caches/kencarp_caches.jl")
   include("caches/predcorr_caches.jl")
+  include("caches/SROCK_caches.jl")
   include("integrators/type.jl")
   include("dense.jl")
   include("alg_utils.jl")
@@ -88,8 +89,11 @@ module StochasticDiffEq
   include("perform_step/predcorr.jl")
   include("perform_step/split.jl")
   include("perform_step/composite.jl")
+  include("perform_step/SROCK_perform_step.jl")
   include("tableaus.jl")
+  include("SROCK_tableaus.jl")
   include("derivative_utils.jl")
+  include("SROCK_utils.jl")
   include("composite_algs.jl")
 
    export StochasticDiffEqAlgorithm, StochasticDiffEqAdaptiveAlgorithm,
@@ -99,6 +103,7 @@ module StochasticDiffEq
          SRA1, SRA2, SRA3,
          SOSRA, SOSRA2, RKMilCommute,
          SRIW2, SOSRI, SOSRI2, SKenCarp,
+         SROCK_1,
          AutoSOSRI2, AutoSOSRA2
 
   export EulerHeun, LambaEulerHeun

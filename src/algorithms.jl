@@ -37,6 +37,9 @@ struct WangLi3SMil_D <: StochasticDiffEqAlgorithm end
 struct WangLi3SMil_E <: StochasticDiffEqAlgorithm end
 struct WangLi3SMil_F <: StochasticDiffEqAlgorithm end
 
+#SROCK methods
+struct SROCK_1 <: StochasticDiffEqAlgorithm end
+
 ###############################################################################
 
 # Predictor Corrector
