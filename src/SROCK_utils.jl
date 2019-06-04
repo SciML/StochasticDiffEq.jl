@@ -81,7 +81,7 @@ function maxeig!(integrator, cache::StochasticDiffEqMutableCache)
   if isfirst
     @.. fz = fsalfirst
     integrator.f(z, fz, p, t)
-    integrator.destats.nf += 1
+    # integrator.destats.nf += 1
   else
     @.. z = ccache.zprev
   end
@@ -112,7 +112,7 @@ function maxeig!(integrator, cache::StochasticDiffEqMutableCache)
   integrator.eigen_est = 0
   for iter in 1:maxiter
     integrator.f(fz, z, p, t)
-    integrator.destats.nf += 1
+    # integrator.destats.nf += 1
     @.. atmp = fz - fsalfirst
 
     Δ  = integrator.opts.internalnorm(atmp,t)
