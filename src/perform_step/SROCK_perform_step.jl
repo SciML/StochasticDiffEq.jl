@@ -2,7 +2,7 @@
   @unpack t,dt,uprev,u,W,p = integrator
 
   maxeig!(integrator, cache)
-  mdeg = Int(floor(sqrt(100*dt*integrator.eigen_est/0.21)+1))
+  mdeg = Int(floor(sqrt(2*dt*integrator.eigen_est/0.21)+1))
   cache.mdeg = max(5,min(mdeg,200))
   choose_deg!(integrator,cache)
 
