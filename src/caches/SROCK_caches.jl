@@ -29,7 +29,7 @@ function alg_cache(alg::SROCK_1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_proto
   uᵢ₋₂ = zero(u)
   gₘ₋₁ = zero(rate_prototype)
   gₘ₋₂ = zero(rate_prototype)
-  tmp  = uᵢ₋₂
+  tmp  = uᵢ₋₂             # these 3 variables are dummied to use same memory 
   fsalfirst = gₘ₋₁
   atmp = gₘ₋₂
   constantcache = SROCK_1ConstantCache{uEltypeNoUnits}(u)

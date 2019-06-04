@@ -24,10 +24,8 @@
   Tᵢ₋₁ = convert(eltype(u),ω₀)
   Tᵢ   = Tᵢ₋₁
   tᵢ₋₁ = t+dt*(ω₁/ω₀)
-  # tᵢ₋₁ = ω₁/ω₀
   tᵢ   = tᵢ₋₁
   tᵢ₋₂ = t
-  # tᵢ₋₂ = zero(tᵢ)
   gₘ₋₁ = zero(k)
   gₘ₋₂ = zero(k)
 
@@ -35,23 +33,18 @@
   uᵢ₋₁ = uprev + (dt*ω₁/ω₀)*k
 
   for i in 2:mdeg
-    # println(t,"   ",(tᵢ₋₁-t)/dt)
     Tᵢ = 2*ω₀*Tᵢ₋₁ - Tᵢ₋₂
     μ = 2*ω₁*(Tᵢ₋₁/Tᵢ)
     ν = 2*ω₀*(Tᵢ₋₁/Tᵢ)
     κ = (-Tᵢ₋₂/Tᵢ)
     k = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
-    # k = integrator.f(uᵢ₋₁,p,t+dt*tᵢ₋₁)
 
     u = dt*μ*k + ν*uᵢ₋₁ + κ*uᵢ₋₂
     (i == mdeg - 1) && (gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁); u += α*W.dW*gₘ₋₂)
-    # (i == mdeg - 1) && (gₘ₋₂ = integrator.g(uᵢ₋₁,p,t+dt*tᵢ₋₁); u += α*W.dW*gₘ₋₂)
     (i == mdeg) && (gₘ₋₁ = integrator.g(uᵢ₋₁,p,tᵢ₋₁); u += β*W.dW*gₘ₋₂ + γ*W.dW*gₘ₋₁)
-    # (i == mdeg) && (gₘ₋₁ = integrator.g(uᵢ₋₁,p,t+dt*tᵢ₋₁); u += β*W.dW*gₘ₋₂ + γ*W.dW*gₘ₋₁)
 
     if i <= mdeg
       tᵢ = μ*dt + ν*tᵢ₋₁ + κ*tᵢ₋₂
-      # tᵢ = μ + ν*tᵢ₋₁ + κ*tᵢ₋₂
       uᵢ₋₂ = uᵢ₋₁
       uᵢ₋₁ = u
       tᵢ₋₂ = tᵢ₋₁
