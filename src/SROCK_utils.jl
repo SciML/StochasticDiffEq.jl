@@ -140,10 +140,21 @@ function maxeig!(integrator, cache::StochasticDiffEqMutableCache)
   return false
 end
 
-
 function choose_deg!(integrator,cache::T) where T
   isconst = T <: StochasticDiffEqConstantCache
   isconst || ( cache = cache.constantcache )
+  mn_st, mx_st, mid_st = 3, 200, 3
+  while (mx_st - mn_st > 1)
+    mid_st = Int(floor((mn_st+mx_st)*0.5))
+    if (mid_st^2*(131.97/197 - 0.45*mid_st/197) > cache.mdeg)
+      mx_st = mid_st
+    else
+      mn_st = mid_st
+    end
+  end
+
+  cache.mdeg = (cache.mdeg > mn_st^2*(131.97/197 - 0.45*mn_st/197)) ? mx_st : mn_st
+  
   @inbounds for i in 1:size(cache.ms,1)
     if cache.ms[i] <= cache.mdeg
       cache.optimal_η = cache.mη[i]
