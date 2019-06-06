@@ -1,4 +1,4 @@
-mutable struct SDEIntegrator{algType,IIP,uType,uEltype,tType,P,eigenType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,cacheType,F4,F5,OType,noiseType,EventErrorType} <: AbstractSDEIntegrator{algType,IIP,uType,tType}
+mutable struct SDEIntegrator{algType,IIP,uType,uEltype,tType,P,eigenType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,cacheType,F4,F5,OType,noiseType,EventErrorType,CallbackCacheType} <: AbstractSDEIntegrator{algType,IIP,uType,tType}
   f::F4
   g::F5
   noise::noiseType
@@ -16,6 +16,7 @@ mutable struct SDEIntegrator{algType,IIP,uType,uEltype,tType,P,eigenType,tTypeNo
   just_hit_tstop::Bool
   isout::Bool
   event_last_time::Int
+  vector_event_last_time::Int
   last_event_error::EventErrorType
   accept_step::Bool
   last_stepfail::Bool
@@ -26,6 +27,7 @@ mutable struct SDEIntegrator{algType,IIP,uType,uEltype,tType,P,eigenType,tTypeNo
   alg::algType
   sol::solType
   cache::cacheType
+  callback_cache::CallbackCacheType
   sqdt::tType
   W::randType
   opts::OType
