@@ -31,7 +31,14 @@ alg_order(alg::LambaEulerHeun) = 1//2
 alg_order(alg::RandomEM) = 1//2
 alg_order(alg::RKMil) = 1//1
 alg_order(alg::RKMilCommute) = 1//1
-alg_order(alg::SROCK_1) = 1//1
+
+# Generalised version of SROCK1, both Ito ans Stratonovich, will have strong order of 1//2
+# and weak order of 1 for Multidimensional Weiner process
+# Stratonovich version strong order 1 for 1 dimensional Weiner Process or if noise is commutative
+# Ito version can have strong order version for 1 dimensional Weiner Process,
+# diagonal noise or commutative noise
+alg_order(alg::SROCK1) = 1//2
+
 alg_order(alg::SRI) = alg.tableau.order
 alg_order(alg::SRIW1) = 3//2
 alg_order(alg::SRIW2) = 3//2
@@ -57,6 +64,7 @@ alg_interpretation(alg::StochasticDiffEqAlgorithm) = :Ito
 alg_interpretation(alg::EulerHeun) = :Stratonovich
 alg_interpretation(alg::LambaEulerHeun) = :Stratonovich
 alg_interpretation(alg::RKMil{interpretation}) where {interpretation} = interpretation
+alg_interpretation(alg::SROCK1{interpretation}) where {interpretation} = interpretation
 alg_interpretation(alg::RKMilCommute{interpretation}) where {interpretation} = interpretation
 alg_interpretation(alg::ImplicitRKMil{CS,AD,F,S,N,T2,Controller,interpretation}) where {CS,AD,F,S,N,T2,Controller,interpretation} = interpretation
 
@@ -83,7 +91,7 @@ alg_compatible(prob,alg::WangLi3SMil_C) = true
 alg_compatible(prob,alg::WangLi3SMil_D) = true
 alg_compatible(prob,alg::WangLi3SMil_E) = true
 alg_compatible(prob,alg::WangLi3SMil_F) = true
-alg_compatible(prob,alg::SROCK_1) = true
+alg_compatible(prob,alg::SROCK1) = true
 alg_compatible(prob,alg::EulerHeun) = true
 alg_compatible(prob,alg::LambaEulerHeun) = true
 alg_compatible(prob,alg::SplitEM) = true
