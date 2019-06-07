@@ -29,7 +29,7 @@ sim = test_convergence(dts,prob,RKMil(interpretation=:Stratonovich),numMonte=Int
 sim  = test_convergence(dts,prob,ImplicitRKMil(interpretation=:Stratonovich),numMonte=Int(5e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
-sim  = test_convergence(dts,prob,SROCK_1(),numMonte=Int(2e2))
+sim  = test_convergence(dts,prob,SROCK1(),numMonte=Int(2e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.15
 
 println("Now 2D")
@@ -71,7 +71,7 @@ sim  = test_convergence(dts,prob,ImplicitRKMil(symplectic=true,interpretation=:S
                         numMonte=Int(1e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
-sim  = test_convergence(dts,prob,SROCK_1(),numMonte=Int(1e2))
+sim  = test_convergence(dts,prob,SROCK1(),numMonte=Int(1e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
 Random.seed!(200)

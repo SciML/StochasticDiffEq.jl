@@ -1,4 +1,4 @@
-@muladd function perform_step!(integrator,cache::SROCK_1ConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SROCK1ConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
 
   maxeig!(integrator, cache)
@@ -56,7 +56,7 @@
   integrator.u = u
 end
 
-@muladd function perform_step!(integrator,cache::SROCK_1Cache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SROCK1Cache,f=integrator.f)
   @unpack uᵢ₋₁,uᵢ₋₂,k, gₘ₋₁, gₘ₋₂ = cache
   @unpack t,dt,uprev,u,W,p = integrator
   ccache = cache.constantcache
