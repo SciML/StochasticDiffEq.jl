@@ -42,20 +42,22 @@
     k = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
 
     u = dt*μ*k + ν*uᵢ₋₁ + κ*uᵢ₋₂
-    if alg_interpretation(integrator.alg) == :Stratonovich
-      if is_diagonal_noise(integrator.sol.prob)
+    if (i > mdeg - 2) && alg_interpretation(integrator.alg) == :Stratonovich
         (i == mdeg - 1) && (gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁); u += α*gₘ₋₂.*W.dW)
         (i == mdeg) && (gₘ₋₁ = integrator.g(uᵢ₋₁,p,tᵢ₋₁); u += (β*gₘ₋₂ + γ*gₘ₋₁) .* W.dW)
+    elseif (i == mdeg) && alg_interpretation(integrator.alg) == :Ito
+      if typeof(W.dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+        gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
+        uᵢ₋₂ = uᵢ₋₁ + sqrt(dt)*gₘ₋₂
+        gₘ₋₁ = integrator.g(uᵢ₋₂,p,tᵢ₋₁)
+        u += gₘ₋₂ .* W.dW + 1/(2.0*sqrt(dt)) .* (gₘ₋₁ - gₘ₋₂) .* (W.dW^2 - dt)
       else
-        (i == mdeg - 1) && (gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁); u += α*gₘ₋₂*W.dW)
-        (i == mdeg) && (gₘ₋₁ = integrator.g(uᵢ₋₁,p,tᵢ₋₁); u += (β*gₘ₋₂ + γ*gₘ₋₁)*W.dW)
+        gₘ₋₁ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
+        u += gₘ₋₁ .* W.dW
       end
-    elseif alg_interpretation(integrator.alg) == :Ito
-
     end
 
-
-    if i <= mdeg
+    if i < mdeg
       tᵢ = μ*dt + ν*tᵢ₋₁ + κ*tᵢ₋₂
       uᵢ₋₂ = uᵢ₋₁
       uᵢ₋₁ = u
@@ -110,19 +112,20 @@ end
     κ = - Tᵢ₋₂/Tᵢ
     integrator.f(k,uᵢ₋₁,p,tᵢ₋₁)
     @.. u = dt*μ*k + ν*uᵢ₋₁ + κ*uᵢ₋₂
-    if alg_interpretation(integrator.alg) == :Stratonovich
-      if is_diagonal_noise(integrator.sol.prob)
-        (i == mdeg - 1) && (integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁); @.. u += α*gₘ₋₂.*W.dW)
-        (i == mdeg) && (integrator.g(gₘ₋₁,uᵢ₋₁,p,tᵢ₋₁); @.. u += (β*gₘ₋₂ + γ*gₘ₋₁) .* W.dW)        
-      else
+    if (i > mdeg - 2) && alg_interpretation(integrator.alg) == :Stratonovich
         (i == mdeg - 1) && (integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁); @.. u += α*gₘ₋₂*W.dW)
         (i == mdeg) && (integrator.g(gₘ₋₁,uᵢ₋₁,p,tᵢ₋₁); @.. u += (β*gₘ₋₂ + γ*gₘ₋₁)*W.dW)
+    elseif (i == mdeg) && alg_interpretation(integrator.alg) == :Ito
+      if typeof(W.dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+        integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁)
+        @.. uᵢ₋₂ = uᵢ₋₁ + sqrt(dt)*gₘ₋₂
+        integrator.g(gₘ₋₁,uᵢ₋₂,p,tᵢ₋₁)
+        @.. u += gₘ₋₂*W.dW + 1/(2.0*sqrt(dt))(gₘ₋₁ - gₘ₋₂)*(W.dW^2 - dt)
+      else
+        integrator.g(gₘ₋₁,uᵢ₋₁,p,tᵢ₋₁)
+        @.. u += gₘ₋₁*W.dW
       end
-    elseif alg_interpretation(integrator.alg) == :Ito
-
     end
-
-
 
     if i < mdeg
       tᵢ = dt*μ + ν*tᵢ₋₁ + κ*tᵢ₋₂
