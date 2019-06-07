@@ -2,8 +2,7 @@
   @unpack t,dt,uprev,u,W,p = integrator
 
   maxeig!(integrator, cache)
-  mdeg = Int(floor(sqrt(2*dt*integrator.eigen_est/0.21)+1))
-  cache.mdeg = max(5,min(mdeg,200))
+  cache.mdeg = Int(floor(sqrt(2*dt*integrator.eigen_est)+1)) # this is the spectral radius estimate to choose optimal stage
   choose_deg!(integrator,cache)
 
   mdeg = cache.mdeg
@@ -61,8 +60,7 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   ccache = cache.constantcache
   maxeig!(integrator, cache)
-  mdeg = Int(floor(sqrt(2*dt*integrator.eigen_est/0.21)+1))
-  ccache.mdeg = max(5,min(mdeg,200))
+  ccache.mdeg = Int(floor(sqrt(2*dt*integrator.eigen_est)+1))   # this is the spectral radius estimate to choose optimal stage
   choose_deg!(integrator,cache)
 
   mdeg = ccache.mdeg
