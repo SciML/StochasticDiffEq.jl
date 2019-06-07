@@ -62,6 +62,7 @@ alg_interpretation(alg::StochasticDiffEqAlgorithm) = :Ito
 alg_interpretation(alg::EulerHeun) = :Stratonovich
 alg_interpretation(alg::LambaEulerHeun) = :Stratonovich
 alg_interpretation(alg::RKMil{interpretation}) where {interpretation} = interpretation
+alg_interpretation(alg::SROCK1{interpretation}) where {interpretation} = interpretation
 alg_interpretation(alg::RKMilCommute{interpretation}) where {interpretation} = interpretation
 alg_interpretation(alg::ImplicitRKMil{CS,AD,F,S,N,T2,Controller,interpretation}) where {CS,AD,F,S,N,T2,Controller,interpretation} = interpretation
 
