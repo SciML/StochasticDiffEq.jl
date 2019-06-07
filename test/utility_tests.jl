@@ -65,10 +65,10 @@ using StochasticDiffEq, LinearAlgebra, SparseArrays, Random, Test, DiffEqOperato
       println(Alg)
       Random.seed!(0); sol1 = solve(prob1, Alg(theta=1); adaptive=false, dt=0.01)
       Random.seed!(0); sol2 = solve(prob2, Alg(theta=1); adaptive=false, dt=0.01)
-      @test sol1(1.0) ≈ sol2(1.0)
+      @test sol1(1.0) ≈ sol2(1.0) rtol=1e-4
       Random.seed!(0); sol1_ip = solve(prob1_ip, Alg(theta=1); adaptive=false, dt=0.01)
       Random.seed!(0); sol2_ip = solve(prob2_ip, Alg(theta=1,linsolve=LinSolveFactorize(lu)); adaptive=false, dt=0.01)
-      @test sol1_ip(1.0) ≈ sol2_ip(1.0)
+      @test sol1_ip(1.0) ≈ sol2_ip(1.0) rtol=1e-4
     end
 
     σ = 1.0
@@ -81,9 +81,9 @@ using StochasticDiffEq, LinearAlgebra, SparseArrays, Random, Test, DiffEqOperato
     println(SKenCarp)
     Random.seed!(0); sol1 = solve(prob1, SKenCarp(); adaptive=false, dt=0.01)
     Random.seed!(0); sol2 = solve(prob2, SKenCarp(); adaptive=false, dt=0.01)
-    @test sol1(1.0) ≈ sol2(1.0)
+    @test sol1(1.0) ≈ sol2(1.0) rtol=1e-4
     Random.seed!(0); sol1_ip = solve(prob1_ip, SKenCarp(); adaptive=false, dt=0.01)
     Random.seed!(0); sol2_ip = solve(prob2_ip, SKenCarp(linsolve=LinSolveFactorize(lu)); adaptive=false, dt=0.01)
-    @test sol1_ip(1.0) ≈ sol2_ip(1.0)
+    @test sol1_ip(1.0) ≈ sol2_ip(1.0) rtol=1e-3
   end
 end
