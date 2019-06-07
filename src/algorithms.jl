@@ -38,7 +38,8 @@ struct WangLi3SMil_E <: StochasticDiffEqAlgorithm end
 struct WangLi3SMil_F <: StochasticDiffEqAlgorithm end
 
 #SROCK methods
-struct SROCK1 <: StochasticDiffEqAlgorithm end
+struct SROCK1{interpretation} <: StochasticDiffEqAlgorithm end
+SROCK1(;interpretation=:Ito) = SROCK1{interpretation}()
 
 ###############################################################################
 

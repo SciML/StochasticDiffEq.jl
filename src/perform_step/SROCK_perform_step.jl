@@ -14,9 +14,11 @@
   cosh_inv = log(ω₀ + Sqrt_ω)             # arcosh(ω₀)
   ω₁ = (Sqrt_ω*cosh(mdeg*cosh_inv))/(mdeg*sinh(mdeg*cosh_inv))
 
-  α  = cosh(mdeg*cosh_inv)/(2*ω₀*cosh((mdeg-1)*cosh_inv))
-  γ  = 1/(2*α)
-  β  = -γ
+  if alg_interpretation(integrator.alg) == :Stratonovich
+    α  = cosh(mdeg*cosh_inv)/(2*ω₀*cosh((mdeg-1)*cosh_inv))
+    γ  = 1/(2*α)
+    β  = -γ
+  end
 
   uᵢ₋₂ = copy(uprev)
   k = integrator.f(uprev,p,t)
@@ -40,8 +42,18 @@
     k = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
 
     u = dt*μ*k + ν*uᵢ₋₁ + κ*uᵢ₋₂
-    (i == mdeg - 1) && (gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁); u += α*W.dW*gₘ₋₂)
-    (i == mdeg) && (gₘ₋₁ = integrator.g(uᵢ₋₁,p,tᵢ₋₁); u += β*W.dW*gₘ₋₂ + γ*W.dW*gₘ₋₁)
+    if alg_interpretation(integrator.alg) == :Stratonovich
+      if is_diagonal_noise(integrator.sol.prob)
+        (i == mdeg - 1) && (gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁); u += α*gₘ₋₂.*W.dW)
+        (i == mdeg) && (gₘ₋₁ = integrator.g(uᵢ₋₁,p,tᵢ₋₁); u += (β*gₘ₋₂ + γ*gₘ₋₁) .* W.dW)
+      else
+        (i == mdeg - 1) && (gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁); u += α*gₘ₋₂*W.dW)
+        (i == mdeg) && (gₘ₋₁ = integrator.g(uᵢ₋₁,p,tᵢ₋₁); u += (β*gₘ₋₂ + γ*gₘ₋₁)*W.dW)
+      end
+    elseif alg_interpretation(integrator.alg) == :Ito
+
+    end
+
 
     if i <= mdeg
       tᵢ = μ*dt + ν*tᵢ₋₁ + κ*tᵢ₋₂
@@ -73,9 +85,11 @@ end
   cosh_inv = log(ω₀ + Sqrt_ω)             # arcosh(ω₀)
   ω₁ = (Sqrt_ω*cosh(mdeg*cosh_inv))/(mdeg*sinh(mdeg*cosh_inv))
 
-  α  = cosh(mdeg*cosh_inv)/(2*ω₀*cosh((mdeg-1)*cosh_inv))
-  γ  = 1/(2*α)
-  β  = -γ
+  if alg_interpretation(integrator.alg) == :Stratonovich
+    α  = cosh(mdeg*cosh_inv)/(2*ω₀*cosh((mdeg-1)*cosh_inv))
+    γ  = 1/(2*α)
+    β  = -γ
+  end
 
   @.. uᵢ₋₂ = uprev
   integrator.f(k,uprev,p,t)
@@ -96,8 +110,20 @@ end
     κ = - Tᵢ₋₂/Tᵢ
     integrator.f(k,uᵢ₋₁,p,tᵢ₋₁)
     @.. u = dt*μ*k + ν*uᵢ₋₁ + κ*uᵢ₋₂
-    (i == mdeg - 1) && (integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁); @.. u += α*W.dW*gₘ₋₂)
-    (i == mdeg) && (integrator.g(gₘ₋₁,uᵢ₋₁,p,tᵢ₋₁); @.. u += β*W.dW*gₘ₋₂ + γ*W.dW*gₘ₋₁)
+    if alg_interpretation(integrator.alg) == :Stratonovich
+      if is_diagonal_noise(integrator.sol.prob)
+        (i == mdeg - 1) && (integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁); @.. u += α*gₘ₋₂.*W.dW)
+        (i == mdeg) && (integrator.g(gₘ₋₁,uᵢ₋₁,p,tᵢ₋₁); @.. u += (β*gₘ₋₂ + γ*gₘ₋₁) .* W.dW)        
+      else
+        (i == mdeg - 1) && (integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁); @.. u += α*gₘ₋₂*W.dW)
+        (i == mdeg) && (integrator.g(gₘ₋₁,uᵢ₋₁,p,tᵢ₋₁); @.. u += (β*gₘ₋₂ + γ*gₘ₋₁)*W.dW)
+      end
+    elseif alg_interpretation(integrator.alg) == :Ito
+
+    end
+
+
+
     if i < mdeg
       tᵢ = dt*μ + ν*tᵢ₋₁ + κ*tᵢ₋₂
       @.. uᵢ₋₂ = uᵢ₋₁
