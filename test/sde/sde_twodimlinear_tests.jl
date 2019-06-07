@@ -99,6 +99,9 @@ sim2 = test_convergence(dts,prob,WangLi3SMil_F(),numMonte=100)
 
 print(".")
 
+sim2 = test_convergence(dts,prob,SROCK1(),numMonte=100)
+@test abs(sim2.𝒪est[:l∞]-1) < 0.2
+
 sim3 = test_convergence(dts,prob,SRI(),numMonte=10)
 @test abs(sim3.𝒪est[:final]-1.5) < 0.3
 
