@@ -118,7 +118,7 @@ end
         integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁)
         @.. uᵢ₋₂ = uᵢ₋₁ + sqrt(dt)*gₘ₋₂
         integrator.g(gₘ₋₁,uᵢ₋₂,p,tᵢ₋₁)
-        @.. u += gₘ₋₂*W.dW + 1/(2.0*sqrt(dt))(gₘ₋₁ - gₘ₋₂)*(W.dW^2 - dt)
+        @.. u += gₘ₋₂*W.dW + 1/(2.0*sqrt(dt))*(gₘ₋₁ - gₘ₋₂)*(W.dW^2 - dt)
       else
         integrator.g(gₘ₋₁,uᵢ₋₁,p,tᵢ₋₁)
         @.. u += gₘ₋₁*W.dW
