@@ -35,6 +35,8 @@ alg_order(alg::RKMilCommute) = 1//1
 # Generalised version of SROCK1, both Ito ans Stratonovich, will have strong order of 1//2
 # and weak order of 1 for Multidimensional Weiner process
 # Stratonovich version strong order 1 for 1 dimensional Weiner Process or if noise is commutative
+# Ito version can have strong order version for 1 dimensional Weiner Process,
+# diagonal noise or commutative noise
 alg_order(alg::SROCK1) = 1//2
 
 alg_order(alg::SRI) = alg.tableau.order
