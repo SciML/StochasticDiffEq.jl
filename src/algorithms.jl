@@ -40,6 +40,9 @@ struct WangLi3SMil_F <: StochasticDiffEqAlgorithm end
 #SROCK methods
 struct SROCK1{interpretation} <: StochasticDiffEqAlgorithm end
 SROCK1(;interpretation=:Ito) = SROCK1{interpretation}()
+# Weak 2 order
+struct SROCK2 <: StochasticDiffEqAlgorithm end
+
 
 ###############################################################################
 

@@ -38,6 +38,7 @@ alg_order(alg::RKMilCommute) = 1//1
 # Ito version can have strong order version for 1 dimensional Weiner Process,
 # diagonal noise or commutative noise
 alg_order(alg::SROCK1) = 1//2
+alg_order(alg::SROCK2) = 1//1
 
 alg_order(alg::SRI) = alg.tableau.order
 alg_order(alg::SRIW1) = 3//2
