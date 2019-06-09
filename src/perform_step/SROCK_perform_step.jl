@@ -140,22 +140,27 @@ end
 
 @muladd function perform_step!(integrator,cache::SROCK2ConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
+  @unpack recf, recf2, vec_ξ, mα, mσ, mτ = cache
+  ((is_diagonal_noise(integrator.sol.prob)) || (typeof(W.dW) <: Number) || (length(W.dW) == 1)) || (vec_χ = cache.vec_χ)
 
   maxeig!(integrator, cache)
   cache.mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est+1.5)/0.811)+1)) # this is the spectral radius estimate to choose optimal stage
-  cache.mdeg = min(3,min(cache.mdeg,200))-2
+  cache.mdeg = max(3,min(cache.mdeg,200))-2
   choose_deg!(integrator,cache)
 
-  mdeg = cache.mdeg
-  η  = cache.optimal_η
-  start = cache.start
+  mdeg      = cache.mdeg
+  η         = cache.optimal_η
+  start     = cache.start
   deg_index = cache.deg_index
-  sqrt_dt = sqrt(dt)
-  sqrt_3  = sqrt(3.0)
+  α = mα[deg_index]
+  σ = (1-α)/2.0 + α*mσ[deg_index]
+  τ = ((α-1)^2)/2 + 2*α*(1-α)*mσ[deg_index] + (α^2)*mτ[deg_index]
+  sqrt_dt   = sqrt(dt)
+  sqrt_3    = sqrt(3.0)
 
   for i in 1:length(W.dW)
     winc = rand()*6
-    if winc < 1.0
+    (winc < 1.0) && ()
       vec_ξ[i] = -sqrt_dt*sqrt_3
     elseif winc < 2.0
       vec_ξ[i] = sqrt_dt*sqrt_3
@@ -163,7 +168,7 @@ end
       vec_ξ[i] = 0*sqrt_dt
     end
 
-    if !is_diagonal_noise(integrator.sol.prob)
+    if !((is_diagonal_noise(integrator.sol.prob)) || (typeof(W.dW) <: Number) || (length(W.dW) == 1))
       if rand() < 0.5
         vec_χ[i] = -sqdt
       else
@@ -172,172 +177,171 @@ end
     end
   end
 
-  α = mα[deg_index]
-  dt_α = α*dt
-  sigma_alpha = (1-α)/2.0 + α*mσ[deg_index]
-  tau_alpha   = ((α-1)^2)/2 + 2*α*(1-α)*mσ[deg_index] + (α^2)*mτ[deg_index]
-
-  mu = recf[start]  # here kappa = 0
-  t_i = t + dt_α*mu
-  t_im1 = t_i
-  t_im2 = t
-  beta_sm1 = t
-  beta_s = t
+  μ = recf[start]  # here κ = 0
+  tᵢ = t + α*dt*μ
+  tᵢ₋₁ = tᵢ
+  tᵢ₋₂ = t
 
   # stage 1
-  u_im2 = uprev
-  k = integrator.f(uprev,p,t)
-  u_im1 = uprev + dt_α*mu*k
-  (mdeg < 2) && (u_i = u_im1)
+  uᵢ₋₂ = uprev
+  uᵢ = integrator.f(uprev,p,t)
+  uᵢ₋₁ = uprev + α*dt*μ*uᵢ
+  (mdeg < 2) && (uᵢ = uᵢ₋₁)
 
   # stages 2 upto s-2
   for i in 2:(mdeg+2)
-    mu, kappa = recf[start + 2*(i-2) + 1], recf[start + 2*(i-2) + 2]
-    nu = 1.0 + kappa
-    u_i = integrator.f(u_im1,p,t)
-    u_i = dt_α*mu*u + nu*u_im1 - kappa*u_im2
-    u_im2 = u_im1; u_im1 = u_i
-    t_i = dt_α*mu + nu*t_im1 - kappa*t_im2
-    t_im2 = t_im1
-    t_im1 = t_i
+    μ, κ = recf[start + 2*(i-2) + 1], recf[start + 2*(i-2) + 2]
+    ν    = 1.0 + κ
+    uᵢ   = integrator.f(uᵢ₋₁,p,t)
+    uᵢ   = α*dt*μ*u + ν*uᵢ₋₁ - κ*uᵢ₋₂
+    uᵢ₋₂ = uᵢ₋₁
+    uᵢ₋₁ = uᵢ
+    tᵢ   = α*dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
+    tᵢ₋₂ = tᵢ₋₁
+    tᵢ₋₁ = tᵢ
   end
 
+  #2 stage-finishing procedure
   #stage s-1
-  mu, kappa = recf2[(deg_index-1)*4 + 1], recf2[(deg_index-1)*4 + 2]
-  nu = 1.0 + kappa
-  u_i = integrator.f(u_im1,p,t_im1)
+  μ, κ = recf2[(deg_index-1)*4 + 1], recf2[(deg_index-1)*4 + 2]
+  ν    = 1.0 + κ
+  uᵢ   = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
 
-  t_star = t_im1 + 2*dt*tau_alpha
-  u_star_sm1 = u_im1 + 2*dt*tau_alpha*u_i                   # So that we don't have to calculate f(uₛ₋₂) again
-  u = u_im1 + (2*sigma_alpha - 0.5)*dt*u_i
+  tₓ   = tᵢ₋₁ + 2*dt*τ                    # So that we don't have to calculate f(uₛ₋₂) again
+  uₓ   = uᵢ₋₁ + 2*dt*τ*uᵢ                 # uₓ and tₓ represent u_star
+  u    = uᵢ₋₁ + (2*σ - 0.5)*dt*uᵢ
 
-  u_i = dt_α*mu*u_i + nu*u_im1 - kappa*u_im2
-  t_im2 = t_im1; t_im1 = t_i; u_im2 = u_im1; u_im1 = u_i
-  beta_sm1 = t_i
+  uᵢ   = α*dt*μ*uᵢ + ν*uᵢ₋₁ - κ*uᵢ₋₂
+  tᵢ₋₂ = tᵢ₋₁; tᵢ₋₁ = tᵢ; uᵢ₋₂ = uᵢ₋₁; uᵢ₋₁ = uᵢ
 
   #stage s
-  mu, kappa = recf2[(deg_index-1)*4 + 3], recf2[(deg_index-1)*4 + 4]
-  nu = 1.0 + kappa
-  u_i = integrator.f(u_im1,p,t_im1)
-  u_i = dt_α*mu*u_i + nu*u_im1 - kappa*u_im2
-  beta_s = t_i
+  μ, κ = recf2[(deg_index-1)*4 + 3], recf2[(deg_index-1)*4 + 4]
+  ν    = 1.0 + κ
+  uᵢ   = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
+  uᵢ   = α*dt*μ*uᵢ + ν*uᵢ₋₁ - κ*uᵢ₋₂
 
-  # Now u_im2 is u_sm2, u_im1 = u_sm1 and u_i = u_s
-  # Similarly t_im2 = t_sm2, t_im1 = t_sm1 and t_i = t_s
+  # Now uᵢ₋₂ = uₛ₋₂, uᵢ₋₁ = uₛ₋₁, uᵢ = uₛ
+  # Similarly tᵢ₋₂ = tₛ₋₂, tᵢ₋₁ = tₛ₋₁, tᵢ = tₛ
 
   if (typeof(W.dW) <: Number) || (length(W.dW) == 1)
-    g_s = integrator.g(u_im1,p,t_im1)
-    u += @view(g_s[:,1])*vec_ξ[1]
 
-    g_s = integrator.g(u_i,p,t_i)
-    u_star_sm1 += @view(g_s[:,1])*vec_ξ[1]
+    Gₛ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
+    u  += @view(Gₛ[:,1])*vec_ξ[1]
 
-    u_star_sm1 = integrator.f(u_star_sm1,p,t_star)
-    u += (1//2)*dt*u_star_sm1
+    Gₛ = integrator.g(uᵢ,p,tᵢ)
+    uₓ += @view(Gₛ[:,1])*vec_ξ[1]
 
-    u_star_sm1 = @view(g_s[:,1])*(vec_ξ[1]^2 - dt)
-    g_s1 = integrator.g(u_i + u_star_sm1,p,t_i)
-    u += (1//2)*@view(g_s1[:,1])
+    uₓ = integrator.f(uₓ,p,tₓ)
+    u  += (1//2)*dt*uₓ
 
-    g_s1 = integrator.g(u_i - u_star_sm1,p,t_i)
-    u -= (1//2)*@view(g_s1[:,1])
+    uₓ  = @view(Gₛ[:,1])*(vec_ξ[1]^2 - dt)
+    Gₛ₁ = integrator.g(uᵢ + uₓ,p,tᵢ)
+    u   += (1//2)*@view(Gₛ₁[:,1])
 
-    u_star_sm1 = sqrt_dt*@view(g_s[:,1])
-    g_s1 = integrator.g(u_i+u_star_sm1,p,t_i)
-    u += (1//4)*vec_ξ[1]*@view(g_s1[:,1])
+    Gₛ₁ = integrator.g(uᵢ - uₓ,p,tᵢ)
+    u   -= (1//2)*@view(Gₛ₁[:,1])
 
-    g_s1 = integrator.g(u_i-u_star_sm1,p,t_i)
-    u += (1//4)*vec_ξ[1]*@view(g_s1[:,1])
+    uₓ  = sqrt_dt*@view(Gₛ[:,1])
+    Gₛ₁ = integrator.g(uᵢ+uₓ,p,tᵢ)
+    u   += (1//4)*vec_ξ[1]*@view(Gₛ₁[:,1])
 
-    u -= (1//2)*vec_ξ[1]*@view(g_s[:,1])
+    Gₛ₁ = integrator.g(uᵢ-uₓ,p,tᵢ)
+    u   += (1//4)*vec_ξ[1]*@view(Gₛ₁[:,1])
+
+    u   -= (1//2)*vec_ξ[1]*@view(Gₛ[:,1])
+
   elseif is_diagonal_noise(integrator.solve.prob)
-    g_s = intgrator.g(u_im1,p,t_im1)
+
+    Gₛ = intgrator.g(uᵢ₋₁,p,tᵢ₋₁)
     for i in 1:length(W.dW)
-      u += @view(g_s[:,i])*vec_ξ[i]
+      u += @view(Gₛ[:,i])*vec_ξ[i]
     end
 
-    g_s = integrator.g(u_i,p,t_i)
+    Gₛ = integrator.g(uᵢ,p,tᵢ)
     for i in 1:length(W.dW)
-      u_star_sm1 += @view(g_s[:,i])*vec_ξ[i]
+      uₓ += @view(Gₛ[:,i])*vec_ξ[i]
     end
 
-    u_star_sm1 = integrator.f(u_star_sm1,p,t_star)
-    u += (1//2)*dt*u_star_sm1
+    uₓ = integrator.f(uₓ,p,tₓ)
+    u  += (1//2)*dt*uₓ
 
     for i in 1:length(W.dW)
-      u_star_sm1 = @view(g_s[:,i])*((vec_ξ[i]^2 - h)/2)
-      u_im1 = u_i + u_star_sm1
-      g_s1 = integrator.g(u_im1,p,t_i)
-      u += (1//2)*@view(g_s1[:,i])
+      uₓ   = @view(Gₛ[:,i])*((vec_ξ[i]^2 - h)/2)
+      uᵢ₋₁ = uᵢ + uₓ
+      Gₛ₁  = integrator.g(uᵢ₋₁,p,tᵢ)
+      u    += (1//2)*@view(Gₛ₁[:,i])
 
-      u_im1 = u_i - u_star_sm1
-      g_s1 = integrator.g(u_im1,p,t_i)
-      u -= (1//2)*@view(g_s1[:,i])
+      uᵢ₋₁ = uᵢ - uₓ
+      Gₛ₁  = integrator.g(uᵢ₋₁,p,tᵢ)
+      u    -= (1//2)*@view(Gₛ₁[:,i])
     end
 
     for i in 1:length(W.dW)
-      (i == 1) && (u_star_sm1 = @view(g_s[:,i]))
-      (i > 1) && (u_star_sm1 += @view(g_s[:,i]))
+      (i == 1) && (uₓ = @view(Gₛ[:,i]))
+      (i > 1) && (uₓ += @view(Gₛ[:,i]))
     end
 
-    u_star_sm1 *= sqrt_dt
-
-    u_im1 = u_i + u_star_sm1
-    g_s1 = integrator.g(u_im1,p,t_i)
+    uₓ   *= sqrt_dt
+    uᵢ₋₁ = uᵢ + uₓ
+    Gₛ₁  = integrator.g(uᵢ₋₁,p,tᵢ)
     for i in 1:length(W.dW)
-      u += (1//4)*vec_ξ[i]*(@view(g_s1[:,i])-2*@view(g_s[:,i]))
+      u += (1//4)*vec_ξ[i]*(@view(Gₛ₁[:,i])-2*@view(Gₛ[:,i]))
     end
 
-    u_im1 = u_i - u_star_sm1
-    g_s1 = integrator.g(u_im1,p,t_i)
+    uᵢ₋₁ = uᵢ - uₓ
+    Gₛ₁  = integrator.g(uᵢ₋₁,p,tᵢ)
     for i in 1:length(W.dW)
-      u += (1//4)*vec_ξ[i]*@view(g_s1[:,i])
+      u += (1//4)*vec_ξ[i]*@view(Gₛ₁[:,i])
     end
+
   else
-      g_s = intgrator.g(u_im1,p,t_im1)
+
+      Gₛ = intgrator.g(uᵢ₋₁,p,tᵢ₋₁)
       for i in 1:length(W.dW)
-        u += @view(g_s[:,i])*vec_ξ[i]
+        u += @view(Gₛ[:,i])*vec_ξ[i]
       end
 
-      g_s = integrator.g(u_i,p,t_i)
+      Gₛ = integrator.g(uᵢ,p,tᵢ)
       for i in 1:length(W.dW)
-        u_star_sm1 += @view(g_s[:,i])*vec_ξ[i]
+        uₓ += @view(Gₛ[:,i])*vec_ξ[i]
       end
 
-      u_star_sm1 = integrator.f(u_star_sm1,p,t_star)
-      u += (1//2)*dt*u_star_sm1
+      uₓ = integrator.f(uₓ,p,tₓ)
+      u  += (1//2)*dt*uₓ
 
       for i in 1:length(W.dW)
         for j in 1:length(W.dW)
-          (i == 1) && (J_qr = (vec_ξ[i]^2 - 1)/2)
-          (i < j) && (J_qr = (vec_ξ[i]*vec_ξ[j] - abs(vec_χ[j])*vec_χ[j])/2)
-          (i > j) && (J_qr = (vec_ξ[i]*vec_ξ[j] + abs(vec_χ[i])*vec_χ[i])/2)
+          (i == 1) && (Jᵢⱼ = (vec_ξ[i]^2 - 1)/2)
+          (i < j) && (Jᵢⱼ = (vec_ξ[i]*vec_ξ[j] - abs(vec_χ[j])*vec_χ[j])/2)
+          (i > j) && (Jᵢⱼ = (vec_ξ[i]*vec_ξ[j] + abs(vec_χ[i])*vec_χ[i])/2)
 
-          (j == 1) && (u_star_sm1 = @view(g_s[:,j])*J_qr)
-          (j > 1) && (u_star_sm1 += @view(g_s[:,j])*J_qr)
+          (j == 1) && (uₓ = @view(Gₛ[:,j])*Jᵢⱼ)
+          (j > 1) && (uₓ += @view(Gₛ[:,j])*Jᵢⱼ)
         end
 
-        g_s1 = integrator.g(u_i + u_star_sm1,p,t_i)
-        u += (1//2)*@view(g_s1[:,i])
-        g_s1 = integrator.g(u_i - u_star_sm1,p,t_i)
-        u -= (1//2)*@view(g_s1[:,i])
+        Gₛ₁ = integrator.g(uᵢ + uₓ,p,tᵢ)
+        u   += (1//2)*@view(Gₛ₁[:,i])
+        Gₛ₁ = integrator.g(uᵢ - uₓ,p,tᵢ)
+        u   -= (1//2)*@view(Gₛ₁[:,i])
       end
 
       for i in 1:length(W.dW)
-        (i == 1) && ( u_star_sm1 = @view(g_s[:,i])*vec_χ[i])
-        (i > 1) && (u_star_sm1 += @view(g_s[:,i])*vec_χ[i])
+        (i == 1) && (uₓ = @view(Gₛ[:,i])*vec_χ[i])
+        (i > 1) && (uₓ += @view(Gₛ[:,i])*vec_χ[i])
       end
 
-      g_s1 = integrator.g(u_i + u_star_sm1,p,t_i)
+      Gₛ₁ = integrator.g(uᵢ + uₓ,p,tᵢ)
       for i in 1:length(W.dW)
-        u += (1//4)*vec_ξ[i]*(@view(g_s1[:,i]) - 2*@view(g_s[:,i]))
+        u += (1//4)*vec_ξ[i]*(@view(Gₛ₁[:,i]) - 2*@view(Gₛ[:,i]))
       end
 
-      g_s1 = integrator.g(u_i - u_star_sm1,p,t_i)
+      Gₛ₁ = integrator.g(uᵢ - uₓ,p,tᵢ)
       for i in 1:length(W.dW)
-        u += (1//4)*vec_ξ[i]*@view(g_s1[:,i])
+        u += (1//4)*vec_ξ[i]*@view(Gₛ₁[:,i])
       end
+
   end
+
   integrator.u = u
 end
 
