@@ -140,8 +140,10 @@ end
 
 @muladd function perform_step!(integrator,cache::SROCK2ConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
-  @unpack recf, recf2, vec_ξ, mα, mσ, mτ = cache
-  ((is_diagonal_noise(integrator.sol.prob)) || (typeof(W.dW) <: Number) || (length(W.dW) == 1)) || (vec_χ = cache.vec_χ)
+  @unpack recf, recf2, mα, mσ, mτ = cache
+
+  vec_ξ = zeros(eltype(W.dW),length(W.dW))
+  ((is_diagonal_noise(integrator.sol.prob)) || (typeof(W.dW) <: Number) || (length(W.dW) == 1)) || (vec_χ = zeros(eltype(W.dW),length(W.dW)))
 
   maxeig!(integrator, cache)
   cache.mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est+1.5)/0.811)+1)) # this is the spectral radius estimate to choose optimal stage
