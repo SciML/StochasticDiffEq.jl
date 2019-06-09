@@ -202,8 +202,6 @@ end
     t_im1 = t_i
   end
 
-
-
   #stage s-1
   mu, kappa = recf2[(deg_index-1)*4 + 1], recf2[(deg_index-1)*4 + 2]
   nu = 1.0 + kappa
@@ -214,7 +212,7 @@ end
   u = u_im1 + (2*sigma_alpha - 0.5)*dt*u_i
 
   u_i = dt_α*mu*u_i + nu*u_im1 - kappa*u_im2
-  t_im2 = t_im1; t_im1 = t_i; u_im2 = u_im1; uim1 = u_i
+  t_im2 = t_im1; t_im1 = t_i; u_im2 = u_im1; u_im1 = u_i
   beta_sm1 = t_i
 
   #stage s
@@ -222,71 +220,124 @@ end
   nu = 1.0 + kappa
   u_i = integrator.f(u_im1,p,t_im1)
   u_i = dt_α*mu*u_i + nu*u_im1 - kappa*u_im2
-  t_im2 = t_im1; t_im1 = t_i;
   beta_s = t_i
 
   # Now u_im2 is u_sm2, u_im1 = u_sm1 and u_i = u_s
   # Similarly t_im2 = t_sm2, t_im1 = t_sm1 and t_i = t_s
 
+  if (typeof(W.dW) <: Number) || (length(W.dW) == 1)
+    g_s = integrator.g(u_im1,p,t_im1)
+    u += @view(g_s[:,1])*vec_ξ[1]
 
-  g_s = intgrator.g(u_im1,p,t_im1)
-  for i in 1:length(W.dW)
-    u += @view(g_s[:,i])*vec_ξ[i]
-  end
+    g_s = integrator.g(u_i,p,t_i)
+    u_star_sm1 += @view(g_s[:,1])*vec_ξ[1]
 
-  g_s = integrator.g(u_i,p,t_i)
-  for i in 1:length(W.dW)
-    u_star_sm1 += @view(g_s[:,i])*vec_ξ[i]
-  end
+    u_star_sm1 = integrator.f(u_star_sm1,p,t_star)
+    u += (1//2)*dt*u_star_sm1
 
-  u_star_sm1 = integrator.f(u_star_sm1,p,t_star)
-  u += (1//2)*dt*u_star_sm1
-
-  for i in 1:length(W.dW)
-    for j in 1:length(W.dW)
-      if i == j
-        J_qr = (vec_ξ[i]^2 - 1)/2
-      elseif i < j
-        J_qr = (vec_ξ[i]*vec_ξ[j] - abs(vec_χ[j])*vec_χ[j])/2
-      else
-        J_qr = (vec_ξ[i]*vec_ξ[j] + abs(vec_χ[i])*vec_χ[i])/2
-      end
-
-      if j == 1
-        u_star_sm1 = @view(g_s[:,j])*J_qr
-      else
-        u_star_sm1 += @view(g_s[:,j])*J_qr
-      end
-    end
-
+    u_star_sm1 = @view(g_s[:,1])*(vec_ξ[1]^2 - dt)
     g_s1 = integrator.g(u_i + u_star_sm1,p,t_i)
-    u += (1//2)*@view(g_s1[:,i])
+    u += (1//2)*@view(g_s1[:,1])
+
     g_s1 = integrator.g(u_i - u_star_sm1,p,t_i)
-    u -= (1//2)*@view(g_s1[:,i])
-  end
+    u -= (1//2)*@view(g_s1[:,1])
 
-  for i in 1:length(W.dW)
-    if i == 1
-      u_star_sm1 = @view(g_s[:,i])*vec_χ[i]
-    else
-      u_star_sm1 += @view(g_s[:,i])*vec_χ[i]
+    u_star_sm1 = sqrt_dt*@view(g_s[:,1])
+    g_s1 = integrator.g(u_i+u_star_sm1,p,t_i)
+    u += (1//4)*vec_ξ[1]*@view(g_s1[:,1])
+
+    g_s1 = integrator.g(u_i-u_star_sm1,p,t_i)
+    u += (1//4)*vec_ξ[1]*@view(g_s1[:,1])
+
+    u -= (1//2)*vec_ξ[1]*@view(g_s[:,1])
+  elseif is_diagonal_noise(integrator.solve.prob)
+    g_s = intgrator.g(u_im1,p,t_im1)
+    for i in 1:length(W.dW)
+      u += @view(g_s[:,i])*vec_ξ[i]
     end
-  end
 
-  g_s1 = integrator.g(u_i + u_star_sm1,p,t_i)
-  for i in 1:length(W.dW)
-    u += (1//4)*@view(g_s1[:,i])*vec_ξ[i]
-  end
+    g_s = integrator.g(u_i,p,t_i)
+    for i in 1:length(W.dW)
+      u_star_sm1 += @view(g_s[:,i])*vec_ξ[i]
+    end
 
-  g_s1 = integrator.g(u_i - u_star_sm1,p,t_i)
-  for i in 1:length(W.dW)
-    u += (1//4)*@view(g_s1[:,i])*vec_ξ[i]
-  end
+    u_star_sm1 = integrator.f(u_star_sm1,p,t_star)
+    u += (1//2)*dt*u_star_sm1
 
-  for i in 1:lenth(W.dW)
-    u -= (1//2)*@view(g_s[:,i])*vec_ξ[i]
-  end
+    for i in 1:length(W.dW)
+      u_star_sm1 = @view(g_s[:,i])*((vec_ξ[i]^2 - h)/2)
+      u_im1 = u_i + u_star_sm1
+      g_s1 = integrator.g(u_im1,p,t_i)
+      u += (1//2)*@view(g_s1[:,i])
 
+      u_im1 = u_i - u_star_sm1
+      g_s1 = integrator.g(u_im1,p,t_i)
+      u -= (1//2)*@view(g_s1[:,i])
+    end
+
+    for i in 1:length(W.dW)
+      (i == 1) && (u_star_sm1 = @view(g_s[:,i]))
+      (i > 1) && (u_star_sm1 += @view(g_s[:,i]))
+    end
+
+    u_star_sm1 *= sqrt_dt
+
+    u_im1 = u_i + u_star_sm1
+    g_s1 = integrator.g(u_im1,p,t_i)
+    for i in 1:length(W.dW)
+      u += (1//4)*vec_ξ[i]*(@view(g_s1[:,i])-2*@view(g_s[:,i]))
+    end
+
+    u_im1 = u_i - u_star_sm1
+    g_s1 = integrator.g(u_im1,p,t_i)
+    for i in 1:length(W.dW)
+      u += (1//4)*vec_ξ[i]*@view(g_s1[:,i])
+    end
+  else
+      g_s = intgrator.g(u_im1,p,t_im1)
+      for i in 1:length(W.dW)
+        u += @view(g_s[:,i])*vec_ξ[i]
+      end
+
+      g_s = integrator.g(u_i,p,t_i)
+      for i in 1:length(W.dW)
+        u_star_sm1 += @view(g_s[:,i])*vec_ξ[i]
+      end
+
+      u_star_sm1 = integrator.f(u_star_sm1,p,t_star)
+      u += (1//2)*dt*u_star_sm1
+
+      for i in 1:length(W.dW)
+        for j in 1:length(W.dW)
+          (i == 1) && (J_qr = (vec_ξ[i]^2 - 1)/2)
+          (i < j) && (J_qr = (vec_ξ[i]*vec_ξ[j] - abs(vec_χ[j])*vec_χ[j])/2)
+          (i > j) && (J_qr = (vec_ξ[i]*vec_ξ[j] + abs(vec_χ[i])*vec_χ[i])/2)
+
+          (j == 1) && (u_star_sm1 = @view(g_s[:,j])*J_qr)
+          (j > 1) && (u_star_sm1 += @view(g_s[:,j])*J_qr)
+        end
+
+        g_s1 = integrator.g(u_i + u_star_sm1,p,t_i)
+        u += (1//2)*@view(g_s1[:,i])
+        g_s1 = integrator.g(u_i - u_star_sm1,p,t_i)
+        u -= (1//2)*@view(g_s1[:,i])
+      end
+
+      for i in 1:length(W.dW)
+        (i == 1) && ( u_star_sm1 = @view(g_s[:,i])*vec_χ[i])
+        (i > 1) && (u_star_sm1 += @view(g_s[:,i])*vec_χ[i])
+      end
+
+      g_s1 = integrator.g(u_i + u_star_sm1,p,t_i)
+      for i in 1:length(W.dW)
+        u += (1//4)*vec_ξ[i]*(@view(g_s1[:,i]) - 2*@view(g_s[:,i]))
+      end
+
+      g_s1 = integrator.g(u_i - u_star_sm1,p,t_i)
+      for i in 1:length(W.dW)
+        u += (1//4)*vec_ξ[i]*@view(g_s1[:,i])
+      end
+  end
   integrator.u = u
 end
 
