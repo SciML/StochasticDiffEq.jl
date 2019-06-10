@@ -162,7 +162,7 @@ end
 
   for i in 1:length(W.dW)
     winc = rand()*6
-    (winc < 1.0) && ()
+    if winc < 1.0
       vec_ξ[i] = -sqrt_dt*sqrt_3
     elseif winc < 2.0
       vec_ξ[i] = sqrt_dt*sqrt_3
@@ -372,7 +372,7 @@ end
 
   for i in 1:length(W.dW)
     winc = rand()*6
-    (winc < 1.0) && ()
+    if winc < 1.0
       vec_ξ[i] = -sqrt_dt*sqrt_3
     elseif winc < 2.0
       vec_ξ[i] = sqrt_dt*sqrt_3
