@@ -93,6 +93,7 @@ alg_compatible(prob,alg::WangLi3SMil_D) = true
 alg_compatible(prob,alg::WangLi3SMil_E) = true
 alg_compatible(prob,alg::WangLi3SMil_F) = true
 alg_compatible(prob,alg::SROCK1) = true
+alg_compatible(prob,alg::SROCK2) = true
 alg_compatible(prob,alg::EulerHeun) = true
 alg_compatible(prob,alg::LambaEulerHeun) = true
 alg_compatible(prob,alg::SplitEM) = true

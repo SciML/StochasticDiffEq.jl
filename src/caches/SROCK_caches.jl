@@ -51,6 +51,7 @@ mutable struct SROCK2ConstantCache{zType,T} <: StochasticDiffEqConstantCache
   start::Int
   optimal_η::T
 end
+
 @cache struct SROCK2Cache{uType,rateType,noiseRateType,T} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
