@@ -5,10 +5,8 @@ function SROCK1ConstantCache{T}(zprev) where T
 end
 
 function SROCK2ConstantCache{T}(zprev) where T
-  mv = SVector{46, Int}(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,24,26,28,30,33,36,39,43,
+  ms = SVector{46, Int}(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,24,26,28,30,33,36,39,43,
                         47,51,56,61,66,72,78,85,93,102,112,123,135,148,163,180,198)
-  ms = SVector{10, Int}(3,5,7,10,25,50,75,100,150,200)
-  mη = SVector{10, T}(2.2,12.0,13.0,14.3,20.3,27.2,32.1,36.0,42.1,46.7)
   recf = [  0.1794612899156781e+00,0.9326607661089206e-01,
             0.1268473641290642e+00,0.2103378190528467e-01,
             0.5786627125519110e-01,0.7776456841673992e-01,
@@ -2434,5 +2432,5 @@ function SROCK2ConstantCache{T}(zprev) where T
                       1.8713339241767621e0,
                       1.8732755097069358e0)
 
-  SROCK2ConstantCache{typeof(zprev),T}(mv,ms,mη,recf,mσ,mτ,recf2,mα,zprev,1,1,1,one(T))
+  SROCK2ConstantCache{typeof(zprev),T}(ms,recf,mσ,mτ,recf2,mα,zprev,1,1,1)
 end

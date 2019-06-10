@@ -37,9 +37,7 @@ function alg_cache(alg::SROCK1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_protot
 end
 
 mutable struct SROCK2ConstantCache{zType,T} <: StochasticDiffEqConstantCache
-  mv::SVector{46,Int}
-  ms::SVector{10,Int}
-  mη::SVector{10,T}
+  ms::SVector{46,Int}
   recf::Vector{T}
   mσ::SVector{46,T}
   mτ::SVector{46,T}
@@ -49,7 +47,6 @@ mutable struct SROCK2ConstantCache{zType,T} <: StochasticDiffEqConstantCache
   mdeg::Int
   deg_index::Int
   start::Int
-  optimal_η::T
 end
 
 @cache struct SROCK2Cache{uType,rateType,noiseRateType,T} <: StochasticDiffEqMutableCache

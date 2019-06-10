@@ -156,27 +156,29 @@ function choose_deg!(integrator,cache::T) where T
       end
     end
     cache.mdeg = (cache.mdeg > mn_st^2*(131.97/197 - 0.45*mn_st/197)) ? mx_st : mn_st
+
+    @inbounds for i in 1:size(cache.ms,1)
+      if cache.ms[i] <= cache.mdeg
+        cache.optimal_η = cache.mη[i]
+      else
+        break
+      end
+    end
   end
 
   if integrator.alg isa SROCK2
     start = 1
     @inbounds for i in 1:size(cache.ms,1)
-      if cache.mv[i] >= cache.mdeg
+      if cache.ms[i] >= cache.mdeg
         cache.deg_index = i;
-        cache.mdeg = cache.mv[i]
+        cache.mdeg = cache.ms[i]
         cache.start = start
         break
+      else
+        start += cache.ms[i]*2 - 1
       end
-      start += cache.mv[i]*2 - 1
     end
   end
 
-  @inbounds for i in 1:size(cache.ms,1)
-    if cache.ms[i] <= cache.mdeg
-      cache.optimal_η = cache.mη[i]
-    else
-      break
-    end
-  end
   return nothing
 end
