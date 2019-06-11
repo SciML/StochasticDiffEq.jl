@@ -161,7 +161,7 @@ end
   sqrt_3    = sqrt(3*one(eltype(W.dW)))
 
   for i in 1:length(W.dW)
-    if abs(W.dW[i]) >= 0.4307272992954575
+    if abs(W.dW[i]) <= 0.967421566101701
       vec_ξ[i] = zero(eltype(W.dW))
     elseif W.dW < 0.0
       vec_ξ[i] = -sqrt_3
