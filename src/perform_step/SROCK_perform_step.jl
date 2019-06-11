@@ -253,7 +253,7 @@ end
 
     uᵢ₋₂ = uᵢ - uₓ
     Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ)
-    u  += (1//4*sqrt_dt*vec_ξ[i])*Gₛ₁
+    u  += (1//4*sqrt_dt*vec_ξ[1])*Gₛ₁
 
   elseif is_diagonal_noise(integrator.sol.prob)
 
