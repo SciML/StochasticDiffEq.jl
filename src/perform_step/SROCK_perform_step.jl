@@ -158,8 +158,8 @@ end
   σ = (1.0-α)*0.5 + α*mσ[deg_index]
 
   # I'm not sure about which one is correct τ
-  # τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
-  τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mτ[deg_index]
+  τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
+  # τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mτ[deg_index]
 
   sqrt_dt   = sqrt(dt)
   sqrt_3    = sqrt(3*one(eltype(W.dW)))
@@ -245,7 +245,7 @@ end
     u  += (1//2*dt)*uₓ
 
     # uₓ  = Gₛ*(dt*(vec_ξ[1]^2 - 1)/2)
-    uₓ  = Gₛ*((W.dW^2 - dt)/2)
+    uₓ  = Gₛ*((W.dW^2-dt)/2)
     uᵢ₋₂ = uᵢ + uₓ
     Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ)
     u   += (1//2)*Gₛ₁
@@ -324,8 +324,8 @@ end
       for i in 1:length(W.dW)
         for j in 1:length(W.dW)
           (i == j) && (Jᵢⱼ = (W.dW[i]^2 - dt)/2)
-          (i < j) && (Jᵢⱼ = (W.dW[i]*W.dW[j] - vec_χ[j]*dt)/2)
-          (i > j) && (Jᵢⱼ = (W.dW[i]*W.dW[j] + vec_χ[i]*dt)/2)
+          (i < j) && (Jᵢⱼ = (W.dW[i]*W.dW[j])/2)
+          (i > j) && (Jᵢⱼ = (W.dW[i]*W.dW[j])/2)
 
           (j == 1) && (uₓ = @view(Gₛ[:,j])*Jᵢⱼ)
           (j > 1) && (uₓ += @view(Gₛ[:,j])*Jᵢⱼ)
@@ -380,8 +380,8 @@ end
   σ = (1.0-α)*0.5 + α*mσ[deg_index]
 
   # I'm not sure about which one is correct τ
-  # τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
-  τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mτ[deg_index]
+  τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
+  # τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mτ[deg_index]
 
   sqrt_dt   = sqrt(dt)
   sqrt_3    = sqrt(3.0)
