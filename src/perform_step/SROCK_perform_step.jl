@@ -226,19 +226,15 @@ end
   if (typeof(W.dW) <: Number) || (length(W.dW) == 1)
     Gₛ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
     u  += Gₛ*W.dW
-
     Gₛ = integrator.g(uᵢ,p,tᵢ)
     uₓ += Gₛ*W.dW
 
-
     uₓ = integrator.f(uₓ,p,tₓ)
     u  += (1//2*dt)*uₓ
-
     uₓ  = Gₛ*((W.dW^2-dt)/2)
     uᵢ₋₂ = uᵢ + uₓ
     Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ)
     u   += (1//2)*Gₛ₁
-
     uᵢ₋₂ = uᵢ - uₓ
     Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ)
     u   -= (1//2)*Gₛ₁
@@ -247,7 +243,6 @@ end
     uᵢ₋₂ = uᵢ + uₓ
     Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ)
     u += (1//4*W.dW)*(Gₛ₁ - 2*Gₛ)
-
     uᵢ₋₂ = uᵢ - uₓ
     Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ)
     u  += (1//4*W.dW)*Gₛ₁
@@ -282,7 +277,6 @@ end
       for i in 1:length(W.dW)
         u += @view(Gₛ[:,i])*(W.dW[i])
       end
-
       Gₛ = integrator.g(uᵢ,p,tᵢ)
       for i in 1:length(W.dW)
         uₓ += @view(Gₛ[:,i])*(W.dW[i])
@@ -290,7 +284,6 @@ end
 
       uₓ = integrator.f(uₓ,p,tₓ)
       u  += (1//2)*dt*uₓ
-
       for i in 1:length(W.dW)
         for j in 1:length(W.dW)
           (i == j) && (Jᵢⱼ = (W.dW[i]^2 - dt)/2)
@@ -300,7 +293,6 @@ end
           (j == 1) && (uₓ = @view(Gₛ[:,j])*Jᵢⱼ)
           (j > 1) && (uₓ += @view(Gₛ[:,j])*Jᵢⱼ)
         end
-
         Gₛ₁ = integrator.g(uᵢ + uₓ,p,tᵢ)
         u   += (1//2)*@view(Gₛ₁[:,i])
         Gₛ₁ = integrator.g(uᵢ - uₓ,p,tᵢ)
@@ -311,13 +303,11 @@ end
         (i == 1) && (uₓ = @view(Gₛ[:,i])*(vec_χ[i]*sqrt_dt))
         (i > 1) && (uₓ += @view(Gₛ[:,i])*(vec_χ[i]*sqrt_dt))
       end
-
       uᵢ₋₂ = uᵢ + uₓ
       Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ)
       for i in 1:length(W.dW)
         u += (1//4*W.dW[i])*(@view(Gₛ₁[:,i]) - 2*@view(Gₛ[:,i]))
       end
-
       uᵢ₋₂ = uᵢ - uₓ
       Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ)
       for i in 1:length(W.dW)
@@ -417,7 +407,6 @@ end
   if (typeof(W.dW) <: Number) || (length(W.dW) == 1)
     integrator.g(Gₛ,uᵢ₋₁,p,tᵢ₋₁)
     @.. u  += Gₛ*W.dW
-
     integrator.g(Gₛ,uᵢ,p,tᵢ)
     @.. uₓ += Gₛ*W.dW
     integrator.f(k,uₓ,p,tₓ)
@@ -427,7 +416,6 @@ end
     @.. uᵢ₋₂ = uᵢ + uₓ
     integrator.g(Gₛ₁,uᵢ₋₂,p,tᵢ)
     @.. u   += (1//2)*Gₛ₁
-
     @.. uᵢ₋₂ = uᵢ - uₓ
     integrator.g(Gₛ₁,uᵢ₋₂,p,tᵢ)
     @.. u   -= (1//2)*Gₛ₁
@@ -436,7 +424,6 @@ end
     @.. uᵢ₋₂ = uᵢ + uₓ
     integrator.g(Gₛ₁,uᵢ₋₂,p,tᵢ)
     @.. u += (1//4*W.dW)*(Gₛ₁ - 2*Gₛ)
-
     @.. uᵢ₋₂ = uᵢ - uₓ
     integrator.g(Gₛ₁,uᵢ₋₂,p,tᵢ)
     @.. u += (1//4*W.dW)*Gₛ₁
@@ -471,12 +458,10 @@ end
       for i in 1:length(W.dW)
         @.. u += @view(Gₛ[:,i])*W.dW[i]
       end
-
       integrator.g(Gₛ,uᵢ,p,tᵢ)
       for i in 1:length(W.dW)
         @.. uₓ += @view(Gₛ[:,i])*W.dW[i]
       end
-
       integrator.f(k,uₓ,p,tₓ)
       @.. u  += (1//2)*dt*k
 
@@ -489,7 +474,6 @@ end
           (j == 1) && (@.. uₓ = @view(Gₛ[:,j])*Jᵢⱼ)
           (j > 1) && (@.. uₓ += @view(Gₛ[:,j])*Jᵢⱼ)
         end
-
         @.. uᵢ₋₂ = uᵢ + uₓ
         integrator.g(Gₛ₁,uᵢ₋₂,p,tᵢ)
         @.. u   += (1//2)*@view(Gₛ₁[:,i])
@@ -502,13 +486,11 @@ end
         (i == 1) && (@.. uₓ = @view(Gₛ[:,i])*(vec_χ[i]*sqrt_dt))
         (i > 1) && (@.. uₓ += @view(Gₛ[:,i])*(vec_χ[i]*sqrt_dt))
       end
-
       @.. uᵢ₋₂ = uᵢ + uₓ
       integrator.g(Gₛ₁,uᵢ₋₂,p,tᵢ)
       for i in 1:length(W.dW)
         @.. u += (1//4)*W.dW[i]*(@view(Gₛ₁[:,i]) - 2*@view(Gₛ[:,i]))
       end
-
       @.. uᵢ₋₂ = uᵢ - uₓ
       integrator.g(Gₛ₁,uᵢ₋₂,p,tᵢ)
       for i in 1:length(W.dW)
