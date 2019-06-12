@@ -467,7 +467,7 @@ end
 
       for i in 1:length(W.dW)
         for j in 1:length(W.dW)
-          (i == 1) && (Jᵢⱼ = (W.dW[i]^2 - dt)/2)
+          (i == j) && (Jᵢⱼ = (W.dW[i]^2 - dt)/2)
           (i < j) && (Jᵢⱼ = (W.dW[i]*W.dW[j] - dt*vec_χ[i])/2)
           (i > j) && (Jᵢⱼ = (W.dW[i]*W.dW[j] + dt*vec_χ[i])/2)
 
