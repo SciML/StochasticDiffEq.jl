@@ -251,49 +251,32 @@ end
     uᵢ₋₂ = uᵢ - uₓ
     Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ)
     u  += (1//4*W.dW)*Gₛ₁
-
   elseif is_diagonal_noise(integrator.sol.prob)
 
     Gₛ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
-    for i in 1:length(W.dW)
-      u += @view(Gₛ[:,i])*(W.dW[i])
-    end
-
+    u += Gₛ .* W.dW
     Gₛ = integrator.g(uᵢ,p,tᵢ)
-    for i in 1:length(W.dW)
-      uₓ += @view(Gₛ[:,i])*(W.dW[i])
-    end
+    uₓ += Gₛ .* W.dW
 
     uₓ = integrator.f(uₓ,p,tₓ)
     u  += (1//2)*dt*uₓ
 
-    for i in 1:length(W.dW)
-      uₓ   = @view(Gₛ[:,i])*((W.dW[i]^2 - dt)/2)
-      uᵢ₋₂ = uᵢ + uₓ
-      Gₛ₁  = integrator.g(uᵢ₋₂,p,tᵢ)
-      u    += (1//2)*@view(Gₛ₁[:,i])
-
-      uᵢ₋₂ = uᵢ - uₓ
-      Gₛ₁  = integrator.g(uᵢ₋₂,p,tᵢ)
-      u    -= (1//2)*@view(Gₛ₁[:,i])
-    end
-
-    for i in 1:length(W.dW)
-      (i == 1) && (uₓ = sqrt_dt*@view(Gₛ[:,i]))
-      (i > 1) && (uₓ += sqrt_dt*@view(Gₛ[:,i]))
-    end
-
+    uₓ   = Gₛ .* ((W.dW .^ 2 .- dt)/2)
     uᵢ₋₂ = uᵢ + uₓ
     Gₛ₁  = integrator.g(uᵢ₋₂,p,tᵢ)
-    for i in 1:length(W.dW)
-      u += (1//4*W.dW[i])*(@view(Gₛ₁[:,i])-2*@view(Gₛ[:,i]))
-    end
+    u    += (1//2)*Gₛ₁
+    uᵢ₋₂ = uᵢ - uₓ
+    Gₛ₁  = integrator.g(uᵢ₋₂,p,tᵢ)
+    u    -= (1//2)*Gₛ₁
+
+    uₓ = sqrt_dt*Gₛ
+    uᵢ₋₂ = uᵢ + uₓ
+    Gₛ₁  = integrator.g(uᵢ₋₂,p,tᵢ)
+    u += (1//4*W.dW) .* (Gₛ₁ .- 2*Gₛ)
 
     uᵢ₋₂ = uᵢ - uₓ
     Gₛ₁  = integrator.g(uᵢ₋₂,p,tᵢ)
-    for i in 1:length(W.dW)
-      u += (1//4*W.dW[i])*@view(Gₛ₁[:,i])
-    end
+    u += (1//4*W.dW) .* Gₛ₁
   else
       Gₛ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
       for i in 1:length(W.dW)
@@ -346,7 +329,7 @@ end
 end
 
 @muladd function perform_step!(integrator,cache::SROCK2Cache,f=integrator.f)
-  @unpack uᵢ, uₓ, uᵢ₋₁, uᵢ₋₂, k, Gₛ, Gₛ₁,  vec_χ = cache
+  @unpack uᵢ, uₓ, uᵢ₋₁, uᵢ₋₂, k, Gₛ, Gₛ₁, vec_χ = cache
 
   @unpack t,dt,uprev,u,W,p = integrator
 
@@ -356,7 +339,7 @@ end
 
   maxeig!(integrator, cache)
   ccache.mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est+1.5)/0.811)+1))
-  ccache.mdeg = max(3,min(cache.mdeg,200))-2
+  ccache.mdeg = max(3,min(ccache.mdeg,200))-2
   choose_deg!(integrator,cache)
 
   mdeg      = ccache.mdeg
@@ -371,7 +354,6 @@ end
 
   sqrt_dt   = sqrt(dt)
   sqrt_3    = sqrt(3.0)
-
   if gen_prob
     for i in 1:length(W.dW)
       if rand() < 0.5
@@ -460,46 +442,30 @@ end
     @.. u += (1//4*W.dW)*Gₛ₁
   elseif is_diagonal_noise(integrator.sol.prob)
     integrator.g(Gₛ,uᵢ₋₁,p,tᵢ₋₁)
-    for i in 1:length(W.dW)
-      @.. u += @view(Gₛ[:,i])*W.dW[i]
-    end
+    @.. u += Gₛ*W.dW
 
     integrator.g(Gₛ,uᵢ,p,tᵢ)
-    for i in 1:length(W.dW)
-      @.. uₓ += @view(Gₛ[:,i])*W.dW[i]
-    end
+    @.. uₓ += Gₛ*W.dW
 
     integrator.f(k,uₓ,p,tₓ)
     @.. u  += (1//2)*dt*k
 
-    for i in 1:length(W.dW)
-      @.. uₓ   = @view(Gₛ[:,i])*((W.dW[i]^2 - h)/2)
-      @.. uᵢ₋₂ = uᵢ + uₓ
-      integrator.g(Gₛ₁,uᵢ₋₂,p,tᵢ)
-      @.. u += (1//2)*@view(Gₛ₁[:,i])
+    @.. uₓ   = Gₛ*((W.dW^2 - dt)/2)
+    @.. uᵢ₋₂ = uᵢ + uₓ
+    integrator.g(Gₛ₁,uᵢ₋₂,p,tᵢ)
+    @.. u += (1//2)*Gₛ₁
+    @.. uᵢ₋₂ = uᵢ - uₓ
+    integrator.g(Gₛ₁,uᵢ₋₂,p,tᵢ)
+    @.. u -= (1//2)*Gₛ₁
 
-      @.. uᵢ₋₂ = uᵢ - uₓ
-      integrator.g(Gₛ₁,uᵢ₋₂,p,tᵢ)
-      @.. u -= (1//2)*@view(Gₛ₁[:,i])
-    end
-
-    for i in 1:length(W.dW)
-      (i == 1) && (@.. uₓ = @view(Gₛ[:,i]))
-      (i > 1) && (@.. uₓ += @view(Gₛ[:,i]))
-    end
-
+    @.. uₓ = Gₛ
     @.. uₓ   *= sqrt_dt
     @.. uᵢ₋₂ = uᵢ + uₓ
     integrator.g(Gₛ₁,uᵢ₋₂,p,tᵢ)
-    for i in 1:length(W.dW)
-      @.. u += (1//4)*W.dW[i]*(@view(Gₛ₁[:,i])-2*@view(Gₛ[:,i]))
-    end
-
+    @.. u += (1//4)*W.dW*(Gₛ₁-2*Gₛ)
     @.. uᵢ₋₂ = uᵢ - uₓ
     integrator.g(Gₛ₁,uᵢ₋₂,p,tᵢ)
-    for i in 1:length(W.dW)
-      @.. u += (1//4)*W.dW[i]*@view(Gₛ₁[:,i])
-    end
+    @.. u += (1//4)*W.dW*Gₛ₁
   else
       integrator.g(Gₛ,uᵢ₋₁,p,tᵢ₋₁)
       for i in 1:length(W.dW)
