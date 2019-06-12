@@ -142,7 +142,6 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack recf, recf2, mα, mσ, mτ = cache
 
-  # vec_ξ = zeros(eltype(W.dW),length(W.dW))
   gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (typeof(W.dW) <: Number) || (length(W.dW) == 1))
   gen_prob && (vec_χ = zeros(eltype(W.dW),length(W.dW)))
 
@@ -164,15 +163,8 @@ end
   sqrt_dt   = sqrt(dt)
   sqrt_3    = sqrt(3*one(eltype(W.dW)))
 
-  for i in 1:length(W.dW)
-    # if abs(W.dW[i]) <= 0.967421566101701
-    #   vec_ξ[i] = zero(eltype(W.dW))
-    # elseif W.dW[i] < 0.0
-    #   vec_ξ[i] = -sqrt_3
-    # else
-    #   vec_ξ[i] = sqrt_3
-    # end
-    if gen_prob
+  if gen_prob
+    for i in 1:length(W.dW)
       if rand() < 0.5
         vec_χ[i] = -one(eltype(W.dW))
       else
@@ -233,18 +225,15 @@ end
 
   if (typeof(W.dW) <: Number) || (length(W.dW) == 1)
     Gₛ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
-    # u  += Gₛ*(vec_ξ[1]*sqrt_dt)
     u  += Gₛ*W.dW
 
     Gₛ = integrator.g(uᵢ,p,tᵢ)
-    # uₓ += Gₛ*(vec_ξ[1]*sqrt_dt)
     uₓ += Gₛ*W.dW
 
 
     uₓ = integrator.f(uₓ,p,tₓ)
     u  += (1//2*dt)*uₓ
 
-    # uₓ  = Gₛ*(dt*(vec_ξ[1]^2 - 1)/2)
     uₓ  = Gₛ*((W.dW^2-dt)/2)
     uᵢ₋₂ = uᵢ + uₓ
     Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ)
@@ -257,12 +246,10 @@ end
     uₓ  = Gₛ*sqrt_dt
     uᵢ₋₂ = uᵢ + uₓ
     Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ)
-    # u += (0.25*sqrt_dt*vec_ξ[1])*(Gₛ₁ - 2*Gₛ)
     u += (1//4*W.dW)*(Gₛ₁ - 2*Gₛ)
 
     uᵢ₋₂ = uᵢ - uₓ
     Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ)
-    # u  += (0.25*sqrt_dt*vec_ξ[1])*Gₛ₁
     u  += (1//4*W.dW)*Gₛ₁
 
   elseif is_diagonal_noise(integrator.sol.prob)
@@ -359,7 +346,6 @@ end
 end
 
 @muladd function perform_step!(integrator,cache::SROCK2Cache,f=integrator.f)
-  # @unpack uᵢ,uₓ,uᵢ₋₁,uᵢ₋₂,k, Gₛ, Gₛ₁, vec_ξ, vec_χ = cache
   @unpack uᵢ, uₓ, uᵢ₋₁, uᵢ₋₂, k, Gₛ, Gₛ₁,  vec_χ = cache
 
   @unpack t,dt,uprev,u,W,p = integrator
@@ -386,17 +372,8 @@ end
   sqrt_dt   = sqrt(dt)
   sqrt_3    = sqrt(3.0)
 
-  for i in 1:length(W.dW)
-    # winc = rand()*6
-    # if winc < 1.0
-    #   vec_ξ[i] = -sqrt_dt*sqrt_3
-    # elseif winc < 2.0
-    #   vec_ξ[i] = sqrt_dt*sqrt_3
-    # else
-    #   vec_ξ[i] = 0*sqrt_dt
-    # end
-    #
-    if gen_prob
+  if gen_prob
+    for i in 1:length(W.dW)
       if rand() < 0.5
         vec_χ[i] = -sqrt_dt
       else

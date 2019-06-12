@@ -58,7 +58,6 @@ end
   uᵢ₋₂::uType
   Gₛ::noiseRateType
   Gₛ₁::noiseRateType
-  # vec_ξ::T
   vec_χ::T
   tmp::uType
   k::rateType
@@ -79,17 +78,10 @@ function alg_cache(alg::SROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_protot
   uᵢ₋₂ = zero(u)
   Gₛ = zero(noise_rate_prototype)
   Gₛ₁ = zero(noise_rate_prototype)
-  # vec_ξ = zero(eltype(ΔW),length(ΔW))
-  # if is_diagonal_noise(prob) || (typeof(ΔW) <: Number) || (length(ΔW) == 1)
-  #   vec_χ = vec_ξ
-  # else
-  #   vec_χ = zero(eltype(ΔW),length(ΔW))
-  # end
   vec_χ = zero(eltype(ΔW),length(ΔW))
   tmp  = zero(u)             # these 3 variables are dummied to use same memory
   fsalfirst = zero(rate_prototype)
   atmp = zero(rate_prototype)
   constantcache = SROCK2ConstantCache{uEltypeNoUnits}(u)
-  # SROCK2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype),typeof(vec_ξ)}(u,uprev,uᵢ,uₓ,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,vec_ξ,vec_χ,tmp,k,fsalfirst,atmp,constantcache)
   SROCK2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype),typeof(vec_ξ)}(u,uprev,uᵢ,uₓ,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,vec_χ,tmp,k,fsalfirst,atmp,constantcache)
 end
