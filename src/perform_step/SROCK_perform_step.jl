@@ -157,7 +157,7 @@ end
   σ = (1.0-α)*0.5 + α*mσ[deg_index]
 
   # I'm not sure about which one is correct τ
-  τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
+  τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
   # τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mτ[deg_index]
 
   sqrt_dt   = sqrt(dt)
@@ -366,7 +366,7 @@ end
   σ = (1.0-α)*0.5 + α*mσ[deg_index]
 
   # I'm not sure about which one is correct τ
-  τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
+  τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
   # τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mτ[deg_index]
 
   sqrt_dt   = sqrt(dt)
