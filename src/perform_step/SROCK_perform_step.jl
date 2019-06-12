@@ -148,7 +148,7 @@ end
 
   maxeig!(integrator, cache)
   cache.mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est+1.5)/0.811)+1))
-  cache.mdeg = max(50,min(cache.mdeg,200))-2
+  cache.mdeg = max(3,min(cache.mdeg,200))-2
   choose_deg!(integrator,cache)
 
   mdeg      = cache.mdeg
@@ -378,7 +378,7 @@ end
   deg_index = ccache.deg_index
   α = mα[deg_index]
   σ = (1.0-α)*0.5 + α*mσ[deg_index]
-  
+
   # I'm not sure about which one is correct τ
   # τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
   τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mτ[deg_index]
