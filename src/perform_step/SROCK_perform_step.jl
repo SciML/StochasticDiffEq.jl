@@ -391,7 +391,6 @@ end
   @.. uᵢ₋₂ = uprev
   integrator.f(k,uprev,p,t)
   @.. uᵢ₋₁ = uprev + α*dt*μ*k
-  # (mdeg < 2) && (uᵢ = uᵢ₋₁)
 
   # stages 2 upto s-2
   for i in 2:mdeg
