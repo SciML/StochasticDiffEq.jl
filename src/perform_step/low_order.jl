@@ -198,7 +198,7 @@ end
   if alg_interpretation(integrator.alg) == :Ito
     J = 0.5 .* (vec(dW) .* vec(dW)' - dt .* I)
   else
-    J = 0.5 .* vec(dW) .* vec(dW)'
+    J .= 0.5 .* vec(dW) .* vec(dW)'
   end
 
   integrator.f(du1,uprev,p,t)
