@@ -5,13 +5,13 @@ mutable struct SROCK1ConstantCache{zType,uEltypeNoUnits} <: StochasticDiffEqCons
   mdeg::Int
   optimal_η::uEltypeNoUnits
 end
-@cache struct SROCK1Cache{uType,rateType} <: StochasticDiffEqMutableCache
+@cache struct SROCK1Cache{uType,rateType,noiseRateType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   uᵢ₋₁::uType
   uᵢ₋₂::uType
-  gₘ₋₁::rateType
-  gₘ₋₂::rateType
+  gₘ₋₁::noiseRateType
+  gₘ₋₂::noiseRateType
   tmp::uType
   k::rateType
   fsalfirst::rateType
@@ -27,8 +27,8 @@ function alg_cache(alg::SROCK1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_protot
   k = zero(rate_prototype)
   uᵢ₋₁ = zero(u)
   uᵢ₋₂ = zero(u)
-  gₘ₋₁ = zero(rate_prototype)
-  gₘ₋₂ = zero(rate_prototype)
+  gₘ₋₁ = zero(noise_rate_prototype)
+  gₘ₋₂ = zero(noise_rate_prototype)
   tmp  = uᵢ₋₂             # these 3 variables are dummied to use same memory
   fsalfirst = k
   atmp = zero(rate_prototype)
