@@ -92,7 +92,6 @@ end
   end
 
   @.. uᵢ₋₂ = uprev
-  integrator.f(k,uprev,p,t)
   Tᵢ₋₂ = one(eltype(u))
   Tᵢ₋₁ = convert(eltype(u),ω₀)
   Tᵢ   = Tᵢ₋₁
@@ -101,6 +100,9 @@ end
   tᵢ₋₂ = t
 
   #stage 1
+  #this take advantage of the fact that cache.k === cache.fsalfirst
+  #and this has already been done i maxeig!  i.e. integrator.f(fsalfirst, uprev, p, t)
+  # integrator.f(k,uprev,p,t)
   @.. uᵢ₋₁ = uprev + (dt*ω₁/ω₀)*k
 
   for i in 2:mdeg
@@ -361,7 +363,9 @@ end
 
   # stage 1
   @.. uᵢ₋₂ = uprev
-  integrator.f(k,uprev,p,t)
+  #this take advantage of the fact that cache.k === cache.fsalfirst
+  #and this has already been done i maxeig!  i.e. integrator.f(fsalfirst, uprev, p, t)
+  # integrator.f(k,uprev,p,t)
   @.. uᵢ₋₁ = uprev + α*dt*μ*k
 
   # stages 2 upto s-2
