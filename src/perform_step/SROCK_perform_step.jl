@@ -667,7 +667,7 @@ end
     if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || (is_diagonal_noise(integrator.sol.prob))
       @.. uᵢ₋₂  = Gₛ*(W.dW^2 - dt)*0.5
       @.. tmp = u + uᵢ₋₂
-      integrator.g(Gₛtmp,p,tᵢ)
+      integrator.g(Gₛ,tmp,p,tᵢ)
       @.. uᵢ₋₁ += 0.5*Gₛ
       @.. tmp = u - uᵢ₋₂
       integrator.g(Gₛ,tmp,p,tᵢ)
