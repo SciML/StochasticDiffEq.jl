@@ -196,7 +196,7 @@ end
 
   @.. mil_correction = zero(u)
   if alg_interpretation(integrator.alg) == :Ito
-    J = 0.5 .* (vec(dW) .* vec(dW)' - dt .* I)
+    J .= 0.5 .* (vec(dW) .* vec(dW)' .- dt .* I)
   else
     J .= 0.5 .* vec(dW) .* vec(dW)'
   end
