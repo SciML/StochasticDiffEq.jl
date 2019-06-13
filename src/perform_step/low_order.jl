@@ -196,7 +196,7 @@ end
 
   @.. mil_correction = zero(u)
   if alg_interpretation(integrator.alg) == :Ito
-    WikJ .= 0.5 .* (vec(dW) .* vec(dW)' .- dt .* I)
+    WikJ .= 0.5 .* (vec(dW) .* vec(dW)'  .- dt .* Diagonal(fill(one(eltype(W.dW)),length(W.dW))))
   else
     WikJ .= 0.5 .* vec(dW) .* vec(dW)'
   end
