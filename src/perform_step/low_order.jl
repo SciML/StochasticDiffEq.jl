@@ -188,7 +188,7 @@ end
 @muladd function perform_step!(integrator,cache::RKMilCommuteCache,f=integrator.f)
   @unpack du1,du2,K,gtmp,L = cache
   @unpack t,dt,uprev,u,W,p = integrator
-  @unpack J,mil_correction,Kj,Dgj,tmp = cache
+  @unpack WikJ,mil_correction,Kj,Dgj,tmp = cache
   dW = W.dW; sqdt = integrator.sqdt
   f = integrator.f; g = integrator.g
 
@@ -196,9 +196,9 @@ end
 
   @.. mil_correction = zero(u)
   if alg_interpretation(integrator.alg) == :Ito
-    J .= 0.5 .* (vec(dW) .* vec(dW)' .- dt .* I)
+    WikJ .= 0.5 .* (vec(dW) .* vec(dW)' .- dt .* I)
   else
-    J .= 0.5 .* vec(dW) .* vec(dW)'
+    WikJ .= 0.5 .* vec(dW) .* vec(dW)'
   end
 
   integrator.f(du1,uprev,p,t)
@@ -212,7 +212,7 @@ end
     if integrator.opts.adaptive
         ggprime_norm += integrator.opts.internalnorm(Dgj,t)
     end
-    mul!(tmp,Dgj,@view(J[:,j]))
+    mul!(tmp,Dgj,@view(WikJ[:,j]))
     mil_correction .+= tmp
   end
   mul!(tmp,L,dW)
