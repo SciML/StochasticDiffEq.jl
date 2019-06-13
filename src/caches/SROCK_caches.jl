@@ -100,6 +100,7 @@ end
   uᵢ₋₁::uType
   uᵢ₋₂::uType
   Gₛ::noiseRateType
+  Gₛ₁::noiseRateType
   tmp::uType
   k::rateType
   fsalfirst::rateType
@@ -116,9 +117,14 @@ function alg_cache(alg::SROCKEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_proto
   uᵢ₋₁ = zero(u)
   uᵢ₋₂ = zero(u)
   Gₛ = zero(noise_rate_prototype)
+  if (!alg.strong_order_1 || is_diagonal_noise(prob) || typeof(ΔW) <: Number || length(ΔW) == 1)
+    Gₛ₁ = Gₛ
+  else
+    Gₛ₁ = zero(noise_rate_prototype)
+  end
   tmp  = zero(u)             # these 3 variables are dummied to use same memory
-  fsalfirst = zero(rate_prototype)
+  fsalfirst = k
   atmp = zero(rate_prototype)
   constantcache = SROCKEMConstantCache{uEltypeNoUnits}(u)
-  SROCKEMCache{typeof(u),typeof(k),typeof(Gₛ)}(u,uprev,uᵢ₋₁,uᵢ₋₂,Gₛ,tmp,k,fsalfirst,atmp,constantcache)
+  SROCKEMCache{typeof(u),typeof(k),typeof(Gₛ)}(u,uprev,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,tmp,k,fsalfirst,atmp,constantcache)
 end
