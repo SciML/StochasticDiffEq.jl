@@ -30,8 +30,8 @@ function alg_cache(alg::SROCK1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_protot
   gₘ₋₁ = zero(rate_prototype)
   gₘ₋₂ = zero(rate_prototype)
   tmp  = uᵢ₋₂             # these 3 variables are dummied to use same memory
-  fsalfirst = gₘ₋₁
-  atmp = gₘ₋₂
+  fsalfirst = k
+  atmp = zero(rate_prototype)
   constantcache = SROCK1ConstantCache{uEltypeNoUnits}(u)
   SROCK1Cache(u,uprev,uᵢ₋₁,uᵢ₋₂,gₘ₋₁,gₘ₋₂,tmp,k,fsalfirst,atmp,constantcache)
 end
@@ -78,9 +78,9 @@ function alg_cache(alg::SROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_protot
   uᵢ₋₂ = zero(u)
   Gₛ = zero(noise_rate_prototype)
   Gₛ₁ = zero(noise_rate_prototype)
-  vec_χ = zeros(eltype(ΔW),length(ΔW))
-  tmp  = zero(u)             # these 3 variables are dummied to use same memory
-  fsalfirst = zero(rate_prototype)
+  vec_χ .= false .* vec(ΔW)
+  tmp  = uᵢ₋₂            # these 2 variables are dummied to use same memory
+  fsalfirst = k
   atmp = zero(rate_prototype)
   constantcache = SROCK2ConstantCache{uEltypeNoUnits}(u)
   SROCK2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype),typeof(vec_χ)}(u,uprev,uᵢ,uₓ,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,vec_χ,tmp,k,fsalfirst,atmp,constantcache)
