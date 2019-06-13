@@ -154,9 +154,9 @@ function DiffEqBase.__init(
     noise_rate_prototype = rate_prototype
   else
     if prob isa DiffEqBase.AbstractSDEProblem
-      noise_rate_prototype = prob.noise_rate_prototype
+      noise_rate_prototype = copy(prob.noise_rate_prototype)
     else
-      noise_rate_prototype = prob.rand_prototype
+      noise_rate_prototype = copy(prob.rand_prototype)
     end
   end
 

@@ -551,3 +551,196 @@ end
 
   integrator.u = u
 end
+
+@muladd function perform_step!(integrator,cache::SROCKEMConstantCache,f=integrator.f)
+  @unpack t,dt,uprev,u,W,p = integrator
+
+  maxeig!(integrator, cache)
+  if integrator.alg.strong_order_1
+    cache.mdeg = Int(floor(sqrt(2*dt*integrator.eigen_est/0.19)+1))
+  else
+    cache.mdeg = Int(floor(sqrt(2*dt*integrator.eigen_est/0.33)+1))
+  end
+  cache.mdeg = max(3,min(cache.mdeg,200))
+  choose_deg!(integrator,cache)
+
+  mdeg = cache.mdeg
+  η  = cache.optimal_η
+  ω₀ = 1.0 + (η/(mdeg^2))
+  ωSq = (ω₀^2) - 1.0
+  Sqrt_ω = sqrt(ωSq)
+  cosh_inv = log(ω₀ + Sqrt_ω)             # arcosh(ω₀)
+  ω₁ = (Sqrt_ω*cosh(mdeg*cosh_inv))/(mdeg*sinh(mdeg*cosh_inv))
+
+  uᵢ₋₂ = copy(uprev)
+  k = integrator.f(uprev,p,t)
+  Tᵢ₋₂ = one(eltype(u))
+  Tᵢ₋₁ = convert(eltype(u),ω₀)
+  Tᵢ   = Tᵢ₋₁
+  tᵢ₋₁ = t+dt*(ω₁/ω₀)
+  tᵢ   = tᵢ₋₁
+  tᵢ₋₂ = t
+
+  #stage 1
+  uᵢ₋₁ = uprev + (dt*ω₁/ω₀)*k
+
+  for i in 2:mdeg
+    Tᵢ = 2*ω₀*Tᵢ₋₁ - Tᵢ₋₂
+    μ = 2*ω₁*(Tᵢ₋₁/Tᵢ)
+    ν = 2*ω₀*(Tᵢ₋₁/Tᵢ)
+    κ = (-Tᵢ₋₂/Tᵢ)
+    k = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
+
+    u = dt*μ*k + ν*uᵢ₋₁ + κ*uᵢ₋₂
+    tᵢ = μ*dt + ν*tᵢ₋₁ + κ*tᵢ₋₂
+
+    if i < mdeg
+      uᵢ₋₂ = uᵢ₋₁
+      uᵢ₋₁ = u
+      tᵢ₋₂ = tᵢ₋₁
+      tᵢ₋₁ = tᵢ
+      Tᵢ₋₂ = Tᵢ₋₁
+      Tᵢ₋₁ = Tᵢ
+    end
+  end
+
+  Gₛ = integrator.g(u,p,tᵢ)
+  if (typeof(W.dW) <: Number) || (length(W.dW) == 1)
+    uᵢ₋₁ = Gₛ*W.dW
+  elseif is_diagonal_noise(integrator.sol.prob)
+    uᵢ₋₁ = Gₛ .* W.dW
+  else
+    for i in 1:length(W.dW)
+      (i == 1) && (uᵢ₋₁ = @view(Gₛ[:,i])*W.dW[i])
+      (i > 1) && (uᵢ₋₁ += @view(Gₛ[:,i])*W.dW[i])
+    end
+  end
+
+  if integrator.alg.strong_order_1
+    if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || (is_diagonal_noise(integrator.sol.prob))
+      if (typeof(W.dW) <: Number) || (length(W.dW) == 1)
+        uᵢ₋₂  = Gₛ*(W.dW^2 - dt)*0.5
+      else
+        uᵢ₋₂  = Gₛ .* (W.dW .^ 2 .- dt) .* 0.5
+      end
+
+      tmp = u + uᵢ₋₂
+      Gₛ  = integrator.g(tmp,p,tᵢ)
+      uᵢ₋₁ += 0.5*Gₛ
+      tmp = u - uᵢ₋₂
+      Gₛ  = integrator.g(tmp,p,tᵢ)
+      uᵢ₋₁ -= 0.5*Gₛ
+    else
+      for i in 1:length(W.dW)
+        for j in 1:length(W.dW)
+          (i == j) && (Jᵢⱼ = (W.dW[i]*W.dW[j]-dt)*0.5)
+          (i != j) && (Jᵢⱼ = (W.dW[i]*W.dW[j])*0.5)
+
+          (j == 1) && (uᵢ₋₂ = @view(Gₛ[:,j])*Jᵢⱼ)
+          (j > 1) && (uᵢ₋₂ += @view(Gₛ[:,j])*Jᵢⱼ)
+        end
+        tmp = u + uᵢ₋₂
+        Gₛ₁ = integrator.g(tmp,p,tᵢ)
+        uᵢ₋₁ += @view(Gₛ₁[:,i])*(0.5)
+        tmp = u - uᵢ₋₂
+        Gₛ₁ = integrator.g(tmp,p,tᵢ)
+        uᵢ₋₁ -= @view(Gₛ₁[:,i])*(0.5)
+      end
+    end
+  end
+
+  integrator.u = u + uᵢ₋₁
+end
+
+@muladd function perform_step!(integrator,cache::SROCKEMCache,f=integrator.f)
+  @unpack uᵢ₋₁,uᵢ₋₂,tmp,k,Gₛ,Gₛ₁ = cache
+  @unpack t,dt,uprev,u,W,p = integrator
+  ccache = cache.constantcache
+  maxeig!(integrator, cache)
+  if integrator.alg.strong_order_1
+    ccache.mdeg = Int(floor(sqrt(2*dt*integrator.eigen_est/0.19)+1))
+  else
+    ccache.mdeg = Int(floor(sqrt(2*dt*integrator.eigen_est/0.33)+1))
+  end
+  ccache.mdeg = max(3,min(ccache.mdeg,200))
+  choose_deg!(integrator,cache)
+
+  mdeg = ccache.mdeg
+  η  = ccache.optimal_η
+  ω₀ = 1 + η/(mdeg^2)
+  ωSq = ω₀^2 - 1
+  Sqrt_ω = sqrt(ωSq)
+  cosh_inv = log(ω₀ + Sqrt_ω)             # arcosh(ω₀)
+  ω₁ = (Sqrt_ω*cosh(mdeg*cosh_inv))/(mdeg*sinh(mdeg*cosh_inv))
+
+  @.. uᵢ₋₂ = uprev
+  integrator.f(k,uprev,p,t)
+  Tᵢ₋₂ = one(eltype(u))
+  Tᵢ₋₁ = convert(eltype(u),ω₀)
+  Tᵢ   = Tᵢ₋₁
+  tᵢ₋₁ = t + dt*(ω₁/ω₀)
+  tᵢ   = tᵢ₋₁
+  tᵢ₋₂ = t
+
+  #stage 1
+  @.. uᵢ₋₁ = uprev + (dt*ω₁/ω₀)*k
+
+  for i in 2:mdeg
+    Tᵢ = 2*ω₀*Tᵢ₋₁ - Tᵢ₋₂
+    μ = 2*ω₁*Tᵢ₋₁/Tᵢ
+    ν = 2*ω₀*Tᵢ₋₁/Tᵢ
+    κ = - Tᵢ₋₂/Tᵢ
+    integrator.f(k,uᵢ₋₁,p,tᵢ₋₁)
+    @.. u = dt*μ*k + ν*uᵢ₋₁ + κ*uᵢ₋₂
+    tᵢ = dt*μ + ν*tᵢ₋₁ + κ*tᵢ₋₂
+
+    if i < mdeg
+      @.. uᵢ₋₂ = uᵢ₋₁
+      @.. uᵢ₋₁ = u
+      tᵢ₋₂ = tᵢ₋₁
+      tᵢ₋₁ = tᵢ
+      Tᵢ₋₂ = Tᵢ₋₁
+      Tᵢ₋₁ = Tᵢ
+    end
+  end
+
+  integrator.g(Gₛ,u,p,tᵢ)
+  if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || is_diagonal_noise(integrator.sol.prob)
+    @.. uᵢ₋₁ = Gₛ*W.dW
+  else
+    for i in 1:length(W.dW)
+      (i == 1) && (@.. uᵢ₋₁ = @view(Gₛ[:,i])*W.dW[i])
+      (i > 1) && (@.. uᵢ₋₁ += @view(Gₛ[:,i])*W.dW[i])
+    end
+  end
+
+  if integrator.alg.strong_order_1
+    if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || (is_diagonal_noise(integrator.sol.prob))
+      @.. uᵢ₋₂  = Gₛ*(W.dW^2 - dt)*0.5
+      @.. tmp = u + uᵢ₋₂
+      integrator.g(Gₛ,tmp,p,tᵢ)
+      @.. uᵢ₋₁ += 0.5*Gₛ
+      @.. tmp = u - uᵢ₋₂
+      integrator.g(Gₛ,tmp,p,tᵢ)
+      @.. uᵢ₋₁ -= 0.5*Gₛ
+    else
+      for i in 1:length(W.dW)
+        for j in 1:length(W.dW)
+          (i == j) && (Jᵢⱼ = (W.dW[i]*W.dW[j]-dt)*0.5)
+          (i != j) && (Jᵢⱼ = (W.dW[i]*W.dW[j])*0.5)
+
+          (j == 1) && (@.. uᵢ₋₂ = @view(Gₛ[:,j])*Jᵢⱼ)
+          (j > 1) && (@.. uᵢ₋₂ += @view(Gₛ[:,j])*Jᵢⱼ)
+        end
+        @.. tmp = u + uᵢ₋₂
+        integrator.g(Gₛ₁,tmp,p,tᵢ)
+        @.. uᵢ₋₁ += @view(Gₛ₁[:,i])*(0.5)
+        @.. tmp = u - uᵢ₋₂
+        integrator.g(Gₛ₁,tmp,p,tᵢ)
+        @.. uᵢ₋₁ -= @view(Gₛ₁[:,i])*(0.5)
+      end
+    end
+  end
+
+  integrator.u = u + uᵢ₋₁
+end

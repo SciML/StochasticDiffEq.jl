@@ -180,5 +180,15 @@ function choose_deg!(integrator,cache::T) where T
     end
   end
 
+  if integrator.alg isa SROCKEM
+    @inbounds for i in 1:size(cache.ms,1)
+      if cache.ms[i] <= cache.mdeg
+        cache.optimal_η = cache.mη[i]
+      else
+        break
+      end
+    end
+  end
+
   return nothing
 end
