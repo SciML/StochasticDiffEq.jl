@@ -103,7 +103,7 @@ module StochasticDiffEq
          SRA1, SRA2, SRA3,
          SOSRA, SOSRA2, RKMilCommute,
          SRIW2, SOSRI, SOSRI2, SKenCarp,
-         SROCK1, SROCK2,
+         SROCK1, SROCK2, SROCKEM
          AutoSOSRI2, AutoSOSRA2
 
   export EulerHeun, LambaEulerHeun

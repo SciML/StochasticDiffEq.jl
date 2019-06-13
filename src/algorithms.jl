@@ -44,6 +44,12 @@ SROCK1(;interpretation=:Ito) = SROCK1{interpretation}()
 # Weak Order 2
 struct SROCK2 <: StochasticDiffEqAlgorithm end
 
+# ROCK stabilization for EM
+struct SROCKEM <: StochasticDiffEqAlgorithm
+  strong_order_1::Bool
+end
+SROCKEM(;strong_order_1=true) = SROCKEM(strong_order_1)
+
 ###############################################################################
 
 # Predictor Corrector

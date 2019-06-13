@@ -500,3 +500,70 @@ end
 
   integrator.u = u
 end
+
+@muladd function perform_step!(integrator,cache::SROCKEMConstantCache,f=integrator.f)
+  @unpack t,dt,uprev,u,W,p = integrator
+
+  maxeig!(integrator, cache)
+  if integrator.alg.strong_order_1
+    cache.mdeg = Int(floor(sqrt(2*dt*integrator.eigen_est/0.19)+1)) # this is the spectral radius estimate to choose optimal stage
+  else
+    cache.mdeg = Int(floor(sqrt(2*dt*integrator.eigen_est/0.33)+1)) # this is the spectral radius estimate to choose optimal stage
+  end
+  cache.mdeg = max(3,min(cache.mdeg,200))
+  choose_deg!(integrator,cache)
+
+  mdeg = cache.mdeg
+  η  = cache.optimal_η
+  ω₀ = 1.0 + (η/(mdeg^2))
+  ωSq = (ω₀^2) - 1.0
+  Sqrt_ω = sqrt(ωSq)
+  cosh_inv = log(ω₀ + Sqrt_ω)             # arcosh(ω₀)
+  ω₁ = (Sqrt_ω*cosh(mdeg*cosh_inv))/(mdeg*sinh(mdeg*cosh_inv))
+
+  uᵢ₋₂ = copy(uprev)
+  k = integrator.f(uprev,p,t)
+  Tᵢ₋₂ = one(eltype(u))
+  Tᵢ₋₁ = convert(eltype(u),ω₀)
+  Tᵢ   = Tᵢ₋₁
+  tᵢ₋₁ = t+dt*(ω₁/ω₀)
+  tᵢ   = tᵢ₋₁
+  tᵢ₋₂ = t
+
+  #stage 1
+  uᵢ₋₁ = uprev + (dt*ω₁/ω₀)*k
+
+  for i in 2:mdeg
+    Tᵢ = 2*ω₀*Tᵢ₋₁ - Tᵢ₋₂
+    μ = 2*ω₁*(Tᵢ₋₁/Tᵢ)
+    ν = 2*ω₀*(Tᵢ₋₁/Tᵢ)
+    κ = (-Tᵢ₋₂/Tᵢ)
+    k = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
+
+    u = dt*μ*k + ν*uᵢ₋₁ + κ*uᵢ₋₂
+    tᵢ = μ*dt + ν*tᵢ₋₁ + κ*tᵢ₋₂
+
+    if i < mdeg
+      uᵢ₋₂ = uᵢ₋₁
+      uᵢ₋₁ = u
+      tᵢ₋₂ = tᵢ₋₁
+      tᵢ₋₁ = tᵢ
+      Tᵢ₋₂ = Tᵢ₋₁
+      Tᵢ₋₁ = Tᵢ
+    end
+  end
+
+  Gₛ = integrator.g(u,p,tᵢ)
+  if (typeof(W.dW) <: Number) || (length(W.dW) == 1)
+    uᵢ₋₁ = Gₛ*W.dW
+  elseif is_diagonal_noise(integrator.sol.prob)
+    uᵢ₋₁ = Gₛ .* W.dW
+  else
+    for i in 1:length(W.dW)
+      (i == 1) && (uᵢ₋₁ = @view(Gₛ[:,i])*W.dW[i])
+      (i > 1) && (uᵢ₋₁ += @view(Gₛ[:,i])*W.dW[i])
+    end
+  end
+
+  integrator.u = u + uᵢ₋₁
+end
