@@ -198,16 +198,8 @@ end
   if alg_interpretation(integrator.alg) == :Ito
     J = 0.5 .* (vec(dW) .* vec(dW)' - dt .* I)
   else
-    J = 0.5 .* vec(dW) .* vec(dW)''
+    J = 0.5 .* vec(dW) .* vec(dW)'
   end
-
-
-  # for i=1:length(dW),j=1:length(dW)
-  #     I[j,i] = 0.5*dW[i]*dW[j]
-  #     if alg_interpretation(integrator.alg) == :Ito
-  #       j == i && (I[i,i] -= 0.5*dt) # Ito correction
-  #     end
-  # end
 
   integrator.f(du1,uprev,p,t)
   integrator.g(L,uprev,p,t)
