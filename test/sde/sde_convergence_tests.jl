@@ -47,6 +47,8 @@ sim2 = test_convergence(dts,prob,SROCKEM(strong_order_1=false),numMonte=Int(2e2)
 @test abs(sim2.𝒪est[:l∞]-0.5) < 0.2
 sim2 = test_convergence(dts,prob,SROCKEM(),numMonte=Int(2e2))
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
+sim2 = test_convergence(dts,prob,SKROCK(),numMonte=Int(2e2))
+@test abs(sim2.𝒪est[:l∞]-1) < 0.2
 sim3 = test_convergence(dts,prob,SRI(),numMonte=Int(1e1))
 @test abs(sim3.𝒪est[:final]-1.5) < 0.3
 sim4 = test_convergence(dts,prob,SRIW1(),numMonte=Int(1e1))
@@ -93,6 +95,8 @@ sim2 = test_convergence(dts,prob,SROCK2(),numMonte=Int(2e2))
 sim2 = test_convergence(dts,prob,SROCKEM(strong_order_1=false),numMonte=Int(2e2))
 @test abs(sim2.𝒪est[:l∞]-0.5) < 0.2
 sim2 = test_convergence(dts,prob,SROCKEM(),numMonte=Int(2e2))
+@test abs(sim2.𝒪est[:l∞]-1) < 0.2
+sim2 = test_convergence(dts,prob,SKROCK(),numMonte=Int(2e2))
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 sim3 = test_convergence(dts,prob,SRI(),numMonte=Int(1e1))
 @test abs(sim3.𝒪est[:final]-1.5) < 0.3
@@ -141,6 +145,8 @@ sim2 = test_convergence(dts,prob,SROCK2(),numMonte=Int(1e2))
 @time sim2 = test_convergence(dts,prob,SROCKEM(strong_order_1=false),numMonte=Int(1e2))
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 @time sim2 = test_convergence(dts,prob,SROCKEM(),numMonte=Int(1e2))
+@test abs(sim2.𝒪est[:l∞]-1) < 0.2
+sim2 = test_convergence(dts,prob,SKROCK(),numMonte=Int(1e2))
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 sim3 = test_convergence(dts,prob,SRI(),numMonte=Int(1e1))
 @test abs(sim3.𝒪est[:final]-2) < 0.3
