@@ -236,7 +236,7 @@ function DiffEqBase.__init(
         rand_prototype = (u .- u)./sqrt(oneunit(t))
       end
     elseif prob isa DiffEqBase.AbstractSDEProblem
-      rand_prototype = a[1,:]
+      rand_prototype = noise_rate_prototype[1,:]
       fill!(rand_prototype,zero(randElType))
     else
       rand_prototype = copy(prob.rand_prototype)
