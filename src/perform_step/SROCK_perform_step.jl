@@ -693,3 +693,124 @@ end
 
   integrator.u = u + uᵢ₋₁
 end
+
+@muladd function perform_step!(integrator,cache::SKSROCKConstantCache,f=integrator.f)
+  @unpack t,dt,uprev,u,W,p = integrator
+
+  maxeig!(integrator, cache)
+  η = 0.05*one(eltype(t))
+  mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est + 1.5)/(2-4//3*η))+1))
+  mdeg = max(2,min(mdeg,200))
+
+  ω₀ = 1.0 + (η/(mdeg^2))
+  ωSq = (ω₀^2) - 1.0
+  Sqrt_ω = sqrt(ωSq)
+  cosh_inv = log(ω₀ + Sqrt_ω)             # arcosh(ω₀)
+  ω₁ = (Sqrt_ω*cosh(mdeg*cosh_inv))/(mdeg*sinh(mdeg*cosh_inv))
+
+  μ, ν , k = ω₁/ω₀, mdeg*ω₁/2, mdeg*ω₁/ω₀
+  Tᵢ₋₂ = one(eltype(u))
+  Tᵢ₋₁ = convert(eltype(u),ω₀)
+  Tᵢ   = Tᵢ₋₁
+  tᵢ₋₁ = t+dt*(ω₁/ω₀)
+  tᵢ   = tᵢ₋₁
+  tᵢ₋₂ = t
+
+  #stage 1
+  Gₛ = integrator.g(uprev,p,t)
+  if (typeof(W.dW) <: Number)
+    uᵢ = Gₛ*W.dW
+  elseif is_diagonal_noise(integrator.sol.prob)
+    uᵢ = Gₛ .* W.dW
+  else
+    for i in 1:length(W.dW)
+      (i == 1) && (uᵢ = @view(Gₛ[:,i])*W.dW[i])
+      (i > 1) && (uᵢ += @view(Gₛ[:,i])*W.dW[i])
+    end
+  end
+  uᵢ₋₂ = uprev
+  uᵢ₋₁ = uprev + ν*uᵢ₋₂
+  k = integrator.f(uᵢ₋₁,p,t)
+  uᵢ₋₁ = uprev + (μ*dt)*k + κ*uᵢ₋₂
+
+  for i in 2:mdeg
+    Tᵢ = 2*ω₀*Tᵢ₋₁ - Tᵢ₋₂
+    μ = 2*ω₁*(Tᵢ₋₁/Tᵢ)
+    ν = 2*ω₀*(Tᵢ₋₁/Tᵢ)
+    κ = (-Tᵢ₋₂/Tᵢ)
+    k = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
+
+    u = dt*μ*k + ν*uᵢ₋₁ + κ*uᵢ₋₂
+    tᵢ = μ*dt + ν*tᵢ₋₁ + κ*tᵢ₋₂
+
+    if i < mdeg
+      uᵢ₋₂ = uᵢ₋₁
+      uᵢ₋₁ = u
+      tᵢ₋₂ = tᵢ₋₁
+      tᵢ₋₁ = tᵢ
+      Tᵢ₋₂ = Tᵢ₋₁
+      Tᵢ₋₁ = Tᵢ
+    end
+  end
+  integrator.u = u
+end
+
+@muladd function perform_step!(integrator,cache::SKSROCKCache,f=integrator.f)
+  @unpack uᵢ₋₁,uᵢ₋₂,k, Gₛ = cache
+  @unpack t,dt,uprev,u,W,p = integrator
+
+  maxeig!(integrator, cache)
+  η = 0.05*one(eltype(t))
+  mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est + 1.5)/(2-4//3*η))+1))
+  mdeg = max(2,min(mdeg,200))
+
+  ω₀ = 1.0 + (η/(mdeg^2))
+  ωSq = (ω₀^2) - 1.0
+  Sqrt_ω = sqrt(ωSq)
+  cosh_inv = log(ω₀ + Sqrt_ω)             # arcosh(ω₀)
+  ω₁ = (Sqrt_ω*cosh(mdeg*cosh_inv))/(mdeg*sinh(mdeg*cosh_inv))
+
+  μ, ν , k = ω₁/ω₀, mdeg*ω₁/2, mdeg*ω₁/ω₀
+  Tᵢ₋₂ = one(eltype(u))
+  Tᵢ₋₁ = convert(eltype(u),ω₀)
+  Tᵢ   = Tᵢ₋₁
+  tᵢ₋₁ = t+dt*(ω₁/ω₀)
+  tᵢ   = tᵢ₋₁
+  tᵢ₋₂ = t
+
+  #stage 1
+  integrator.g(Gₛ,uprev,p,t)
+  if (typeof(W.dW) <: Number) || is_diagonal_noise(integrator.sol.prob)
+    @.. uᵢ = Gₛ*W.dW
+  else
+    for i in 1:length(W.dW)
+      (i == 1) && (@.. uᵢ = @view(Gₛ[:,i])*W.dW[i])
+      (i > 1) && (@.. uᵢ += @view(Gₛ[:,i])*W.dW[i])
+    end
+  end
+  @.. uᵢ₋₂ = uprev
+  @.. uᵢ₋₁ = uprev + ν*uᵢ₋₂
+  integrator.f(k,uᵢ₋₁,p,t)
+  @.. uᵢ₋₁ = uprev + (μ*dt)*k + κ*uᵢ₋₂
+
+  for i in 2:mdeg
+    Tᵢ = 2*ω₀*Tᵢ₋₁ - Tᵢ₋₂
+    μ = 2*ω₁*(Tᵢ₋₁/Tᵢ)
+    ν = 2*ω₀*(Tᵢ₋₁/Tᵢ)
+    κ = (-Tᵢ₋₂/Tᵢ)
+    integrator.f(k,uᵢ₋₁,p,tᵢ₋₁)
+
+    @.. u = dt*μ*k + ν*uᵢ₋₁ + κ*uᵢ₋₂
+    tᵢ = μ*dt + ν*tᵢ₋₁ + κ*tᵢ₋₂
+
+    if i < mdeg
+      @.. uᵢ₋₂ = uᵢ₋₁
+      @.. uᵢ₋₁ = u
+      tᵢ₋₂ = tᵢ₋₁
+      tᵢ₋₁ = tᵢ
+      Tᵢ₋₂ = Tᵢ₋₁
+      Tᵢ₋₁ = Tᵢ
+    end
+  end
+  integrator.u = u
+end
