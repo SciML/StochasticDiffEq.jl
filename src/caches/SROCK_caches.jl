@@ -157,6 +157,6 @@ function alg_cache(alg::SKROCK,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_protot
   tmp  = uᵢ₋₂             # Dummmy variables
   fsalfirst = k
   atmp = zero(rate_prototype)
-  constantcache = SKROCKConstantCache{uEltypeNoUnits}(u)
+  constantcache = SKROCKConstantCache(u)
   SKROCKCache(u,uprev,uᵢ₋₁,uᵢ₋₂,Gₛ,tmp,k,fsalfirst,atmp,constantcache)
 end

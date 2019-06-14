@@ -698,9 +698,9 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
 
   maxeig!(integrator, cache)
-  η = 0.05*one(eltype(t))
-  mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est + 1.5)/(2-4//3*η))+1))
-  mdeg = max(2,min(mdeg,200))
+  η = 0.05*one(typeof(t))
+  mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est + 1.5)/(2-η*4/3))+1))
+  mdeg = max(5,min(mdeg,200))
 
   ω₀ = 1.0 + (η/(mdeg^2))
   ωSq = (ω₀^2) - 1.0
@@ -708,7 +708,7 @@ end
   cosh_inv = log(ω₀ + Sqrt_ω)             # arcosh(ω₀)
   ω₁ = (Sqrt_ω*cosh(mdeg*cosh_inv))/(mdeg*sinh(mdeg*cosh_inv))
 
-  μ, ν , k = ω₁/ω₀, mdeg*ω₁/2, mdeg*ω₁/ω₀
+  μ, ν , κ = ω₁/ω₀, mdeg*ω₁/2, mdeg*ω₁/ω₀
   Tᵢ₋₂ = one(eltype(u))
   Tᵢ₋₁ = convert(eltype(u),ω₀)
   Tᵢ   = Tᵢ₋₁
@@ -729,9 +729,9 @@ end
     end
   end
   uᵢ₋₂ = uprev
-  uᵢ₋₁ = uprev + ν*uᵢ₋₂
+  uᵢ₋₁ = uprev + ν*uᵢ
   k = integrator.f(uᵢ₋₁,p,t)
-  uᵢ₋₁ = uprev + (μ*dt)*k + κ*uᵢ₋₂
+  uᵢ₋₁ = uprev + (μ*dt)*k + κ*uᵢ
 
   for i in 2:mdeg
     Tᵢ = 2*ω₀*Tᵢ₋₁ - Tᵢ₋₂
@@ -761,7 +761,7 @@ end
 
   maxeig!(integrator, cache)
   η = 0.05*one(eltype(t))
-  mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est + 1.5)/(2-4//3*η))+1))
+  mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est + 1.5)/(2-η*4/3))+1))
   mdeg = max(2,min(mdeg,200))
 
   ω₀ = 1.0 + (η/(mdeg^2))
@@ -770,7 +770,7 @@ end
   cosh_inv = log(ω₀ + Sqrt_ω)             # arcosh(ω₀)
   ω₁ = (Sqrt_ω*cosh(mdeg*cosh_inv))/(mdeg*sinh(mdeg*cosh_inv))
 
-  μ, ν , k = ω₁/ω₀, mdeg*ω₁/2, mdeg*ω₁/ω₀
+  μ, ν , κ = ω₁/ω₀, mdeg*ω₁/2, mdeg*ω₁/ω₀
   Tᵢ₋₂ = one(eltype(u))
   Tᵢ₋₁ = convert(eltype(u),ω₀)
   Tᵢ   = Tᵢ₋₁
@@ -781,17 +781,17 @@ end
   #stage 1
   integrator.g(Gₛ,uprev,p,t)
   if (typeof(W.dW) <: Number) || is_diagonal_noise(integrator.sol.prob)
-    @.. uᵢ = Gₛ*W.dW
+    @.. u = Gₛ*W.dW
   else
     for i in 1:length(W.dW)
-      (i == 1) && (@.. uᵢ = @view(Gₛ[:,i])*W.dW[i])
-      (i > 1) && (@.. uᵢ += @view(Gₛ[:,i])*W.dW[i])
+      (i == 1) && (@.. u = @view(Gₛ[:,i])*W.dW[i])
+      (i > 1) && (@.. u += @view(Gₛ[:,i])*W.dW[i])
     end
   end
   @.. uᵢ₋₂ = uprev
-  @.. uᵢ₋₁ = uprev + ν*uᵢ₋₂
+  @.. uᵢ₋₁ = uprev + ν*u
   integrator.f(k,uᵢ₋₁,p,t)
-  @.. uᵢ₋₁ = uprev + (μ*dt)*k + κ*uᵢ₋₂
+  @.. uᵢ₋₁ = uprev + (μ*dt)*k + κ*u
 
   for i in 2:mdeg
     Tᵢ = 2*ω₀*Tᵢ₋₁ - Tᵢ₋₂
