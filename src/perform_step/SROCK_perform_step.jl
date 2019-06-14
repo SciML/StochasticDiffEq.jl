@@ -694,7 +694,7 @@ end
   integrator.u = u + uᵢ₋₁
 end
 
-@muladd function perform_step!(integrator,cache::SKSROCKConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SKROCKConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
 
   maxeig!(integrator, cache)
@@ -755,7 +755,7 @@ end
   integrator.u = u
 end
 
-@muladd function perform_step!(integrator,cache::SKSROCKCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SKROCKCache,f=integrator.f)
   @unpack uᵢ₋₁,uᵢ₋₂,k, Gₛ = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
