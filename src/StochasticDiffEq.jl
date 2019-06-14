@@ -20,7 +20,7 @@ module StochasticDiffEq
 
   using Logging
 
-  using LinearAlgebra, Random
+  using LinearAlgebra, Random, FillArrays
 
   import ForwardDiff.Dual
 
