@@ -40,7 +40,7 @@ alg_order(alg::RKMilCommute) = 1//1
 alg_order(alg::SROCK1) = 1//2
 alg_order(alg::SROCK2) = 1//1
 alg_order(alg::SROCKEM) = alg.strong_order_1 ? 1//1 : 1//2
-alg_order(alg::SKROCK) = 1//2
+alg_order(alg::SKSROCK) = 1//2
 
 alg_order(alg::SRI) = alg.tableau.order
 alg_order(alg::SRIW1) = 3//2
@@ -97,7 +97,7 @@ alg_compatible(prob,alg::WangLi3SMil_F) = true
 alg_compatible(prob,alg::SROCK1) = true
 alg_compatible(prob,alg::SROCK2) = true
 alg_compatible(prob,alg::SROCKEM) = true
-alg_compatible(prob,alg::SKROCK) = true
+alg_compatible(prob,alg::SKSROCK) = true
 alg_compatible(prob,alg::EulerHeun) = true
 alg_compatible(prob,alg::LambaEulerHeun) = true
 alg_compatible(prob,alg::SplitEM) = true
