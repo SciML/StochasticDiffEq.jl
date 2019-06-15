@@ -728,11 +728,22 @@ end
       (i > 1) && (u += @view(Gₛ[:,i])*W.dW[i])
     end
   end
-  
+
+  if integrator.alg.post_processing
+    uᵢ₋₁ = uprev + ν*u
+    uᵢ₋₂ = integrator.f(uprev,p,t)
+    uᵢ₋₁ = integrator.f(uᵢ₋₁,p,t)
+    uᵢ₋₁ = uprev + (μ*dt)*uᵢ₋₁ + κ*u + cache.mα[mdeg-1]*dt*(uᵢ₋₁ - 2*uᵢ₋₂)
+    uᵢ₋₂ = uprev - ν*u
+    uᵢ₋₂ = integrator.f(uᵢ₋₂,p,t)
+    uᵢ₋₁ += (cache.mα[mdeg-1]*dt)*uᵢ₋₂
+  else
+    uᵢ₋₁ = uprev + ν*u
+    uᵢ₋₂ = integrator.f(uᵢ₋₁,p,t)
+    uᵢ₋₁ = uprev + (μ*dt)*uᵢ₋₂ + κ*u
+  end
+
   uᵢ₋₂ = uprev
-  uᵢ₋₁ = uprev + ν*u
-  u = integrator.f(uᵢ₋₁,p,t)
-  uᵢ₋₁ = uprev + (μ*dt)*u + κ*u
 
   for i in 2:mdeg
     Tᵢ = 2*ω₀*Tᵢ₋₁ - Tᵢ₋₂
@@ -752,6 +763,21 @@ end
       Tᵢ₋₂ = Tᵢ₋₁
       Tᵢ₋₁ = Tᵢ
     end
+  end
+  if integrator.alg.post_processing
+    Gₛ = integrator.g(u,p,tᵢ)
+    if (typeof(W.dW) <: Number)
+      uᵢ₋₁ = Gₛ*W.dW
+    elseif is_diagonal_noise(integrator.sol.prob)
+      uᵢ₋₁ = Gₛ .* W.dW
+    else
+      for i in 1:length(W.dW)
+        (i == 1) && (uᵢ₋₁ = @view(Gₛ[:,i])*W.dW[i])
+        (i > 1) && (uᵢ₋₁ += @view(Gₛ[:,i])*W.dW[i])
+      end
+    end
+
+    u += cache.mc[mdeg-1]*uᵢ₋₁
   end
   integrator.u = u
 end
@@ -789,10 +815,23 @@ end
       (i > 1) && (@.. u += @view(Gₛ[:,i])*W.dW[i])
     end
   end
+
+  if integrator.alg.post_processing
+    uᵢ₋₂ = uprev + ν*u
+    integrator.f(k,uᵢ₋₂,p,t)
+    uᵢ₋₁ = uprev + (μ*dt)*k + κ*u + (cache.mα[mdeg-1]*dt)*k
+    integrator.f(k,uprev,p,t)
+    uᵢ₋₁ -= (cache.mα[mdeg-1]*dt*2)*k
+    uᵢ₋₂ = uprev - ν*u
+    integrator.f(k,uᵢ₋₂,p,t)
+    uᵢ₋₁ += (cache.mα[mdeg-1]*dt)*k
+  else
+    @.. uᵢ₋₁ = uprev + ν*u
+    integrator.f(k,uᵢ₋₁,p,t)
+    @.. uᵢ₋₁ = uprev + (μ*dt)*k + κ*u
+  end
+
   @.. uᵢ₋₂ = uprev
-  @.. uᵢ₋₁ = uprev + ν*u
-  integrator.f(k,uᵢ₋₁,p,t)
-  @.. uᵢ₋₁ = uprev + (μ*dt)*k + κ*u
 
   for i in 2:mdeg
     Tᵢ = 2*ω₀*Tᵢ₋₁ - Tᵢ₋₂
@@ -813,5 +852,19 @@ end
       Tᵢ₋₁ = Tᵢ
     end
   end
+
+  if integrator.alg.post_processing
+    integrator.g(Gₛ,u,p,tᵢ)
+    if (typeof(W.dW) <: Number) || is_diagonal_noise(integrator.sol.prob)
+      @.. uᵢ₋₁ = Gₛ*W.dW
+    else
+      for i in 1:length(W.dW)
+        (i == 1) && (@.. uᵢ₋₁ = @view(Gₛ[:,i])*W.dW[i])
+        (i > 1) && (@.. uᵢ₋₁ += @view(Gₛ[:,i])*W.dW[i])
+      end
+    end
+    @.. u += cache.mc[mdeg-1]*uᵢ₋₁
+  end
+
   integrator.u = u
 end

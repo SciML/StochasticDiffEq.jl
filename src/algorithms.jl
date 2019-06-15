@@ -50,7 +50,10 @@ struct SROCKEM <: StochasticDiffEqAlgorithm
 end
 SROCKEM(;strong_order_1=true) = SROCKEM(strong_order_1)
 
-struct SKSROCK <: StochasticDiffEqAlgorithm end
+struct SKSROCK <: StochasticDiffEqAlgorithm
+  post_processing::Bool
+end
+SKSROCK(;post_processing=false) = SKSROCK(post_processing)
 ###############################################################################
 
 # Predictor Corrector
