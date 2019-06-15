@@ -1,4 +1,4 @@
-function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,internalnorm,prob,order) where {tType,uType}
+function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,internalnorm,prob,order,integrator) where {tType,uType}
   f = prob.f
   g = prob.g
   p = prob.p
