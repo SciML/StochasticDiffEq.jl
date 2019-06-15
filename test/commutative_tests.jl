@@ -15,26 +15,30 @@ function f_commute(du,u,p,t)
 end
 
 function f_commute_analytic(u0,p,t,W)
- tmp = (A+1.01I-(B^2))*t + B*sum(W)
+ tmp = (A+1.01I-2*(B^2))*t + B*sum(W)
  exp(tmp)*u0
 end
 
 function σ(du,u,p,t)
   du[1,1] = σ_const*u[1]
-  du[1,2] = σ_const*u[1]
   du[2,1] = σ_const*u[2]
+  du[1,2] = σ_const*u[1]
   du[2,2] = σ_const*u[2]
+  du[1,3] = σ_const*u[1]
+  du[2,3] = σ_const*u[2]
+  du[1,4] = σ_const*u[1]
+  du[2,4] = σ_const*u[2]
 end
 
 ff_commute = SDEFunction(f_commute,σ,analytic=f_commute_analytic)
 
-prob = SDEProblem(ff_commute,σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
+prob = SDEProblem(ff_commute,σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,4))
 
 sol = solve(prob,RKMilCommute(),dt=1/2^(8))
 sol = solve(prob,EM(),dt=1/2^(10))
 
 dts = (1/2) .^ (10:-1:3) #14->7 good plot
 sim2 = test_convergence(dts,prob,EM(),numMonte=Int(1e2))
-sim2 = test_convergence(dts,prob,RKMilCommute(),numMonte=Int(1e2))
+sim2 = test_convergence(dts,prob,RKMilCommute(),numMonte=Int(2e2))
 
 sim2.𝒪est[:final] - 1 < 0.2
