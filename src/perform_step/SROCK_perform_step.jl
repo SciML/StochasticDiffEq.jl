@@ -698,9 +698,9 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
 
   maxeig!(integrator, cache)
-  η = 0.05*one(typeof(t))
+  η = convert(typeof(t),0.05)
   mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est + 1.5)/(2-η*4/3))+1))
-  mdeg = max(5,min(mdeg,200))
+  mdeg = max(3,min(mdeg,200))
 
   ω₀ = 1.0 + (η/(mdeg^2))
   ωSq = (ω₀^2) - 1.0
@@ -764,22 +764,19 @@ end
       Tᵢ₋₁ = Tᵢ
     end
   end
-  if integrator.alg.post_processing
-    # Gₛ = integrator.g(u,p,tᵢ)
-    # if (typeof(W.dW) <: Number)
-    #   uᵢ₋₁ = Gₛ*W.dW
-    # elseif is_diagonal_noise(integrator.sol.prob)
-    #   uᵢ₋₁ = Gₛ .* W.dW
-    # else
-    #   for i in 1:length(W.dW)
-    #     (i == 1) && (uᵢ₋₁ = @view(Gₛ[:,i])*W.dW[i])
-    #     (i > 1) && (uᵢ₋₁ += @view(Gₛ[:,i])*W.dW[i])
-    #   end
-    # end
-
-    uᵢ₋₁ = sum(W.dW)ones(uᵢ₋₁)
-
-    u += cache.mc[mdeg-1]*uᵢ₋₁
+  if integrator.alg.post_processing && (t+dt >= integrator.sol.prob.tspan[2])
+    Gₛ = integrator.g(u,p,tᵢ)
+    if (typeof(W.dW) <: Number) || is_diagonal_noise(integrator.sol.prob)
+      uᵢ₋₁ = Gₛ
+    else
+        uᵢ₋₁ = @view(Gₛ[:,1])
+    end
+    winc = rand()*6
+    if winc < 1.0
+      u -= (sqrt(3*dt)*ccache.mc[mdeg-1])*uᵢ₋₁
+    elseif winc < 2
+      u += (sqrt(3*dt)*ccache.mc[mdeg-1])*uᵢ₋₁
+    end
   end
   integrator.u = u
 end
@@ -788,10 +785,11 @@ end
   @unpack uᵢ₋₁,uᵢ₋₂,k, Gₛ = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
+  ccache = cache.constantcache
   maxeig!(integrator, cache)
-  η = 0.05*one(eltype(t))
+  η = convert(typeof(t),0.05)
   mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est + 1.5)/(2-η*4/3))+1))
-  mdeg = max(2,min(mdeg,200))
+  mdeg = max(3,min(mdeg,200))
 
   ω₀ = 1.0 + (η/(mdeg^2))
   ωSq = (ω₀^2) - 1.0
@@ -819,14 +817,14 @@ end
   end
 
   if integrator.alg.post_processing
-    uᵢ₋₂ = uprev + ν*u
+    @.. uᵢ₋₂ = uprev + ν*u
     integrator.f(k,uᵢ₋₂,p,t)
-    uᵢ₋₁ = uprev + (μ*dt)*k + κ*u + (cache.mα[mdeg-1]*dt)*k
+    @.. uᵢ₋₁ = uprev + (μ*dt)*k + κ*u + (ccache.mα[mdeg-1]*dt)*k
     integrator.f(k,uprev,p,t)
-    uᵢ₋₁ -= (cache.mα[mdeg-1]*dt*2)*k
-    uᵢ₋₂ = uprev - ν*u
+    @.. uᵢ₋₁ -= (ccache.mα[mdeg-1]*dt*2)*k
+    @.. uᵢ₋₂ = uprev - ν*u
     integrator.f(k,uᵢ₋₂,p,t)
-    uᵢ₋₁ += (cache.mα[mdeg-1]*dt)*k
+    @.. uᵢ₋₁ += (ccache.mα[mdeg-1]*dt)*k
   else
     @.. uᵢ₋₁ = uprev + ν*u
     integrator.f(k,uᵢ₋₁,p,t)
@@ -855,17 +853,20 @@ end
     end
   end
 
-  if integrator.alg.post_processing
+  if integrator.alg.post_processing && (t+dt >= integrator.sol.prob.tspan[2])
     integrator.g(Gₛ,u,p,tᵢ)
+    # println(Gₛ/length(W.dW))
     if (typeof(W.dW) <: Number) || is_diagonal_noise(integrator.sol.prob)
-      @.. uᵢ₋₁ = Gₛ*W.dW
+      @.. uᵢ₋₁ = Gₛ
     else
-      for i in 1:length(W.dW)
-        (i == 1) && (@.. uᵢ₋₁ = @view(Gₛ[:,i])*W.dW[i])
-        (i > 1) && (@.. uᵢ₋₁ += @view(Gₛ[:,i])*W.dW[i])
-      end
+      @.. uᵢ₋₁ = @view(Gₛ[:,1])
     end
-    @.. u += cache.mc[mdeg-1]*uᵢ₋₁
+    winc = rand()*6
+    if winc < 1.0
+      @.. u -= (sqrt(3*dt)*ccache.mc[mdeg-1])*uᵢ₋₁
+    elseif winc < 2
+      @.. u += (sqrt(3*dt)*ccache.mc[mdeg-1])*uᵢ₋₁
+    end
   end
 
   integrator.u = u
