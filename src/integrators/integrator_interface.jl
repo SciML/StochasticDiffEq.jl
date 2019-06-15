@@ -343,7 +343,8 @@ end
 function DiffEqBase.auto_dt_reset!(integrator::SDEIntegrator)
   integrator.dt = sde_determine_initdt(integrator.u,integrator.t,
   integrator.tdir,integrator.opts.dtmax,integrator.opts.abstol,integrator.opts.reltol,
-  integrator.opts.internalnorm,integrator.sol.prob,get_current_alg_order(integrator.alg, integrator.cache))
+  integrator.opts.internalnorm,integrator.sol.prob,get_current_alg_order(integrator.alg, integrator.cache),
+  integrator)
 end
 
 @inline function DiffEqBase.get_du(integrator::SDEIntegrator)
