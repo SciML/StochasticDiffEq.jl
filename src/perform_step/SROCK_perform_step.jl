@@ -765,17 +765,19 @@ end
     end
   end
   if integrator.alg.post_processing
-    Gₛ = integrator.g(u,p,tᵢ)
-    if (typeof(W.dW) <: Number)
-      uᵢ₋₁ = Gₛ*W.dW
-    elseif is_diagonal_noise(integrator.sol.prob)
-      uᵢ₋₁ = Gₛ .* W.dW
-    else
-      for i in 1:length(W.dW)
-        (i == 1) && (uᵢ₋₁ = @view(Gₛ[:,i])*W.dW[i])
-        (i > 1) && (uᵢ₋₁ += @view(Gₛ[:,i])*W.dW[i])
-      end
-    end
+    # Gₛ = integrator.g(u,p,tᵢ)
+    # if (typeof(W.dW) <: Number)
+    #   uᵢ₋₁ = Gₛ*W.dW
+    # elseif is_diagonal_noise(integrator.sol.prob)
+    #   uᵢ₋₁ = Gₛ .* W.dW
+    # else
+    #   for i in 1:length(W.dW)
+    #     (i == 1) && (uᵢ₋₁ = @view(Gₛ[:,i])*W.dW[i])
+    #     (i > 1) && (uᵢ₋₁ += @view(Gₛ[:,i])*W.dW[i])
+    #   end
+    # end
+
+    uᵢ₋₁ = sum(W.dW)ones(uᵢ₋₁)
 
     u += cache.mc[mdeg-1]*uᵢ₋₁
   end
