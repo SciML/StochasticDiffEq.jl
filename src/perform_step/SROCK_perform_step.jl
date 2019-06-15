@@ -719,28 +719,29 @@ end
   #stage 1
   Gₛ = integrator.g(uprev,p,t)
   if (typeof(W.dW) <: Number)
-    uᵢ = Gₛ*W.dW
+    u = Gₛ*W.dW
   elseif is_diagonal_noise(integrator.sol.prob)
-    uᵢ = Gₛ .* W.dW
+    u = Gₛ .* W.dW
   else
     for i in 1:length(W.dW)
-      (i == 1) && (uᵢ = @view(Gₛ[:,i])*W.dW[i])
-      (i > 1) && (uᵢ += @view(Gₛ[:,i])*W.dW[i])
+      (i == 1) && (u = @view(Gₛ[:,i])*W.dW[i])
+      (i > 1) && (u += @view(Gₛ[:,i])*W.dW[i])
     end
   end
+  
   uᵢ₋₂ = uprev
-  uᵢ₋₁ = uprev + ν*uᵢ
-  k = integrator.f(uᵢ₋₁,p,t)
-  uᵢ₋₁ = uprev + (μ*dt)*k + κ*uᵢ
+  uᵢ₋₁ = uprev + ν*u
+  u = integrator.f(uᵢ₋₁,p,t)
+  uᵢ₋₁ = uprev + (μ*dt)*u + κ*u
 
   for i in 2:mdeg
     Tᵢ = 2*ω₀*Tᵢ₋₁ - Tᵢ₋₂
     μ = 2*ω₁*(Tᵢ₋₁/Tᵢ)
     ν = 2*ω₀*(Tᵢ₋₁/Tᵢ)
     κ = (-Tᵢ₋₂/Tᵢ)
-    k = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
+    u = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
 
-    u = dt*μ*k + ν*uᵢ₋₁ + κ*uᵢ₋₂
+    u = dt*μ*u + ν*uᵢ₋₁ + κ*uᵢ₋₂
     tᵢ = μ*dt + ν*tᵢ₋₁ + κ*tᵢ₋₂
 
     if i < mdeg
