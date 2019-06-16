@@ -31,6 +31,9 @@ is_APPVEYOR = ( Sys.iswindows() && haskey(ENV,"APPVEYOR") )
     @time @testset "Composite Tests" begin include("composite_algorithm_test.jl") end
     @time @testset "Events Tests" begin include("events_test.jl") end
     @time @testset "Cache Tests" begin include("cache_test.jl") end
+    @time @testset "Adaptive Complex Mean Test" begin include("adaptive/sde_complex_adaptive_mean_test.jl") end
+    @time @testset "Utility Tests" begin include("utility_tests.jl") end
+    @time @testset "Non-diagonal SDE Tests" begin include("nondiagonal_tests.jl") end
     @time @testset "No Index Tests" begin include("noindex_tests.jl") end
     @time @testset "Adaptive Complex Mean Test" begin include("adaptive/sde_complex_adaptive_mean_test.jl") end
     @time @testset "Utility Tests" begin include("utility_tests.jl") end

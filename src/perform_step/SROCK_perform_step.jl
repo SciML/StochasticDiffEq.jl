@@ -42,17 +42,45 @@
 
     u = dt*μ*k + ν*uᵢ₋₁ + κ*uᵢ₋₂
     if (i > mdeg - 2) && alg_interpretation(integrator.alg) == :Stratonovich
-        (i == mdeg - 1) && (gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁); u += α*gₘ₋₂.*W.dW)
-        (i == mdeg) && (gₘ₋₁ = integrator.g(uᵢ₋₁,p,tᵢ₋₁); u += (β*gₘ₋₂ + γ*gₘ₋₁) .* W.dW)
+      if i == mdeg - 1
+        gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
+        if typeof(W.dW) <: Number
+          u += α*gₘ₋₂*W.dW
+        elseif is_diagonal_noise(integrator.sol.prob)
+          u .+= α .*  gₘ₋₂ .* W.dW
+        else
+          for j in 1:length(W.dW)
+            u += (α*W.dW[j])*@view(gₘ₋₂[:,j])
+          end
+        end
+      else
+        gₘ₋₁ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
+        if typeof(W.dW) <: Number
+          u += (β*gₘ₋₂ + γ*gₘ₋₁)*W.dW
+        elseif is_diagonal_noise(integrator.sol.prob)
+          u .+= (β .* gₘ₋₂ .+ γ .* gₘ₋₁) .* W.dW
+        else
+          for j in 1:length(W.dW)
+            u += (β*@view(gₘ₋₂[:,j]) + γ*@view(gₘ₋₁[:,j]))*W.dW[j]
+          end
+        end
+      end
     elseif (i == mdeg) && alg_interpretation(integrator.alg) == :Ito
-      if typeof(W.dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+      if typeof(W.dW) <: Number
         gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
         uᵢ₋₂ = uᵢ₋₁ + sqrt(dt)*gₘ₋₂
         gₘ₋₁ = integrator.g(uᵢ₋₂,p,tᵢ₋₁)
-        u += gₘ₋₂ .* W.dW + 1/(2.0*sqrt(dt)) .* (gₘ₋₁ - gₘ₋₂) .* (W.dW^2 - dt)
+        u += gₘ₋₂*W.dW + 1/(2.0*sqrt(dt))*(gₘ₋₁ - gₘ₋₂)*(W.dW^2 - dt)
+      elseif is_diagonal_noise(integrator.sol.prob)
+        gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
+        uᵢ₋₂ .= uᵢ₋₁ .+ sqrt(dt) .* gₘ₋₂
+        gₘ₋₁ = integrator.g(uᵢ₋₂,p,tᵢ₋₁)
+        u .+= gₘ₋₂ .* W.dW .+ (1/(2.0*sqrt(dt))) .* (gₘ₋₁ .- gₘ₋₂) .* (W.dW .^ 2 .- dt)
       else
-        gₘ₋₁ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
-        u += gₘ₋₁ .* W.dW
+        gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
+        for j in 1:length(W.dW)
+            uᵢ += @view(gₘ₋₂[:,j])*(sqrt(dt)*W.dW[j])
+        end
       end
     end
 
@@ -92,7 +120,6 @@ end
   end
 
   @.. uᵢ₋₂ = uprev
-  integrator.f(k,uprev,p,t)
   Tᵢ₋₂ = one(eltype(u))
   Tᵢ₋₁ = convert(eltype(u),ω₀)
   Tᵢ   = Tᵢ₋₁
@@ -101,6 +128,9 @@ end
   tᵢ₋₂ = t
 
   #stage 1
+  #this take advantage of the fact that cache.k === cache.fsalfirst
+  #and this has already been done i maxeig!  i.e. integrator.f(fsalfirst, uprev, p, t)
+  # integrator.f(k,uprev,p,t)
   @.. uᵢ₋₁ = uprev + (dt*ω₁/ω₀)*k
 
   for i in 2:mdeg
@@ -111,8 +141,25 @@ end
     integrator.f(k,uᵢ₋₁,p,tᵢ₋₁)
     @.. u = dt*μ*k + ν*uᵢ₋₁ + κ*uᵢ₋₂
     if (i > mdeg - 2) && alg_interpretation(integrator.alg) == :Stratonovich
-        (i == mdeg - 1) && (integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁); @.. u += α*gₘ₋₂*W.dW)
-        (i == mdeg) && (integrator.g(gₘ₋₁,uᵢ₋₁,p,tᵢ₋₁); @.. u += (β*gₘ₋₂ + γ*gₘ₋₁)*W.dW)
+      if i == mdeg - 1
+        integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁)
+        if typeof(W.dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+          @.. u += α*gₘ₋₂*W.dW
+        else
+          for j in 1:length(W.dW)
+            @.. u += (α*W.dW[j])*@view(gₘ₋₂[:,j])
+          end
+        end
+      else
+        integrator.g(gₘ₋₁,uᵢ₋₁,p,tᵢ₋₁)
+        if typeof(W.dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+          @.. u += (β*gₘ₋₂ + γ*gₘ₋₁)*W.dW
+        else
+          for j in 1:length(W.dW)
+            @.. u += (β*@view(gₘ₋₂[:,j]) + γ*@view(gₘ₋₁[:,j]))*W.dW[j]
+          end
+        end
+      end
     elseif (i == mdeg) && alg_interpretation(integrator.alg) == :Ito
       if typeof(W.dW) <: Number || is_diagonal_noise(integrator.sol.prob)
         integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁)
@@ -120,8 +167,10 @@ end
         integrator.g(gₘ₋₁,uᵢ₋₂,p,tᵢ₋₁)
         @.. u += gₘ₋₂*W.dW + 1/(2.0*sqrt(dt))*(gₘ₋₁ - gₘ₋₂)*(W.dW^2 - dt)
       else
-        integrator.g(gₘ₋₁,uᵢ₋₁,p,tᵢ₋₁)
-        @.. u += gₘ₋₁*W.dW
+        integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁)
+        for j in 1:length(W.dW)
+          @.. uᵢ += @view(gₘ₋₂[:,j])*(sqrt(dt)*W.dW[j])
+        end
       end
     end
 
@@ -361,7 +410,9 @@ end
 
   # stage 1
   @.. uᵢ₋₂ = uprev
-  integrator.f(k,uprev,p,t)
+  #this take advantage of the fact that cache.k === cache.fsalfirst
+  #and this has already been done i maxeig!  i.e. integrator.f(fsalfirst, uprev, p, t)
+  # integrator.f(k,uprev,p,t)
   @.. uᵢ₋₁ = uprev + α*dt*μ*k
 
   # stages 2 upto s-2
