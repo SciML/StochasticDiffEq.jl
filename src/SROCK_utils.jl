@@ -40,9 +40,9 @@ function maxeig!(integrator, cache::StochasticDiffEqConstantCache)
   integrator.eigen_est = 0
   for iter in 1:maxiter
     fz = integrator.f(z, p, t)
-    tmp = fz - fsalfirst
+    fz = fz - fsalfirst
 
-    Δ  = integrator.opts.internalnorm(tmp,t)
+    Δ  = integrator.opts.internalnorm(fz,t)
     eig_prev = integrator.eigen_est
     integrator.eigen_est = Δ/dz_u * safe
     # Convergence
@@ -55,7 +55,7 @@ function maxeig!(integrator, cache::StochasticDiffEqConstantCache)
     # Next `z`
     if Δ != zero(Δ)
       quot = dz_u/Δ
-      z = uprev + quot*tmp
+      z = uprev + quot*fz
     else
       # An arbitrary change on `z`
       if typeof(z) <: Number
@@ -71,7 +71,7 @@ end
 function maxeig!(integrator, cache::StochasticDiffEqMutableCache)
   isfirst = integrator.iter == 1 || integrator.u_modified
   @unpack t, dt, uprev, u, p = integrator
-  fz, z, atmp, fsalfirst = cache.k, cache.tmp, cache.atmp, cache.fsalfirst
+  fz, z, fsalfirst = cache.atmp, cache.tmp, cache.fsalfirst
   integrator.f(fsalfirst, uprev, p, t)
   ccache = cache.constantcache
   maxiter =  50
@@ -113,9 +113,9 @@ function maxeig!(integrator, cache::StochasticDiffEqMutableCache)
   for iter in 1:maxiter
     integrator.f(fz, z, p, t)
     # integrator.destats.nf += 1
-    @.. atmp = fz - fsalfirst
+    @.. fz = fz - fsalfirst
 
-    Δ  = integrator.opts.internalnorm(atmp,t)
+    Δ  = integrator.opts.internalnorm(fz,t)
     eig_prev = integrator.eigen_est
     integrator.eigen_est = Δ/dz_u * safe
     # Convergence
@@ -127,7 +127,7 @@ function maxeig!(integrator, cache::StochasticDiffEqMutableCache)
     # Next `z`
     if Δ != zero(Δ)
       quot = dz_u/Δ
-      @.. z = uprev + quot*atmp
+      @.. z = uprev + quot*fz
     else
       # An arbitrary change on `z`
       if typeof(z) <: Number
