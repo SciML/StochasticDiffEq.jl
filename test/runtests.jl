@@ -35,9 +35,6 @@ is_APPVEYOR = ( Sys.iswindows() && haskey(ENV,"APPVEYOR") )
     @time @testset "Utility Tests" begin include("utility_tests.jl") end
     @time @testset "Non-diagonal SDE Tests" begin include("nondiagonal_tests.jl") end
     @time @testset "No Index Tests" begin include("noindex_tests.jl") end
-    @time @testset "Adaptive Complex Mean Test" begin include("adaptive/sde_complex_adaptive_mean_test.jl") end
-    @time @testset "Utility Tests" begin include("utility_tests.jl") end
-    @time @testset "Non-diagonal SDE Tests" begin include("nondiagonal_tests.jl") end
   end
 
   if group == "All" || group == "Interface2"
