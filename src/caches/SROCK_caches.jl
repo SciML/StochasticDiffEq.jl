@@ -128,3 +128,37 @@ function alg_cache(alg::SROCKEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_proto
   constantcache = SROCKEMConstantCache{uEltypeNoUnits}(u)
   SROCKEMCache{typeof(u),typeof(k),typeof(Gₛ)}(u,uprev,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,tmp,k,fsalfirst,atmp,constantcache)
 end
+
+mutable struct SKSROCKConstantCache{zType,T} <: StochasticDiffEqConstantCache
+  mc::Vector{T}
+  mα::Vector{T}
+  zprev::zType
+end
+@cache struct SKSROCKCache{uType,rateType,noise_rate_prototype} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+  uᵢ₋₁::uType
+  uᵢ₋₂::uType
+  Gₛ::noise_rate_prototype
+  tmp::uType
+  k::rateType
+  fsalfirst::rateType
+  atmp::rateType
+  constantcache::SKSROCKConstantCache
+end
+
+function alg_cache(alg::SKSROCK,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  SKSROCKConstantCache{uEltypeNoUnits}(u)
+end
+
+function alg_cache(alg::SKSROCK,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  k = zero(rate_prototype)
+  uᵢ₋₁ = zero(u)
+  uᵢ₋₂ = zero(u)
+  Gₛ = zero(noise_rate_prototype)
+  tmp  = uᵢ₋₂             # Dummmy variables
+  fsalfirst = k
+  atmp = zero(rate_prototype)
+  constantcache = SKSROCKConstantCache{uEltypeNoUnits}(u)
+  SKSROCKCache(u,uprev,uᵢ₋₁,uᵢ₋₂,Gₛ,tmp,k,fsalfirst,atmp,constantcache)
+end
