@@ -954,10 +954,6 @@ end
   t̂₁ = t̂₂ = zero(t)
   tᵢ =  tᵢ₋₁ = tᵢ₋₂ = tₓ = t
   uᵢ₋₂ = uprev
-  # uᵢ₋₁ = uprev
-  # uᵢ = uprev
-  # uₓ = uprev
-
 
   for i in 0:mdeg+1
     if i == 1
@@ -1182,22 +1178,6 @@ end
 
     integrator.g(Gₛ,Û₁,p,t̂₁)
     @.. u += Gₛ*(W.dW - (W.dW^2 - dt)/(η₁*sqrt_dt))
-  # elseif is_diagonal_noise(integrator.sol.prob)
-
-  #   integrator.g(Gₛ,Û₁,p,t̂₁)
-  #   @.. uᵢ₋₁ = Gₛ*W.dW
-
-  #   @.. uₓ += uᵢ₋₁
-  #   integrator.f(k,uₓ,p,tₓ)
-  #   @.. u  += (1//2)*dt*k + Gₛ*((W.dW^2 - dt)/(η₁*sqrt_dt) - W.dW)
-  #   @.. Û₁ -= (1//2*η₁*sqrt_dt)*Gₛ
-  #   @.. Û₂ += (1//2*η₁*sqrt_dt)*Gₛ
-
-  #   integrator.g(Gₛ,Û₂,p,t̂₂)
-  #   @.. u += Gₛ*W.dW
-
-  #   Gₛ = integrator.g(Gₛ,Û₁,p,t̂₁)
-  #   @.. u -= Gₛ*((W.dW^2 - dt)/(η₁*sqrt_dt) - W.dW)
   else
       integrator.g(Gₛ,Û₁,p,t̂₁)
 
