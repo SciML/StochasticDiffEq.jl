@@ -54,6 +54,8 @@ struct SKSROCK <: StochasticDiffEqAlgorithm
   post_processing::Bool
 end
 SKSROCK(;post_processing=false) = SKSROCK(post_processing)
+
+struct TXSROCK2 <: StochasticDiffEqAlgorithm end
 ###############################################################################
 
 # Predictor Corrector
