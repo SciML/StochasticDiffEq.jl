@@ -5232,12 +5232,10 @@ function TXSROCK2ConstantCache{T}(zprev) where T
           ]
 
   mα = SVector{5,T}(1.0,1.0,1.25,1.29,1.33)
-  c1 = SVector{4, T}(0,0,-4.3,5.3)
-  c2 = SVector{4, T}(-4.7462, 5.2462, 0.2500, 0.2500)
 
-  # mn̂ = SVector{5,Int}(2,2,2,3,4)
-  # c1 = SVector{13, T}(0,1,0,1,-0.5,1.5,0,-1.8,2.8,0,0,-4.3,5.3)
-  # c2 = SVector{13, T}(−0.7538, 1.7538, −2.7962, 3.7962, −0.0817, 1.0817, −2.0400, 2.7066, 0.3334, −4.7462, 5.2462, 0.2500, 0.2500)
-  # TXSROCK2ConstantCache{typeof(zprev),T}(ms,recf,mσ,mτ,recf2,mα,mn̂,c1,c2,zprev,1,1,1)
-  TXSROCK2ConstantCache{typeof(zprev),T}(ms,recf,mσ,mτ,recf2,mα,c1,c2,zprev,1,1,1)
+  mn̂ = SVector{5,Int}(2,2,2,3,4)
+  c1 = SVector{13, T}(0,1,0,1,-0.5,1.5,0,-1.8,2.8,0,0,-4.3,5.3)
+  c2 = SVector{13, T}(-0.7538, 1.7538, -2.7962, 3.7962, -0.0817, 1.0817, -2.0400, 2.7066, 0.3334, -4.7462, 5.2462, 0.2500, 0.2500)
+  TXSROCK2ConstantCache{typeof(zprev),T}(ms,recf,mσ,mτ,recf2,mα,mn̂,c1,c2,zprev,1,1,1)
+  # TXSROCK2ConstantCache{typeof(zprev),T}(ms,recf,mσ,mτ,recf2,mα,c1,c2,zprev,1,1,1)
 end

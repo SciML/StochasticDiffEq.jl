@@ -55,7 +55,10 @@ struct SKSROCK <: StochasticDiffEqAlgorithm
 end
 SKSROCK(;post_processing=false) = SKSROCK(post_processing)
 
-struct TXSROCK2 <: StochasticDiffEqAlgorithm end
+struct TXSROCK2 <: StochasticDiffEqAlgorithm
+  version_num::Int
+end
+TXSROCK2(; version_num = 5) = TXSROCK2(version_num)
 ###############################################################################
 
 # Predictor Corrector
