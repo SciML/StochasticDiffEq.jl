@@ -170,12 +170,14 @@ mutable struct TXSROCK2ConstantCache{zType,T} <: StochasticDiffEqConstantCache
   mτ::SVector{46,T}
   recf2::Vector{T}
   mα::SVector{5, T}
-  c1::SVector{4, T}
-  c2::SVector{4, T}
+  mn̂::SVector{5, Int}
+  c1::SVector{13, T}
+  c2::SVector{13, T}
   zprev::zType
   mdeg::Int
   deg_index::Int
   start::Int
+  start_mcs::Int
 end
 
 @cache struct TXSROCK2Cache{uType,rateType,noiseRateType} <: StochasticDiffEqMutableCache
