@@ -162,3 +162,61 @@ function alg_cache(alg::SKSROCK,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_proto
   constantcache = SKSROCKConstantCache{uEltypeNoUnits}(u)
   SKSROCKCache(u,uprev,uᵢ₋₁,uᵢ₋₂,Gₛ,tmp,k,fsalfirst,atmp,constantcache)
 end
+
+mutable struct TXSROCK2ConstantCache{zType,T} <: StochasticDiffEqConstantCache
+  ms::SVector{46,Int}
+  recf::Vector{T}
+  mσ::SVector{46,T}
+  mτ::SVector{46,T}
+  recf2::Vector{T}
+  mα::SVector{5, T}
+  c1::SVector{4, T}
+  c2::SVector{4, T}
+  zprev::zType
+  mdeg::Int
+  deg_index::Int
+  start::Int
+end
+
+@cache struct TXSROCK2Cache{uType,rateType,noiseRateType} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+  uᵢ::uType
+  uₓ::uType
+  Û₁::uType
+  Û₂::uType
+  uᵢ₋₁::uType
+  uᵢ₋₂::uType
+  Gₛ::noiseRateType
+  Gₛ₁::noiseRateType
+  tmp::uType
+  k::rateType
+  fsalfirst::rateType
+  atmp::rateType
+  constantcache::TXSROCK2ConstantCache
+end
+
+function alg_cache(alg::TXSROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  TXSROCK2ConstantCache{uEltypeNoUnits}(u)
+end
+
+function alg_cache(alg::TXSROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  k = zero(rate_prototype)
+  uᵢ = zero(u)
+  uₓ = zero(u)
+  Û₁ = zero(u)
+  Û₂ = zero(u)
+  uᵢ₋₁ = zero(u)
+  uᵢ₋₂ = zero(u)
+  Gₛ = zero(noise_rate_prototype)
+  if typeof(ΔW) <: Number || length(ΔW) == 1 || is_diagonal_noise(prob)
+    Gₛ₁ = Gₛ
+  else
+    Gₛ₁ = zero(noise_rate_prototype)
+  end
+  tmp  = uᵢ₋₂            # these 2 variables are dummied to use same memory
+  fsalfirst = k
+  atmp = zero(rate_prototype)
+  constantcache = TXSROCK2ConstantCache{uEltypeNoUnits}(u)
+  TXSROCK2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype)}(u,uprev,uᵢ,uₓ,Û₁,Û₂,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,tmp,k,fsalfirst,atmp,constantcache)
+end
