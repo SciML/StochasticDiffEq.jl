@@ -932,8 +932,8 @@ end
   n̂ = 4
 
   maxeig!(integrator, cache)
-  cache.mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est+1.5)/0.611)+1))
-  cache.mdeg = max(30,min(cache.mdeg,200))-2
+  cache.mdeg = Int(floor(sqrt((dt*integrator.eigen_est+1.5)/0.611)+1))
+  cache.mdeg = max(4,min(cache.mdeg,200))-2
   choose_deg!(integrator,cache)
 
   mdeg      = cache.mdeg
@@ -942,22 +942,21 @@ end
   α = convert(eltype(u),1.33)
   σ = (1.0-α)*0.5 + α*mσ[deg_index]
 
-  τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
-  # τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mτ[deg_index]
+  # τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
+  τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mτ[deg_index]
 
   η₁ = (rand() < 0.5) ? -1 : 1
   η₂ = (rand() < 0.5) ? -1 : 1
   sqrt_dt   = sqrt(dt)
-  # sqrt_3    = sqrt(convert(eltype(W.dW),3))
 
   Û₁ = zero(u)
   Û₂ = zero(u)
   t̂₁ = t̂₂ = zero(t)
   tᵢ =  tᵢ₋₁ = tᵢ₋₂ = tₓ = t
   uᵢ₋₂ = uprev
-  uᵢ₋₁ = uprev
-  uᵢ = uprev
-  uₓ = uprev
+  # uᵢ₋₁ = uprev
+  # uᵢ = uprev
+  # uₓ = uprev
 
 
   for i in 0:mdeg+1
@@ -1063,7 +1062,7 @@ end
       for i in 1:length(W.dW)
         uᵢ₋₁ = Û₁ - (1//2*η₁*sqrt_dt)*@view(Gₛ[:,i])
         Gₛ₁ = integrator.g(uᵢ₋₁,p,t̂₁)
-        u += @view(Gₛ[:,i])*W.dW[i] + (@view(Gₛ[:,i]) - @view(Gₛ₁[:,i]))*((W.dW^2 - dt)/(η₁*sqrt_dt))
+        u += @view(Gₛ[:,i])*W.dW[i] + (@view(Gₛ[:,i]) - @view(Gₛ₁[:,i]))*((W.dW[i]^2 - dt)/(η₁*sqrt_dt))
       end
 
       for i in 1:length(W.dW)
@@ -1091,14 +1090,14 @@ end
   ccache = cache.constantcache
 
   maxeig!(integrator, cache)
-  ccache.mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est+1.5)/0.811)+1))
-  ccache.mdeg = max(10,min(ccache.mdeg,200))-2
+  ccache.mdeg = Int(floor(sqrt((dt*integrator.eigen_est+1.5)/0.61)+1))
+  ccache.mdeg = max(4,min(ccache.mdeg,200))-2
   choose_deg!(integrator,cache)
 
   mdeg      = ccache.mdeg
   start     = ccache.start
   deg_index = ccache.deg_index
-  α = mα[deg_index]
+  α = convert(eltype(u),1.33)
   σ = (1.0-α)*0.5 + α*mσ[deg_index]
 
   # τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
@@ -1108,19 +1107,18 @@ end
   η₁ = (rand() < 0.5) ? -1 : 1
   η₂ = (rand() < 0.5) ? -1 : 1
   sqrt_dt   = sqrt(dt)
-  # sqrt_3    = sqrt(convert(eltype(W.dW),3))
 
-  @. Û₁ = zero(eltype(u))
-  @. Û₂ = zero(eltype(u))
-  t̂₁ = t̂₂ = zero(t)
+  @.. Û₁ = zero(eltype(u))
+  @.. Û₂ = zero(eltype(u))
+  t̂₁ = t̂₂ = tₓ = zero(t)
   tᵢ =  tᵢ₋₁ = tᵢ₋₂ = t
 
   for i in 0:mdeg+1
     if i == 1
       μ = recf[start]
-      tᵢ = tᵢ₋₁ =t + α*dt*μ
+      tᵢ = tᵢ₋₁ = t + α*dt*μ
 
-      @..uᵢ₋₂ = uprev
+      @.. uᵢ₋₂ = uprev
       integrator.f(k,uprev,p,t)
       @.. uᵢ₋₁ = uprev + α*dt*μ*k
     elseif i > 1 && i <= mdeg
@@ -1130,7 +1128,7 @@ end
       @.. uᵢ   = α*dt*μ*k + ν*uᵢ₋₁ - κ*uᵢ₋₂
       tᵢ   = α*dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
     elseif i == mdeg + 1
-      μ, ν, κ = recf2[(deg_index-1)*4 + 1], 1 + recf2[(deg_index-1)*4 + 2], recf2[(deg_index-1)*4 + 2]
+      μ, ν, κ = recf2[(deg_index-1)*4 + 1], 1.0 + recf2[(deg_index-1)*4 + 2], recf2[(deg_index-1)*4 + 2]
 
       integrator.f(k,uᵢ₋₁,p,tᵢ₋₁)
 
@@ -1138,7 +1136,7 @@ end
       @.. uₓ   = uᵢ₋₁ + (2*τ*dt)*k
       @.. u    = uᵢ₋₁ + (2*σ - 1//2)*dt*k
 
-      @.. uᵢ   = α*dt*μ*uᵢ + ν*uᵢ₋₁ - κ*uᵢ₋₂
+      @.. uᵢ   = α*dt*μ*k + ν*uᵢ₋₁ - κ*uᵢ₋₂
       tᵢ   = α*dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
     end
 
@@ -1148,21 +1146,21 @@ end
         @.. Û₁ += c1[j]*uprev
         t̂₁ += c1[j]*t
         @.. Û₂ += c2[j]*uprev
-        t̂₂ += c1[j]*t
+        t̂₂ += c2[j]*t
       elseif i  == 1
         @.. Û₁ += c1[j]*uᵢ₋₁
         t̂₁ += c1[j]*tᵢ₋₁
         @.. Û₂ += c2[j]*uᵢ₋₁
-        t̂₂ += c1[j]*tᵢ₋₁
+        t̂₂ += c2[j]*tᵢ₋₁
       else
         @.. Û₁ += c1[j]*uᵢ
         t̂₁ += c1[j]*tᵢ
         @.. Û₂ += c2[j]*uᵢ
-        t̂₂ += c1[j]*tᵢ
+        t̂₂ += c2[j]*tᵢ
       end
     end
 
-    if i < mdeg + 1
+    if i > 1 && i < mdeg + 1
       @.. uᵢ₋₂ = uᵢ₋₁
       @.. uᵢ₋₁ = uᵢ
       tᵢ₋₂ = tᵢ₋₁
@@ -1205,7 +1203,7 @@ end
 
       for i in 1:length(W.dW)
         (i == 1) && (@.. uᵢ₋₁ = @view(Gₛ[:,i])*W.dW[i])
-        (i != 1) && (@.. uᵢ₋₁ += @view(Gₛ[:,i])*W.dW[i])
+        (i > 1) && (@.. uᵢ₋₁ += @view(Gₛ[:,i])*W.dW[i])
       end
 
       @.. uₓ += uᵢ₋₁
@@ -1216,7 +1214,7 @@ end
       for i in 1:length(W.dW)
         @.. uᵢ₋₁ = Û₁ - (1//2*η₁*sqrt_dt)*@view(Gₛ[:,i])
         integrator.g(Gₛ₁,uᵢ₋₁,p,t̂₁)
-        @.. u += @view(Gₛ[:,i])*W.dW[i] + (@view(Gₛ[:,i]) - @view(Gₛ₁[:,i]))*((W.dW^2 - dt)/(η₁*sqrt_dt))
+        @.. u += @view(Gₛ₁[:,i])*W.dW[i] + (@view(Gₛ[:,i]) - @view(Gₛ₁[:,i]))*((W.dW[i]^2 - dt)/(η₁*sqrt_dt))
       end
 
       for i in 1:length(W.dW)
@@ -1227,6 +1225,7 @@ end
 
           @.. uᵢ₋₁ += @view(Gₛ[:,j])*WikJ
         end
+        @.. uᵢ₋₁ += Û₂
         integrator.g(Gₛ₁,uᵢ₋₁,p,t̂₂)
         @.. u += @view(Gₛ₁[:,i])*W.dW[i]
       end
