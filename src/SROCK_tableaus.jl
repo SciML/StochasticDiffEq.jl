@@ -5233,7 +5233,7 @@ function TXSROCK2ConstantCache{T}(zprev) where T
 
   mα = SVector{5,T}(1.0,1.0,1.25,1.29,1.33)
   c1 = SVector{4, T}(0,0,-4.3,5.3)
-  c2 = SVector{4, T}(−4.7462, 5.2462, 0.2500, 0.2500)
+  c2 = SVector{4, T}(-4.7462, 5.2462, 0.2500, 0.2500)
 
   # mn̂ = SVector{5,Int}(2,2,2,3,4)
   # c1 = SVector{13, T}(0,1,0,1,-0.5,1.5,0,-1.8,2.8,0,0,-4.3,5.3)

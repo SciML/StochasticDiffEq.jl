@@ -923,7 +923,7 @@ end
   integrator.u = u
 end
 
-@muladd function perform_step!(integrator,cache::TXTXSROCK2ConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::TXSROCK2ConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
   # @unpack recf, recf2, mα, mσ, mτ, mn̂, c1, c2 = cache
 
@@ -933,7 +933,7 @@ end
 
   maxeig!(integrator, cache)
   cache.mdeg = Int(floor(sqrt((dt*integrator.eigen_est+1.5)/0.611)+1))
-  cache.mdeg = max(n̂,min(cache.mdeg,200))-2
+  cache.mdeg = max(10,min(cache.mdeg,200))-2
   choose_deg!(integrator,cache)
 
   mdeg      = cache.mdeg
@@ -1097,7 +1097,7 @@ end
 
   maxeig!(integrator, cache)
   ccache.mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est+1.5)/0.811)+1))
-  ccache.mdeg = max(n̂,min(ccache.mdeg,200))-2
+  ccache.mdeg = max(10,min(ccache.mdeg,200))-2
   choose_deg!(integrator,cache)
 
   mdeg      = ccache.mdeg
