@@ -166,7 +166,7 @@ function choose_deg!(integrator,cache::T) where T
     end
   end
 
-  if integrator.alg isa SROCK2
+  if typeof(integrator.alg) <: Union{SROCK2, TXSROCK2}
     start = 1
     @inbounds for i in 1:size(cache.ms,1)
       if cache.ms[i] >= cache.mdeg

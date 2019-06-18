@@ -932,8 +932,8 @@ end
   n̂ = 4
 
   maxeig!(integrator, cache)
-  cache.mdeg = Int(floor(sqrt((dt*integrator.eigen_est+1.5)/0.611)+1))
-  cache.mdeg = max(10,min(cache.mdeg,200))-2
+  cache.mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est+1.5)/0.611)+1))
+  cache.mdeg = max(30,min(cache.mdeg,200))-2
   choose_deg!(integrator,cache)
 
   mdeg      = cache.mdeg
@@ -942,24 +942,29 @@ end
   α = convert(eltype(u),1.33)
   σ = (1.0-α)*0.5 + α*mσ[deg_index]
 
-  # τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
-  τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mτ[deg_index]
+  τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
+  # τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mτ[deg_index]
 
   η₁ = (rand() < 0.5) ? -1 : 1
   η₂ = (rand() < 0.5) ? -1 : 1
   sqrt_dt   = sqrt(dt)
   # sqrt_3    = sqrt(convert(eltype(W.dW),3))
 
-  Û₁ = Û₂ = zero(u)
+  Û₁ = zero(u)
+  Û₂ = zero(u)
   t̂₁ = t̂₂ = zero(t)
-  tᵢ =  tᵢ₋₁ = tᵢ₋₂ = t
+  tᵢ =  tᵢ₋₁ = tᵢ₋₂ = tₓ = t
+  uᵢ₋₂ = uprev
+  uᵢ₋₁ = uprev
+  uᵢ = uprev
+  uₓ = uprev
+
 
   for i in 0:mdeg+1
     if i == 1
       μ = recf[start]
-      tᵢ = tᵢ₋₁ =t + α*dt*μ
+      tᵢ = tᵢ₋₁ = t + α*dt*μ
 
-      uᵢ₋₂ = uprev
       uᵢ = integrator.f(uprev,p,t)
       uᵢ₋₁ = uprev + α*dt*μ*uᵢ
     elseif i > 1 && i <= mdeg
@@ -987,37 +992,27 @@ end
         Û₁ += c1[j]*uprev
         t̂₁ += c1[j]*t
         Û₂ += c2[j]*uprev
-        t̂₂ += c1[j]*t
+        t̂₂ += c2[j]*t
       elseif i  == 1
         Û₁ += c1[j]*uᵢ₋₁
         t̂₁ += c1[j]*tᵢ₋₁
         Û₂ += c2[j]*uᵢ₋₁
-        t̂₂ += c1[j]*tᵢ₋₁
+        t̂₂ += c2[j]*tᵢ₋₁
       else
         Û₁ += c1[j]*uᵢ
         t̂₁ += c1[j]*tᵢ
         Û₂ += c2[j]*uᵢ
-        t̂₂ += c1[j]*tᵢ
+        t̂₂ += c2[j]*tᵢ
       end
     end
 
-    if i < mdeg + 1
+    if i > 1 && i < mdeg + 1
       uᵢ₋₂ = uᵢ₋₁
       uᵢ₋₁ = uᵢ
       tᵢ₋₂ = tᵢ₋₁
       tᵢ₋₁ = tᵢ
     end
   end
-
-  # #stage s
-  # μ, κ = recf2[(deg_index-1)*4 + 3], recf2[(deg_index-1)*4 + 4]
-  # ν    = 1.0 + κ
-  # uᵢ   = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
-  # uᵢ   = α*dt*μ*uᵢ + ν*uᵢ₋₁ - κ*uᵢ₋₂
-  # tᵢ   = α*dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
-
-  # Now uᵢ₋₂ = uₛ₋₂, uᵢ₋₁ = uₛ₋₁, uᵢ = uₛ
-  # Similarly tᵢ₋₂ = tₛ₋₂, tᵢ₋₁ = tₛ₋₁, tᵢ = tₛ
 
   if (typeof(W.dW) <: Number) || (length(W.dW) == 1)
     Gₛ = integrator.g(Û₁,p,t̂₁)
