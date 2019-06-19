@@ -7,7 +7,7 @@ import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_wave,
 Random.seed!(100)
 dts = (1/2) .^ (10:-1:2) #14->7 good plot
 
-println("prob_sde_wave")
+print("prob_sde_wave")
 prob = prob_sde_wave
 sim  = test_convergence(dts,prob,ImplicitEM(),numMonte=Int(1e1))
 @test abs(sim.𝒪est[:l2]-.5) < 0.2
@@ -49,6 +49,16 @@ sim2 = test_convergence(dts,prob,SROCKEM(),numMonte=Int(2e2))
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 sim2 = test_convergence(dts,prob,SKSROCK(),numMonte=Int(2e2))
 @test abs(sim2.𝒪est[:l∞]-0.5) < 0.2
+sim = test_convergence(dts,prob,TXSROCK2(version_num=1),numMonte=Int(2e2))
+@test abs(sim.𝒪est[:l∞]- 1) < 0.2
+sim = test_convergence(dts,prob,TXSROCK2(version_num=2),numMonte=Int(2e2))
+@test abs(sim.𝒪est[:l∞]- 1) < 0.2
+sim = test_convergence(dts,prob,TXSROCK2(version_num=3),numMonte=Int(2e2))
+@test abs(sim.𝒪est[:l∞]- 1) < 0.2
+sim = test_convergence(dts,prob,TXSROCK2(version_num=4),numMonte=Int(2e2))
+@test abs(sim.𝒪est[:l∞]- 1) < 0.2
+sim = test_convergence(dts,prob,TXSROCK2(version_num=5),numMonte=Int(2e2))
+@test abs(sim.𝒪est[:l∞]- 1) < 0.2
 sim3 = test_convergence(dts,prob,SRI(),numMonte=Int(1e1))
 @test abs(sim3.𝒪est[:final]-1.5) < 0.3
 sim4 = test_convergence(dts,prob,SRIW1(),numMonte=Int(1e1))
@@ -59,8 +69,9 @@ sim6 = test_convergence(dts,prob,SOSRI(),numMonte=Int(1e1))
 @test abs(sim6.𝒪est[:final]-1.5) < 0.3
 sim7 = test_convergence(dts,prob,SOSRI2(),numMonte=Int(1e1))
 @test abs(sim7.𝒪est[:final]-1.5) < 0.3
+println()
 
-println("prob_sde_cubic")
+print("prob_sde_cubic")
 prob = prob_sde_cubic
 sim  = test_convergence(dts,prob,EM(),numMonte=Int(1e1))
 @test abs(sim.𝒪est[:l2]-.5) < 0.2
@@ -98,6 +109,16 @@ sim2 = test_convergence(dts,prob,SROCKEM(),numMonte=Int(2e2))
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 sim2 = test_convergence(dts,prob,SKSROCK(),numMonte=Int(2e2))
 @test abs(sim2.𝒪est[:l∞]-0.5) < 0.2
+sim = test_convergence(dts,prob,TXSROCK2(version_num=1),numMonte=Int(2e2))
+@test abs(sim.𝒪est[:l∞]- 1) < 0.2
+sim = test_convergence(dts,prob,TXSROCK2(version_num=2),numMonte=Int(2e2))
+@test abs(sim.𝒪est[:l∞]- 1) < 0.2
+sim = test_convergence(dts,prob,TXSROCK2(version_num=3),numMonte=Int(2e2))
+@test abs(sim.𝒪est[:l∞]- 1) < 0.2
+sim = test_convergence(dts,prob,TXSROCK2(version_num=4),numMonte=Int(2e2))
+@test abs(sim.𝒪est[:l∞]- 1) < 0.2
+sim = test_convergence(dts,prob,TXSROCK2(version_num=5),numMonte=Int(2e2))
+@test abs(sim.𝒪est[:l∞]- 1) < 0.2
 sim3 = test_convergence(dts,prob,SRI(),numMonte=Int(1e1))
 @test abs(sim3.𝒪est[:final]-1.5) < 0.3
 sim4 = test_convergence(dts,prob,SRIW1(),numMonte=Int(1e1))
@@ -108,8 +129,9 @@ sim6 = test_convergence(dts,prob,SOSRI(),numMonte=Int(1e1))
 @test abs(sim6.𝒪est[:final]-1.5) < 0.3
 sim7 = test_convergence(dts,prob,SOSRI2(),numMonte=Int(1e1))
 @test abs(sim7.𝒪est[:final]-1.5) < 0.3
+println()
 
-println("prob_sde_additive")
+print("prob_sde_additive")
 prob = prob_sde_additive
 sim  = test_convergence(dts,prob,EM(),numMonte=Int(1e1))
 @test abs(sim.𝒪est[:l2]-1) < 0.2
@@ -148,6 +170,16 @@ sim2 = test_convergence(dts,prob,SROCK2(),numMonte=Int(1e2))
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 sim2 = test_convergence(dts,prob,SKSROCK(),numMonte=Int(1e2))
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
+sim = test_convergence(dts,prob,TXSROCK2(version_num=1),numMonte=Int(1e2))
+@test abs(sim.𝒪est[:l∞]- 1) < 0.2
+sim = test_convergence(dts,prob,TXSROCK2(version_num=2),numMonte=Int(1e2))
+@test abs(sim.𝒪est[:l∞]- 1) < 0.2
+sim = test_convergence(dts,prob,TXSROCK2(version_num=3),numMonte=Int(1e2))
+@test abs(sim.𝒪est[:l∞]- 1) < 0.2
+sim = test_convergence(dts,prob,TXSROCK2(version_num=4),numMonte=Int(1e2))
+@test abs(sim.𝒪est[:l∞]- 1) < 0.2
+sim = test_convergence(dts,prob,TXSROCK2(version_num=5),numMonte=Int(1e2))
+@test abs(sim.𝒪est[:l∞]- 1) < 0.2
 sim3 = test_convergence(dts,prob,SRI(),numMonte=Int(1e1))
 @test abs(sim3.𝒪est[:final]-2) < 0.3
 sim3 = test_convergence(dts,prob,SRIW2(),numMonte=Int(1e1))
