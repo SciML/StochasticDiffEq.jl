@@ -923,7 +923,7 @@ end
   integrator.u = u
 end
 
-@muladd function perform_step!(integrator,cache::TXSROCK2ConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::TangXiaoSROCK2ConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack recf, recf2, mα, mσ, mτ, mn̂, c1, c2 = cache
 
@@ -1077,7 +1077,7 @@ end
   integrator.u = u
 end
 
-@muladd function perform_step!(integrator,cache::TXSROCK2Cache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::TangXiaoSROCK2Cache,f=integrator.f)
   @unpack uᵢ, uₓ, uᵢ₋₁, uᵢ₋₂, Û₁, Û₂, k, Gₛ, Gₛ₁ = cache
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack recf, recf2, mα, mσ, mτ, mn̂, c1, c2 = cache.constantcache

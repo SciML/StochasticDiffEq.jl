@@ -163,7 +163,7 @@ function alg_cache(alg::SKSROCK,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_proto
   SKSROCKCache(u,uprev,uᵢ₋₁,uᵢ₋₂,Gₛ,tmp,k,fsalfirst,atmp,constantcache)
 end
 
-mutable struct TXSROCK2ConstantCache{zType,T} <: StochasticDiffEqConstantCache
+mutable struct TangXiaoSROCK2ConstantCache{zType,T} <: StochasticDiffEqConstantCache
   ms::SVector{46,Int}
   recf::Vector{T}
   mσ::SVector{46,T}
@@ -180,7 +180,7 @@ mutable struct TXSROCK2ConstantCache{zType,T} <: StochasticDiffEqConstantCache
   start_mcs::Int
 end
 
-@cache struct TXSROCK2Cache{uType,rateType,noiseRateType} <: StochasticDiffEqMutableCache
+@cache struct TangXiaoSROCK2Cache{uType,rateType,noiseRateType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   uᵢ::uType
@@ -195,14 +195,14 @@ end
   k::rateType
   fsalfirst::rateType
   atmp::rateType
-  constantcache::TXSROCK2ConstantCache
+  constantcache::TangXiaoSROCK2ConstantCache
 end
 
-function alg_cache(alg::TXSROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
-  TXSROCK2ConstantCache{uEltypeNoUnits}(u)
+function alg_cache(alg::TangXiaoSROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  TangXiaoSROCK2ConstantCache{uEltypeNoUnits}(u)
 end
 
-function alg_cache(alg::TXSROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+function alg_cache(alg::TangXiaoSROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
   k = zero(rate_prototype)
   uᵢ = zero(u)
   uₓ = zero(u)
@@ -219,6 +219,6 @@ function alg_cache(alg::TXSROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prot
   tmp  = uᵢ₋₂            # these 2 variables are dummied to use same memory
   fsalfirst = k
   atmp = zero(rate_prototype)
-  constantcache = TXSROCK2ConstantCache{uEltypeNoUnits}(u)
-  TXSROCK2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype)}(u,uprev,uᵢ,uₓ,Û₁,Û₂,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,tmp,k,fsalfirst,atmp,constantcache)
+  constantcache = TangXiaoSROCK2ConstantCache{uEltypeNoUnits}(u)
+  TangXiaoSROCK2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype)}(u,uprev,uᵢ,uₓ,Û₁,Û₂,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,tmp,k,fsalfirst,atmp,constantcache)
 end

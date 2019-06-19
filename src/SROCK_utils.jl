@@ -180,7 +180,7 @@ function choose_deg!(integrator,cache::T) where T
     end
   end
 
-  if integrator.alg isa TXSROCK2
+  if integrator.alg isa TangXiaoSROCK2
     start = 1
     @inbounds for i in 1:size(cache.ms,1)
       if cache.ms[i] >= cache.mdeg

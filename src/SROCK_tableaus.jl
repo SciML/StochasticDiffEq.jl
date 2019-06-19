@@ -2849,7 +2849,7 @@ function SKSROCKConstantCache{T}(zprev) where T
   SKSROCKConstantCache{typeof(zprev),T}(mc, mα, zprev)
 end
 
-function TXSROCK2ConstantCache{T}(zprev) where T
+function TangXiaoSROCK2ConstantCache{T}(zprev) where T
   ms = SVector{46, Int}(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,24,26,28,30,33,36,39,43,
                         47,51,56,61,66,72,78,85,93,102,112,123,135,148,163,180,198)
   recf = [  0.1794612899156781e+00,0.9326607661089206e-01,
@@ -5236,6 +5236,5 @@ function TXSROCK2ConstantCache{T}(zprev) where T
   mn̂ = SVector{5,Int}(2,2,2,3,4)
   c1 = SVector{13, T}(0,1,0,1,-0.5,1.5,0,-1.8,2.8,0,0,-4.3,5.3)
   c2 = SVector{13, T}(-0.7538, 1.7538, -2.7962, 3.7962, -0.0817, 1.0817, -2.0400, 2.7066, 0.3334, -4.7462, 5.2462, 0.2500, 0.2500)
-  TXSROCK2ConstantCache{typeof(zprev),T}(ms,recf,mσ,mτ,recf2,mα,mn̂,c1,c2,zprev,1,1,1,1)
-  # TXSROCK2ConstantCache{typeof(zprev),T}(ms,recf,mσ,mτ,recf2,mα,c1,c2,zprev,1,1,1)
+  TangXiaoSROCK2ConstantCache{typeof(zprev),T}(ms,recf,mσ,mτ,recf2,mα,mn̂,c1,c2,zprev,1,1,1,1)
 end
