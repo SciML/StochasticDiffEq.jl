@@ -557,9 +557,9 @@ end
 
   maxeig!(integrator, cache)
   if integrator.alg.strong_order_1
-    cache.mdeg = Int(floor(sqrt(2*dt*integrator.eigen_est/0.19)+1))
+    cache.mdeg = Int(floor(sqrt(dt*integrator.eigen_est/0.19)+1))
   else
-    cache.mdeg = Int(floor(sqrt(2*dt*integrator.eigen_est/0.33)+1))
+    cache.mdeg = Int(floor(sqrt(dt*integrator.eigen_est/0.33)+1))
   end
   cache.mdeg = max(3,min(cache.mdeg,200))
   choose_deg!(integrator,cache)
@@ -658,9 +658,9 @@ end
   ccache = cache.constantcache
   maxeig!(integrator, cache)
   if integrator.alg.strong_order_1
-    ccache.mdeg = Int(floor(sqrt(2*dt*integrator.eigen_est/0.19)+1))
+    ccache.mdeg = Int(floor(sqrt(dt*integrator.eigen_est/0.19)+1))
   else
-    ccache.mdeg = Int(floor(sqrt(2*dt*integrator.eigen_est/0.33)+1))
+    ccache.mdeg = Int(floor(sqrt(dt*integrator.eigen_est/0.33)+1))
   end
   ccache.mdeg = max(3,min(ccache.mdeg,200))
   choose_deg!(integrator,cache)
@@ -750,7 +750,7 @@ end
 
   maxeig!(integrator, cache)
   η = convert(typeof(t),0.05)
-  mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est + 1.5)/(2-η*4/3))+1))
+  mdeg = Int(floor(sqrt((dt*integrator.eigen_est + 1.5)/(2-η*4/3))+1))
   mdeg = max(3,min(mdeg,200))
 
   ω₀ = 1.0 + (η/(mdeg^2))
@@ -839,7 +839,7 @@ end
   ccache = cache.constantcache
   maxeig!(integrator, cache)
   η = convert(typeof(t),0.05)
-  mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est + 1.5)/(2-η*4/3))+1))
+  mdeg = Int(floor(sqrt((dt*integrator.eigen_est + 1.5)/(2-η*4/3))+1))
   mdeg = max(3,min(mdeg,200))
 
   ω₀ = 1.0 + (η/(mdeg^2))
