@@ -193,8 +193,8 @@ function choose_deg!(integrator,cache::T) where T
       end
     end
 
+    start = 1
     @inbounds for i in 1:5
-      start = 1
       if integrator.alg.version_num == i
         cache.start_mcs = start
         break

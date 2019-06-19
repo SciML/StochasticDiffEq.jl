@@ -925,21 +925,21 @@ end
 
 @muladd function perform_step!(integrator,cache::TXSROCK2ConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
-  # @unpack recf, recf2, mα, mσ, mτ, mn̂, c1, c2 = cache
+  @unpack recf, recf2, mα, mσ, mτ, mn̂, c1, c2 = cache
 
-  @unpack recf, recf2, mα, mσ, mτ, c1, c2 = cache
-
-  n̂ = 4
+  n̂ = mn̂[integrator.alg.version_num]
 
   maxeig!(integrator, cache)
-  cache.mdeg = Int(floor(sqrt((dt*integrator.eigen_est+1.5)/0.611)+1))
+  (integrator.alg.version_num <= 2) && (cache.mdeg = Int(floor(sqrt((dt*integrator.eigen_est+1.5)/0.811)+1)))
+  (integrator.alg.version_num > 2) && (cache.mdeg = Int(floor(sqrt((dt*integrator.eigen_est+1.5)/0.611)+1)))
+
   cache.mdeg = max(4,min(cache.mdeg,200))-2
   choose_deg!(integrator,cache)
 
   mdeg      = cache.mdeg
   start     = cache.start
   deg_index = cache.deg_index
-  α = convert(eltype(u),1.33)
+  α = mα[integrator.alg.version_num]
   σ = (1.0-α)*0.5 + α*mσ[deg_index]
 
   # τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
@@ -983,6 +983,7 @@ end
 
     j = i - mdeg - 1 + n̂
     if j > 0
+      j += cache.start_mcs - 1
       if i == 0
         Û₁ += c1[j]*uprev
         t̂₁ += c1[j]*t
@@ -1000,7 +1001,6 @@ end
         t̂₂ += c2[j]*tᵢ
       end
     end
-
     if i > 1 && i < mdeg + 1
       uᵢ₋₂ = uᵢ₋₁
       uᵢ₋₁ = uᵢ
@@ -1058,7 +1058,7 @@ end
       for i in 1:length(W.dW)
         uᵢ₋₁ = Û₁ - (1//2*η₁*sqrt_dt)*@view(Gₛ[:,i])
         Gₛ₁ = integrator.g(uᵢ₋₁,p,t̂₁)
-        u += @view(Gₛ[:,i])*W.dW[i] + (@view(Gₛ[:,i]) - @view(Gₛ₁[:,i]))*((W.dW[i]^2 - dt)/(η₁*sqrt_dt))
+        u += @view(Gₛ₁[:,i])*W.dW[i] + (@view(Gₛ[:,i]) - @view(Gₛ₁[:,i]))*((W.dW[i]^2 - dt)/(η₁*sqrt_dt))
       end
 
       for i in 1:length(W.dW)
@@ -1080,13 +1080,14 @@ end
 @muladd function perform_step!(integrator,cache::TXSROCK2Cache,f=integrator.f)
   @unpack uᵢ, uₓ, uᵢ₋₁, uᵢ₋₂, Û₁, Û₂, k, Gₛ, Gₛ₁ = cache
   @unpack t,dt,uprev,u,W,p = integrator
-  @unpack recf, recf2, mα, mσ, mτ, c1, c2 = cache.constantcache
+  @unpack recf, recf2, mα, mσ, mτ, mn̂, c1, c2 = cache.constantcache
 
-  n̂ = 4
+  n̂ = mn̂[integrator.alg.version_num]
   ccache = cache.constantcache
 
   maxeig!(integrator, cache)
-  ccache.mdeg = Int(floor(sqrt((dt*integrator.eigen_est+1.5)/0.61)+1))
+  (integrator.alg.version_num <= 2) && (ccache.mdeg = Int(floor(sqrt((dt*integrator.eigen_est+1.5)/0.811)+1)))
+  (integrator.alg.version_num > 2) && (ccache.mdeg = Int(floor(sqrt((dt*integrator.eigen_est+1.5)/0.611)+1)))
   ccache.mdeg = max(4,min(ccache.mdeg,200))-2
   choose_deg!(integrator,cache)
 
@@ -1138,6 +1139,7 @@ end
 
     j = i - mdeg - 1 + n̂
     if j > 0
+      j += ccache.start_mcs - 1
       if i == 0
         @.. Û₁ += c1[j]*uprev
         t̂₁ += c1[j]*t
