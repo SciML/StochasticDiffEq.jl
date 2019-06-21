@@ -254,6 +254,7 @@ end
 
 function do_newJ(integrator, alg::T, cache, repeat_step)::Bool where T
   repeat_step && return false
+  !integrator.opts.adaptive && return true
   !alg_can_repeat_jac(alg) && return true
   isnewton = T <: Union{StochasticDiffEqNewtonAdaptiveAlgorithm, StochasticDiffEqNewtonAlgorithm}
   isnewton && ( nlstatus = DiffEqBase.get_status(cache.nlsolver) )
