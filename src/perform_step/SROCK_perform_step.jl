@@ -922,3 +922,296 @@ end
 
   integrator.u = u
 end
+
+@muladd function perform_step!(integrator,cache::TangXiaoSROCK2ConstantCache,f=integrator.f)
+  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack recf, recf2, mα, mσ, mτ, mn̂, c1, c2 = cache
+
+  n̂ = mn̂[integrator.alg.version_num]
+
+  maxeig!(integrator, cache)
+  (integrator.alg.version_num <= 2) && (cache.mdeg = Int(floor(sqrt((dt*integrator.eigen_est+1.5)/0.811)+1)))
+  (integrator.alg.version_num > 2) && (cache.mdeg = Int(floor(sqrt((dt*integrator.eigen_est+1.5)/0.611)+1)))
+
+  cache.mdeg = max(4,min(cache.mdeg,200))-2
+  choose_deg!(integrator,cache)
+
+  mdeg      = cache.mdeg
+  start     = cache.start
+  deg_index = cache.deg_index
+  α = mα[integrator.alg.version_num]
+  σ = (1.0-α)*0.5 + α*mσ[deg_index]
+
+  # τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
+  τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mτ[deg_index]
+
+  η₁ = (rand() < 0.5) ? -1 : 1
+  η₂ = (rand() < 0.5) ? -1 : 1
+  sqrt_dt   = sqrt(dt)
+
+  Û₁ = zero(u)
+  Û₂ = zero(u)
+  t̂₁ = t̂₂ = zero(t)
+  tᵢ =  tᵢ₋₁ = tᵢ₋₂ = tₓ = t
+  uᵢ₋₂ = uprev
+
+  for i in 0:mdeg+1
+    if i == 1
+      μ = recf[start]
+      tᵢ = tᵢ₋₁ = t + α*dt*μ
+
+      uᵢ = integrator.f(uprev,p,t)
+      uᵢ₋₁ = uprev + α*dt*μ*uᵢ
+    elseif i > 1 && i <= mdeg
+      μ, ν, κ = recf[start + 2*(i-2) + 1], 1.0 + recf[start + 2*(i-2) + 2], recf[start + 2*(i-2) + 2]
+
+      uᵢ   = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
+      uᵢ   = α*dt*μ*uᵢ + ν*uᵢ₋₁ - κ*uᵢ₋₂
+      tᵢ   = α*dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
+    elseif i == mdeg + 1
+      μ, ν, κ = recf2[(deg_index-1)*4 + 1], 1 + recf2[(deg_index-1)*4 + 2], recf2[(deg_index-1)*4 + 2]
+
+      uᵢ   = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
+
+      tₓ   = tᵢ₋₁ + 2*τ*dt
+      uₓ   = uᵢ₋₁ + (2*τ*dt)*uᵢ
+      u    = uᵢ₋₁ + (2*σ - 1//2)*dt*uᵢ
+
+      uᵢ   = α*dt*μ*uᵢ + ν*uᵢ₋₁ - κ*uᵢ₋₂
+      tᵢ   = α*dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
+    end
+
+    j = i - mdeg - 1 + n̂
+    if j > 0
+      j += cache.start_mcs - 1
+      if i == 0
+        Û₁ += c1[j]*uprev
+        t̂₁ += c1[j]*t
+        Û₂ += c2[j]*uprev
+        t̂₂ += c2[j]*t
+      elseif i  == 1
+        Û₁ += c1[j]*uᵢ₋₁
+        t̂₁ += c1[j]*tᵢ₋₁
+        Û₂ += c2[j]*uᵢ₋₁
+        t̂₂ += c2[j]*tᵢ₋₁
+      else
+        Û₁ += c1[j]*uᵢ
+        t̂₁ += c1[j]*tᵢ
+        Û₂ += c2[j]*uᵢ
+        t̂₂ += c2[j]*tᵢ
+      end
+    end
+    if i > 1 && i < mdeg + 1
+      uᵢ₋₂ = uᵢ₋₁
+      uᵢ₋₁ = uᵢ
+      tᵢ₋₂ = tᵢ₋₁
+      tᵢ₋₁ = tᵢ
+    end
+  end
+
+  if (typeof(W.dW) <: Number) || (length(W.dW) == 1)
+    Gₛ = integrator.g(Û₁,p,t̂₁)
+    uₓ += Gₛ*W.dW
+
+    uₓ = integrator.f(uₓ,p,tₓ)
+    u  += (1//2*dt)*uₓ + Gₛ*((W.dW^2 - dt)/(η₁*sqrt_dt) - W.dW)
+    Û₁ -= (η₁*sqrt_dt/2)*Gₛ
+    Û₂ += (η₁*sqrt_dt/2)*Gₛ
+
+    Gₛ = integrator.g(Û₂,p,t̂₂)
+    u += Gₛ*W.dW
+
+    Gₛ = integrator.g(Û₁,p,t̂₁)
+    u += Gₛ*(W.dW - (W.dW^2 - dt)/(η₁*sqrt_dt))
+  elseif is_diagonal_noise(integrator.sol.prob)
+
+    Gₛ = integrator.g(Û₁,p,t̂₁)
+    uᵢ₋₁ = Gₛ .* W.dW
+
+    Û₁ -= (1//2*η₁*sqrt_dt)*Gₛ
+    Û₂ += (1//2*η₁*sqrt_dt)*Gₛ
+
+    uₓ += uᵢ₋₁
+    uₓ = integrator.f(uₓ,p,tₓ)
+    u  += (1//2)*dt*uₓ
+
+    u .+= Gₛ .* ((W.dW .^ 2 .- dt) ./ (η₁*sqrt_dt) .- W.dW)
+
+    Gₛ = integrator.g(Û₂,p,t̂₂)
+    u .+= Gₛ .* W.dW
+
+    Gₛ = integrator.g(Û₁,p,t̂₁)
+    u .-= Gₛ .* ((W.dW .^ 2 .- dt) ./ (η₁*sqrt_dt) .- W.dW)
+  else
+      Gₛ = integrator.g(Û₁,p,t̂₁)
+
+      for i in 1:length(W.dW)
+        (i == 1) && (uᵢ₋₁ = @view(Gₛ[:,i])*W.dW[i])
+        (i != 1) && (uᵢ₋₁ += @view(Gₛ[:,i])*W.dW[i])
+      end
+
+      uₓ += uᵢ₋₁
+      uₓ = integrator.f(uₓ,p,tₓ)
+
+      u  += (1//2*dt)*uₓ - uᵢ₋₁
+
+      for i in 1:length(W.dW)
+        uᵢ₋₁ = Û₁ - (1//2*η₁*sqrt_dt)*@view(Gₛ[:,i])
+        Gₛ₁ = integrator.g(uᵢ₋₁,p,t̂₁)
+        u += @view(Gₛ₁[:,i])*W.dW[i] + (@view(Gₛ[:,i]) - @view(Gₛ₁[:,i]))*((W.dW[i]^2 - dt)/(η₁*sqrt_dt))
+      end
+
+      for i in 1:length(W.dW)
+        for j in 1:length(W.dW)
+          (i > j) && (WikJ = (1//2)*(1+η₂)*W.dW[j])
+          (i < j) && (WikJ = (1//2)*(1-η₂)*W.dW[j])
+          (i == j) && (WikJ = (1//2)*(η₁*sqrt_dt))
+
+          uᵢ₋₁ += @view(Gₛ[:,j])*WikJ
+        end
+        Gₛ₁ = integrator.g(uᵢ₋₁,p,t̂₂)
+        u += @view(Gₛ₁[:,i])*W.dW[i]
+      end
+  end
+
+  integrator.u = u
+end
+
+@muladd function perform_step!(integrator,cache::TangXiaoSROCK2Cache,f=integrator.f)
+  @unpack uᵢ, uₓ, uᵢ₋₁, uᵢ₋₂, Û₁, Û₂, k, Gₛ, Gₛ₁ = cache
+  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack recf, recf2, mα, mσ, mτ, mn̂, c1, c2 = cache.constantcache
+
+  n̂ = mn̂[integrator.alg.version_num]
+  ccache = cache.constantcache
+
+  maxeig!(integrator, cache)
+  (integrator.alg.version_num <= 2) && (ccache.mdeg = Int(floor(sqrt((dt*integrator.eigen_est+1.5)/0.811)+1)))
+  (integrator.alg.version_num > 2) && (ccache.mdeg = Int(floor(sqrt((dt*integrator.eigen_est+1.5)/0.611)+1)))
+  ccache.mdeg = max(4,min(ccache.mdeg,200))-2
+  choose_deg!(integrator,cache)
+
+  mdeg      = ccache.mdeg
+  start     = ccache.start
+  deg_index = ccache.deg_index
+  α = convert(eltype(u),1.33)
+  σ = (1.0-α)*0.5 + α*mσ[deg_index]
+
+  # τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
+  τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mτ[deg_index]
+
+
+  η₁ = (rand() < 0.5) ? -1 : 1
+  η₂ = (rand() < 0.5) ? -1 : 1
+  sqrt_dt   = sqrt(dt)
+
+  @.. Û₁ = zero(eltype(u))
+  @.. Û₂ = zero(eltype(u))
+  t̂₁ = t̂₂ = tₓ = zero(t)
+  tᵢ =  tᵢ₋₁ = tᵢ₋₂ = t
+
+  for i in 0:mdeg+1
+    if i == 1
+      μ = recf[start]
+      tᵢ = tᵢ₋₁ = t + α*dt*μ
+
+      @.. uᵢ₋₂ = uprev
+      integrator.f(k,uprev,p,t)
+      @.. uᵢ₋₁ = uprev + α*dt*μ*k
+    elseif i > 1 && i <= mdeg
+      μ, ν, κ = recf[start + 2*(i-2) + 1], 1.0 + recf[start + 2*(i-2) + 2], recf[start + 2*(i-2) + 2]
+
+      integrator.f(k,uᵢ₋₁,p,tᵢ₋₁)
+      @.. uᵢ   = α*dt*μ*k + ν*uᵢ₋₁ - κ*uᵢ₋₂
+      tᵢ   = α*dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
+    elseif i == mdeg + 1
+      μ, ν, κ = recf2[(deg_index-1)*4 + 1], 1.0 + recf2[(deg_index-1)*4 + 2], recf2[(deg_index-1)*4 + 2]
+
+      integrator.f(k,uᵢ₋₁,p,tᵢ₋₁)
+
+      tₓ   = tᵢ₋₁ + 2*τ*dt
+      @.. uₓ   = uᵢ₋₁ + (2*τ*dt)*k
+      @.. u    = uᵢ₋₁ + (2*σ - 1//2)*dt*k
+
+      @.. uᵢ   = α*dt*μ*k + ν*uᵢ₋₁ - κ*uᵢ₋₂
+      tᵢ   = α*dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
+    end
+
+    j = i - mdeg - 1 + n̂
+    if j > 0
+      j += ccache.start_mcs - 1
+      if i == 0
+        @.. Û₁ += c1[j]*uprev
+        t̂₁ += c1[j]*t
+        @.. Û₂ += c2[j]*uprev
+        t̂₂ += c2[j]*t
+      elseif i  == 1
+        @.. Û₁ += c1[j]*uᵢ₋₁
+        t̂₁ += c1[j]*tᵢ₋₁
+        @.. Û₂ += c2[j]*uᵢ₋₁
+        t̂₂ += c2[j]*tᵢ₋₁
+      else
+        @.. Û₁ += c1[j]*uᵢ
+        t̂₁ += c1[j]*tᵢ
+        @.. Û₂ += c2[j]*uᵢ
+        t̂₂ += c2[j]*tᵢ
+      end
+    end
+
+    if i > 1 && i < mdeg + 1
+      @.. uᵢ₋₂ = uᵢ₋₁
+      @.. uᵢ₋₁ = uᵢ
+      tᵢ₋₂ = tᵢ₋₁
+      tᵢ₋₁ = tᵢ
+    end
+  end
+
+  if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || is_diagonal_noise(integrator.sol.prob)
+    integrator.g(Gₛ,Û₁,p,t̂₁)
+    @.. uₓ += Gₛ*W.dW
+
+    integrator.f(k,uₓ,p,tₓ)
+    @.. u  += (1//2*dt)*k + Gₛ*((W.dW^2 - dt)/(η₁*sqrt_dt) - W.dW)
+    @.. Û₁ -= (η₁*sqrt_dt/2)*Gₛ
+    @.. Û₂ += (η₁*sqrt_dt/2)*Gₛ
+
+    integrator.g(Gₛ,Û₂,p,t̂₂)
+    @.. u += Gₛ*W.dW
+
+    integrator.g(Gₛ,Û₁,p,t̂₁)
+    @.. u += Gₛ*(W.dW - (W.dW^2 - dt)/(η₁*sqrt_dt))
+  else
+      integrator.g(Gₛ,Û₁,p,t̂₁)
+
+      for i in 1:length(W.dW)
+        (i == 1) && (@.. uᵢ₋₁ = @view(Gₛ[:,i])*W.dW[i])
+        (i > 1) && (@.. uᵢ₋₁ += @view(Gₛ[:,i])*W.dW[i])
+      end
+
+      @.. uₓ += uᵢ₋₁
+      integrator.f(k,uₓ,p,tₓ)
+
+      @.. u  += (1//2*dt)*k - uᵢ₋₁
+
+      for i in 1:length(W.dW)
+        @.. uᵢ₋₁ = Û₁ - (1//2*η₁*sqrt_dt)*@view(Gₛ[:,i])
+        integrator.g(Gₛ₁,uᵢ₋₁,p,t̂₁)
+        @.. u += @view(Gₛ₁[:,i])*W.dW[i] + (@view(Gₛ[:,i]) - @view(Gₛ₁[:,i]))*((W.dW[i]^2 - dt)/(η₁*sqrt_dt))
+      end
+
+      for i in 1:length(W.dW)
+        for j in 1:length(W.dW)
+          (i > j) && (WikJ = (1//2)*(1+η₂)*W.dW[j])
+          (i < j) && (WikJ = (1//2)*(1-η₂)*W.dW[j])
+          (i == j) && (WikJ = (1//2)*(η₁*sqrt_dt))
+
+          @.. uᵢ₋₁ += @view(Gₛ[:,j])*WikJ
+        end
+        @.. uᵢ₋₁ += Û₂
+        integrator.g(Gₛ₁,uᵢ₋₁,p,t̂₂)
+        @.. u += @view(Gₛ₁[:,i])*W.dW[i]
+      end
+  end
+
+  integrator.u = u
+end
