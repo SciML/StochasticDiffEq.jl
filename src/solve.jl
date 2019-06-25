@@ -316,6 +316,7 @@ function DiffEqBase.__init(
   if typeof(alg) <: Union{StochasticDiffEqCompositeAlgorithm,
                           StochasticDiffEqRODECompositeAlgorithm}
     sol = DiffEqBase.build_solution(prob,alg,ts,timeseries,W=W,
+                                    destats = DiffEqBase.DEStats(0),
                                     calculate_error = false, alg_choice=alg_choice,
                                     interp = id, dense = dense, seed = _seed)
   else
