@@ -321,6 +321,7 @@ function DiffEqBase.__init(
                                     interp = id, dense = dense, seed = _seed)
   else
     sol = DiffEqBase.build_solution(prob,alg,ts,timeseries,W=W,
+                                    destats = DiffEqBase.DEStats(0),
                                     calculate_error = false,
                                     interp = id, dense = dense, seed = _seed)
   end
