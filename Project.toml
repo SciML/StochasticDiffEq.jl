@@ -1,7 +1,7 @@
 name = "StochasticDiffEq"
 uuid = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
 authors = ["Chris Rackauckas <accounts@chrisrackauckas.com>"]
-version = "6.4.0"
+version = "6.5.0"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
