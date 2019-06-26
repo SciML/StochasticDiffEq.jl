@@ -24,7 +24,7 @@ FillArrays = "1a297f60-69ca-5386-bcde-b61e274b549b"
 
 [compat]
 julia = "1"
-DiffEqBase = "<= 5.10.3"
+DiffEqBase = "= 5.10.3"
 
 [extras]
 DiffEqCallbacks = "459566f4-90b8-5000-8ac3-15dfb0a30def"
