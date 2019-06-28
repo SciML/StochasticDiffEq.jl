@@ -1307,7 +1307,7 @@ end
     yₛ₋₁ = integrator.f(yₛ₋₁,p,t + tyₛ₋₁)
 
     uᵢ₋₁ = uprev .+ Yₛ₋₂ .+ E[(deg_index - 1)*9 + 1] .* dt .* uᵢ .+ 1//12 .*W.dW .* Xₛ₋₃ .+ 1//4 .* W.dW .* Xₛ₋₂
-    Xₛ₋₁ = integrator.g(uₛ₋₁,p,t + tₛ₋₂ + dt*E[(deg_index - 1)*9 + 1])
+    Xₛ₋₁ = integrator.g(uᵢ₋₁,p,t + tₛ₋₂ + dt*E[(deg_index - 1)*9 + 1])
 
     u += B[mdeg - 1] .* dt .* yₛ₋₁ .+ 3//8 .* W.dW .* Xₛ₋₁
 
