@@ -1267,8 +1267,8 @@ end
       Yₛ₋₁ += A[start_A + 2*mdeg + i]*dt*uᵢ
       tₛ₋₂ += A[start_A + mdeg + i]*dt
       tₛ₋₁ += A[start_A + 2*mdeg + i]*dt
-      uᵢ   = α*dt*μ*uᵢ + ν*uᵢ₋₁ - κ*uᵢ₋₂
-      tᵢ   = α*dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
+      uᵢ   = dt*μ*uᵢ + ν*uᵢ₋₁ - κ*uᵢ₋₂
+      tᵢ   = dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
     end
 
     if i < mdeg-2
