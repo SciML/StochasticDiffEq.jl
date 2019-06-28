@@ -1253,22 +1253,22 @@ end
       tᵢ = tᵢ₋₁ = t + dt*μ
       uᵢ = integrator.f(uprev,p,t)
       u += B[start_B+1]*dt*uᵢ
-      Yₛ₋₂ += A[start_A + mdeg + 1]*dt*uᵢ
-      Yₛ₋₁ += A[start_A + 2*mdeg + 1]*dt*uᵢ
-      tₛ₋₂ += A[start_A + mdeg + 1]*dt
-      tₛ₋₁ += A[start_A + 2*mdeg + 2]*dt
+      Yₛ₋₂ += A[start_A + 1]*dt*uᵢ
+      Yₛ₋₁ += A[start_A + mdeg + 1]*dt*uᵢ
+      tₛ₋₂ += A[start_A + 1]*dt
+      tₛ₋₁ += A[start_A + mdeg + 1]*dt
       uᵢ₋₁ = uprev + dt*μ*uᵢ
     else
       μ, κ = recf[start + 2*(i-2) + 1], recf[start + 2*(i-2) + 2]
       ν    = 1.0 + κ
       uᵢ   = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
       u    += B[start_B + i]*dt*uᵢ
-      Yₛ₋₂ += A[start_A + mdeg + i]*dt*uᵢ
-      Yₛ₋₁ += A[start_A + 2*mdeg + i]*dt*uᵢ
-      tₛ₋₂ += A[start_A + mdeg + i]*dt
-      tₛ₋₁ += A[start_A + 2*mdeg + i]*dt
-      uᵢ   = dt*μ*uᵢ + ν*uᵢ₋₁ - κ*uᵢ₋₂
-      tᵢ   = dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
+      Yₛ₋₂ += A[start_A + i]*dt*uᵢ
+      Yₛ₋₁ += A[start_A + mdeg + i]*dt*uᵢ
+      tₛ₋₂ += A[start_A + i]*dt
+      tₛ₋₁ += A[start_A + mdeg + i]*dt
+      uᵢ   = α*dt*μ*uᵢ + ν*uᵢ₋₁ - κ*uᵢ₋₂
+      tᵢ   = α*dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
     end
 
     if i < mdeg-2
@@ -1282,10 +1282,10 @@ end
   if typeof(W.dW) <: Number || length(W.dW) == 1 || is_diagonal_noise(integrator.sol.prob)
     # stage s-3
     uᵢ = integrator.f(uᵢ,p,tᵢ)
-    Yₛ₋₂ += A[start_A + mdeg + s - 3]*dt*uᵢ
-    Yₛ₋₁ += A[start_A + 2*mdeg + s - 3]*dt*uᵢ
-    tₛ₋₂ += A[start_A + mdeg + s - 3]*dt
-    tₛ₋₁ += A[start_A + 2*mdeg + s - 3]*dt
+    Yₛ₋₂ += A[start_A + s - 3]*dt*uᵢ
+    Yₛ₋₁ += A[start_A + mdeg + s - 3]*dt*uᵢ
+    tₛ₋₂ += A[start_A + s - 3]*dt
+    tₛ₋₁ += A[start_A + mdeg + s - 3]*dt
     uᵢ₋₂ = uprev + Yₛ₋₂
     Xₛ₋₃ = integrator.g(uᵢ₋₂,p,t + tₛ₋₃)
 
@@ -1301,9 +1301,9 @@ end
     @.. u += B[s - 2]*dt*uᵢ + 3//8*W.dW*Xₛ₋₂
 
     #stage s-1
-    tyₛ₋₁ = tₛ₋₁ + A[start_A + 2*mdeg + s - 2]*dt
-    @.. yₛ₋₁ = uprev + Yₛ₋₁ + A[start_A + 2*mdeg + s - 2]*dt*uᵢ + E[(deg_index-1)*9 + 5]*W.dW*Xₛ₋₃ +
-                E[(deg_index-1)*9 + 5]*W.dW*Xₛ₋₂
+    tyₛ₋₁ = tₛ₋₁ + A[start_A + mdeg + s - 2]*dt
+    @.. yₛ₋₁ = uprev + Yₛ₋₁ + A[start_A + mdeg + s - 2]*dt*uᵢ + E[(deg_index-1)*9 + 5]*W.dW*Xₛ₋₃ +
+                E[(deg_index-1)*9 + 7]*W.dW*Xₛ₋₂
 
     yₛ₋₁ = integrator.f(yₛ₋₁,p,t + tyₛ₋₁)
 
@@ -1313,9 +1313,9 @@ end
     @.. u += B[s - 1]*dt*yₛ₋₁ + 3//8*W.dW*Xₛ₋₁
 
     #stage s
-    tyₛ = tₛ₋₁ + A[start_A + 2*mdeg + s - 2]*dt + σ*dt
-    @.. uₛ₋₁  = uprev + Yₛ₋₁ + A[start_A + 2*mdeg + s - 2]*dt*uᵢ + σ*dt*yₛ₋₁ +
-                E[(deg_index-1)*9 + 7]*W.dW*Xₛ₋₃ + E[(deg_index-1)*9 + 8]*W.dW*Xₛ₋₂ + E[(deg_index-1)*9 + 9]*W.dW*Xₛ₋₁
+    tyₛ = tₛ₋₁ + A[start_A + mdeg + s - 2]*dt + σ*dt
+    @.. uₛ₋₁  = uprev + Yₛ₋₁ + A[start_A + mdeg + s - 2]*dt*uᵢ + σ*dt*yₛ₋₁ + E[(deg_index-1)*9 + 6]*W.dW*Xₛ₋₃ +
+          E[(deg_index-1)*9 + 8]*W.dW*Xₛ₋₂ + E[(deg_index-1)*9 + 9]*W.dW*Xₛ₋₁
 
     uₛ₋₁ = integrator.f(uₛ₋₁,p,t + tyₛ)
     u += B[s]*dt*uₛ₋₁
@@ -1329,9 +1329,9 @@ end
   else
     # stage s-3
     uᵢ = integrator.f(uᵢ,p,tᵢ)
-    Yₛ₋₂ += A[start_A + mdeg + s - 3]*dt*uᵢ
-    Yₛ₋₁ += A[start_A + 2*mdeg + s - 3]*dt*uᵢ
-    tₛ₋₂ += A[start_A + mdeg + s - 3]*dt; tₛ₋₁ += A[start_A + 2*mdeg + s - 3]*dt
+    Yₛ₋₂ += A[start_A + s - 3]*dt*uᵢ
+    Yₛ₋₁ += A[start_A + mdeg + s - 3]*dt*uᵢ
+    tₛ₋₂ += A[start_A + s - 3]*dt; tₛ₋₁ += A[start_A + mdeg + s - 3]*dt
     uᵢ₋₂ = uprev + Yₛ₋₂
     Xₛ₋₃ = integrator.g(uᵢ₋₂,p,t + tₛ₋₃)
 
@@ -1347,7 +1347,7 @@ end
     Xₛ₋₂ = zero(Xₛ₋₃)
 
     for i in 1:length(W.dW)
-      uᵢ₋₁ = uprev + Yₛ₋₁ + 2//3*@view(Xₛ₋₃[:,i])
+      uᵢ₋₁ = uprev + Yₛ₋₁ + 2//3*@view(Xₛ₋₃[:,i])*W.dW[i]
       Gₛ = integrator.g(uᵢ₋₁,p,t + tₛ₋₁)
       @view(Xₛ₋₂[:,i]) .=  @view(Gₛ[:,i])
     end
@@ -1360,8 +1360,8 @@ end
     u += B[s - 2]*dt*uᵢ + 3//8*uᵢ₋₁
 
     #stage s-1
-    tyₛ₋₁ = tₛ₋₁ + A[start_A + 2*mdeg + s - 2]*dt
-    yₛ₋₁ = uprev + Yₛ₋₁ + A[start_A + 2*mdeg + s - 2]*dt*uᵢ + E[(deg_index-1)*9 + 5]*uᵢ₋₂ +
+    tyₛ₋₁ = tₛ₋₁ + A[start_A + mdeg + s - 2]*dt
+    yₛ₋₁ = uprev + Yₛ₋₁ + A[start_A + mdeg + s - 2]*dt*uᵢ + E[(deg_index-1)*9 + 5]*uᵢ₋₂ +
             E[(deg_index-1)*9 + 7]*uᵢ₋₁
     yₛ₋₁ = integrator.f(yₛ₋₁,p,t + tyₛ₋₁)
 
@@ -1382,8 +1382,8 @@ end
     u += B[s - 1]*dt*yₛ₋₁ + 3//8*uₛ₋₁
 
     #stage s
-    tyₛ = tₛ₋₁ + A[start_A + 2*mdeg + s - 2]*dt + σ*dt
-    uₛ₋₁  = uprev + Yₛ₋₁ + A[start_A + 2*mdeg + s - 2]*dt*uᵢ + σ*dt*yₛ₋₁ + E[(deg_index-1)*9 + 6]*uᵢ₋₂ +
+    tyₛ = tₛ₋₁ + A[start_A + mdeg + s - 2]*dt + σ*dt
+    uₛ₋₁  = uprev + Yₛ₋₁ + A[start_A + mdeg + s - 2]*dt*uᵢ + σ*dt*yₛ₋₁ + E[(deg_index-1)*9 + 6]*uᵢ₋₂ +
             E[(deg_index-1)*9 + 8]*uᵢ₋₁ + E[(deg_index-1)*9 + 9]*uₛ₋₁
     uₛ₋₁ = integrator.f(uₛ₋₁,p,t + tyₛ)
 
