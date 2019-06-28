@@ -243,14 +243,19 @@ end
   u::uType
   uprev::uType
   uᵢ::uType
-  uₓ::uType
   uᵢ₋₁::uType
   uᵢ₋₂::uType
+  uₛ₋₁::uType
+  Yₛ₋₁::uType
+  Yₛ₋₂::uType
+  k::rateType
+  yₛ₋₁::rateType
   Gₛ::noiseRateType
-  Gₛ₁::noiseRateType
+  Xₛ₋₁::noiseRateType
+  Xₛ₋₂::noiseRateType
+  Xₛ₋₃::noiseRateType
   vec_χ::T
   tmp::uType
-  k::rateType
   fsalfirst::rateType
   atmp::rateType
   constantcache::KomBurSROCK2ConstantCache
@@ -261,17 +266,31 @@ function alg_cache(alg::KomBurSROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
 end
 
 function alg_cache(alg::KomBurSROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
-  k = zero(rate_prototype)
   uᵢ = zero(u)
-  uₓ = zero(u)
   uᵢ₋₁ = zero(u)
   uᵢ₋₂ = zero(u)
-  Gₛ = zero(noise_rate_prototype)
-  Gₛ₁ = zero(noise_rate_prototype)
+  Yₛ₋₁ = zero(u)
+  Yₛ₋₂ = zero(u)
+  k = zero(rate_prototype)
+  yₛ₋₁ = zero(rate_prototype)
+  Xₛ₋₁ = zero(noise_rate_prototype)
+  Xₛ₋₂ = zero(noise_rate_prototype)
+  Xₛ₋₃ = zero(noise_rate_prototype)
   vec_χ = false .* vec(ΔW)
-  tmp  = uᵢ₋₂            # these 2 variables are dummied to use same memory
+  tmp::uType
+  fsalfirst::rateType
+  atmp::rateType
+  constantcache::KomBurSROCK2ConstantCache
+  if typeof(ΔW) <: Number || length(ΔW) == 1 || is_diagonal_noise(prob)
+    uₛ₋₁ = uᵢ
+    Gₛ = Xₛ₋₁
+  else
+    uₛ₋₁ = zero(u)
+    Gₛ = zero(noise_rate_prototype)
+  end
+  tmp  = uᵢ₋₂            # these 3 variables are dummied to use same memory
   fsalfirst = k
-  atmp = zero(rate_prototype)
+  atmp = yₛ₋₁
   constantcache = KomBurSROCK2ConstantCache{uEltypeNoUnits}(u)
-  KomBurSROCK2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype),typeof(vec_χ)}(u,uprev,uᵢ,uₓ,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,vec_χ,tmp,k,fsalfirst,atmp,constantcache)
+  KomBurSROCK2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype),typeof(vec_χ)}(u,uprev,uᵢ,uᵢ₋₁,uᵢ₋₂,uₛ₋₁,Yₛ₋₁,Yₛ₋₂,k,yₛ₋₁,Gₛ,Xₛ₋₁,Xₛ₋₂,Xₛ₋₃,vec_χ,tmp,fsalfirst,atmp,constantcache)
 end
