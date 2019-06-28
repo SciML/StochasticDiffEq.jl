@@ -1221,7 +1221,6 @@ end
   @unpack recf, mσ, mτ, A, B, E = cache
 
   gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (typeof(W.dW) <: Number) || (length(W.dW) == 1))
-  gen_prob && (vec_χ = 0.5 .+ false .* W.dW)
 
   maxeig!(integrator, cache)
   cache.mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est+1.5)/0.811)+1))
@@ -1239,7 +1238,7 @@ end
 
   sqrt_dt   = sqrt(dt)
 
-  (gen_prob) && (vec_χ .= 2 .* floor.(vec_χ .+ rand(length(W.dW))) .- 1.0  )
+  (gen_prob) && (vec_χ = 2 .* floor.( 0.5 .+ false .* W.dW .+ rand(length(W.dW))) .- 1.0)
 
   tᵢ = t; tᵢ₋₁ = t; tᵢ₋₂ = t; tₛ₋₂ = t; tₛ₋₁ = t
   uᵢ₋₂ = uprev
