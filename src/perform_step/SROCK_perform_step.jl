@@ -1266,8 +1266,8 @@ end
       Yₛ₋₁ += A[start_A + mdeg + i]*dt*uᵢ
       tₛ₋₂ += A[start_A + i]*dt
       tₛ₋₁ += A[start_A + mdeg + i]*dt
-      uᵢ   = α*dt*μ*uᵢ + ν*uᵢ₋₁ - κ*uᵢ₋₂
-      tᵢ   = α*dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
+      uᵢ   = dt*μ*uᵢ + ν*uᵢ₋₁ - κ*uᵢ₋₂
+      tᵢ   = dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
     end
 
     if i < mdeg-2
@@ -1462,13 +1462,13 @@ end
       μ, κ = recf[start + 2*(i - 2) + 1], recf[start + 2*(i - 2) + 2]
       ν    = 1.0 + κ
       integrator.f(k,uᵢ₋₁,p,tᵢ₋₁)
-      @.. u    += B[start_B + i]*dt*k
+      @.. u += B[start_B + i]*dt*k
       @.. Yₛ₋₂ += A[start_A + i]*dt*k
       @.. Yₛ₋₁ += A[start_A + mdeg + i]*dt*k
       tₛ₋₂ += A[start_A + i]*dt
       tₛ₋₁ += A[start_A + mdeg + i]*dt
-      @.. uᵢ   = dt*μ*k + ν*uᵢ₋₁ - κ*uᵢ₋₂
-      tᵢ   = dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
+      @.. uᵢ = dt*μ*k + ν*uᵢ₋₁ - κ*uᵢ₋₂
+      tᵢ = dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
     end
 
     if i < mdeg-2
@@ -1544,7 +1544,6 @@ end
     #stage s-2
     @.. uᵢ = uprev + Yₛ₋₂ + E[(deg_index - 1)*9 + 4]*uᵢ₋₂
     integrator.f(k,uᵢ,p,t + tₛ₋₂)
-    # Xₛ₋₂ = zero(Xₛ₋₃)
 
     for i in 1:length(W.dW)
       @.. uᵢ₋₁ = uprev + Yₛ₋₁ + 2//3*@view(Xₛ₋₃[:,i])*W.dW[i]
