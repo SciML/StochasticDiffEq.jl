@@ -231,8 +231,8 @@ mutable struct KomBurSROCK2ConstantCache{zType,T} <: StochasticDiffEqConstantCac
   A::Vector{T}
   B::Vector{T}
   E::Vector{T}
-  start_A::SVector{46,T}
-  start_B::SVector{46,T}
+  start_A::SVector{46, Int}
+  start_B::SVector{46, Int}
   zprev::zType
   mdeg::Int
   deg_index::Int
