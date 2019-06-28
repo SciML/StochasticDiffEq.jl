@@ -1251,7 +1251,7 @@ end
       μ = recf[start]
       tᵢ = tᵢ₋₁ = t + dt*μ
       uᵢ = integrator.f(uprev,p,t)
-      u += B[start_B+1]*dt*uᵢ
+      u += B[start_B + 1]*dt*uᵢ
       Yₛ₋₂ += A[start_A + 1]*dt*uᵢ
       Yₛ₋₁ += A[start_A + mdeg + 1]*dt*uᵢ
       tₛ₋₂ += A[start_A + 1]*dt
@@ -1324,7 +1324,6 @@ end
 
     Xₛ₋₁ = integrator.g(uₛ₋₁,p,t + tₛ₋₂ + E[(deg_index - 1)*9 + 2]*dt + E[(deg_index - 1)*9 + 3]*dt)
     @.. u += 1//8*W.dW*Xₛ₋₁
-
   else
     # stage s-3
     uᵢ = integrator.f(uᵢ,p,tᵢ)
@@ -1401,7 +1400,7 @@ end
 
       for j in 1:length(W.dW)
         if j != i
-          uₛ₋₁ += (((j > i) ? 1 : -1)*W.dW[i]*vec_χ[j])@view(Xₛ₋₃[:,j])
+          uₛ₋₁ += (((j > i) ? 1 : -1)*W.dW[i]*vec_χ[j])*@view(Xₛ₋₃[:,j])
         end
       end
       uᵢ = uprev + Yₛ₋₂ - 1//4*uₛ₋₁
@@ -1601,7 +1600,7 @@ end
 
       for j in 1:length(W.dW)
         if j != i
-          @.. uₛ₋₁ += (((j > i) ? 1 : -1)*W.dW[i]*vec_χ[j])@view(Xₛ₋₃[:,j])
+          @.. uₛ₋₁ += (((j > i) ? 1 : -1)*W.dW[i]*vec_χ[j])*@view(Xₛ₋₃[:,j])
         end
       end
       @.. uᵢ = uprev + Yₛ₋₂ - 1//4*uₛ₋₁
