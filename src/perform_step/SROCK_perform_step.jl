@@ -1270,7 +1270,7 @@ end
       tᵢ   = dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
     end
 
-    if i < mdeg-2
+    if i > 1 && i < mdeg-4
       uᵢ₋₂ = uᵢ₋₁
       uᵢ₋₁ = uᵢ
       tᵢ₋₂ = tᵢ₋₁
@@ -1472,7 +1472,7 @@ end
       tᵢ = dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
     end
 
-    if i < mdeg-2
+    if i > 1 && i < mdeg-4
       @.. uᵢ₋₂ = uᵢ₋₁
       @.. uᵢ₋₁ = uᵢ
       tᵢ₋₂ = tᵢ₋₁
