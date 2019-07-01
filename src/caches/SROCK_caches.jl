@@ -228,11 +228,7 @@ mutable struct KomBurSROCK2ConstantCache{zType,T} <: StochasticDiffEqConstantCac
   recf::Vector{T}
   mσ::SVector{46,T}
   mτ::SVector{46,T}
-  A::Vector{T}
-  B::Vector{T}
-  E::Vector{T}
-  start_A::SVector{46, Int}
-  start_B::SVector{46, Int}
+  mδ::Vector{T}
   zprev::zType
   mdeg::Int
   deg_index::Int
