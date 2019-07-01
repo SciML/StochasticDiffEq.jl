@@ -1231,52 +1231,36 @@ end
   mdeg      = cache.mdeg + 2
   start     = cache.start
   deg_index = cache.deg_index
-  start_A   = cache.start_A[deg_index]
-  start_B   = cache.start_B[deg_index]
   σ = mσ[deg_index]
   τ = mσ[deg_index]*(mσ[deg_index]+mτ[deg_index])
 
   sqrt_dt   = sqrt(dt)
-
   (gen_prob) && (vec_χ = 2 .* floor.( 0.5 .+ false .* W.dW .+ rand(length(W.dW))) .- 1.0)
 
-  tᵢ = t; tᵢ₋₁ = t; tᵢ₋₂ = t; tₛ₋₂ = t; tₛ₋₁ = t
+  tᵢ₋₂ = t
   uᵢ₋₂ = uprev
-  u = uprev
-  Yₛ₋₂ = zero(u)
-  Yₛ₋₁ = zero(u)
+  μ = recf[start]
+  tᵢ = tᵢ₋₁ = t + dt*μ
+  u = integrator.f(uprev,p,t)
+  uᵢ₋₁ = uprev + dt*μ*uᵢ
 
-  for i in 1:mdeg-4
-    if i == 1
-      μ = recf[start]
-      tᵢ = tᵢ₋₁ = t + dt*μ
-      uᵢ = integrator.f(uprev,p,t)
-      u += B[start_B + 1]*dt*uᵢ
-      Yₛ₋₂ += A[start_A + 1]*dt*uᵢ
-      Yₛ₋₁ += A[start_A + mdeg + 1]*dt*uᵢ
-      tₛ₋₂ += A[start_A + 1]*dt
-      tₛ₋₁ += A[start_A + mdeg + 1]*dt
-      uᵢ₋₁ = uprev + dt*μ*uᵢ
-    else
-      μ, κ = recf[start + 2*(i-2) + 1], recf[start + 2*(i-2) + 2]
-      ν    = 1.0 + κ
-      uᵢ   = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
-      u    += B[start_B + i]*dt*uᵢ
-      Yₛ₋₂ += A[start_A + i]*dt*uᵢ
-      Yₛ₋₁ += A[start_A + mdeg + i]*dt*uᵢ
-      tₛ₋₂ += A[start_A + i]*dt
-      tₛ₋₁ += A[start_A + mdeg + i]*dt
-      uᵢ   = dt*μ*uᵢ + ν*uᵢ₋₁ - κ*uᵢ₋₂
-      tᵢ   = dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
-    end
+  for i in 2:mdeg-4
+    μ, θ = recf[start + 2*(i-2) + 1], recf[start + 2*(i-2) + 2]
+    u  = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
+    u  = dt*μ*u + uᵢ₋₁ + θ*(uᵢ₋₁ - uᵢ₋₂)
+    tᵢ = dt*μ + tᵢ₋₁ + θ*(tᵢ₋₁ - tᵢ₋₂)
 
-    if i > 1 && i < mdeg-4
-      uᵢ₋₂ = uᵢ₋₁
-      uᵢ₋₁ = uᵢ
-      tᵢ₋₂ = tᵢ₋₁
-      tᵢ₋₁ = tᵢ
-    end
+    uᵢ₋₂ = uᵢ₋₁
+    uᵢ₋₁ = u
+    tᵢ₋₂ = tᵢ₋₁
+    tᵢ₋₁ = tᵢ
   end
+  musm4, thetasm4 = recf[start + 2*(s - 6) + 1], recf[start + 2*(s - 6) + 2]
+  musm3, thetasm3 = recf[start + 2*(s - 5) + 1], recf[start + 2*(s - 5) + 2]
+  musm2, thetasm2 = recf[start + 2*(s - 4) + 1], recf[start + 2*(s - 4) + 2]
+
+  u = uᵢ₋₁ + (thetasm3 + thetasm3*thetasm4)*(uim1 - uim2)
+  # here uim1 = uₛ₋₄, tim1 = tₛ₋₄, uim2 = uₛ₋₅, tim2 = tₛ₋₅
 
   if typeof(W.dW) <: Number || length(W.dW) == 1 || is_diagonal_noise(integrator.sol.prob)
     # stage s-3
@@ -1326,19 +1310,10 @@ end
     u += 1//8 .* W.dW .* Xₛ₋₁
   else
     # stage s-3
-    uᵢ = integrator.f(uᵢ,p,tᵢ)
-    Yₛ₋₂ += A[start_A + mdeg - 3]*dt*uᵢ
-    Yₛ₋₁ += A[start_A + 2*mdeg - 3]*dt*uᵢ
-    tₛ₋₂ += A[start_A + mdeg - 3]*dt
-    tₛ₋₁ += A[start_A + 2*mdeg - 3]*dt
-    uᵢ₋₂ = uprev + Yₛ₋₂
-    Xₛ₋₃ = integrator.g(uᵢ₋₂,p,t + tₛ₋₂)
-
-    uᵢ₋₂ = zero(uprev)
-    for i in 1:length(W.dW)
-      uᵢ₋₂ += @view(Xₛ₋₃[:,i])*W.dW[i]
-    end
-    u  += B[mdeg - 3]*dt*uᵢ + 1//8*uᵢ₋₂
+    ysm3 = integrator.f(uim1,p,tim1)
+    utmp = uim1 + thetasm3*(uim1 - uim2) + musm3*dt*ysm3
+    ttmp = tim1 + thetasm3*(tim1 - tim2) + musm3*dt
+    Xsm3 = integrator.g(utmp,p,ttmp)
 
     #stage s-2
     uᵢ = uprev + Yₛ₋₂ + E[(deg_index - 1)*9 + 4]*uᵢ₋₂
