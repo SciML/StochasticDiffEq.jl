@@ -1232,7 +1232,8 @@ end
   start     = cache.start
   deg_index = cache.deg_index
   σ = mσ[deg_index]
-  τ = mσ[deg_index]*(mσ[deg_index]+mτ[deg_index])
+  # τ = mσ[deg_index]*(mσ[deg_index]+mτ[deg_index])
+  τ = mτ[deg_index]
 
   sqrt_dt   = sqrt(dt)
   (gen_prob) && (vec_χ = 2 .* floor.( 0.5 .+ false .* W.dW .+ rand(length(W.dW))) .- 1.0)
