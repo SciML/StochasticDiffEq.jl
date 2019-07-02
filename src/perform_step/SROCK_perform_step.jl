@@ -1218,7 +1218,7 @@ end
 
 @muladd function perform_step!(integrator,cache::KomBurSROCK2ConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
-  @unpack recf, mσ, mτ, A, B, E = cache
+  @unpack recf, mσ, mτ, mδ = cache
 
   gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (typeof(W.dW) <: Number) || (length(W.dW) == 1))
 
@@ -1255,9 +1255,9 @@ end
     tᵢ₋₂ = tᵢ₋₁
     tᵢ₋₁ = tᵢ
   end
-  μₛ₋₄, θₛ₋₄ = recf[start + 2*(s - 6) + 1], recf[start + 2*(s - 6) + 2]
-  μₛ₋₃, θₛ₋₃ = recf[start + 2*(s - 5) + 1], recf[start + 2*(s - 5) + 2]
-  μₛ₋₂, θₛ₋₂ = recf[start + 2*(s - 4) + 1], recf[start + 2*(s - 4) + 2]
+  μₛ₋₄, θₛ₋₄ = recf[start + 2*(mdeg - 6) + 1], recf[start + 2*(mdeg - 6) + 2]
+  μₛ₋₃, θₛ₋₃ = recf[start + 2*(mdeg - 5) + 1], recf[start + 2*(mdeg - 5) + 2]
+  μₛ₋₂, θₛ₋₂ = recf[start + 2*(mdeg - 4) + 1], recf[start + 2*(mdeg - 4) + 2]
   δ₁ = mδ[(deg_index - 1)*8 + 1]; δ₂ = mδ[(deg_index - 1)*8 + 2]; δ₃ = mδ[(deg_index - 1)*8 + 3]; δ₄ = mδ[(deg_index - 1)*8 + 4]
   δ₅ = mδ[(deg_index - 1)*8 + 5]; δ₆ = mδ[(deg_index - 1)*8 + 6]; δ₇ = mδ[(deg_index - 1)*8 + 7]; δ₈ = mδ[(deg_index - 1)*8 + 8]
 
@@ -1298,7 +1298,7 @@ end
     utmp = integrator.f(utmp,p,ttmp)
     u += (τ/σ)*dt*utmp
 
-    utmp = uᵢ₋₁ + θₛ₋₃*(uᵢ₋₁ - uᵢ₋₂) + μₛ₋₃*dt*yₛ₋₃ + δ₂*dt*yₛ₋₂ + mδ₃*dt*yₛ₋₁ - 5//4 .* W.dW .* Xₛ₋₃ - 1//4 .* W.dW .* Xₛ₋₂ + 2 .* W.dW .* Xₛ₋₁
+    utmp = uᵢ₋₁ + θₛ₋₃*(uᵢ₋₁ - uᵢ₋₂) + μₛ₋₃*dt*yₛ₋₃ + δ₂*dt*yₛ₋₂ + δ₃*dt*yₛ₋₁ - 5//4 .* W.dW .* Xₛ₋₃ - 1//4 .* W.dW .* Xₛ₋₂ + 2 .* W.dW .* Xₛ₋₁
     ttmp = tᵢ₋₁ + θₛ₋₃*(tᵢ₋₁ - tᵢ₋₂) + μₛ₋₃*dt + δ₂*dt + δ₃*dt
     Xₛ₋₁ = integrator.g(utmp,p,ttmp)
     u += 1//8 .* W.dW .* Xₛ₋₁
@@ -1324,9 +1324,7 @@ end
       Gₛ = integrator.g(utmp,p,ttmp)
       @view(Xₛ₋₂[:,i]) .=  @view(Gₛ[:,i])
     end
-
     SXₛ₋₂ = Xₛ₋₂*W.dW
-
     u += μₛ₋₂*dt*yₛ₋₂ + 3//8*SXₛ₋₂
 
     #stage s-1
@@ -1342,7 +1340,6 @@ end
       Gₛ = integrator.g(utmp,p,ttmp)
       @view(Xₛ₋₁[:,i]) .= @view(Gₛ[:,i])
     end
-
     SXₛ₋₁ = Xₛ₋₁*W.dW
     u += (2*σ - τ/σ)*dt*yₛ₋₁ + 3//8*SXₛ₋₁
 
@@ -1351,12 +1348,11 @@ end
           δ₆*SXₛ₋₃ + δ₇*SXₛ₋₂ + δ₈*SXₛ₋₁
     ttmp = tᵢ₋₁ + (θₛ₋₃ + θₛ₋₃*θₛ₋₂)*(tᵢ₋₁ - tᵢ₋₂) + (1 + θₛ₋₂)*μₛ₋₃*dt + μₛ₋₂*dt + σ*dt
     utmp = integrator.f(utmp,p,ttmp)
-
     u += (τ/σ)*dt*utmp
 
     SXₛ₋₁ = zero(uprev)
     for i in 1:length(W.dW)
-      utmp = uᵢ₋₁ + θₛ₋₃*(uᵢ₋₁ - uᵢ₋₂) + μₛ₋₃*dt*yₛ₋₃ + δ₂*dt*yₛ₋₂ + mδ₃*dt*yₛ₋₁ - 3//2*W.dW[i]*@view(Xₛ₋₃[:,i]) -
+      utmp = uᵢ₋₁ + θₛ₋₃*(uᵢ₋₁ - uᵢ₋₂) + μₛ₋₃*dt*yₛ₋₃ + δ₂*dt*yₛ₋₂ + δ₃*dt*yₛ₋₁ - 3//2*W.dW[i]*@view(Xₛ₋₃[:,i]) -
               1//2*W.dW[i]*@view(Xₛ₋₂[:,i]) + 2*W.dW[i]*@view(Xₛ₋₁[:,i]) + 1//4*SXₛ₋₃ + 3//4*SXₛ₋₂
       ttmp = tᵢ₋₁ + θₛ₋₃*(tᵢ₋₁ - tᵢ₋₂) + μₛ₋₃*dt + δ₂*dt + δ₃*dt
       Gₛ = integrator.g(utmp,p,ttmp)
@@ -1368,7 +1364,7 @@ end
       SXₛ₋₁ = zero(uprev)
       for j in 1:length(W.dW)
         if j != i
-          SXₛ₋₁ += (i > j ? -vec_χ[i]*W.dW[j] : vec_χ[j]*W.dW[i] )*@view(Xₛ₋₃[:,j]
+          SXₛ₋₁ += (i > j ? -vec_χ[i]*W.dW[j] : vec_χ[j]*W.dW[i] )*@view(Xₛ₋₃[:,j])
         end
       end
       ttmp = tᵢ₋₁ + θₛ₋₃*(tᵢ₋₁ - tᵢ₋₂) + μₛ₋₃*dt
