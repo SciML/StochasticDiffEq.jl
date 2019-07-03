@@ -1232,8 +1232,8 @@ end
   start     = cache.start
   deg_index = cache.deg_index
   σ = mσ[deg_index]
-  τ = mσ[deg_index]*(mσ[deg_index]+mτ[deg_index])
-  # τ = mτ[deg_index]
+  # τ = mσ[deg_index]*(mσ[deg_index]+mτ[deg_index])
+  τ = mτ[deg_index]
 
   sqrt_dt   = sqrt(dt)
   (gen_prob) && (vec_χ = 2 .* floor.( 0.5 .+ false .* W.dW .+ rand(length(W.dW))) .- 1.0)
@@ -1291,13 +1291,13 @@ end
     utmp = uᵢ₋₁ + θₛ₋₃*(uᵢ₋₁ - uᵢ₋₂) + μₛ₋₃*dt*yₛ₋₃ + δ₁*dt*yₛ₋₂ + 1//12 .* W.dW .* Xₛ₋₃ + 1//4 .* W.dW .* Xₛ₋₂
     ttmp = tᵢ₋₁ + θₛ₋₃*(tᵢ₋₁ - tᵢ₋₂) + μₛ₋₃*dt + δ₁*dt
     Xₛ₋₁ = integrator.g(utmp,p,ttmp)
-    u += (2*σ - τ/σ)*dt*yₛ₋₁ + 3//8 .* W.dW .* Xₛ₋₁
+    u += (σ - τ)*dt*yₛ₋₁ + 3//8 .* W.dW .* Xₛ₋₁
 
     #stage s
     utmp = uᵢ₋₁ + (θₛ₋₃ + θₛ₋₃*θₛ₋₂)*(uᵢ₋₁ - uᵢ₋₂) + (1 + θₛ₋₂)*μₛ₋₃*dt*yₛ₋₃ + μₛ₋₂*dt*yₛ₋₂ + σ*dt*yₛ₋₁ + δ₆ .* W.dW .* Xₛ₋₃ + δ₇ .* W.dW .* Xₛ₋₂ + δ₈ .* W.dW .* Xₛ₋₁
     ttmp = tᵢ₋₁ + (θₛ₋₃ + θₛ₋₃*θₛ₋₂)*(tᵢ₋₁ - tᵢ₋₂) + (1 + θₛ₋₂)*μₛ₋₃*dt + μₛ₋₂*dt + σ*dt
     utmp = integrator.f(utmp,p,ttmp)
-    u += (τ/σ)*dt*utmp
+    u += (σ + τ)*dt*utmp
 
     utmp = uᵢ₋₁ + θₛ₋₃*(uᵢ₋₁ - uᵢ₋₂) + μₛ₋₃*dt*yₛ₋₃ + δ₂*dt*yₛ₋₂ + δ₃*dt*yₛ₋₁ - 5//4 .* W.dW .* Xₛ₋₃ + 1//4 .* W.dW .* Xₛ₋₂ + 2 .* W.dW .* Xₛ₋₁
     ttmp = tᵢ₋₁ + θₛ₋₃*(tᵢ₋₁ - tᵢ₋₂) + μₛ₋₃*dt + δ₂*dt + δ₃*dt
@@ -1398,8 +1398,8 @@ end
   start     = ccache.start
   deg_index = ccache.deg_index
   σ = mσ[deg_index]
-  τ = mσ[deg_index]*(mσ[deg_index]+mτ[deg_index])
-  # τ = mτ[deg_index]
+  # τ = mσ[deg_index]*(mσ[deg_index]+mτ[deg_index])
+  τ = mτ[deg_index]
 
   sqrt_dt   = sqrt(dt)
   (gen_prob) && (vec_χ .= 2 .* floor.(0.5 .+ false .* vec_χ .+ rand(length(vec_χ))) .- 1.0)
@@ -1457,7 +1457,7 @@ end
     @.. utmp = uᵢ₋₁ + θₛ₋₃*(uᵢ₋₁ - uᵢ₋₂) + μₛ₋₃*dt*yₛ₋₃ + δ₁*dt*yₛ₋₂ + 1//12*W.dW*Xₛ₋₃ + 1//4*W.dW*Xₛ₋₂
     ttmp = tᵢ₋₁ + θₛ₋₃*(tᵢ₋₁ - tᵢ₋₂) + μₛ₋₃*dt + δ₁*dt
     integrator.g(Xₛ₋₁,utmp,p,ttmp)
-    @.. u += (2*σ - τ/σ)*dt*yₛ₋₁ + 3//8*W.dW*Xₛ₋₁
+    @.. u += (σ - τ)*dt*yₛ₋₁ + 3//8*W.dW*Xₛ₋₁
 
     #stage s
     @.. utmp = uᵢ₋₁ + (θₛ₋₃ + θₛ₋₃*θₛ₋₂)*(uᵢ₋₁ - uᵢ₋₂) + (1 + θₛ₋₂)*μₛ₋₃*dt*yₛ₋₃ + μₛ₋₂*dt*yₛ₋₂ + σ*dt*yₛ₋₁ + δ₆*W.dW*Xₛ₋₃ + δ₇*W.dW*Xₛ₋₂ + δ₈*W.dW*Xₛ₋₁
@@ -1468,7 +1468,7 @@ end
 
     integrator.f(yₛ₋₁,utmp,p,ttmp)
     integrator.g(Xₛ₋₁,uᵢ₋₁,p,tᵢ₋₁)
-    @.. u += (τ/σ)*dt*yₛ₋₁ + 1//8*W.dW*Xₛ₋₁
+    @.. u += (σ + τ)*dt*yₛ₋₁ + 1//8*W.dW*Xₛ₋₁
   else
     # stage s-3
     integrator.f(yₛ₋₃,uᵢ₋₁,p,tᵢ₋₁)
