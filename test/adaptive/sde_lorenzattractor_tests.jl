@@ -1,6 +1,6 @@
 using StochasticDiffEq, Random
 using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
-import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_lorenz
+using DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_lorenz
 Random.seed!(100)
 prob = prob_sde_lorenz
 
@@ -39,5 +39,3 @@ p4 = plot(sol4[:,1],sol4[:,2],sol4[:,3],title="Absolute Tolerance = 10",leg=fals
 
 #plot(p1,p2,p3,p4,size=(1200,800),plot_title="Lorenz Attractors")
 #gui()
-
-true

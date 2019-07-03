@@ -1,6 +1,6 @@
-using StochasticDiffEq, DiffEqBase
+using StochasticDiffEq, Random
 using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
-import DiffEqProblemLibrary.SDEProblemLibrary: oval2ModelExample
+using DiffEqProblemLibrary.SDEProblemLibrary: oval2ModelExample
 Random.seed!(200)
 prob = oval2ModelExample(largeFluctuations=true,useBigs=false)
 quick_prob = deepcopy(prob)

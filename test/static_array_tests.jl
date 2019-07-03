@@ -1,5 +1,4 @@
-using StaticArrays
-using DiffEqBase, StochasticDiffEq
+using StaticArrays, StochasticDiffEq
 
 f(du,u,p,t) = (du .= u)
 

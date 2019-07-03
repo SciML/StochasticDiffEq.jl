@@ -1,4 +1,4 @@
-using DiffEqBase, StochasticDiffEq, DiffEqDevTools, Test, LinearAlgebra, Random
+using StochasticDiffEq, DiffEqDevTools, Test, LinearAlgebra, Random
 
 u0 = ones(2)
 A = [-3/2 1/20

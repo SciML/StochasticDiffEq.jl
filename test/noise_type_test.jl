@@ -1,4 +1,4 @@
-using StochasticDiffEq, DiffEqBase, Test, SparseArrays
+using StochasticDiffEq, SparseArrays, Test
 
 f(du,u,p,t) = (du.=1.01u)
 function g(du,u,p,t)

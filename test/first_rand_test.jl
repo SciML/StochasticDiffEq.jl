@@ -1,4 +1,4 @@
-using DiffEqBase, StochasticDiffEq, Test
+using StochasticDiffEq, Test
 
 f1(u,p,t) = zero(u)
 g1(u,p,t) = ones(size(u))

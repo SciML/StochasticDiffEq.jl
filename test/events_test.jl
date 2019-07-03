@@ -1,4 +1,4 @@
-using StochasticDiffEq, RecursiveArrayTools, DiffEqBase, Test#, ParameterizedFunctions
+using StochasticDiffEq, Test
 function f(du,u,p,t)
   du[1] = u[2]
   du[2] = -9.81
