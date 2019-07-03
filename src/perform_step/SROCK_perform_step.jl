@@ -44,25 +44,17 @@
     if (i > mdeg - 2) && alg_interpretation(integrator.alg) == :Stratonovich
       if i == mdeg - 1
         gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
-        if typeof(W.dW) <: Number
-          u += α*gₘ₋₂*W.dW
-        elseif is_diagonal_noise(integrator.sol.prob)
-          u .+= α .*  gₘ₋₂ .* W.dW
+        if typeof(W.dW) <: Number || !is_diagonal_noise(integrator.sol.prob)
+          u += α*(gₘ₋₂*W.dW)
         else
-          for j in 1:length(W.dW)
-            u += (α*W.dW[j])*@view(gₘ₋₂[:,j])
-          end
+          u .+= α .*  gₘ₋₂ .* W.dW
         end
       else
         gₘ₋₁ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
-        if typeof(W.dW) <: Number
-          u += (β*gₘ₋₂ + γ*gₘ₋₁)*W.dW
-        elseif is_diagonal_noise(integrator.sol.prob)
-          u .+= (β .* gₘ₋₂ .+ γ .* gₘ₋₁) .* W.dW
+        if typeof(W.dW) <: Number || !is_diagonal_noise(integrator.sol.prob)
+          u += β*(gₘ₋₂*W.dW) + γ*(gₘ₋₁*W.dW)
         else
-          for j in 1:length(W.dW)
-            u += (β*@view(gₘ₋₂[:,j]) + γ*@view(gₘ₋₁[:,j]))*W.dW[j]
-          end
+          u .+= (β .* gₘ₋₂ .+ γ .* gₘ₋₁) .* W.dW
         end
       end
     elseif (i == mdeg) && alg_interpretation(integrator.alg) == :Ito
@@ -78,9 +70,7 @@
         u .+= gₘ₋₂ .* W.dW .+ (1/(2.0*sqrt(dt))) .* (gₘ₋₁ .- gₘ₋₂) .* (W.dW .^ 2 .- dt)
       else
         gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
-        for j in 1:length(W.dW)
-            uᵢ += @view(gₘ₋₂[:,j])*(sqrt(dt)*W.dW[j])
-        end
+        uᵢ += sqrt(dt)*(gₘ₋₂*W.dW)
       end
     end
 
@@ -146,18 +136,18 @@ end
         if typeof(W.dW) <: Number || is_diagonal_noise(integrator.sol.prob)
           @.. u += α*gₘ₋₂*W.dW
         else
-          for j in 1:length(W.dW)
-            @.. u += (α*W.dW[j])*@view(gₘ₋₂[:,j])
-          end
+          matmul!(k,gₘ₋₂,W.dW)
+          @.. u += α*k
         end
       else
         integrator.g(gₘ₋₁,uᵢ₋₁,p,tᵢ₋₁)
         if typeof(W.dW) <: Number || is_diagonal_noise(integrator.sol.prob)
           @.. u += (β*gₘ₋₂ + γ*gₘ₋₁)*W.dW
         else
-          for j in 1:length(W.dW)
-            @.. u += (β*@view(gₘ₋₂[:,j]) + γ*@view(gₘ₋₁[:,j]))*W.dW[j]
-          end
+          matmul!(k,gₘ₋₂,W.dW)
+          @.. u += β*k
+          matmul!(k,gₘ₋₁,W.dW)
+          @.. u += γ*k
         end
       end
     elseif (i == mdeg) && alg_interpretation(integrator.alg) == :Ito
@@ -168,9 +158,8 @@ end
         @.. u += gₘ₋₂*W.dW + 1/(2.0*sqrt(dt))*(gₘ₋₁ - gₘ₋₂)*(W.dW^2 - dt)
       else
         integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁)
-        for j in 1:length(W.dW)
-          @.. uᵢ += @view(gₘ₋₂[:,j])*(sqrt(dt)*W.dW[j])
-        end
+        matmul!(uᵢ₋₁,gₘ₋₂,W.dW)
+        @.. uᵢ += sqrt(dt)*uᵢ₋₁
       end
     end
 
@@ -204,10 +193,7 @@ end
   deg_index = cache.deg_index
   α = mα[deg_index]
   σ = (1.0-α)*0.5 + α*mσ[deg_index]
-
-  # I'm not sure about which one is correct τ
   τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
-  # τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mτ[deg_index]
 
   sqrt_dt   = sqrt(dt)
   sqrt_3    = sqrt(3*one(eltype(W.dW)))
@@ -386,10 +372,7 @@ end
   deg_index = ccache.deg_index
   α = mα[deg_index]
   σ = (1.0-α)*0.5 + α*mσ[deg_index]
-
-  # I'm not sure about which one is correct τ
   τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
-  # τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mτ[deg_index]
 
   sqrt_dt   = sqrt(dt)
   sqrt_3    = sqrt(3.0)
@@ -941,9 +924,7 @@ end
   deg_index = cache.deg_index
   α = mα[integrator.alg.version_num]
   σ = (1.0-α)*0.5 + α*mσ[deg_index]
-
-  # τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
-  τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mτ[deg_index]
+  τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
 
   η₁ = (rand() < 0.5) ? -1 : 1
   η₂ = (rand() < 0.5) ? -1 : 1
@@ -1096,10 +1077,7 @@ end
   deg_index = ccache.deg_index
   α = convert(eltype(u),1.33)
   σ = (1.0-α)*0.5 + α*mσ[deg_index]
-
-  # τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
-  τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*mτ[deg_index]
-
+  τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
 
   η₁ = (rand() < 0.5) ? -1 : 1
   η₂ = (rand() < 0.5) ? -1 : 1
