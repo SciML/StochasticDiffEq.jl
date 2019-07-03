@@ -14,7 +14,6 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
   if GROUP == "All" || GROUP == "Interface"
     @time @testset "First Rand Tests" begin include("first_rand_test.jl") end
     @time @testset "Linear RODE Tests" begin include("rode_linear_tests.jl") end
-    @time @testset "Number Type Tests" begin include("sde/sde_numbertype_tests.jl") end
     @time @testset "Complex Number Tests" begin include("complex_tests.jl") end
     @time @testset "Static Array Tests" begin include("static_array_tests.jl") end
     @time @testset "Noise Type Tests" begin include("noise_type_test.jl") end
