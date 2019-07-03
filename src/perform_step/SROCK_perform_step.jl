@@ -70,7 +70,7 @@
         u .+= gₘ₋₂ .* W.dW .+ (1/(2.0*sqrt(dt))) .* (gₘ₋₁ .- gₘ₋₂) .* (W.dW .^ 2 .- dt)
       else
         gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
-        u += sqrt(dt)*(gₘ₋₂*W.dW)
+        u += gₘ₋₂*W.dW
       end
     end
 
@@ -136,7 +136,7 @@ end
         if typeof(W.dW) <: Number || is_diagonal_noise(integrator.sol.prob)
           @.. u += α*gₘ₋₂*W.dW
         else
-          matmul!(k,gₘ₋₂,W.dW)
+          mul!(k,gₘ₋₂,W.dW)
           @.. u += α*k
         end
       else
@@ -159,7 +159,7 @@ end
       else
         integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁)
         mul!(uᵢ₋₁,gₘ₋₂,W.dW)
-        @.. u += sqrt(dt)*uᵢ₋₁
+        @.. u += uᵢ₋₁
       end
     end
 
