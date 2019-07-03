@@ -144,9 +144,9 @@ end
         if typeof(W.dW) <: Number || is_diagonal_noise(integrator.sol.prob)
           @.. u += (β*gₘ₋₂ + γ*gₘ₋₁)*W.dW
         else
-          matmul!(k,gₘ₋₂,W.dW)
+          mul!(k,gₘ₋₂,W.dW)
           @.. u += β*k
-          matmul!(k,gₘ₋₁,W.dW)
+          mul!(k,gₘ₋₁,W.dW)
           @.. u += γ*k
         end
       end
@@ -158,7 +158,7 @@ end
         @.. u += gₘ₋₂*W.dW + 1/(2.0*sqrt(dt))*(gₘ₋₁ - gₘ₋₂)*(W.dW^2 - dt)
       else
         integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁)
-        matmul!(uᵢ₋₁,gₘ₋₂,W.dW)
+        mul!(uᵢ₋₁,gₘ₋₂,W.dW)
         @.. u += sqrt(dt)*uᵢ₋₁
       end
     end
