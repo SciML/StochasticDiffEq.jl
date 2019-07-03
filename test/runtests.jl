@@ -6,16 +6,12 @@ using Test, Random
 const TEST_PLOT = false
 const LONGER_TESTS = false
 
-if haskey(ENV,"GROUP")
-    group = ENV["GROUP"]
-else
-    group = "All"
-end
+const GROUP = get(ENV, "GROUP", "All")
 
-is_APPVEYOR = ( Sys.iswindows() && haskey(ENV,"APPVEYOR") )
+const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
 
 @time begin
-  if group == "All" || group == "Interface"
+  if GROUP == "All" || GROUP == "Interface"
     @time @testset "First Rand Tests" begin include("first_rand_test.jl") end
     @time @testset "Linear RODE Tests" begin include("rode_linear_tests.jl") end
     @time @testset "Number Type Tests" begin include("sde/sde_numbertype_tests.jl") end
@@ -37,7 +33,7 @@ is_APPVEYOR = ( Sys.iswindows() && haskey(ENV,"APPVEYOR") )
     @time @testset "No Index Tests" begin include("noindex_tests.jl") end
   end
 
-  if group == "All" || group == "Interface2"
+  if GROUP == "All" || GROUP == "Interface2"
     @time @testset "Linear SDE Tests" begin include("sde/sde_linear_tests.jl") end
     @time @testset "Two-dimensional Linear SDE Tests" begin include("sde/sde_twodimlinear_tests.jl") end
     @time @testset "Element-wise Tolerances Tests" begin include("tolerances_tests.jl") end
@@ -50,12 +46,12 @@ is_APPVEYOR = ( Sys.iswindows() && haskey(ENV,"APPVEYOR") )
     @time @testset "Additive Lorenz Attractor Test" begin include("adaptive/sde_lorenzattractor_tests.jl") end
   end
 
-  if !is_APPVEYOR && (group == "All" || group == "AlgConvergence")
+  if !is_APPVEYOR && (GROUP == "All" || GROUP == "AlgConvergence")
     @time @testset "Rossler Order Tests" begin include("sde/sde_rosslerorder_tests.jl") end
     @time @testset "Convergence Tests" begin include("sde/sde_convergence_tests.jl") end
   end
 
-  if !is_APPVEYOR && (group == "All" || group == "AlgConvergence2")
+  if !is_APPVEYOR && (GROUP == "All" || GROUP == "AlgConvergence2")
     @time @testset "Additive SDE Tests" begin include("sde/sde_additive_tests.jl") end
     @time @testset "Split Tests" begin include("split_tests.jl") end
     @time @testset "Stratonovich Convergence Tests" begin include("stratonovich_convergence_tests.jl") end
