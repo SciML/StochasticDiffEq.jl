@@ -39,13 +39,15 @@ module StochasticDiffEq
 
   using DiffEqBase: check_error!, is_diagonal_noise, @..
 
-  using DiffEqBase: nlsolvefail, isnewton, set_new_W!, get_W, @iipnlsolve, @oopnlsolve, _vec, _reshape
+  using DiffEqBase: nlsolvefail, isnewton, set_new_W!, get_W, iipnlsolve, oopnlsolve, _vec, _reshape, @getiipnlsolvefields
 
   using DiffEqBase: NLSolver
 
   using DiffEqBase: FastConvergence, Convergence, SlowConvergence, VerySlowConvergence, Divergence
 
   import DiffEqBase: calculate_residuals, calculate_residuals!, nlsolve_f, unwrap_cache, islinear
+
+  import DiffEqBase: iip_get_uf, oop_get_uf, build_jac_config
 
 
   const CompiledFloats = Union{Float32,Float64}
