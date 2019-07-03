@@ -56,18 +56,13 @@ function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prot
   atmp = fill!(similar(u,uEltypeNoUnits),0)
   z₁ = similar(u); z₂ = similar(u)
   z₃ = similar(u); z₄ = z
-  dz = similar(u)
   if typeof(f) <: SplitSDEFunction
     k1 = zero(u); k2 = zero(u)
     k3 = zero(u); k4 = zero(u)
-    uf = DiffEqDiffTools.UJacobianWrapper(f.f1,t,p)
   else
     k1 = nothing; k2 = nothing
     k3 = nothing; k4 = nothing
-    uf = DiffEqDiffTools.UJacobianWrapper(f,t,p)
   end
-  linsolve = alg.linsolve(Val{:init},uf,u)
-  jac_config = build_jac_config(alg,f,uf,du1,uprev,u,tmp,dz)
 
   if typeof(ΔW) <: Union{SArray,Number}
     chi2 = copy(ΔW)
