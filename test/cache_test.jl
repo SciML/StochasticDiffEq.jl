@@ -1,4 +1,4 @@
-using StochasticDiffEq, DiffEqBase, Random
+using StochasticDiffEq, Random
 
 function f(du,u,p,t)
   for i in 1:length(u)

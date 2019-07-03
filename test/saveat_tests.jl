@@ -1,6 +1,6 @@
-using StochasticDiffEq, DiffEqDevTools, DiffEqBase, Test
+using StochasticDiffEq, Test, Random
 using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
-import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear, prob_sde_2Dlinear
+using DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear, prob_sde_2Dlinear
 Random.seed!(100)
 prob = prob_sde_linear
 f(u,p,t) = 2u

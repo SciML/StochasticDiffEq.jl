@@ -1,4 +1,4 @@
-using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Test, LinearAlgebra, Random
+using StochasticDiffEq, DiffEqDevTools, Test, LinearAlgebra, Random
 
 Random.seed!(100)
 const σ_const = 0.87
