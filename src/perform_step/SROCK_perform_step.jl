@@ -70,7 +70,7 @@
         u .+= gₘ₋₂ .* W.dW .+ (1/(2.0*sqrt(dt))) .* (gₘ₋₁ .- gₘ₋₂) .* (W.dW .^ 2 .- dt)
       else
         gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
-        uᵢ += sqrt(dt)*(gₘ₋₂*W.dW)
+        u += sqrt(dt)*(gₘ₋₂*W.dW)
       end
     end
 
@@ -159,7 +159,7 @@ end
       else
         integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁)
         matmul!(uᵢ₋₁,gₘ₋₂,W.dW)
-        @.. uᵢ += sqrt(dt)*uᵢ₋₁
+        @.. u += sqrt(dt)*uᵢ₋₁
       end
     end
 
