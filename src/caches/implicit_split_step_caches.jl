@@ -23,7 +23,9 @@ end
 function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
   γ, c = alg.theta,zero(t)
-  @iipnlsolve
+  J, W = iip_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
+  nlsolver = iipnlsolve(alg,u,uprev,p,t,dt,f,W,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,γ,c)
+  @getiipnlsolvefields
   gtmp = zero(noise_rate_prototype)
   if is_diagonal_noise(prob)
     gtmp2 = gtmp
@@ -45,10 +47,9 @@ end
 function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   γ, c = alg.theta,zero(t)
-  @oopnlsolve
-  if !DiffEqBase.has_jac(f) && !isnewton(nlsolver)
-    uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
-  end
+  W = oop_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
+  nlsolver = oopnlsolve(alg,u,uprev,p,t,dt,f,W,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,γ,c)
+  uf = nlsolver.uf
   ISSEMConstantCache(uf,nlsolver)
 end
 
@@ -78,7 +79,9 @@ end
 function alg_cache(alg::ISSEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
   γ, c = alg.theta,zero(t)
-  @iipnlsolve
+  J, W = iip_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
+  nlsolver = iipnlsolve(alg,u,uprev,p,t,dt,f,W,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,γ,c)
+  @getiipnlsolvefields
 
   gtmp = zero(noise_rate_prototype)
   gtmp2 = zero(rate_prototype)
@@ -103,9 +106,8 @@ end
 function alg_cache(alg::ISSEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   γ, c = alg.theta,zero(t)
-  @oopnlsolve
-  if !DiffEqBase.has_jac(f) && !isnewton(nlsolver)
-    uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
-  end
+  W = oop_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
+  nlsolver = oopnlsolve(alg,u,uprev,p,t,dt,f,W,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,γ,c)
+  uf = nlsolver.uf
   ISSEulerHeunConstantCache(uf,nlsolver)
 end
