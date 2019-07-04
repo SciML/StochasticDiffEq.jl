@@ -1224,7 +1224,7 @@ end
 
   maxeig!(integrator, cache)
   cache.mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est+1.5)/0.811)+1))
-  cache.mdeg = max(10,min(cache.mdeg,200))-2
+  cache.mdeg = max(6,min(cache.mdeg,200))-2
   choose_deg!(integrator,cache)
 
   # here mdeg == s in the paper
