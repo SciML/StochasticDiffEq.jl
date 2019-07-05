@@ -222,3 +222,74 @@ function alg_cache(alg::TangXiaoSROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rat
   constantcache = TangXiaoSROCK2ConstantCache{uEltypeNoUnits}(u)
   TangXiaoSROCK2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype)}(u,uprev,uᵢ,uₓ,Û₁,Û₂,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,tmp,k,fsalfirst,atmp,constantcache)
 end
+
+mutable struct KomBurSROCK2ConstantCache{zType,T} <: StochasticDiffEqConstantCache
+  ms::SVector{46,Int}
+  recf::Vector{T}
+  mσ::SVector{46,T}
+  mτ::SVector{46,T}
+  mδ::Vector{T}
+  zprev::zType
+  mdeg::Int
+  deg_index::Int
+  start::Int
+end
+
+@cache struct KomBurSROCK2Cache{uType,rateType,noiseRateType,T} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+  utmp::uType
+  uᵢ₋₁::uType
+  uᵢ₋₂::uType
+  k::rateType
+  yₛ₋₁::rateType
+  yₛ₋₂::rateType
+  yₛ₋₃::rateType
+  SXₛ₋₁::uType
+  SXₛ₋₂::uType
+  SXₛ₋₃::uType
+  Gₛ::noiseRateType
+  Xₛ₋₁::noiseRateType
+  Xₛ₋₂::noiseRateType
+  Xₛ₋₃::noiseRateType
+  vec_χ::T
+  tmp::uType
+  fsalfirst::rateType
+  atmp::rateType
+  constantcache::KomBurSROCK2ConstantCache
+end
+
+function alg_cache(alg::KomBurSROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  KomBurSROCK2ConstantCache{uEltypeNoUnits}(u)
+end
+
+function alg_cache(alg::KomBurSROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  utmp = zero(u)
+  uᵢ₋₁ = zero(u)
+  uᵢ₋₂ = zero(u)
+  k = zero(rate_prototype)
+  yₛ₋₁ = k
+  yₛ₋₂ = zero(rate_prototype)
+  yₛ₋₃ = zero(rate_prototype)
+  Xₛ₋₁ = zero(noise_rate_prototype)
+  Xₛ₋₂ = zero(noise_rate_prototype)
+  Xₛ₋₃ = zero(noise_rate_prototype)
+  vec_χ = false .* vec(ΔW)
+  if typeof(ΔW) <: Number || length(ΔW) == 1 || is_diagonal_noise(prob)
+    Gₛ = Xₛ₋₁
+    SXₛ₋₁ = utmp
+    SXₛ₋₂ = utmp
+    SXₛ₋₃ = utmp
+  else
+    Gₛ = zero(noise_rate_prototype)
+    SXₛ₋₁ = zero(uprev)
+    SXₛ₋₂ = zero(uprev)
+    SXₛ₋₃ = zero(uprev)
+  end
+  tmp  = uᵢ₋₂            # these 3 variables are dummied to use same memory
+  fsalfirst = k
+  atmp = yₛ₋₂
+  constantcache = KomBurSROCK2ConstantCache{uEltypeNoUnits}(u)
+  KomBurSROCK2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype),typeof(vec_χ)}(u,uprev,utmp,uᵢ₋₁,uᵢ₋₂,k,yₛ₋₁,yₛ₋₂,
+                                            yₛ₋₃,SXₛ₋₁,SXₛ₋₂,SXₛ₋₃,Gₛ,Xₛ₋₁,Xₛ₋₂,Xₛ₋₃,vec_χ,tmp,fsalfirst,atmp,constantcache)
+end
