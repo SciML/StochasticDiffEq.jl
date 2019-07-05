@@ -1,4 +1,4 @@
-using StochasticDiffEq, DiffEqProblemLibrary, DiffEqDevTools, Test, LinearAlgebra, Random
+using StochasticDiffEq, DiffEqDevTools, Test, LinearAlgebra, Random
 
 Random.seed!(100)
 const σ_const = 0.87
@@ -12,12 +12,12 @@ function f_nondiag(u,p,t)
   return A*u + 1.01*u
 end
 
-function f_nondiag(du,u,p,t)
+function f_nondiag_iip(du,u,p,t)
   mul!(du,A,u)
   du .+= 1.01u
 end
 
-function f_nondiag(::Type{Val{:analytic}},u0,p,t,W)
+function f_analytic_nondiag(u0,p,t,W)
  tmp = (A+1.01I-(B^2))*t + B*sum(W)
  exp(tmp)*u0
 end
@@ -31,7 +31,7 @@ function g_nondiag(u,p,t)
   return du
 end
 
-function g_nondiag(du,u,p,t)
+function g_nondiag_iip(du,u,p,t)
   du[1,1] = σ_const*u[1]
   du[1,2] = σ_const*u[1]
   du[2,1] = σ_const*u[2]
@@ -47,8 +47,8 @@ function ggprime(du, u, p, t)
   du .= coeff*u
 end
 
-prob = SDEProblem{false}(f_nondiag,g_nondiag,u0,(0.0,1.0),noise_rate_prototype=zeros(2,2))
-probiip = SDEProblem{true}(f_nondiag,g_nondiag,u0,(0.0,1.0),noise_rate_prototype=zeros(2,2))
+prob = SDEProblem(SDEFunction(f_nondiag,g_nondiag,analytic=f_analytic_nondiag),g_nondiag,u0,(0.0,1.0),noise_rate_prototype=zeros(2,2))
+probiip = SDEProblem(SDEFunction(f_nondiag_iip,g_nondiag_iip,analytic=f_analytic_nondiag),g_nondiag_iip,u0,(0.0,1.0),noise_rate_prototype=zeros(2,2))
 
 ## Just solve to test compatibility
 IEM = solve(probiip,ImplicitEM())

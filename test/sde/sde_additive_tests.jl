@@ -1,14 +1,14 @@
 using StochasticDiffEq, DiffEqDevTools, Test, Random
 using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
-import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_additive, prob_sde_additivesystem
+using DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_additive, prob_sde_additivesystem
 Random.seed!(100)
 
 println("Bunch of additive solves")
 
 f_bm(u,p,t) = 0.0
-f_bm(::Type{Val{:analytic}},u0,p,t,W) = W
+f_analytic_bm(u0,p,t,W) = W
 g_bm(u,p,t) = 1.0
-prob = SDEProblem(f_bm,g_bm,0.0,(0.0,1.0))
+prob = SDEProblem(SDEFunction(f_bm,g_bm,analytic=f_analytic_bm),g_bm,0.0,(0.0,1.0))
 sol1 = solve(prob,SRA1(),dt=1/2^(3),adaptive=false)
 sol2 = solve(prob,SOSRA(),dt=1/2^(3),adaptive=false)
 sol3 = solve(prob,SKenCarp(),dt=1/2^(3),adaptive=false)

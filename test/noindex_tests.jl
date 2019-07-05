@@ -1,3 +1,6 @@
+using StochasticDiffEq, Test, Random, DiffEqNoiseProcess
+Random.seed!(100)
+
 struct NoIndexArray{T, N} <: AbstractArray{T, N}
     x::Array{T, N}
 end
@@ -37,7 +40,6 @@ function Base.show(io::IO, ::MIME"text/plain", x::NoIndexArray)
     Base.print_array(io, x.x)
 end
 
-using StochasticDiffEq, Test, Random, DiffEqNoiseProcess
 prob = SDEProblem((du, u, p, t)->copyto!(du, u),(du, u, p, t)->copyto!(du, u),NoIndexArray(ones(10, 10)),(0.0,10.0))
 algs = [SOSRI(), SOSRA()]
 DiffEqNoiseProcess.wiener_randn!(rng::AbstractRNG,rand_vec::NoIndexArray) = randn!(rng,rand_vec.x)
