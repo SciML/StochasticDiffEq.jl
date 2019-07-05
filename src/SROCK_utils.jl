@@ -16,7 +16,7 @@ function maxeig!(integrator, cache::StochasticDiffEqConstantCache)
   # Perturbation
   u_norm = integrator.opts.internalnorm(uprev,t)
   z_norm = integrator.opts.internalnorm(z,t)
-  pert   = eps(u_norm)
+  pert   = convert(eltype(u_norm),1e-30) #eps(u_norm)
   sqrt_pert = sqrt(pert)
   is_u_zero = u_norm == zero(u_norm)
   is_z_zero = z_norm == zero(z_norm)
@@ -34,7 +34,7 @@ function maxeig!(integrator, cache::StochasticDiffEqConstantCache)
     z *= quot
   else
     dz_u = pert
-    z = dz_u*ones(z)
+    z = dz_u .* (false .* z .+ one(eltype(z)))
   end # endif
   # Start power iteration
   integrator.eigen_est = 0
@@ -88,7 +88,7 @@ function maxeig!(integrator, cache::StochasticDiffEqMutableCache)
   # Perturbation
   u_norm = integrator.opts.internalnorm(uprev,t)
   z_norm = integrator.opts.internalnorm(z,t)
-  pert   = eps(u_norm)
+  pert   = eps(u_norm) # convert(eltype(u_norm),1e-16) #
   sqrt_pert = sqrt(pert)
   is_u_zero = u_norm == zero(u_norm)
   is_z_zero = z_norm == zero(z_norm)
@@ -106,7 +106,7 @@ function maxeig!(integrator, cache::StochasticDiffEqMutableCache)
     @.. z *= quot
   else
     dz_u = pert
-    @.. z = dz_u*ones(z)
+    @.. z = dz_u*(false*z + one(eltype(z)))
   end # endif
   # Start power iteration
   integrator.eigen_est = 0
