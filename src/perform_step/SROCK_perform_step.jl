@@ -196,9 +196,8 @@ end
   τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
 
   sqrt_dt   = sqrt(dt)
-  sqrt_3    = sqrt(3*one(eltype(W.dW)))
-
   # if gen_prob
+  #   vec_χ = false * W.dW
   #   for i in 1:length(W.dW)
   #     if rand() < 0.5
   #       vec_χ[i] = -one(eltype(W.dW))
@@ -307,52 +306,41 @@ end
   #   uᵢ₋₂ = uᵢ - uₓ
   #   Gₛ₁  = integrator.g(uᵢ₋₂,p,tᵢ)
   #   u += (1//4*W.dW) .* Gₛ₁
-  else
-      Gₛ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
-      u = Gₛ*W.dW
+else
+    Gₛ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
+    u += Gₛ*W.dW
 
-      Gₛ = integrator.g(uᵢ,p,tᵢ)
-      uₓ += Gₛ*W.dW
+    Gₛ = integrator.g(uᵢ,p,tᵢ)
+    uₓ += Gₛ*W.dW
 
-      uₓ = integrator.f(uₓ,p,tₓ)
-      u  += (1//2)*dt*uₓ
-      for i in 1:length(W.dW)
-        WikJ = W.dW[i]
-        WikJ2 = vec_χ[i]
-        WikRange = 0.5 .* ((1:length(W.dW) .== i) .* (WikJ .^ 2 .- dt) .+ (1:length(W.dW) .> i) .* (W.dW .* WikJ .- dt .* vec_χ) .+ (1:length(W.dW) .< i) .* (W.dW .* WikJ .- dt .* WikJ2))
-        # for j in 1:length(W.dW)
-        #   (i == j) && (Jᵢⱼ = (W.dW[i]^2 - dt)/2)
-        #   (i < j) && (Jᵢⱼ = (W.dW[i]*W.dW[j] - dt*vec_χ[j])/2)
-        #   (i > j) && (Jᵢⱼ = (W.dW[i]*W.dW[j] + dt*vec_χ[i])/2)
-        #
-        #   (j == 1) && (uₓ = @view(Gₛ[:,j])*Jᵢⱼ)
-        #   (j > 1) && (uₓ += @view(Gₛ[:,j])*Jᵢⱼ)
-        # end
-        uₓ = Gₛ*WikRange
-        WikRange = 0.5 .* (1:length(W.dW) .== i)
-        uᵢ₋₂ = uᵢ + uₓ
-        Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ)
-        u   += Gₛ₁*WikRange
-        uᵢ₋₂ = uᵢ - uₓ
-        Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ)
-        u   -= Gₛ₁*WikRange
+    uₓ = integrator.f(uₓ,p,tₓ)
+    u  += (1//2)*dt*uₓ
+    for i in 1:length(W.dW)
+      for j in 1:length(W.dW)
+        (i == j) && (Jᵢⱼ = (W.dW[i]^2 - dt)/2)
+        (i < j) && (Jᵢⱼ = (W.dW[i]*W.dW[j] - dt*vec_χ[j])/2)
+        (i > j) && (Jᵢⱼ = (W.dW[i]*W.dW[j] + dt*vec_χ[i])/2)
+
+        (j == 1) && (uₓ = @view(Gₛ[:,j])*Jᵢⱼ)
+        (j > 1) && (uₓ += @view(Gₛ[:,j])*Jᵢⱼ)
       end
-
-      WikRange = sqrt_dt .* vec_χ
-      uₓ = Gₛ*WikRange
-
+      WikRange = 0.5 .* (1:length(W.dW) .== i)
       uᵢ₋₂ = uᵢ + uₓ
       Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ)
-      u += 1//4*(Gₛ₁*W.dW) - 1//2*(Gₛ*W.dW)
-      # for i in 1:length(W.dW)
-      #   u += (1//4*W.dW[i])*(@view(Gₛ₁[:,i]) - 2*@view(Gₛ[:,i]))
-      # end
+      u   += (Gₛ₁*WikRange)
       uᵢ₋₂ = uᵢ - uₓ
       Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ)
-      u += 1//4*(Gₛ₁*W.dW)
-      # for i in 1:length(W.dW)
-      #   u += (1//4*W.dW[i])*@view(Gₛ₁[:,i])
-      # end
+      u   -= (Gₛ₁*WikRange)
+    end
+
+    uₓ = sqrt_dt*(Gₛ*vec_χ)
+    uᵢ₋₂ = uᵢ + uₓ
+    Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ)
+    u += 1//4*(Gₛ₁*W.dW) - 1//2*(Gₛ*W.dW)
+
+    uᵢ₋₂ = uᵢ - uₓ
+    Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ)
+    u += 1//4*(Gₛ₁*W.dW)
   end
 
   integrator.u = u
@@ -384,9 +372,9 @@ end
   if gen_prob
     for i in 1:length(W.dW)
       if rand() < 0.5
-        vec_χ[i] = -sqrt_dt
+        vec_χ[i] = -one(eltype(W.dW))
       else
-        vec_χ[i] = sqrt_dt
+        vec_χ[i] = one(eltype(W.dW))
       end
     end
   end
@@ -507,7 +495,7 @@ end
       for i in 1:length(W.dW)
         for j in 1:length(W.dW)
           (i == j) && (Jᵢⱼ = (W.dW[i]^2 - dt)/2)
-          (i < j) && (Jᵢⱼ = (W.dW[i]*W.dW[j] - dt*vec_χ[i])/2)
+          (i < j) && (Jᵢⱼ = (W.dW[i]*W.dW[j] - dt*vec_χ[j])/2)
           (i > j) && (Jᵢⱼ = (W.dW[i]*W.dW[j] + dt*vec_χ[i])/2)
 
           (j == 1) && (@.. uₓ = @view(Gₛ[:,j])*Jᵢⱼ)
