@@ -30,7 +30,9 @@ function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_pr
   end
 
   γ, c = alg.theta,zero(t)
-  @iipnlsolve
+  J, W = iip_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
+  nlsolver = iipnlsolve(alg,u,uprev,p,t,dt,f,W,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,γ,c)
+  @getiipnlsolvefields
   ImplicitEMCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,J,W,jac_config,linsolve,uf,
                   dW_cache,nlsolver)
 end
@@ -43,10 +45,9 @@ end
 function alg_cache(alg::ImplicitEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   γ, c = alg.theta,zero(t)
-  @oopnlsolve
-  if !DiffEqBase.has_jac(f) && !isnewton(nlsolver)
-    uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
-  end
+  W = oop_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
+  nlsolver = oopnlsolve(alg,u,uprev,p,t,dt,f,W,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,γ,c)
+  uf = nlsolver.uf
   ImplicitEMConstantCache(uf,nlsolver)
 end
 
@@ -88,7 +89,9 @@ function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_
   end
 
   γ, c = alg.theta,zero(t)
-  @iipnlsolve
+  J, W = iip_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
+  nlsolver = iipnlsolve(alg,u,uprev,p,t,dt,f,W,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,γ,c)
+  @getiipnlsolvefields
   ImplicitEulerHeunCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,gtmp3,
                          J,W,jac_config,linsolve,uf,nlsolver,dW_cache)
 end
@@ -101,10 +104,9 @@ end
 function alg_cache(alg::ImplicitEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   γ, c = alg.theta,zero(t)
-  @oopnlsolve
-  if !DiffEqBase.has_jac(f) && !isnewton(nlsolver)
-    uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
-  end
+  W = oop_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
+  nlsolver = oopnlsolve(alg,u,uprev,p,t,dt,f,W,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,γ,c)
+  uf = nlsolver.uf
   ImplicitEulerHeunConstantCache(uf,nlsolver)
 end
 
@@ -135,7 +137,9 @@ function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate
   gtmp3 = zero(rate_prototype)
 
   γ, c = alg.theta,zero(t)
-  @iipnlsolve
+  J, W = iip_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
+  nlsolver = iipnlsolve(alg,u,uprev,p,t,dt,f,W,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,γ,c)
+  @getiipnlsolvefields
   ImplicitRKMilCache(u,uprev,du1,fsalfirst,k,z,dz,tmp,gtmp,gtmp2,gtmp3,
                    J,W,jac_config,linsolve,uf,nlsolver)
 end
@@ -148,9 +152,8 @@ end
 function alg_cache(alg::ImplicitRKMil,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   γ, c = alg.theta,zero(t)
-  @oopnlsolve
-  if !DiffEqBase.has_jac(f) && !isnewton(nlsolver)
-    uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
-  end
+  W = oop_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
+  nlsolver = oopnlsolve(alg,u,uprev,p,t,dt,f,W,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,γ,c)
+  uf = nlsolver.uf
   ImplicitRKMilConstantCache(uf,nlsolver)
 end

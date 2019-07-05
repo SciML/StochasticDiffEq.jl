@@ -1,4 +1,4 @@
-using DiffEqBase, StochasticDiffEq, DiffEqDevTools, Test, LinearAlgebra, Random
+using StochasticDiffEq, DiffEqDevTools, Test, LinearAlgebra, Random
 
 u0 = ones(2)
 A = [-3/2 1/20
@@ -14,12 +14,12 @@ function σ(du,u,p,t)
   mul!(@view(du[:,2]),B,u)
 end
 
-function (::typeof(f))(::Type{Val{:analytic}},u0,p,t,W)
+function f_analytic(u0,p,t,W)
   tmp = (A-(B^2))*t + B*W[1] + B*W[2]
   exp(tmp)*u0
 end
 
-prob2 = SDEProblem(f,σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
+prob2 = SDEProblem(SDEFunction(f,σ,analytic=f_analytic),σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
 
 sol2 = solve(prob2,EM(),dt=1/100)
 
@@ -37,21 +37,21 @@ A = [2.0 -1.0; -1.0 2.0]
 B = [1/5 1/100
     1/100 1/5]
 
-function f(du,u,p,t)
+function f_iip(du,u,p,t)
   mul!(du,A,u)
   du .+= 1.01u
 end
-function σ(du,u,p,t)
+function σ_iip(du,u,p,t)
   mul!(@view(du[:,1]),B,u)
   mul!(@view(du[:,2]),B,u)
 end
 
-function (::typeof(f))(::Type{Val{:analytic}},u0,p,t,W)
+function f_analytic_iip(u0,p,t,W)
  tmp = (A+1.01I-(B^2))*t + B*sum(W)
  exp(tmp)*u0
 end
 
-prob2 = SDEProblem(f,σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
+prob2 = SDEProblem(SDEFunction(f_iip,σ_iip,analytic=f_analytic_iip),σ_iip,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
 
 sol2 = solve(prob2,EM(),dt=1/100)
 

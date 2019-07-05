@@ -1,6 +1,6 @@
-using StochasticDiffEq, Test
+using StochasticDiffEq, Test, Random
 using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
-import DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_2Dlinear
+using DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_2Dlinear
 
 #=
 function f(u,p,t)

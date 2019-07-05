@@ -1,5 +1,4 @@
-using DiffEqBase, StochasticDiffEq, DiffEqNoiseProcess,
-      Test, DiffEqDevTools, Random, LinearAlgebra
+using StochasticDiffEq, DiffEqNoiseProcess, Test, DiffEqDevTools, Random, LinearAlgebra
 const μ = 1.01
 const σ_const = 0.87
 

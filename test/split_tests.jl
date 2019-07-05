@@ -1,4 +1,4 @@
-using DiffEqBase, StochasticDiffEq, DiffEqNoiseProcess, Test, DiffEqDevTools
+using StochasticDiffEq, DiffEqNoiseProcess, Test, DiffEqDevTools
 
 f(u,p,t) = (1.01) * u
 f1(u,p,t) = (1.01)/2 * u

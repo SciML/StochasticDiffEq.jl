@@ -7,12 +7,9 @@ end
 function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   tab = SKenCarpTableau(real(uBottomEltypeNoUnits),real(tTypeNoUnits))
   γ, c = tab.γ,tab.c3
-  @oopnlsolve
-  if uf !== nothing && typeof(f) <: SplitSDEFunction
-    uf = DiffEqDiffTools.UDerivativeWrapper(f.f1,t,p)
-  else
-    uf = DiffEqDiffTools.UDerivativeWrapper(f,t,p)
-  end
+  W = oop_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
+  nlsolver = oopnlsolve(alg,u,uprev,p,t,dt,f,W,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,γ,c)
+  uf = nlsolver.uf
   SKenCarpConstantCache(uf,nlsolver,tab)
 end
 
@@ -52,23 +49,20 @@ du_cache(c::SKenCarpCache)   = (c.k,c.fsalfirst)
 function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
   tab = SKenCarpTableau(real(uBottomEltypeNoUnits),real(tTypeNoUnits))
   γ, c = tab.γ,tab.c3
-  @iipnlsolve
+  J, W = iip_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
+  nlsolver = iipnlsolve(alg,u,uprev,p,t,dt,f,W,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,γ,c)
+  @getiipnlsolvefields
 
   atmp = fill!(similar(u,uEltypeNoUnits),0)
   z₁ = similar(u); z₂ = similar(u)
   z₃ = similar(u); z₄ = z
-  dz = similar(u)
   if typeof(f) <: SplitSDEFunction
     k1 = zero(u); k2 = zero(u)
     k3 = zero(u); k4 = zero(u)
-    uf = DiffEqDiffTools.UJacobianWrapper(f.f1,t,p)
   else
     k1 = nothing; k2 = nothing
     k3 = nothing; k4 = nothing
-    uf = DiffEqDiffTools.UJacobianWrapper(f,t,p)
   end
-  linsolve = alg.linsolve(Val{:init},uf,u)
-  jac_config = build_jac_config(alg,f,uf,du1,uprev,u,tmp,dz)
 
   if typeof(ΔW) <: Union{SArray,Number}
     chi2 = copy(ΔW)

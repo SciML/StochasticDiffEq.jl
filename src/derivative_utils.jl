@@ -398,3 +398,6 @@ function update_W!(nlsolver::NLSolver, integrator, cache::StochasticDiffEqConsta
   end
   nothing
 end
+
+iip_get_uf(alg::StochasticDiffEqAlgorithm,nf,t,p) = DiffEqDiffTools.UJacobianWrapper(nf,t,p)
+oop_get_uf(alg::StochasticDiffEqAlgorithm,nf,t,p) = DiffEqDiffTools.UDerivativeWrapper(nf,t,p)
