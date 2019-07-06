@@ -43,6 +43,7 @@ SROCK1(;interpretation=:Ito) = SROCK1{interpretation}()
 
 # Weak Order 2
 struct SROCK2 <: StochasticDiffEqAlgorithm end
+struct KomBurSROCK2 <: StochasticDiffEqAlgorithm end
 
 # ROCK stabilization for EM
 struct SROCKEM <: StochasticDiffEqAlgorithm
