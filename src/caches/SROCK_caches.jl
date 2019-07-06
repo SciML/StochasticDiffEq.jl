@@ -58,6 +58,7 @@ end
   uᵢ₋₂::uType
   Gₛ::noiseRateType
   Gₛ₁::noiseRateType
+  WikRange::T
   vec_χ::T
   tmp::uType
   k::rateType
@@ -78,12 +79,13 @@ function alg_cache(alg::SROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_protot
   uᵢ₋₂ = zero(u)
   Gₛ = zero(noise_rate_prototype)
   Gₛ₁ = zero(noise_rate_prototype)
+  WikRange = false .* vec(ΔW)
   vec_χ = false .* vec(ΔW)
   tmp  = uᵢ₋₂            # these 2 variables are dummied to use same memory
   fsalfirst = k
   atmp = zero(rate_prototype)
   constantcache = SROCK2ConstantCache{uEltypeNoUnits}(u)
-  SROCK2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype),typeof(vec_χ)}(u,uprev,uᵢ,uₓ,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,vec_χ,tmp,k,fsalfirst,atmp,constantcache)
+  SROCK2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype),typeof(vec_χ)}(u,uprev,uᵢ,uₓ,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,WikRange,vec_χ,tmp,k,fsalfirst,atmp,constantcache)
 end
 
 mutable struct SROCKEMConstantCache{zType,uEltypeNoUnits} <: StochasticDiffEqConstantCache
