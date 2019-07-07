@@ -593,9 +593,10 @@ end
 
   integrator.g(Gₛ,u,p,tᵢ)
   if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || is_diagonal_noise(integrator.sol.prob)
-    @.. uᵢ₋₁ = Gₛ*W.dW
+    @.. u += Gₛ*W.dW
   else
-    uᵢ₋₁ = Gₛ*W.dW
+    mul!(uᵢ₋₁,Gₛ,W.dW)
+    u += uᵢ₋₁
     # for i in 1:length(W.dW)
     #   (i == 1) && (@.. uᵢ₋₁ = @view(Gₛ[:,i])*W.dW[i])
     #   (i > 1) && (@.. uᵢ₋₁ += @view(Gₛ[:,i])*W.dW[i])
@@ -626,15 +627,17 @@ end
         WikRange .= 1//2 .* (1:length(W.dW) .== i)
         @.. tmp = u + uᵢ₋₂
         integrator.g(Gₛ₁,tmp,p,tᵢ)
-        @.. uᵢ₋₁ += @view(Gₛ₁[:,i])*(0.5)
+        mul!(uᵢ₋₁,Gₛ₁,WikRange)
+        @.. u += uᵢ₋₁
         @.. tmp = u - uᵢ₋₂
         integrator.g(Gₛ₁,tmp,p,tᵢ)
-        @.. uᵢ₋₁ -= @view(Gₛ₁[:,i])*(0.5)
+        mul!(uᵢ₋₁,Gₛ₁,WikRange)
+        @.. u -= uᵢ₋₁
       end
     end
   end
 
-  integrator.u = u + uᵢ₋₁
+  integrator.u = u
 end
 
 @muladd function perform_step!(integrator,cache::SKSROCKConstantCache,f=integrator.f)
