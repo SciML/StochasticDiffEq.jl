@@ -163,7 +163,7 @@ end
 
   if integrator.opts.adaptive
 
-    if has_invW(f)
+    if has_Wfact(f)
       # This means the Jacobian was never computed!
       f.jac(J,uprev,p,t)
     end
