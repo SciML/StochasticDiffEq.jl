@@ -41,13 +41,13 @@ sim = test_convergence(dts,prob,EM(),trajectories=1000)
 sim = test_convergence(dts,prob,LambaEM(),trajectories=1000)
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
 
-sim = test_convergence(dts,prob,ImplicitEM(),trajectories=100)
+sim = test_convergence(dts,prob,ImplicitEM(),trajectories=300)
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
 
 sim = test_convergence(dts,prob,ImplicitEM(theta=1),trajectories=100)
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
 
-sim = test_convergence(dts,prob,ImplicitEM(symplectic=true),trajectories=100)
+sim = test_convergence(dts,prob,ImplicitEM(symplectic=true),trajectories=500)
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
 
 sim = test_convergence(dts,prob,ImplicitEM(symplectic=true,autodiff=false),trajectories=100)
@@ -74,7 +74,7 @@ sim = test_convergence(dts,prob,ImplicitRKMil(symplectic=true,autodiff=false),tr
 sim = test_convergence(dts,prob,ImplicitRKMil(nlsolve=StochasticDiffEq.NLFunctional()),trajectories=100)
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
-sim2 = test_convergence(dts,prob,RKMil(),trajectories=100)
+sim2 = test_convergence(dts,prob,RKMil(),trajectories=1000)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 
 print(".")
