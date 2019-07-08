@@ -38,7 +38,7 @@ sol = solve(prob,RKMilCommute(),dt=1/2^(8))
 sol = solve(prob,EM(),dt=1/2^(10))
 
 dts = (1/2) .^ (10:-1:3) #14->7 good plot
-sim2 = test_convergence(dts,prob,EM(),numMonte=Int(1e2))
-sim2 = test_convergence(dts,prob,RKMilCommute(),numMonte=Int(2e2))
+sim2 = test_convergence(dts,prob,EM(),trajectories=Int(1e2))
+sim2 = test_convergence(dts,prob,RKMilCommute(),trajectories=Int(2e2))
 
 sim2.𝒪est[:final] - 1 < 0.2
