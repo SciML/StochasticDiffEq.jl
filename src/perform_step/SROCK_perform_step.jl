@@ -281,7 +281,7 @@ end
     u  += (1//2)*dt*uₓ
     for i in 1:length(W.dW)
       WikJ = W.dW[i]; WikJ2 = vec_χ[i]
-      WikRange = 1//2 .* (W.dW .* WikJ .- (1:length(W.dW) .== i) .* dt) .- (1:length(W.dW) .> i) .* dt .* vec_χ .+ (1:length(W.dW) .< i) .* dt .* WikJ2)
+      WikRange = 1//2 .* (W.dW .* WikJ .- (1:length(W.dW) .== i) .* dt)) #.- (1:length(W.dW) .> i) .* dt .* vec_χ .+ (1:length(W.dW) .< i) .* dt .* WikJ2)
       uₓ = Gₛ*WikRange
       WikRange = 0.5 .* (1:length(W.dW) .== i)
       uᵢ₋₂ = uᵢ + uₓ
@@ -421,17 +421,17 @@ end
 
       for i in 1:length(W.dW)
         WikJ = W.dW[i]; WikJ2 = vec_χ[i]
-        WikRange .= 1//2 .* (W.dW .* WikJ .- (1:length(W.dW) .== i) .* dt .+ (1:length(W.dW) .< i) .* dt .* WikJ2 .- (1:length(W.dW) .> i) .* dt .* vec_χ)
+        WikRange .= 1//2 .* (W.dW .* WikJ .- (1:length(W.dW) .== i) .* dt )#.+ (1:length(W.dW) .< i) .* dt .* WikJ2 .- (1:length(W.dW) .> i) .* dt .* vec_χ)
         mul!(uₓ,Gₛ,WikRange)
         @.. uᵢ₋₂ = uᵢ + uₓ
-        WikRange .= 1 .* (1:length(W.dW) .== i)
+        WikRange .= 1//2 .* (1:length(W.dW) .== i)
         integrator.g(Gₛ₁,uᵢ₋₂,p,tᵢ)
         mul!(uᵢ₋₂,Gₛ₁,WikRange)
-        @.. u   += (1//2)*uᵢ₋₂
+        @.. u   += uᵢ₋₂
         @.. uᵢ₋₂ = uᵢ - uₓ
         integrator.g(Gₛ₁,uᵢ₋₂,p,tᵢ)
         mul!(uᵢ₋₂,Gₛ₁,WikRange)
-        @.. u   -= (1//2)*uᵢ₋₂
+        @.. u   -= uᵢ₋₂
       end
       @.. WikRange = vec_χ*sqrt_dt
       mul!(uₓ,Gₛ,WikRange)
@@ -597,10 +597,6 @@ end
   else
     mul!(uᵢ₋₁,Gₛ,W.dW)
     u += uᵢ₋₁
-    # for i in 1:length(W.dW)
-    #   (i == 1) && (@.. uᵢ₋₁ = @view(Gₛ[:,i])*W.dW[i])
-    #   (i > 1) && (@.. uᵢ₋₁ += @view(Gₛ[:,i])*W.dW[i])
-    # end
   end
 
   if integrator.alg.strong_order_1
@@ -617,13 +613,6 @@ end
         WikJ = W.dW[i]
         WikRange .= 1//2 .* (WikJ .* W.dW .- (1:length(W.dW) .== i) .* dt)
         mul!(uᵢ₋₂,Gₛ,WikRange)
-        # for j in 1:length(W.dW)
-        #   (i == j) && (Jᵢⱼ = (W.dW[i]*W.dW[j]-dt)*0.5)
-        #   (i != j) && (Jᵢⱼ = (W.dW[i]*W.dW[j])*0.5)
-        #
-        #   (j == 1) && (@.. uᵢ₋₂ = @view(Gₛ[:,j])*Jᵢⱼ)
-        #   (j > 1) && (@.. uᵢ₋₂ += @view(Gₛ[:,j])*Jᵢⱼ)
-        # end
         WikRange .= 1//2 .* (1:length(W.dW) .== i)
         @.. tmp = u + uᵢ₋₂
         integrator.g(Gₛ₁,tmp,p,tᵢ)
