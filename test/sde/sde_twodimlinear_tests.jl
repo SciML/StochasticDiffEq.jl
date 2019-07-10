@@ -35,115 +35,115 @@ sol.t ≈ sol2.t
 println("Convergence Test on 2D Linear")
 dts = (1/2) .^ (7:-1:4) #14->7 good plot
 
-sim = test_convergence(dts,prob,EM(),numMonte=1000)
+sim = test_convergence(dts,prob,EM(),trajectories=1000)
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
 
-sim = test_convergence(dts,prob,LambaEM(),numMonte=1000)
+sim = test_convergence(dts,prob,LambaEM(),trajectories=1000)
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
 
-sim = test_convergence(dts,prob,ImplicitEM(),numMonte=100)
+sim = test_convergence(dts,prob,ImplicitEM(),trajectories=300)
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
 
-sim = test_convergence(dts,prob,ImplicitEM(theta=1),numMonte=100)
+sim = test_convergence(dts,prob,ImplicitEM(theta=1),trajectories=100)
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
 
-sim = test_convergence(dts,prob,ImplicitEM(symplectic=true),numMonte=100)
+sim = test_convergence(dts,prob,ImplicitEM(symplectic=true),trajectories=500)
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
 
-sim = test_convergence(dts,prob,ImplicitEM(symplectic=true,autodiff=false),numMonte=100)
+sim = test_convergence(dts,prob,ImplicitEM(symplectic=true,autodiff=false),trajectories=100)
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
 
-sim = test_convergence(dts,prob,ISSEM(),numMonte=100)
+sim = test_convergence(dts,prob,ISSEM(),trajectories=100)
 @test abs(sim.𝒪est[:l2]-.5) < 0.1
 
-sim = test_convergence(dts,prob,ImplicitRKMil(),numMonte=100)
+sim = test_convergence(dts,prob,ImplicitRKMil(),trajectories=100)
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
-sim = test_convergence(dts,prob,ImplicitRKMil(theta=1),numMonte=100)
+sim = test_convergence(dts,prob,ImplicitRKMil(theta=1),trajectories=100)
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
-sim = test_convergence(dts,prob,ImplicitRKMil(theta=1,autodiff=false),numMonte=200)
+sim = test_convergence(dts,prob,ImplicitRKMil(theta=1,autodiff=false),trajectories=200)
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
-sim = test_convergence(dts,prob,ImplicitRKMil(symplectic=true),numMonte=150)
+sim = test_convergence(dts,prob,ImplicitRKMil(symplectic=true),trajectories=150)
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
-sim = test_convergence(dts,prob,ImplicitRKMil(symplectic=true,autodiff=false),numMonte=100)
+sim = test_convergence(dts,prob,ImplicitRKMil(symplectic=true,autodiff=false),trajectories=100)
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
-sim = test_convergence(dts,prob,ImplicitRKMil(nlsolve=StochasticDiffEq.NLFunctional()),numMonte=100)
+sim = test_convergence(dts,prob,ImplicitRKMil(nlsolve=StochasticDiffEq.NLFunctional()),trajectories=100)
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
-sim2 = test_convergence(dts,prob,RKMil(),numMonte=100)
+sim2 = test_convergence(dts,prob,RKMil(),trajectories=1000)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 
 print(".")
 
-sim2 = test_convergence(dts,prob,WangLi3SMil_A(),numMonte=100)
+sim2 = test_convergence(dts,prob,WangLi3SMil_A(),trajectories=100)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 
-sim2 = test_convergence(dts,prob,WangLi3SMil_B(),numMonte=100)
+sim2 = test_convergence(dts,prob,WangLi3SMil_B(),trajectories=100)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 
-sim2 = test_convergence(dts,prob,WangLi3SMil_C(),numMonte=100)
+sim2 = test_convergence(dts,prob,WangLi3SMil_C(),trajectories=100)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 
-sim2 = test_convergence(dts,prob,WangLi3SMil_D(),numMonte=100)
+sim2 = test_convergence(dts,prob,WangLi3SMil_D(),trajectories=100)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 
-sim2 = test_convergence(dts,prob,WangLi3SMil_E(),numMonte=100)
+sim2 = test_convergence(dts,prob,WangLi3SMil_E(),trajectories=100)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 
-sim2 = test_convergence(dts,prob,WangLi3SMil_F(),numMonte=100)
+sim2 = test_convergence(dts,prob,WangLi3SMil_F(),trajectories=100)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 
 print(".")
 
-sim2 = test_convergence(dts,prob,SROCK1(),numMonte=100)
+sim2 = test_convergence(dts,prob,SROCK1(),trajectories=100)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 
-sim2 = test_convergence(dts,prob,SROCK2(),numMonte=100)
+sim2 = test_convergence(dts,prob,SROCK2(),trajectories=100)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 
-sim2 = test_convergence(dts,prob,SROCKEM(strong_order_1=false),numMonte=100)
+sim2 = test_convergence(dts,prob,SROCKEM(strong_order_1=false),trajectories=100)
 @test abs(sim2.𝒪est[:l∞]-0.5) < 0.2
 
-sim2 = test_convergence(dts,prob,SROCKEM(),numMonte=100)
+sim2 = test_convergence(dts,prob,SROCKEM(),trajectories=100)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 
-sim2 = test_convergence(dts,prob,SKSROCK(),numMonte=500)
+sim2 = test_convergence(dts,prob,SKSROCK(),trajectories=500)
 @test abs(sim2.𝒪est[:l∞]-0.5) < 0.2
 
-sim = test_convergence(dts,prob,TangXiaoSROCK2(version_num=1),numMonte=100)
+sim = test_convergence(dts,prob,TangXiaoSROCK2(version_num=1),trajectories=100)
 @test abs(sim.𝒪est[:l∞]- 1) < 0.2
 
-sim = test_convergence(dts,prob,TangXiaoSROCK2(version_num=2),numMonte=100)
+sim = test_convergence(dts,prob,TangXiaoSROCK2(version_num=2),trajectories=100)
 @test abs(sim.𝒪est[:l∞]- 1) < 0.2
 
-sim = test_convergence(dts,prob,TangXiaoSROCK2(version_num=3),numMonte=100)
+sim = test_convergence(dts,prob,TangXiaoSROCK2(version_num=3),trajectories=100)
 @test abs(sim.𝒪est[:l∞]- 1) < 0.2
 
-sim = test_convergence(dts,prob,TangXiaoSROCK2(version_num=4),numMonte=100)
+sim = test_convergence(dts,prob,TangXiaoSROCK2(version_num=4),trajectories=100)
 @test abs(sim.𝒪est[:l∞]- 1) < 0.2
 
-sim = test_convergence(dts,prob,TangXiaoSROCK2(version_num=5),numMonte=100)
+sim = test_convergence(dts,prob,TangXiaoSROCK2(version_num=5),trajectories=100)
 @test abs(sim.𝒪est[:l∞]- 1) < 0.2
 
 print(".")
 
-sim3 = test_convergence(dts,prob,SRI(),numMonte=10)
+sim3 = test_convergence(dts,prob,SRI(),trajectories=10)
 @test abs(sim3.𝒪est[:final]-1.5) < 0.3
 
-sim4 = test_convergence(dts,prob,SRIW1(),numMonte=100)
+sim4 = test_convergence(dts,prob,SRIW1(),trajectories=100)
 @test abs(sim4.𝒪est[:final]-1.5) < 0.3
 
-sim4 = test_convergence(dts,prob,SRIW2(),numMonte=100)
+sim4 = test_convergence(dts,prob,SRIW2(),trajectories=100)
 @test abs(sim4.𝒪est[:final]-1.5) < 0.3
 
-sim4 = test_convergence(dts,prob,SOSRI(),numMonte=100)
+sim4 = test_convergence(dts,prob,SOSRI(),trajectories=100)
 @test abs(sim4.𝒪est[:final]-1.5) < 0.3
 
-sim4 = test_convergence(dts,prob,SOSRI2(),numMonte=100)
+sim4 = test_convergence(dts,prob,SOSRI2(),trajectories=100)
 @test abs(sim4.𝒪est[:final]-1.5) < 0.3
 
 # 2D oop

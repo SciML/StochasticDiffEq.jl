@@ -27,7 +27,7 @@ dts = 1 ./ 2 .^ (14:-1:7)
 
 println("First Test")
 Random.seed!(100)
-sim  = test_convergence(dts,prob2,EM(),numMonte=150)
+sim  = test_convergence(dts,prob2,EM(),trajectories=150)
 @test abs(sim.𝒪est[:l2]-0.5) < 0.1
 
 # using Plots; plot(sim)
@@ -59,7 +59,7 @@ dts = 1 ./ 2 .^ (14:-1:7)
 
 println("Second Test")
 Random.seed!(100)
-sim  = test_convergence(dts,prob2,EM(),numMonte=50)
+sim  = test_convergence(dts,prob2,EM(),trajectories=50)
 # Superconvergence
 @test abs(sim.𝒪est[:l2]-1.0) < 0.1
 

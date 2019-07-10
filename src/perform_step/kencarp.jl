@@ -315,11 +315,7 @@ end
       end
     end
     if alg.smooth_est # From Shampine
-      if has_invW(f)
-        mul!(vec(tmp),W,vec(dz))
-      else
-        cache.linsolve(vec(tmp),W,vec(dz),false)
-      end
+      cache.linsolve(vec(tmp),W,vec(dz),false)
     else
       tmp .= dz
     end

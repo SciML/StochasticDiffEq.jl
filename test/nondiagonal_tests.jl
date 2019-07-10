@@ -78,10 +78,10 @@ solPCEuleriip = solve(probiip, PCEuler(ggprime), dt=dt, seed=seed)
 
 ##
 dts = (1/2) .^ (10:-1:5) #14->7 good plot
-numMonte = 50
-simEM = test_convergence(dts,probiip,EM(),numMonte=numMonte)
-simPCEuler = test_convergence(dts,probiip,PCEuler(ggprime),numMonte=numMonte)
-#simRKMil = test_convergence(dts,probiip,RKMilCommute(),numMonte=numMonte)
+trajectories = 50
+simEM = test_convergence(dts,probiip,EM(),trajectories=trajectories)
+simPCEuler = test_convergence(dts,probiip,PCEuler(ggprime),trajectories=trajectories)
+#simRKMil = test_convergence(dts,probiip,RKMilCommute(),trajectories=trajectories)
 @test all(simPCEuler.errors[:l2] .< simEM.errors[:l2])
 
 ## Plotting script to see the order 1 scaling of PCEuler

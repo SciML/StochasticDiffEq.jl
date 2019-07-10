@@ -7,12 +7,11 @@
   @unpack uf, nlsolver = cache
   alg = unwrap_alg(integrator, true)
   theta = alg.theta
-  alg.symplectic ? a = dt/2 : a = dt
-  γdt = dt*theta
+  alg.symplectic ? a = dt/2 : a = theta*dt
   repeat_step = false
   if isnewton(nlsolver)
     uf.t = t
-    J = update_W!(integrator, cache, γdt, repeat_step)
+    J = update_W!(integrator, cache, a, repeat_step)
   end
 
   # TODO: Stochastic extrapolants?
@@ -104,7 +103,7 @@ end
   @unpack t,dt,uprev,u,p = integrator
   @unpack du1,dz,z,k,J,W,jac_config,gtmp,gtmp2,tmp,nlsolver = cache
   alg = unwrap_alg(integrator, true)
-  alg.symplectic ? a = dt/2 : a = dt
+  alg.symplectic ? a = dt/2 : a = alg.theta*dt
   dW = integrator.W.dW
   mass_matrix = integrator.f.mass_matrix
   theta = alg.theta
@@ -119,7 +118,7 @@ end
     copyto!(u,uprev)
   end
 
-  update_W!(integrator, cache, dt, repeat_step)
+  update_W!(integrator, cache, a, repeat_step)
 
   ##############################################################################
 
@@ -187,7 +186,7 @@ end
 
   if integrator.opts.adaptive
 
-    if has_invW(f)
+    if has_Wfact(f)
       # This means the Jacobian was never computed!
       f.jac(J,uprev,p,t)
     end
