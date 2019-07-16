@@ -96,7 +96,7 @@ mutable struct SROCKEMConstantCache{zType,uEltypeNoUnits} <: StochasticDiffEqCon
   optimal_η::uEltypeNoUnits
 end
 
-@cache struct SROCKEMCache{uType,rateType,noiseRateType} <: StochasticDiffEqMutableCache
+@cache struct SROCKEMCache{uType,rateType,noiseRateType,T} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   uᵢ₋₁::uType
@@ -106,6 +106,7 @@ end
   tmp::uType
   k::rateType
   fsalfirst::rateType
+  WikRange::T
   atmp::rateType
   constantcache::SROCKEMConstantCache
 end
@@ -124,11 +125,12 @@ function alg_cache(alg::SROCKEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_proto
   else
     Gₛ₁ = zero(noise_rate_prototype)
   end
+  WikRange = false .* vec(ΔW)
   tmp  = zero(u)             # these 3 variables are dummied to use same memory
   fsalfirst = k
   atmp = zero(rate_prototype)
   constantcache = SROCKEMConstantCache{uEltypeNoUnits}(u)
-  SROCKEMCache{typeof(u),typeof(k),typeof(Gₛ)}(u,uprev,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,tmp,k,fsalfirst,atmp,constantcache)
+  SROCKEMCache{typeof(u),typeof(k),typeof(Gₛ),typeof(WikRange)}(u,uprev,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,tmp,k,fsalfirst,WikRange,atmp,constantcache)
 end
 
 mutable struct SKSROCKConstantCache{zType,T} <: StochasticDiffEqConstantCache
