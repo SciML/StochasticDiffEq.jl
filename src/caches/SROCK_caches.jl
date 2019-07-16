@@ -138,6 +138,7 @@ mutable struct SKSROCKConstantCache{zType,T} <: StochasticDiffEqConstantCache
   mα::Vector{T}
   zprev::zType
 end
+
 @cache struct SKSROCKCache{uType,rateType,noise_rate_prototype} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
@@ -147,6 +148,7 @@ end
   tmp::uType
   k::rateType
   fsalfirst::rateType
+  WikRange::T
   atmp::rateType
   constantcache::SKSROCKConstantCache
 end
@@ -162,9 +164,10 @@ function alg_cache(alg::SKSROCK,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_proto
   Gₛ = zero(noise_rate_prototype)
   tmp  = uᵢ₋₂             # Dummmy variables
   fsalfirst = k
+  WikRange = false .* vec(ΔW)
   atmp = zero(rate_prototype)
   constantcache = SKSROCKConstantCache{uEltypeNoUnits}(u)
-  SKSROCKCache(u,uprev,uᵢ₋₁,uᵢ₋₂,Gₛ,tmp,k,fsalfirst,atmp,constantcache)
+  SKSROCKCache{typeof(u),typeof(k),typeof(Gₛ),typeof(WikRange)}(u,uprev,uᵢ₋₁,uᵢ₋₂,Gₛ,tmp,k,fsalfirst,WikRange,atmp,constantcache)
 end
 
 mutable struct TangXiaoSROCK2ConstantCache{zType,T} <: StochasticDiffEqConstantCache

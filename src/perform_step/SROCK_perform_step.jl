@@ -653,15 +653,10 @@ end
 
   #stage 1
   Gₛ = integrator.g(uprev,p,t)
-  if (typeof(W.dW) <: Number)
+  if (typeof(W.dW) <: Number) || !is_diagonal_noise(integrator.sol.prob)
     u = Gₛ*W.dW
-  elseif is_diagonal_noise(integrator.sol.prob)
-    u = Gₛ .* W.dW
   else
-    for i in 1:length(W.dW)
-      (i == 1) && (u = @view(Gₛ[:,i])*W.dW[i])
-      (i > 1) && (u += @view(Gₛ[:,i])*W.dW[i])
-    end
+    u = Gₛ .* W.dW
   end
 
   if integrator.alg.post_processing
@@ -704,7 +699,8 @@ end
     if (typeof(W.dW) <: Number) || is_diagonal_noise(integrator.sol.prob)
       uᵢ₋₁ = Gₛ
     else
-        uᵢ₋₁ = @view(Gₛ[:,1])
+      WikRange = 1 .* (1:length(W.dW) .== 1)
+      uᵢ₋₁ = Gₛ*WikRange
     end
     winc = rand()*6
     if winc < 1.0
@@ -717,7 +713,7 @@ end
 end
 
 @muladd function perform_step!(integrator,cache::SKSROCKCache,f=integrator.f)
-  @unpack uᵢ₋₁,uᵢ₋₂,k, Gₛ = cache
+  @unpack uᵢ₋₁,uᵢ₋₂,k, Gₛ, WikRange = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
   ccache = cache.constantcache
@@ -745,10 +741,7 @@ end
   if (typeof(W.dW) <: Number) || is_diagonal_noise(integrator.sol.prob)
     @.. u = Gₛ*W.dW
   else
-    for i in 1:length(W.dW)
-      (i == 1) && (@.. u = @view(Gₛ[:,i])*W.dW[i])
-      (i > 1) && (@.. u += @view(Gₛ[:,i])*W.dW[i])
-    end
+    mul!(u,Gₛ,W.dW)
   end
 
   if integrator.alg.post_processing
@@ -794,7 +787,8 @@ end
     if (typeof(W.dW) <: Number) || is_diagonal_noise(integrator.sol.prob)
       @.. uᵢ₋₁ = Gₛ
     else
-      @.. uᵢ₋₁ = @view(Gₛ[:,1])
+      WikRange .= 1 .* (1:length(W.dW) .== 1)
+      mul!(uᵢ₋₁,Gₛ,WikRange)
     end
     winc = rand()*6
     if winc < 1.0
