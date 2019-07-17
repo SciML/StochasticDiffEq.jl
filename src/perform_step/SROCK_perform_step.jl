@@ -1202,10 +1202,14 @@ end
     Xₛ₋₂ = zero(Xₛ₋₃)
 
     for i in 1:length(W.dW)
-      utmp = uᵢ₋₂ + C₁*yₛ₋₃ + 2//3*@view(Xₛ₋₃[:,i])*W.dW[i]
+      WikRange = W.dW .* (1:length(W.dW) .== i)
+      # utmp = uᵢ₋₂ + C₁*yₛ₋₃ + 2//3*@view(Xₛ₋₃[:,i])*W.dW[i]
+      utmp = uᵢ₋₂ + C₁*yₛ₋₃ + 2//3*(Xₛ₋₃*WikRange)
       ttmp = tᵢ₋₂ + C₁
       Gₛ = integrator.g(utmp,p,ttmp)
-      @view(Xₛ₋₂[:,i]) .=  @view(Gₛ[:,i])
+      WikRange = 1 .* (1:length(W.dW) .== i)
+      # @view(Xₛ₋₂[:,i]) .=  @view(Gₛ[:,i])
+      Xₛ₋₂ .+=  Gₛ .* WikRange
     end
     SXₛ₋₂ = Xₛ₋₂*W.dW
     u += μₛ₋₂*yₛ₋₂ + 3//8*SXₛ₋₂
@@ -1217,10 +1221,14 @@ end
 
     Xₛ₋₁ = zero(Xₛ₋₂)
     for i in 1:length(W.dW)
-      utmp = uᵢ₋₁ + μₛ₋₃*yₛ₋₃ + δ₁*yₛ₋₂ - 1//6*W.dW[i]*@view(Xₛ₋₃[:,i]) - 1//2*W.dW[i]*@view(Xₛ₋₂[:,i]) + 1//4*SXₛ₋₃ + 3//4*SXₛ₋₂
+      WikRange = W.dW .* (1:length(W.dW) .== i)
+      # utmp = uᵢ₋₁ + μₛ₋₃*yₛ₋₃ + δ₁*yₛ₋₂ - 1//6*W.dW[i]*@view(Xₛ₋₃[:,i]) - 1//2*W.dW[i]*@view(Xₛ₋₂[:,i]) + 1//4*SXₛ₋₃ + 3//4*SXₛ₋₂
+      utmp = uᵢ₋₁ + μₛ₋₃*yₛ₋₃ + δ₁*yₛ₋₂ + 1//4*SXₛ₋₃ + 3//4*SXₛ₋₂ - 1//6*(Xₛ₋₃*WikRange) - 1//2*(Xₛ₋₂*WikRange)
       ttmp = tᵢ₋₁ + μₛ₋₃ + δ₁
       Gₛ = integrator.g(utmp,p,ttmp)
-      @view(Xₛ₋₁[:,i]) .= @view(Gₛ[:,i])
+      WikRange = 1 .* (1:length(W.dW) .== i)
+      #@view(Xₛ₋₁[:,i]) .= @view(Gₛ[:,i])
+      Xₛ₋₁ .+= Gₛ .* WikRange
     end
     SXₛ₋₁ = Xₛ₋₁*W.dW
     u += (σ - τ)*dt*yₛ₋₁ + 3//8*SXₛ₋₁
@@ -1233,18 +1241,23 @@ end
 
     SXₛ₋₁ = zero(uprev)
     for i in 1:length(W.dW)
-      utmp = uᵢ₋₁ + μₛ₋₃*yₛ₋₃ + δ₂*yₛ₋₂ + δ₃*yₛ₋₁ - 3//2*W.dW[i]*@view(Xₛ₋₃[:,i]) - 1//2*W.dW[i]*@view(Xₛ₋₂[:,i]) + 2*W.dW[i]*@view(Xₛ₋₁[:,i]) + 1//4*SXₛ₋₃ + 3//4*SXₛ₋₂
+      WikRange = W.dW .* (1:length(W.dW) .== i)
+      # utmp = uᵢ₋₁ + μₛ₋₃*yₛ₋₃ + δ₂*yₛ₋₂ + δ₃*yₛ₋₁ - 3//2*W.dW[i]*@view(Xₛ₋₃[:,i]) - 1//2*W.dW[i]*@view(Xₛ₋₂[:,i]) + 2*W.dW[i]*@view(Xₛ₋₁[:,i]) + 1//4*SXₛ₋₃ + 3//4*SXₛ₋₂
+      utmp = uᵢ₋₁ + μₛ₋₃*yₛ₋₃ + δ₂*yₛ₋₂ + δ₃*yₛ₋₁ + 1//4*SXₛ₋₃ + 3//4*SXₛ₋₂ - 3//2*(Xₛ₋₃*WikRange) - 1//2*(Xₛ₋₂*WikRange) + 2*(Xₛ₋₁*WikRange)
       ttmp = tᵢ₋₁ + μₛ₋₃ + δ₂ + δ₃
       Gₛ = integrator.g(utmp,p,ttmp)
-      SXₛ₋₁ += W.dW[i]*@view(Gₛ[:,i])
+      # SXₛ₋₁ += W.dW[i]*@view(Gₛ[:,i])
+      SXₛ₋₁ += Gₛ*WikRange)
     end
     u += 1//8*SXₛ₋₁
 
     for i in 1:length(W.dW)
       SXₛ₋₁ = zero(uprev)
       for j in 1:length(W.dW)
+        WikRange = 1 .* (1:length(W.dW) .== j)
         if j != i
-          SXₛ₋₁ += (i > j ? -vec_χ[i]*W.dW[j] : vec_χ[j]*W.dW[i] )*@view(Xₛ₋₃[:,j])
+          # SXₛ₋₁ += (i > j ? -vec_χ[i]*W.dW[j] : vec_χ[j]*W.dW[i] )*@view(Xₛ₋₃[:,j])
+          SXₛ₋₁ += (i > j ? -vec_χ[i]*W.dW[j] : vec_χ[j]*W.dW[i] )*(Xₛ₋₃*WikRange)
         end
       end
       ttmp = tᵢ₋₁ + μₛ₋₃
@@ -1253,7 +1266,9 @@ end
       utmp = uᵢ₋₁ + μₛ₋₃*yₛ₋₃ + 1//4*SXₛ₋₁
       Xₛ₋₁ = integrator.g(utmp,p,ttmp)
       sqrt_dt *= (length(W.dW) - 1)
-      u += sqrt_dt*(@view(Xₛ₋₁[:,i]) - @view(Gₛ[:,i]))
+      WikRange = 1 .* (1:length(W.dW) .== i)
+      # u += sqrt_dt*(@view(Xₛ₋₁[:,i]) - @view(Gₛ[:,i]))
+      u += sqrt_dt*(Xₛ₋₁*WikRange - Gₛ*WikRange)
     end
   end
 
@@ -1371,10 +1386,15 @@ end
     ttmp = tᵢ₋₁ + μₛ₋₃
     integrator.f(yₛ₋₂,utmp,p,ttmp)
     for i in 1:length(W.dW)
-      @.. utmp = uᵢ₋₂ + C₁*yₛ₋₃ + 2//3*@view(Xₛ₋₃[:,i])*W.dW[i]
+      WikRange .= 1 .* (1:length(W.dW) .== i) .* W.dW
+      # @.. utmp = uᵢ₋₂ + C₁*yₛ₋₃ + 2//3*@view(Xₛ₋₃[:,i])*W.dW[i]
+      mul!(SXₛ₋₂,Xₛ₋₃,WikRange)
+      @.. utmp = uᵢ₋₂ + C₁*yₛ₋₃ + 2//3*SXₛ₋₂
       ttmp = tᵢ₋₂ + C₁
       integrator.g(Gₛ,utmp,p,ttmp)
-      @.. @view(Xₛ₋₂[:,i]) =  @view(Gₛ[:,i])
+      WikRange .= 1 .* (1:length(W.dW) .== i)
+      # @.. @view(Xₛ₋₂[:,i]) =  @view(Gₛ[:,i])
+      @.. Xₛ₋₂ =  Gₛ*W.dW
     end
     mul!(SXₛ₋₂,Xₛ₋₂,W.dW)
     @.. u += μₛ₋₂*yₛ₋₂ + 3//8*SXₛ₋₂
@@ -1384,10 +1404,18 @@ end
     ttmp = tᵢ₋₂ + μₛ₋₂ + C₁
     integrator.f(yₛ₋₁,utmp,p,ttmp)
     for i in 1:length(W.dW)
-      @.. utmp = uᵢ₋₁ + μₛ₋₃*yₛ₋₃ + δ₁*yₛ₋₂ - 1//6*W.dW[i]*@view(Xₛ₋₃[:,i]) - 1//2*W.dW[i]*@view(Xₛ₋₂[:,i]) + 1//4*SXₛ₋₃ + 3//4*SXₛ₋₂
+      WikRange .= 1 .* (1:length(W.dW) .== i) .* W.dW
+      # @.. utmp = uᵢ₋₁ + μₛ₋₃*yₛ₋₃ + δ₁*yₛ₋₂ - 1//6*W.dW[i]*@view(Xₛ₋₃[:,i]) - 1//2*W.dW[i]*@view(Xₛ₋₂[:,i]) + 1//4*SXₛ₋₃ + 3//4*SXₛ₋₂
+      @.. utmp = uᵢ₋₁ + μₛ₋₃*yₛ₋₃ + δ₁*yₛ₋₂ + 1//4*SXₛ₋₃ + 3//4*SXₛ₋₂
+      mul!(SXₛ₋₁,Xₛ₋₃,WikRange)
+      @.. utmp += 1//6*SXₛ₋₁
+      mul!(SXₛ₋₁,Xₛ₋₂,WikRange)
+      @.. utmp += 1//2*SXₛ₋₁
       ttmp = tᵢ₋₁ + μₛ₋₃ + δ₁
       integrator.g(Gₛ,utmp,p,ttmp)
-      @.. @view(Xₛ₋₁[:,i]) = @view(Gₛ[:,i])
+      WikRange .= 1 .* (1:length(W.dW) .== i)
+      # @.. @view(Xₛ₋₁[:,i]) = @view(Gₛ[:,i])
+      @.. Xₛ₋₁ = Gₛ*WikRange
     end
     mul!(SXₛ₋₁,Xₛ₋₁,W.dW)
     @.. u += (σ - τ)*dt*yₛ₋₁ + 3//8*SXₛ₋₁
@@ -1415,19 +1443,34 @@ end
     integrator.f(yₛ₋₃,utmp,p,ttmp)
     @.. SXₛ₋₁ = zero(uprev)
     for i in 1:length(W.dW)
-      @.. uᵢ₋₂ = uᵢ₋₁ + δ₂*yₛ₋₂ + δ₃*yₛ₋₁ - 3//2*W.dW[i]*@view(Xₛ₋₃[:,i]) - 1//2*W.dW[i]*@view(Xₛ₋₂[:,i]) + 2*W.dW[i]*@view(Xₛ₋₁[:,i]) + 1//4*SXₛ₋₃ + 3//4*SXₛ₋₂
+      WikRange .= 1 .* (1:length(W.dW) .== i) .* W.dW
+      # @.. uᵢ₋₂ = uᵢ₋₁ + δ₂*yₛ₋₂ + δ₃*yₛ₋₁ - 3//2*W.dW[i]*@view(Xₛ₋₃[:,i]) - 1//2*W.dW[i]*@view(Xₛ₋₂[:,i]) + 2*W.dW[i]*@view(Xₛ₋₁[:,i]) + 1//4*SXₛ₋₃ + 3//4*SXₛ₋₂
+      @.. uᵢ₋₂ = uᵢ₋₁ + δ₂*yₛ₋₂ + δ₃*yₛ₋₁ + 1//4*SXₛ₋₃ + 3//4*SXₛ₋₂
+      mul!(utmp,Xₛ₋₃,WikRange)
+      @.. uᵢ₋₂ -= 3//2*utmp
+      mul!(utmp,Xₛ₋₂,WikRange)
+      @.. uᵢ₋₂ -= 1//2*utmp
+      mul!(utmp,Xₛ₋₁,WikRange)
+      @.. uᵢ₋₂ += 2*utmp
+
       tᵢ₋₂ = tᵢ₋₁ + δ₂ + δ₃
       integrator.g(Gₛ,uᵢ₋₂,p,tᵢ₋₂)
-      @.. SXₛ₋₁ += W.dW[i]*@view(Gₛ[:,i])
+      # @.. SXₛ₋₁ += W.dW[i]*@view(Gₛ[:,i])
+      mul!(utmp,Gₛ,WikRange)
+      @.. SXₛ₋₁ += utmp
     end
     @.. u += (σ + τ)*dt*yₛ₋₃ + 1//8*SXₛ₋₁
 
     for i in 1:length(W.dW)
       @.. SXₛ₋₁ = zero(uprev)
       for j in 1:length(W.dW)
+        WikRange .= 1 .* (1:length(W.dW) .== j)
+        mul!(utmp,Xₛ₋₃,WikRange)
         if j != i
-          (i > j) && (@.. SXₛ₋₁ += -vec_χ[i]*W.dW[j]*@view(Xₛ₋₃[:,j]))
-          (i < j) && (@.. SXₛ₋₁ += vec_χ[j]*W.dW[i]*@view(Xₛ₋₃[:,j]))
+          # (i > j) && (@.. SXₛ₋₁ += -vec_χ[i]*W.dW[j]*@view(Xₛ₋₃[:,j]))
+          # (i < j) && (@.. SXₛ₋₁ += vec_χ[j]*W.dW[i]*@view(Xₛ₋₃[:,j]))
+          (i > j) && (@.. SXₛ₋₁ += -vec_χ[i]*W.dW[j]*utmp)
+          (i < j) && (@.. SXₛ₋₁ += vec_χ[j]*W.dW[i]*utmp)
         end
       end
       ttmp = tᵢ₋₁
@@ -1436,7 +1479,12 @@ end
       @.. utmp = uᵢ₋₁ + 1//4*SXₛ₋₁
       integrator.g(Xₛ₋₁,utmp,p,ttmp)
       sqrt_dt *= (length(W.dW) - 1)
-      @.. u += sqrt_dt*(@view(Xₛ₋₁[:,i]) - @view(Gₛ[:,i]))
+      # @.. u += sqrt_dt*(@view(Xₛ₋₁[:,i]) - @view(Gₛ[:,i]))
+      WikRange .= 1 .* (1:length(W.dW) .== i)
+      mul!(utmp,Xₛ₋₁,WikRange)
+      @.. u += sqrt_dt*utmp
+      mul!(utmp,Gₛ,WikRange)
+      @.. u -= sqrt_dt*utmp
     end
   end
 

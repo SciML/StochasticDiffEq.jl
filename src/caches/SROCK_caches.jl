@@ -262,6 +262,7 @@ end
   vec_χ::T
   tmp::uType
   fsalfirst::rateType
+  WikRange::T
   atmp::rateType
   constantcache::KomBurSROCK2ConstantCache
 end
@@ -282,6 +283,7 @@ function alg_cache(alg::KomBurSROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
   Xₛ₋₂ = zero(noise_rate_prototype)
   Xₛ₋₃ = zero(noise_rate_prototype)
   vec_χ = false .* vec(ΔW)
+  WikRange = false .* vec(ΔW)
   if typeof(ΔW) <: Number || length(ΔW) == 1 || is_diagonal_noise(prob)
     Gₛ = Xₛ₋₁
     SXₛ₋₁ = utmp
@@ -298,5 +300,5 @@ function alg_cache(alg::KomBurSROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
   atmp = yₛ₋₂
   constantcache = KomBurSROCK2ConstantCache{uEltypeNoUnits}(u)
   KomBurSROCK2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype),typeof(vec_χ)}(u,uprev,utmp,uᵢ₋₁,uᵢ₋₂,k,yₛ₋₁,yₛ₋₂,
-                                            yₛ₋₃,SXₛ₋₁,SXₛ₋₂,SXₛ₋₃,Gₛ,Xₛ₋₁,Xₛ₋₂,Xₛ₋₃,vec_χ,tmp,fsalfirst,atmp,constantcache)
+                                            yₛ₋₃,SXₛ₋₁,SXₛ₋₂,SXₛ₋₃,Gₛ,Xₛ₋₁,Xₛ₋₂,Xₛ₋₃,vec_χ,tmp,fsalfirst,WikRange,atmp,constantcache)
 end
