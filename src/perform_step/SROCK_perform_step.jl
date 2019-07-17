@@ -513,13 +513,13 @@ end
   if integrator.alg.strong_order_1
     if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || (is_diagonal_noise(integrator.sol.prob))
       uᵢ₋₂  = 1//2 .* Gₛ .* (W.dW .^ 2 .- dt)
-
       tmp = u + uᵢ₋₂
       Gₛ  = integrator.g(tmp,p,tᵢ)
-      u += 0.5*Gₛ
+      uᵢ₋₁ = 0.5*Gₛ
       tmp = u - uᵢ₋₂
       Gₛ  = integrator.g(tmp,p,tᵢ)
-      u -= 0.5*Gₛ
+      uᵢ₋₁ -= 0.5*Gₛ
+      u += uᵢ₋₁
     else
       for i in 1:length(W.dW)
         WikJ = W.dW[i]
@@ -528,10 +528,11 @@ end
         WikRange = 1//2 .* (1:length(W.dW) .== i)
         tmp = u + uᵢ₋₂
         Gₛ₁ = integrator.g(tmp,p,tᵢ)
-        u += Gₛ₁*WikRange
+        uᵢ₋₁ = Gₛ₁*WikRange
         tmp = u - uᵢ₋₂
         Gₛ₁ = integrator.g(tmp,p,tᵢ)
-        u -= Gₛ₁*WikRange
+        uᵢ₋₁ -= Gₛ₁*WikRange
+        u += uᵢ₋₁
       end
     end
   end
@@ -601,13 +602,14 @@ end
 
   if integrator.alg.strong_order_1
     if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || (is_diagonal_noise(integrator.sol.prob))
-      @.. uᵢ₋₂  = Gₛ*(W.dW^2 - dt)*0.5
+      @.. uᵢ₋₂  = 1//2*Gₛ*(W.dW^2 - dt)
       @.. tmp = u + uᵢ₋₂
       integrator.g(Gₛ,tmp,p,tᵢ)
-      @.. uᵢ₋₁ += 0.5*Gₛ
+      @.. uᵢ₋₁ = 0.5*Gₛ
       @.. tmp = u - uᵢ₋₂
       integrator.g(Gₛ,tmp,p,tᵢ)
       @.. uᵢ₋₁ -= 0.5*Gₛ
+      u += uᵢ₋₁
     else
       for i in 1:length(W.dW)
         WikJ = W.dW[i]
@@ -617,9 +619,9 @@ end
         @.. tmp = u + uᵢ₋₂
         integrator.g(Gₛ₁,tmp,p,tᵢ)
         mul!(uᵢ₋₁,Gₛ₁,WikRange)
-        @.. u += uᵢ₋₁
         @.. tmp = u - uᵢ₋₂
         integrator.g(Gₛ₁,tmp,p,tᵢ)
+        @.. u += uᵢ₋₁
         mul!(uᵢ₋₁,Gₛ₁,WikRange)
         @.. u -= uᵢ₋₁
       end
