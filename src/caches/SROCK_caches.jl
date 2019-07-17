@@ -139,7 +139,7 @@ mutable struct SKSROCKConstantCache{zType,T} <: StochasticDiffEqConstantCache
   zprev::zType
 end
 
-@cache struct SKSROCKCache{uType,rateType,noise_rate_prototype} <: StochasticDiffEqMutableCache
+@cache struct SKSROCKCache{uType,rateType,noise_rate_prototype,T} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   uᵢ₋₁::uType
