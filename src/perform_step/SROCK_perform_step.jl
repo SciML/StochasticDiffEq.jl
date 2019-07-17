@@ -1247,7 +1247,7 @@ end
       ttmp = tᵢ₋₁ + μₛ₋₃ + δ₂ + δ₃
       Gₛ = integrator.g(utmp,p,ttmp)
       # SXₛ₋₁ += W.dW[i]*@view(Gₛ[:,i])
-      SXₛ₋₁ += Gₛ*WikRange)
+      SXₛ₋₁ += Gₛ*WikRange
     end
     u += 1//8*SXₛ₋₁
 
