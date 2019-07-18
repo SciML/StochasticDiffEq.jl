@@ -34,7 +34,7 @@ function maxeig!(integrator, cache::StochasticDiffEqConstantCache)
     z *= quot
   else
     dz_u = pert
-    z = dz_u*ones(z)
+    z = dz_u .* (false .* z .+ one(eltype(z)))
   end # endif
   # Start power iteration
   integrator.eigen_est = 0
@@ -106,7 +106,7 @@ function maxeig!(integrator, cache::StochasticDiffEqMutableCache)
     @.. z *= quot
   else
     dz_u = pert
-    @.. z = dz_u*ones(z)
+    @.. z = dz_u*(false*z + one(eltype(z)))
   end # endif
   # Start power iteration
   integrator.eigen_est = 0
