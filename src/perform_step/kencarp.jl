@@ -27,7 +27,7 @@
   J = update_W!(integrator, cache, γdt, repeat_step)
 
   z₁ = dt*f( uprev,p,t)
-  nlsolver.c = 2*γ
+  nlsolver.c = γ
 
   g1 = g(uprev,p,t)
   tmp = uprev + γ*z₁ + nb021*chi2.*g1
@@ -197,7 +197,7 @@ end
     @.. z₂ = z₁
   end
   nlsolver.z = z₂
-  nlsolver.c = 2γ
+  nlsolver.c = γ
 
 
   if typeof(integrator.f) <: SplitSDEFunction
