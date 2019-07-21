@@ -177,7 +177,7 @@ sim2 = test_convergence(dts,prob,SROCK2(),trajectories=Int(1e2))
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 sim2 = test_convergence(dts,prob,SKSROCK(),trajectories=Int(1e2))
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
-sim2 = test_convergence(dts,prob,SROCK2(),trajectories=Int(1e2))
+sim2 = test_convergence(dts,prob,SROCKC2(),trajectories=Int(1e2))
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 
 #omitting tests for incomplete methods
