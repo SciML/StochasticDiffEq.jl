@@ -348,5 +348,5 @@ function alg_cache(alg::SROCKC2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_proto
   fsalfirst = k           # this variables are dummied to use same memory
   atmp = zero(rate_prototype)
   constantcache = SROCKC2ConstantCache{uEltypeNoUnits}(u)
-  SROCKC2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype),typeof(vec_χ)}(u,uprev,uᵢ,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,WikRange,tmp,k,fsalfirst,atmp,constantcache)
+  SROCKC2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype),typeof(WikRange)}(u,uprev,uᵢ,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,WikRange,tmp,k,fsalfirst,atmp,constantcache)
 end
