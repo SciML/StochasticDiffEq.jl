@@ -308,8 +308,6 @@ mutable struct SROCKC2ConstantCache{zType,T} <: StochasticDiffEqConstantCache
   recf::Vector{T}
   mσ::SVector{46,T}
   mτ::SVector{46,T}
-  # recf2::Vector{T}
-  # mα::SVector{46,T}
   zprev::zType
   mdeg::Int
   deg_index::Int

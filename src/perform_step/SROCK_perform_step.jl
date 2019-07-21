@@ -1495,7 +1495,6 @@ end
 
 @muladd function perform_step!(integrator,cache::SROCKC2ConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
-  # @unpack recf, recf2, mα, mσ, mτ = cache
   @unpack recf, mσ, mτ = cache
 
   maxeig!(integrator, cache)
