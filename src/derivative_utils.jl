@@ -99,7 +99,7 @@ end
 
 function calc_J!(nlsolver, integrator, cache::StochasticDiffEqMutableCache, is_compos)
   @unpack t,dt,uprev,u,f,p = integrator
-  J = nlsolver.J
+  J = nlsolver.cache.J
   if DiffEqBase.has_jac(f)
     f.jac(J, uprev, p, t)
   else
@@ -385,7 +385,7 @@ end
 
 function calc_W!(nlsolver, integrator, cache::StochasticDiffEqMutableCache, dtgamma, repeat_step, W_transform=false)
   @unpack t,dt,uprev,u,f,p = integrator
-  @unpack J,W = nlsolver
+  @unpack J,W = nlsolver.cache
   alg = unwrap_alg(integrator, true)
   mass_matrix = integrator.f.mass_matrix
   is_compos = integrator.alg isa StochasticCompositeAlgorithm
