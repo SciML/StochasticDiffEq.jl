@@ -227,5 +227,20 @@ function choose_deg!(integrator,cache::T) where T
       end
     end
   end
+
+  if integrator.alg isa SROCKC2
+    start = 1
+    @inbounds for i in 1:size(cache.ms,1)
+      if cache.ms[i] >= cache.mdeg
+        cache.deg_index = i;
+        cache.mdeg = cache.ms[i]
+        cache.start = start
+        break
+      else
+        start += cache.ms[i]*2 - 1
+      end
+    end
+  end
+
   return nothing
 end
