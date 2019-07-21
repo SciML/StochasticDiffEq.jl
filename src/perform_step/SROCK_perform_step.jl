@@ -1596,24 +1596,24 @@ end
 
   sqrt_dt   = sqrt(dt)
   μ = recf[start]  # here κ = 0
-  tᵢ = t + α*dt*μ
+  tᵢ = t + dt*μ
   tᵢ₋₁ = tᵢ
   tᵢ₋₂ = t
 
   # stage 1
   @.. uᵢ₋₂ = uprev
   integrator.f(k,uprev,p,t)
-  @.. uᵢ₋₁ = uprev + α*dt*μ*k
+  @.. uᵢ₋₁ = uprev + dt*μ*k
 
   # stages 2 upto s-2
   for i in 2:mdeg
     μ, κ = recf[start + 2*(i-2) + 1], recf[start + 2*(i-2) + 2]
     ν    = 1.0 + κ
     integrator.f(k,uᵢ₋₁,p,t)
-    @.. uᵢ   = α*dt*μ*k + ν*uᵢ₋₁ - κ*uᵢ₋₂
+    @.. uᵢ   = dt*μ*k + ν*uᵢ₋₁ - κ*uᵢ₋₂
     @.. uᵢ₋₂ = uᵢ₋₁
     @.. uᵢ₋₁ = uᵢ
-    tᵢ   = α*dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
+    tᵢ   = dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
     tᵢ₋₂ = tᵢ₋₁
     tᵢ₋₁ = tᵢ
   end
