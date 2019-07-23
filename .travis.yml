@@ -11,6 +11,7 @@ env:
   - GROUP=Interface2
   - GROUP=AlgConvergence
   - GROUP=AlgConvergence2
+  - GROUP=AlgConvergence3
 matrix:
   allow_failures:
     - julia: nightly
