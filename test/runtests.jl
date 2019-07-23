@@ -49,13 +49,17 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
   end
 
   if !is_APPVEYOR && (GROUP == "All" || GROUP == "AlgConvergence2")
+    @time @safetestset "Convergence Tests" begin include("sde/sde_convergence_tests2.jl") end
+  end
+
+  if !is_APPVEYOR && (GROUP == "All" || GROUP == "AlgConvergence3")
     @time @safetestset "IIF Convergence Tests" begin include("iif_methods.jl") end
     LONGER_TESTS && @time @safetestset "Weak Convergence Tests" begin include("weak_convergence.jl") end
     @time @safetestset "Cummutative Noise Methods Tests" begin include("commutative_tests.jl") end
     @time @safetestset "Multivariate Geometric Tests" begin include("multivariate_geometric.jl") end
   end
 
-  if !is_APPVEYOR && (GROUP == "All" || GROUP == "AlgConvergence3")
+  if !is_APPVEYOR && (GROUP == "All" || GROUP == "AlgConvergence4")
     @time @safetestset "Rossler Order Tests" begin include("sde/sde_rosslerorder_tests.jl") end
     @time @safetestset "Additive SDE Tests" begin include("sde/sde_additive_tests.jl") end
     @time @safetestset "Split Tests" begin include("split_tests.jl") end
