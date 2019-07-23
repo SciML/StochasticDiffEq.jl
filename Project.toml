@@ -21,8 +21,10 @@ RandomNumbers = "e6cf234a-135c-5ec9-84dd-332b85af5143"
 RecursiveArrayTools = "731186ca-8d62-57ce-b412-fbd966d074cd"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+SparseDiffTools = "47a9eef4-7e08-11e9-0b38-333d64bd3804"
 
 [compat]
+SparseDiffTools = ">= 0.3.0"
 julia = "1"
 
 [extras]
