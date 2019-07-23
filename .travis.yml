@@ -5,7 +5,6 @@ os:
 #  - osx
 julia:
   - 1.1
-  - nightly
 env:
   - GROUP=Interface
   - GROUP=Interface2
@@ -13,9 +12,9 @@ env:
   - GROUP=AlgConvergence
   - GROUP=AlgConvergence2
   - GROUP=AlgConvergence3
-matrix:
-  allow_failures:
-    - julia: nightly
+#matrix:
+#  allow_failures:
+#    - julia: nightly
 notifications:
   email: false
 # uncomment the following lines to override the default test script
