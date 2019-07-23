@@ -90,6 +90,7 @@ end
   @unpack t,dt,uprev,u,p = integrator
   @unpack gtmp,gtmp2,dW_cache,nlsolver = cache
   @unpack uf,du1,dz,z,k,tmp = nlsolver
+  J = (isnewton(nlsolver) ? nlsolver.cache.J : nothing)
   alg = unwrap_alg(integrator, true)
   alg.symplectic ? a = dt/2 : a = alg.theta*dt
   dW = integrator.W.dW
