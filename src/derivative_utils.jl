@@ -47,12 +47,12 @@ jacobian update function, then it will be called for the update. Otherwise,
 either ForwardDiff or finite difference will be used depending on the
 `jac_config` of the cache.
 """
-function calc_J(integrator, cache::StochasticDiffEqConstantCache, is_compos)
+function calc_J(nlsolver, integrator, cache::StochasticDiffEqConstantCache, is_compos)
   @unpack t,dt,uprev,u,f,p = integrator
   if DiffEqBase.has_jac(f)
     J = f.jac(uprev, p, t)
   else
-    J = jacobian(cache.uf,uprev,integrator)
+    J = jacobian(nlsolver.uf,uprev,integrator)
   end
   # integrator.destats.njacs += 1
   is_compos && (integrator.eigen_est = opnorm(J, Inf))
@@ -70,13 +70,13 @@ jacobian update function, then it will be called for the update. Otherwise,
 either ForwardDiff or finite difference will be used depending on the
 `jac_config` of the cache.
 """
-function calc_J!(integrator, cache::StochasticDiffEqMutableCache, is_compos)
+function calc_J!(nlsolver, integrator, cache::StochasticDiffEqMutableCache, is_compos)
   @unpack t,dt,uprev,u,f,p = integrator
-  J = cache.J
+  J = nlsolver.cache.J
   if DiffEqBase.has_jac(f)
     f.jac(J, uprev, p, t)
   else
-    @unpack du1,uf,jac_config = cache
+    @unpack du1,uf,jac_config = nlsolver
     uf.t = t
     uf.p = p
     jacobian!(J, uf, uprev, du1, integrator, jac_config)
@@ -252,12 +252,12 @@ function LinearAlgebra.mul!(Y::AbstractVecOrMat, W::WOperator, B::AbstractVecOrM
   end
 end
 
-function do_newJ(integrator, alg::T, cache, repeat_step)::Bool where T
+function do_newJ(nlsolver, integrator, alg::T, cache, repeat_step)::Bool where T
   repeat_step && return false
   !integrator.opts.adaptive && return true
   !alg_can_repeat_jac(alg) && return true
   isnewton = T <: Union{StochasticDiffEqNewtonAdaptiveAlgorithm, StochasticDiffEqNewtonAlgorithm}
-  isnewton && ( nlstatus = DiffEqBase.get_status(cache.nlsolver) )
+  isnewton && ( nlstatus = DiffEqBase.get_status(nlsolver) )
   nlsolvefail(nlstatus) && return true
   # reuse J when there is fast convergence
   fastconvergence = nlstatus === FastConvergence
@@ -306,9 +306,9 @@ end
   return nothing
 end
 
-function calc_W!(integrator, cache::StochasticDiffEqMutableCache, dtgamma, repeat_step, W_transform=false)
+function calc_W!(nlsolver, integrator, cache::StochasticDiffEqMutableCache, dtgamma, repeat_step, W_transform=false)
   @unpack t,dt,uprev,u,f,p = integrator
-  @unpack J,W = cache
+  @unpack J,W = nlsolver.cache
   alg = unwrap_alg(integrator, true)
   mass_matrix = integrator.f.mass_matrix
   is_compos = integrator.alg isa StochasticCompositeAlgorithm
@@ -324,9 +324,9 @@ function calc_W!(integrator, cache::StochasticDiffEqMutableCache, dtgamma, repea
   end
 
   # check if we need to update J or W
-  W_dt = isnewton ? cache.nlsolver.cache.W_dt : dt # TODO: RosW
-  new_jac = isnewton ? do_newJ(integrator, alg, cache, repeat_step) : true
-  new_W = isnewton ? do_newW(integrator, cache.nlsolver, new_jac, W_dt) : true
+  W_dt = isnewton ? nlsolver.cache.W_dt : dt # TODO: RosW
+  new_jac = isnewton ? do_newJ(nlsolver, integrator, alg, cache, repeat_step) : true
+  new_W = isnewton ? do_newW(integrator, nlsolver, new_jac, W_dt) : true
 
   # calculate W
   if DiffEqBase.has_jac(f) && f.jac_prototype !== nothing
@@ -334,19 +334,19 @@ function calc_W!(integrator, cache::StochasticDiffEqMutableCache, dtgamma, repea
     @label J2W
     W.transform = W_transform; set_gamma!(W, dtgamma)
   else # concrete W using jacobian from `calc_J!`
-    new_jac && calc_J!(integrator, cache, is_compos)
+    new_jac && calc_J!(nlsolver, integrator, cache, is_compos)
     new_W && jacobian2W!(W, mass_matrix, dtgamma, J, W_transform)
   end
   if isnewton
-    set_new_W!(cache.nlsolver, new_W) && DiffEqBase.set_W_dt!(cache.nlsolver, dt)
+    set_new_W!(nlsolver, new_W) && DiffEqBase.set_W_dt!(nlsolver, dt)
   end
   # new_W && (integrator.destats.nw += 1)
   return nothing
 end
 
-function calc_W!(integrator, cache::StochasticDiffEqConstantCache, dtgamma, repeat_step, W_transform=false)
+function calc_W!(nlsolver, integrator, cache::StochasticDiffEqConstantCache, dtgamma, repeat_step, W_transform=false)
   @unpack t,uprev,p,f = integrator
-  @unpack uf = cache
+  @unpack uf = nlsolver
   mass_matrix = integrator.f.mass_matrix
   isarray = typeof(uprev) <: AbstractArray
   # calculate W
@@ -364,7 +364,7 @@ function calc_W!(integrator, cache::StochasticDiffEqConstantCache, dtgamma, repe
     # integrator.destats.nw += 1
   else
     # integrator.destats.nw += 1
-    J = calc_J(integrator, cache, is_compos)
+    J = calc_J(nlsolver, integrator, cache, is_compos)
     W_full = W_transform ? -mass_matrix*inv(dtgamma) + J :
                            -mass_matrix + dtgamma*J
     W = W_full isa Number ? W_full : lu(W_full)
@@ -379,14 +379,14 @@ update_W!(integrator, cache, dt, repeat_step) =
 
 function update_W!(nlsolver::NLSolver, integrator, cache::StochasticDiffEqMutableCache, dt, repeat_step)
   if isnewton(nlsolver)
-    calc_W!(integrator, cache, dt, repeat_step, true)
+    calc_W!(nlsolver, integrator, cache, dt, repeat_step, true)
   end
   nothing
 end
 
 function update_W!(nlsolver::NLSolver, integrator, cache::StochasticDiffEqConstantCache, dt, repeat_step)
   if isnewton(nlsolver)
-    J, W = calc_W!(integrator, cache, dt, repeat_step, true)
+    J, W = calc_W!(nlsolver, integrator, cache, dt, repeat_step, true)
     DiffEqBase.set_W!(nlsolver, W)
     return J
   end

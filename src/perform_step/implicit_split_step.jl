@@ -3,7 +3,8 @@
                                             ISSEulerHeunConstantCache},
                                             f=integrator.f)
   @unpack t,dt,uprev,u,p = integrator
-  @unpack uf, nlsolver = cache
+  @unpack nlsolver = cache
+  @unpack uf = nlsolver
   alg = unwrap_alg(integrator, true)
   theta = alg.theta
   alg.symplectic ? a = dt/2 : a = theta*dt
@@ -59,7 +60,7 @@
 
     if !isnewton(nlsolver)
       is_compos = isa(integrator.alg, StochasticDiffEqCompositeAlgorithm)
-      J = calc_J(integrator,cache,is_compos)
+      J = calc_J(nlsolver,integrator,cache,is_compos)
     end
     Ed = dt*(J*ftmp)/2
 
@@ -87,7 +88,9 @@ end
                                                         ISSEulerHeunCache},
                                f=integrator.f)
   @unpack t,dt,uprev,u,p = integrator
-  @unpack uf,du1,dz,z,k,J,W,jac_config,gtmp,gtmp2,tmp,tmp,dW_cache,nlsolver = cache
+  @unpack gtmp,gtmp2,dW_cache,nlsolver = cache
+  @unpack uf,du1,dz,z,k,tmp = nlsolver
+  J = (isnewton(nlsolver) ? nlsolver.cache.J : nothing)
   alg = unwrap_alg(integrator, true)
   alg.symplectic ? a = dt/2 : a = alg.theta*dt
   dW = integrator.W.dW

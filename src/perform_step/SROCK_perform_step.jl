@@ -1492,3 +1492,173 @@ end
 
   integrator.u = u
 end
+
+@muladd function perform_step!(integrator,cache::SROCKC2ConstantCache,f=integrator.f)
+  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack recf, mσ, mτ = cache
+
+  maxeig!(integrator, cache)
+  cache.mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est+1.5)/0.811)+1))
+  cache.mdeg = max(3,min(cache.mdeg,200))-2
+  choose_deg!(integrator,cache)
+
+  mdeg      = cache.mdeg
+  start     = cache.start
+  deg_index = cache.deg_index
+  σ = mσ[deg_index]
+  τ = mτ[deg_index]
+
+  sqrt_dt   = sqrt(dt)
+
+  μ = recf[start]  # here κ = 0
+  tᵢ = t + dt*μ
+  tᵢ₋₁ = tᵢ
+  tᵢ₋₂ = t
+
+  # stage 1
+  uᵢ₋₂ = uprev
+  uᵢ = integrator.f(uprev,p,t)
+  uᵢ₋₁ = uprev + dt*μ*uᵢ
+
+  # stages 2 upto s-2
+  for i in 2:mdeg
+    μ, κ = recf[start + 2*(i-2) + 1], recf[start + 2*(i-2) + 2]
+    ν    = 1.0 + κ
+    uᵢ   = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
+    uᵢ   = dt*μ*uᵢ + ν*uᵢ₋₁ - κ*uᵢ₋₂
+    uᵢ₋₂ = uᵢ₋₁
+    uᵢ₋₁ = uᵢ
+    tᵢ   = dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
+    tᵢ₋₂ = tᵢ₋₁
+    tᵢ₋₁ = tᵢ
+  end
+
+  #2 stage-finishing procedure
+  #stage s-1
+  uᵢ   = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
+  uᵢ₋₂ = uᵢ₋₁ + dt*σ*uᵢ
+  u = uᵢ₋₁ + dt*(σ - τ)*uᵢ
+  tᵢ₋₂ = tᵢ₋₁ + dt*σ
+
+  #stage s
+  uᵢ₋₂ = integrator.f(uᵢ₋₂,p,tᵢ₋₂)
+  u += dt*(σ + τ)*uᵢ₋₂
+
+  if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || is_diagonal_noise(integrator.sol.prob)
+    Gₛ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
+    u += Gₛ .* W.dW
+
+    uᵢ₋₂ = uᵢ₋₁ .+ ((W.dW .^ 2 .- dt) ./ (2 .* sqrt_dt)) .* Gₛ
+    Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ₋₁)
+    u += 1//2 .* sqrt_dt .* Gₛ₁
+
+    uᵢ₋₂ = uᵢ₋₁ .- ((W.dW .^ 2 .- dt) ./ (2 .* sqrt_dt)) .* Gₛ
+    Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ₋₁)
+    u -= 1//2 .* sqrt_dt .* Gₛ₁
+
+  else
+    Gₛ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
+    uᵢ₋₂ = Gₛ*W.dW
+    u += uᵢ₋₂
+
+    for i in 1:length(W.dW)
+      WikRange = 1 .* (1:length(W.dW) .== i)
+      uᵢ = Gₛ*WikRange
+      tmp = uᵢ₋₁ - 1//2*sqrt_dt*uᵢ + 1//2*(W.dW[i]/sqrt_dt)*uᵢ₋₂
+      Gₛ₁ = integrator.g(tmp,p,tᵢ₋₁)
+      u += 1//2*sqrt_dt*(Gₛ₁*WikRange)
+      tmp = uᵢ₋₁ + 1//2*sqrt_dt*uᵢ - 1//2*(W.dW[i]/sqrt_dt)*uᵢ₋₂
+      Gₛ₁ = integrator.g(tmp,p,tᵢ₋₁)
+      u -= 1//2*sqrt_dt*(Gₛ₁*WikRange)
+    end
+  end
+  integrator.u = u
+end
+
+@muladd function perform_step!(integrator,cache::SROCKC2Cache,f=integrator.f)
+  @unpack uᵢ, tmp, uᵢ₋₁, uᵢ₋₂, k, Gₛ, Gₛ₁, WikRange = cache
+  @unpack t,dt,uprev,u,W,p = integrator
+
+  @unpack recf, mσ, mτ = cache.constantcache
+  ccache = cache.constantcache
+
+  maxeig!(integrator, cache)
+  ccache.mdeg = Int(floor(sqrt((2*dt*integrator.eigen_est+1.5)/0.811)+1))
+  ccache.mdeg = max(3,min(ccache.mdeg,200))-2
+  choose_deg!(integrator,cache)
+
+  mdeg      = ccache.mdeg
+  start     = ccache.start
+  deg_index = ccache.deg_index
+  σ = mσ[deg_index]
+  τ = mτ[deg_index]
+
+  sqrt_dt   = sqrt(dt)
+  μ = recf[start]  # here κ = 0
+  tᵢ = t + dt*μ
+  tᵢ₋₁ = tᵢ
+  tᵢ₋₂ = t
+
+  # stage 1
+  @.. uᵢ₋₂ = uprev
+  integrator.f(k,uprev,p,t)
+  @.. uᵢ₋₁ = uprev + dt*μ*k
+
+  # stages 2 upto s-2
+  for i in 2:mdeg
+    μ, κ = recf[start + 2*(i-2) + 1], recf[start + 2*(i-2) + 2]
+    ν    = 1.0 + κ
+    integrator.f(k,uᵢ₋₁,p,t)
+    @.. uᵢ   = dt*μ*k + ν*uᵢ₋₁ - κ*uᵢ₋₂
+    @.. uᵢ₋₂ = uᵢ₋₁
+    @.. uᵢ₋₁ = uᵢ
+    tᵢ   = dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
+    tᵢ₋₂ = tᵢ₋₁
+    tᵢ₋₁ = tᵢ
+  end
+
+  #2 stage-finishing procedure
+  #stage s-1
+  integrator.f(k,uᵢ₋₁,p,tᵢ₋₁)
+  @.. uᵢ₋₂ = uᵢ₋₁ + dt*σ*k
+  @.. u = uᵢ₋₁ + dt*(σ - τ)*k
+  tᵢ₋₂ = tᵢ₋₁ + dt*σ
+
+  #stage s
+  integrator.f(k,uᵢ₋₂,p,tᵢ₋₂)
+  @.. u += dt*(σ + τ)*k
+
+  if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || is_diagonal_noise(integrator.sol.prob)
+    integrator.g(Gₛ,uᵢ₋₁,p,tᵢ₋₁)
+    @.. u += Gₛ*W.dW
+
+    @.. uᵢ₋₂ = uᵢ₋₁ + ((W.dW^2 - dt)/(2*sqrt_dt))*Gₛ
+    integrator.g(Gₛ₁,uᵢ₋₂,p,tᵢ₋₁)
+    @.. u += 1//2*sqrt_dt*Gₛ₁
+
+    @.. uᵢ₋₂ = uᵢ₋₁ - ((W.dW^2 - dt)/(2*sqrt_dt))*Gₛ
+    integrator.g(Gₛ₁,uᵢ₋₂,p,tᵢ₋₁)
+    @.. u -= 1//2*sqrt_dt*Gₛ₁
+  else
+    integrator.g(Gₛ,uᵢ₋₁,p,tᵢ₋₁)
+    mul!(uᵢ₋₂,Gₛ,W.dW)
+    @.. u += uᵢ₋₂
+
+    for i in 1:length(W.dW)
+      WikRange .= 1 .* (1:length(W.dW) .== i)
+      mul!(uᵢ,Gₛ,WikRange)
+
+      @.. tmp = uᵢ₋₁ - 1//2*sqrt_dt*uᵢ + 1//2*(W.dW[i]/sqrt_dt)*uᵢ₋₂
+      integrator.g(Gₛ₁,tmp,p,tᵢ₋₁)
+      mul!(tmp,Gₛ₁,WikRange)
+      @.. u += 1//2*sqrt_dt*tmp
+
+      @.. tmp = uᵢ₋₁ + 1//2*sqrt_dt*uᵢ - 1//2*(W.dW[i]/sqrt_dt)*uᵢ₋₂
+      integrator.g(Gₛ₁,tmp,p,tᵢ₋₁)
+      mul!(tmp,Gₛ₁,WikRange)
+      @.. u -= 1//2*sqrt_dt*tmp
+    end
+  end
+
+  integrator.u = u
+end

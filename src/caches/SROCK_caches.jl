@@ -302,3 +302,49 @@ function alg_cache(alg::KomBurSROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
   KomBurSROCK2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype),typeof(vec_χ)}(u,uprev,utmp,uᵢ₋₁,uᵢ₋₂,k,yₛ₋₁,yₛ₋₂,
                                             yₛ₋₃,SXₛ₋₁,SXₛ₋₂,SXₛ₋₃,Gₛ,Xₛ₋₁,Xₛ₋₂,Xₛ₋₃,vec_χ,tmp,fsalfirst,WikRange,atmp,constantcache)
 end
+
+mutable struct SROCKC2ConstantCache{zType,T} <: StochasticDiffEqConstantCache
+  ms::SVector{46,Int}
+  recf::Vector{T}
+  mσ::SVector{46,T}
+  mτ::SVector{46,T}
+  zprev::zType
+  mdeg::Int
+  deg_index::Int
+  start::Int
+end
+
+@cache struct SROCKC2Cache{uType,rateType,noiseRateType,T} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+  uᵢ::uType
+  uᵢ₋₁::uType
+  uᵢ₋₂::uType
+  Gₛ::noiseRateType
+  Gₛ₁::noiseRateType
+  WikRange::T
+  tmp::uType
+  k::rateType
+  fsalfirst::rateType
+  atmp::rateType
+  constantcache::SROCKC2ConstantCache
+end
+
+function alg_cache(alg::SROCKC2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  SROCKC2ConstantCache{uEltypeNoUnits}(u)
+end
+
+function alg_cache(alg::SROCKC2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  k = zero(rate_prototype)
+  uᵢ = zero(u)
+  uᵢ₋₁ = zero(u)
+  uᵢ₋₂ = zero(u)
+  Gₛ = zero(noise_rate_prototype)
+  Gₛ₁ = zero(noise_rate_prototype)
+  WikRange = false .* vec(ΔW)
+  tmp  = zero(u)
+  fsalfirst = k           # this variables are dummied to use same memory
+  atmp = zero(rate_prototype)
+  constantcache = SROCKC2ConstantCache{uEltypeNoUnits}(u)
+  SROCKC2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype),typeof(WikRange)}(u,uprev,uᵢ,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,WikRange,tmp,k,fsalfirst,atmp,constantcache)
+end
