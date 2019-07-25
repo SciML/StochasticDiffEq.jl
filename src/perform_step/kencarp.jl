@@ -1,6 +1,7 @@
 @muladd function perform_step!(integrator, cache::SKenCarpConstantCache, f=integrator.f)
   @unpack t,dt,uprev,u,g,p = integrator
-  @unpack uf, nlsolver = cache
+  @unpack nlsolver = cache
+  @unpack uf = nlsolver
   @unpack γ,a31,a32,a41,a42,a43,btilde1,btilde2,btilde3,btilde4,c3,α31,α32 = cache.tab
   @unpack ea21,ea31,ea32,ea41,ea42,ea43,eb1,eb2,eb3,eb4,ebtilde1,ebtilde2,ebtilde3,ebtilde4 = cache.tab
   @unpack nb021,nb043 = cache.tab
@@ -140,8 +141,9 @@ end
 @muladd function perform_step!(integrator, cache::SKenCarpCache, f=integrator.f)
   repeat_step=false
   @unpack t,dt,uprev,u,g,p = integrator
-  @unpack uf,du1,dz,z₁,z₂,z₃,z₄,k1,k2,k3,k4,k,b,J,W,jac_config,tmp,atmp = cache
+  @unpack z₁,z₂,z₃,z₄,k1,k2,k3,k4,atmp = cache
   @unpack g1,g4,chi2,nlsolver = cache
+  @unpack dz,k,jac_config,tmp = nlsolver
   @unpack γ,a31,a32,a41,a42,a43,btilde1,btilde2,btilde3,btilde4,c3,α31,α32 = cache.tab
   @unpack ea21,ea31,ea32,ea41,ea42,ea43,eb1,eb2,eb3,eb4 = cache.tab
   @unpack ebtilde1,ebtilde2,ebtilde3,ebtilde4 = cache.tab
