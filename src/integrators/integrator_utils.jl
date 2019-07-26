@@ -35,15 +35,15 @@ end
   @fastmath if !isempty(tstops)
     if integrator.opts.adaptive
       if integrator.tdir > 0
-        integrator.dt = min(abs(integrator.dt),abs(top(tstops)-integrator.t)) # step! to the end
+        integrator.dt = min(abs(integrator.dt), abs(top(tstops) - integrator.t)) # step! to the end
       else
-        integrator.dt = -min(abs(integrator.dt),abs(top(tstops)-integrator.t))
+        integrator.dt = -min(abs(integrator.dt), abs(top(tstops) + integrator.t))
       end
-    elseif integrator.dtcache == zero(integrator.t) && integrator.dtchangeable # Use integrator.opts.tstops
-      integrator.dt = integrator.tdir*abs(top(tstops)-integrator.t)
+    elseif iszero(integrator.dtcache) && integrator.dtchangeable # Use integrator.opts.tstops
+      integrator.dt = integrator.tdir * abs(top(tstops) - integrator.tdir * integrator.t)
     elseif integrator.dtchangeable && !integrator.force_stepfail
       # always try to step! with dtcache, but lower if a tstops
-      integrator.dt = @fastmath integrator.tdir*min(abs(integrator.dtcache),abs(top(tstops)-integrator.t)) # step! to the end
+      integrator.dt = @fastmath integrator.tdir*min(abs(integrator.dtcache), abs(top(tstops) - integrator.tdir * integrator.t)) # step! to the end
     end
   end
 end
@@ -52,9 +52,9 @@ end
   tstops = integrator.opts.tstops
   if !isempty(tstops)
     if integrator.tdir > 0
-      integrator.dt = min(abs(integrator.dtnew),abs(top(tstops)-integrator.t)) # step! to the end
+      integrator.dt = min(abs(integrator.dtnew),abs(top(tstops) - integrator.t)) # step! to the end
     else
-      integrator.dt = -min(abs(integrator.dtnew),abs(top(tstops)-integrator.t))
+      integrator.dt = -min(abs(integrator.dtnew),abs(top(tstops) + integrator.t))
     end
   end
 end
@@ -65,9 +65,10 @@ last_step_failed(integrator::SDEIntegrator) =
 @inline function savevalues!(integrator::SDEIntegrator,force_save=false)::Tuple{Bool,Bool}
   saved, savedexactly = false, false
   !integrator.opts.save_on && return saved, savedexactly
-  while !isempty(integrator.opts.saveat) && integrator.tdir*top(integrator.opts.saveat) <= integrator.tdir*integrator.t # Perform saveat
+  tdir_t = integrator.tdir * integrator.t
+  while !isempty(integrator.opts.saveat) && top(integrator.opts.saveat) <= tdir_t # Perform saveat
     integrator.saveiter += 1; saved = true
-    curt = pop!(integrator.opts.saveat)
+    curt = integrator.tdir * pop!(integrator.opts.saveat)
     if curt!=integrator.t # If <t, interpolate
       Θ = (curt - integrator.tprev)/integrator.dt
       val = sde_interpolant(Θ,integrator,integrator.opts.save_idxs,Val{0}) # out of place, but force copy later
@@ -126,7 +127,7 @@ end
       integrator.last_stepfail = false
       integrator.tprev = integrator.t
       if typeof(integrator.t)<:AbstractFloat && !isempty(integrator.opts.tstops)
-        tstop = top(integrator.opts.tstops)
+        tstop = integrator.tdir * top(integrator.opts.tstops)
         @fastmath abs(ttmp - tstop) < 10eps(integrator.t) ? (integrator.t = tstop) : (integrator.t = ttmp)
       else
         integrator.t = ttmp
@@ -137,7 +138,7 @@ end
   else # Non adaptive
     integrator.tprev = integrator.t
     if typeof(integrator.t)<:AbstractFloat && !isempty(integrator.opts.tstops)
-      tstop = top(integrator.opts.tstops)
+      tstop = integrator.tdir * top(integrator.opts.tstops)
       # For some reason 10eps(integrator.t) is slow here
       # TODO: Allow higher precision but profile
       @fastmath abs(ttmp - tstop) < 10eps(max(integrator.t,tstop)) ? (integrator.t = tstop) : (integrator.t = ttmp)
@@ -255,14 +256,14 @@ end
 @inline function handle_tstop!(integrator)
   tstops = integrator.opts.tstops
   if !isempty(tstops)
-    t = integrator.t
-    ts_top = top(tstops)
-    if t == ts_top
+    tdir_t = integrator.tdir * integrator.t
+    tdir_ts_top = top(tstops)
+    if tdir_t == tdir_ts_top
       pop!(tstops)
       integrator.just_hit_tstop = true
-    elseif integrator.tdir*t > integrator.tdir*ts_top
+    elseif tdir_t > tdir_ts_top
       if !integrator.dtchangeable
-        change_t_via_interpolation!(integrator, pop!(tstops), Val{true})
+        change_t_via_interpolation!(integrator, integrator.tdir * pop!(tstops), Val{true})
         integrator.just_hit_tstop = true
       else
         error("Something went wrong. Integrator stepped past tstops but the algorithm was dtchangeable. Please report this error.")
