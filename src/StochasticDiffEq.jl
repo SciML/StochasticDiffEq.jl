@@ -96,6 +96,7 @@ module StochasticDiffEq
   include("SROCK_tableaus.jl")
   include("derivative_utils.jl")
   include("SROCK_utils.jl")
+  include("iterated_integrals.jl")
   include("composite_algs.jl")
 
    export StochasticDiffEqAlgorithm, StochasticDiffEqAdaptiveAlgorithm,
