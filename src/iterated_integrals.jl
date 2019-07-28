@@ -1,3 +1,6 @@
+# This function calculates WikJ, a mxm Array for a m dimensional general noise problem,
+# which is a approximation to the second order iterated integrals
+# this is implementation of the section 4 of the paper doi:10.1016/j.cam.2006.05.037
 
 function get_iterated_I!(integrator, cache::StochasticDiffEqConstantCache)
     @unpack dt, u, uprev, t, p, W = integrator
