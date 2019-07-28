@@ -4,7 +4,8 @@
 
 function get_iterated_I!(integrator, cache::StochasticDiffEqConstantCache)
     @unpack dt, u, uprev, t, p, W = integrator
-    @unpack m_seq, WikJ, WikJ2, WikJ3, Aₚ, vec_ζ, vec_η, Gp1, Gp2= cache
+    @unpack m_seq, WikJ = cache
+
     dW     = W.dW
     m      = length(dW)
     M      = m*(m-1)/2
@@ -17,38 +18,33 @@ function get_iterated_I!(integrator, cache::StochasticDiffEqConstantCache)
             sum_dW² += dW[i]^2
         end
 
-        WikJ = dW*dW'
         Gp1 = randn(M)
         α = sqrt(1 + sum_dW²/dt)
         Gp2 = Gp1/(sqrt(2)*(1+α)*dt)
 
         #operator (Iₘ² - Pₘ)Kₘᵀ
         for i in 1:M
-            WikJ3[m_seq[i,1], m_seq[i,2]] = Gp2[i]
-            WikJ3[m_seq[i,2], m_seq[i,1]] = -Gp2[i]
+            WikJ2[m_seq[i,1], m_seq[i,2]] = Gp2[i]
+            WikJ2[m_seq[i,2], m_seq[i,1]] = -Gp2[i]
         end
 
         #operator (Iₘ X W*Wᵀ)
-        for i in 1:m
-            WikJ2[:,i] = WikJ*WikJ3[:,i]
-        end
+        WikJ2 = dW*(dW'*WikJ2)
 
         #operator Kₘ(Iₘ² - Pₘ)
-        WikJ3 = WikJ2 - WikJ2
+        WikJ2 = WikJ2 - WikJ2'
         for i in 1:M
-            Gp2[i] = WikJ3[m_seq[i,1], m_seq[i,2]]
+            Gp2[i] = WikJ2[m_seq[i,1], m_seq[i,2]]
         end
         Gp = Gp/sqrt(2) + Gp2
 
         #operator (Iₘ² - Pₘ)Kₘᵀ
         for i in 1:M
-            WikJ3[m_seq[i,1], m_seq[i,2]] = Gp[i]
-            WikJ3[m_seq[i,2], m_seq[i,1]] = -Gp[i]
+            WikJ2[m_seq[i,1], m_seq[i,2]] = Gp[i]
+            WikJ2[m_seq[i,2], m_seq[i,1]] = -Gp[i]
         end
 
-        WikJ *= 1//2
-
-        #################
+        WikJ = 1//2*(dW*dW')
         a2ₚ = (π^2)/6
         p = Int(floor((1/π)*sqrt(M/(24*dt))*sqrt(m + 4*sum_dW²/dt) + 1))
         for i in 1:p
@@ -61,7 +57,8 @@ function get_iterated_I!(integrator, cache::StochasticDiffEqConstantCache)
         end
 
         WikJ -= 1//2*(dW*Aₚ' - Aₚ*dW')
-        WikJ += (sqrt(a2ₚ)*dt/π)*WikJ3
+        WikJ += (sqrt(a2ₚ)*dt/π)*WikJ2
     end
+    cache.WikJ = WikJ
     return false
 end
