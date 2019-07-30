@@ -30,6 +30,9 @@ RKMil(;interpretation=:Ito) = RKMil{interpretation}()
 struct RKMilCommute{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
 RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
 
+struct RKMil_General{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
+RKMil_General(;interpretation=:Ito) = RKMil_General{interpretation}()
+
 struct WangLi3SMil_A <: StochasticDiffEqAlgorithm end
 struct WangLi3SMil_B <: StochasticDiffEqAlgorithm end
 struct WangLi3SMil_C <: StochasticDiffEqAlgorithm end
