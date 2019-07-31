@@ -26,6 +26,7 @@ SparseDiffTools = "47a9eef4-7e08-11e9-0b38-333d64bd3804"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
+ArrayInterface = "1.1"
 SparseDiffTools = ">= 0.3.0"
 julia = "1"
 
