@@ -4,19 +4,20 @@
 
 function get_iterated_I!(integrator, cache::StochasticDiffEqConstantCache)
     @unpack dt, u, uprev, t, p, W = integrator
-    @unpack m_seq, WikJ = cache
-
+    @unpack WikJ = cache
     dW     = W.dW
-    m      = length(dW)
-    M      = m*(m-1)/2
 
     if typef(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
-        cache.WikJ = 1//2 .* J .^ 2
+        cache.WikJ = 1//2 .* dW .^ 2
     else
+        m      = length(dW)
+        M      = m*(m-1)/2
+        m_seq  = cache.m_seq
         sum_dW² = zero(eltype(dW))
-        for i in 1:length(dW)
-            sum_dW² += dW[i]^2
-        end
+        sum_dW² = dW'*dW
+        # for i in 1:length(dW)
+        #     sum_dW² += dW[i]^2
+        # end
 
         WikJ = dW*dW'
         Gp1 = randn(M)
@@ -68,18 +69,21 @@ end
 function get_iterated_I!(integrator, cache::StochasticDiffEqMutableCache)
     @unpack dt, u, uprev, t, p, W = integrator
     @unpack m_seq, WikJ, WikJ2, WikJ3, Gp1, Gp2 = cache
-
     dW     = W.dW
-    m      = length(dW)
-    M      = m*(m-1)/2
 
     if typef(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
-        @.. cache.WikJ = 1//2 .* J .^ 2
+        @.. cache.WikJ = 1//2 .* dW .^ 2
     else
+        m      = length(dW)
+        M      = m*(m-1)/2
+        m_seq  = cache.m_seq; WikJ2 = cache.WikJ2; WikJ3 = cache.WikJ3;
+        Gp1    = cache.Gp1; Gp2 = cache.Gp2
+
         sum_dW² = zero(eltype(dW))
-        for i in 1:length(dW)
-            sum_dW² += dW[i]^2
-        end
+        mul!(sum_dW²,dW', dW)
+        # for i in 1:length(dW)
+        #     sum_dW² += dW[i]^2
+        # end
 
         @.. Gp1 = randn(M)
         α = sqrt(1 + sum_dW²/dt)
