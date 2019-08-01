@@ -30,7 +30,7 @@ RKMil(;interpretation=:Ito) = RKMil{interpretation}()
 struct RKMilCommute{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
 RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
 
-struct RKMil_General{interpretation} <: StochasticDiffEqAdaptiveAlgorithm
+struct RKMil_General <: StochasticDiffEqAdaptiveAlgorithm
   interpretation::Symbol
   is_commutative::Bool
 end
