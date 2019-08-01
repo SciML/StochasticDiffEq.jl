@@ -229,3 +229,60 @@ end
 
   end
 end
+
+@muladd function perform_step!(integrator,cache::RKMil_GeneralConstantCache,f=integrator.f)
+  @unpack t,dt,uprev,u,W,p = integrator
+  dW = W.dW
+
+  if integrator.alg.is_commutative
+    WikJ = 1//2 .* vec(dW) .* vec(dW)'
+  else
+    get_iterated_I!(integrator, cache)
+    WikJ = cache.WikJ
+  end
+
+  if alg_interpretation(integrator.alg) == :Ito
+    WikJ -= 1//2 .* dt .* Eye{eltype(dW)}(length(dW))
+  end
+
+  du₁ = integrator.f(uprev,p,t)
+  L = integrator.g(uprev,p,t)
+  mil_correction = zero(u)
+
+  if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+    K = @.. uprev + dt*du1
+    utilde = (alg_interpretation(integrator.alg) == :Ito ? K : uprev) + L*integrator.sqdt
+    ggprime = (integrator.g(utilde,p,t) .- L) ./ (integrator.sqdt)
+    mil_correction = ggprime .* WikJ
+    u = K + L .* dW + mil_correction
+  else
+    for i in 1:length(dW)
+      K = uprev + dt*du₁ + sqdt*@view(L[:,j])
+      gtmp = integrator.g(K,p,t)
+      ggprime = (gtmp - L)/sqdt
+      ggprime_norm = zero(eltype(u))
+      if integrator.opts.adaptive
+        ggprime_norm += integrator.opts.internalnorm(ggprime, t)
+      end
+      mil_correction += ggprime*@view(WikJ[:,j])
+    end
+    u = uprev + dt*du₁ + L*dW + mil_correction
+  end
+
+  if integrator.opts.adaptive
+    du₂ = integrator.f(K,p,t+dt)
+    if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+      tmp  = dt*(du₂ -du₁)/2
+      En = W.dW.^3 .* ((du2-L)/(integrator.sqdt)).^2 / 6
+      tmp = calculate_residuals(tmp, En, uprev, u, integrator.opts.abstol,
+            integrator.opts.reltol, integrator.opts.delta, integrator.opts.internalnorm, t)
+    else
+      En = integrator.opts.internalnorm(W.dW,t)^3*ggprime_norm^2 / 6
+      tmp = @.. integrator.opts.internalnorm(dt*(du₂ - du₁)/2,t)
+      tmp = @.. calculate_residuals(tmp, En, uprev, u, integrator.opts.abstol,
+                integrator.opts.reltol, integrator.opts.delta, integrator.opts.internalnorm, t)
+    end
+    integrator.EEst = integrator.opts.internalnorm(tmp, t)
+  end
+  integrator.u = u
+end
