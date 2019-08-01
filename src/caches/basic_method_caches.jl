@@ -116,3 +116,97 @@ function alg_cache(alg::RKMilCommute,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
   Kj = zero(u); Dgj = zero(noise_rate_prototype)
   RKMilCommuteCache(u,uprev,du1,du2,K,gtmp,L,WikJ,Dg,mil_correction,Kj,Dgj,tmp)
 end
+
+struct RKMil_GeneralConstantCache{WikType} <: StochasticDiffEqConstantCache
+  WikJ::WikType
+  m_seq::Array{Int}
+end
+
+@cache struct RKMil_GeneralCache{uType, rateType, rateNoiseType, WikType} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+  tmp::uType
+  du₁::rateType
+  du₂::rateType
+  K::uType
+  L::rateNoiseType
+  mil_correction::uType
+  ggprime::rateNoiseType
+  WikJ::WikType
+  WikJ2::WikType
+  WikJ3::WikType
+  m_seq::Array{Int}
+  vec_ζ::Vector{eltype(rateNoiseType)}
+  vec_η::Vector{eltype(rateNoiseType)}
+  Gp1::Vector{eltype(rateNoiseType)}
+  Gp2::Vector{eltype(rateNoiseType)}
+end
+
+function alg_cache(alg::RKMil_General,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  if typeof(ΔW) <: Number || is_diagonal_noise(prob)
+    WikJ = false .* ΔW .* ΔW
+  else
+    WikJ = false .* vec(ΔW) .* vec(ΔW)'
+  end
+
+  if typeof(ΔW) <: Number || is_diagonal_noise(prob) || alg.is_commutative
+    m_seq = zeros(Int,length(ΔW))
+  else
+    M = length(ΔW) * (length(ΔW) - 1)/2
+    m_seq = Array{Int}(undef, M, 2)
+    k = 1
+    for i in 1:length(ΔW)
+      for j in i+1:length(ΔW)
+        m_seq[k,1] = i
+        m_seq[k,2] = j
+        k += 1
+      end
+    end
+  end
+  RKMil_GeneralConstantCache{typeof(WikJ)}(WikJ, m_seq)
+end
+
+function alg_cache(alg::RKMil_General,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  tmp = zero(u)
+  du₁ = zero(rate_prototype)
+  du₂ = zero(rate_prototype)
+  K = zero(u)
+  L = zero(noise_rate_prototype)
+  mil_correction = zero(u)
+  ggprime = zero(noise_rate_prototype)
+  if typeof(ΔW) <: Number || is_diagonal_noise(prob)
+    WikJ = false .* ΔW .* ΔW
+  else
+    WikJ = false .* vec(ΔW) .* vec(ΔW)'
+  end
+
+  if typeof(ΔW) <: Number || is_diagonal_noise(prob) || alg.is_commutative
+    m_seq = zeros(Int,length(ΔW))
+    WikJ2 = WikJ
+    WikJ3 = WikJ
+    vec_ζ = false .* vec(ΔW)
+    vec_η = vec_ζ
+    Gp1 = vec_ζ
+    Gp2 = vec_ζ
+  else
+    M = length(ΔW) * (length(ΔW) - 1)/2
+    m_seq = Array{Int}(undef, M, 2)
+    k = 1
+    for i in 1:length(ΔW)
+      for j in i+1:length(ΔW)
+        m_seq[k,1] = i
+        m_seq[k,2] = j
+        k += 1
+      end
+    end
+    WikJ2 = similar(WikJ)
+    WikJ3 = similar(WikJ)
+    vec_ζ = false .* vec(ΔW)
+    vec_η = similar(vec_ζ)
+    Gp1 = zeros(M)
+    Gp2 = similar(Gp1)
+  end
+
+  RKMil_GeneralCache{typeof(u), typeof(rate_prototype), typeof(noise_rate_prototype), typeof(WikJ)}(u, uprev, tmp, du₁,
+                                du₂, K, L, mil_correction, ggprime, WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp1, Gp2)
+end
