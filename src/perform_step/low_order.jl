@@ -286,3 +286,60 @@ end
   end
   integrator.u = u
 end
+
+@muladd function perform_step!(integrator,cache::RKMil_GeneralCache,f=integrator.f)
+  @unpack du₁, du₂, K, tmp, ggprime, L, WikJ, mil_correction = cache
+  @unpack t,dt,uprev,u,W,p = integrator
+
+  integrator.f(du₁,uprev,p,t)
+  integrator.g(L,uprev,p,t)
+  dW = W.dW; sqdt = integrator.sqdt
+  @.. mil_correction = zero(eltype(u))
+  ggprime_norm = zero(eltype(ggprime))
+
+  if integrator.alg.is_commutative
+    WikJ .= 1//2 .* vec(dW) .* vec(dW)'
+  else
+    get_iterated_I!(integrator, cache)
+    WikJ .= cache.WikJ
+  end
+
+  if alg_interpretation(integrator.alg) == :Ito
+    WikJ .-= 1//2 .* dt .* Eye{eltype(dW)}(length(dW))
+  end
+
+  if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+    @.. K = uprev + dt*du₁
+    @.. du₂ = zero(eltype(u))
+    tmp .= (alg_interpretation(integrator.alg) == :Ito ? K : uprev) .+ integrator.sqdt .* L
+    integrator.g(du₂,tmp,p,t)
+    @.. ggprime = (du₂ - L)/sqdt
+    ggprime_norm = internalnorm(ggprime,t)
+    @.. u = K + L*dW + ggprime*WikJ
+  else
+    for i in 1:length(dW)
+      @.. K = uprev + dt*du₁ + sqdt*@view(L[:,j])
+      integrator.g(ggprime, K, p, t)
+      @.. ggprime = (ggprime - L)/sqdt
+      if integrator.opts.adaptive
+        ggprime_norm += integrator.opts.internalnorm(ggprime,t)
+      end
+      mul!(tmp,ggprime,@view(WikJ[:,j]))
+      @.. mil_correction += tmp
+    end
+    mul!(tmp,L,dW)
+    @.. u .= uprev + dt*du₁ + tmp + mil_correction
+  end
+
+  if integrator.opts.adaptive
+      En = integrator.opts.internalnorm(W.dW,t)^3*ggprime_norm^2 / 6
+      integrator.f(du₂,K,p,t+dt)
+      @.. tmp = integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2,t) + En
+
+      calculate_residuals!(tmp, tmp, uprev, u, integrator.opts.abstol,
+                           integrator.opts.reltol, integrator.opts.internalnorm, t)
+      integrator.EEst = integrator.opts.internalnorm(tmp,t)
+  end
+
+  integrator.u = u
+end
