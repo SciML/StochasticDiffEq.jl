@@ -13,7 +13,7 @@ function get_iterated_I!(integrator, cache::StochasticDiffEqConstantCache)
         m      = length(dW)
         M      = m*(m-1)/2
         m_seq  = cache.m_seq
-        sum_dW² = zero(eltype(dW))
+        # sum_dW² = zero(eltype(dW))
         sum_dW² = dW'*dW
 
         WikJ = dW*dW'
