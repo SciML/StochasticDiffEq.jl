@@ -180,6 +180,8 @@ function alg_cache(alg::RKMil_General,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate
     WikJ = false .* vec(ΔW) .* vec(ΔW)'
   end
 
+  #in case of diagonal noise and commutative noise
+  # WikJ2, WikJ3, vec_η, Gp1, Gp2 are dummied variables
   if typeof(ΔW) <: Number || is_diagonal_noise(prob) || alg.is_commutative
     m_seq = zeros(Int,length(ΔW))
     WikJ2 = WikJ
