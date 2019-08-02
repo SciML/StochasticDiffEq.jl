@@ -4,11 +4,10 @@
 
 function get_iterated_I!(integrator, cache::StochasticDiffEqConstantCache)
     @unpack dt, u, uprev, t, p, W = integrator
-    @unpack WikJ = cache
-    dW     = W.dW
+    dW = W.dW
 
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
-        cache.WikJ = 1//2 .* dW .^ 2
+        WikJ = 1//2 .* dW .^ 2
     else
         m      = length(dW)
         M      = m*(m-1)/2
@@ -57,10 +56,8 @@ function get_iterated_I!(integrator, cache::StochasticDiffEqConstantCache)
 
         WikJ -= 1//2*(dW*Aₚ' - Aₚ*dW')
         WikJ += (sqrt(a2ₚ)*dt/π)*WikJ2
-
-        cache.WikJ = WikJ
     end
-    return false
+    WikJ
 end
 
 function get_iterated_I!(integrator, cache::StochasticDiffEqMutableCache)

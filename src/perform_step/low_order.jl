@@ -237,12 +237,15 @@ end
   if integrator.alg.is_commutative
     WikJ = 1//2 .* vec(dW) .* vec(dW)'
   else
-    get_iterated_I!(integrator, cache)
-    WikJ = cache.WikJ
+    WikJ = get_iterated_I!(integrator, cache)
   end
 
   if alg_interpretation(integrator.alg) == :Ito
-    WikJ -= 1//2 .* dt .* Eye{eltype(dW)}(length(dW))
+    if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+      WikJ = WikJ .- 1//2 .* dt
+    else
+      WikJ -= 1//2 .* dt .* Eye{eltype(dW)}(length(dW))
+    end
   end
 
   du₁ = integrator.f(uprev,p,t)
@@ -250,7 +253,7 @@ end
   mil_correction = zero(u)
 
   if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
-    K = @.. uprev + dt*du1
+    K = @.. uprev + dt*du₁
     utilde = (alg_interpretation(integrator.alg) == :Ito ? K : uprev) + L*integrator.sqdt
     ggprime = (integrator.g(utilde,p,t) .- L) ./ (integrator.sqdt)
     mil_correction = ggprime .* WikJ
@@ -305,7 +308,11 @@ end
   end
 
   if alg_interpretation(integrator.alg) == :Ito
-    WikJ .-= 1//2 .* dt .* Eye{eltype(dW)}(length(dW))
+    if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+      @.. WikJ -= 1//2*dt
+    else
+      WikJ .-= 1//2 .* dt .* Eye{eltype(dW)}(length(dW))
+    end
   end
 
   if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
