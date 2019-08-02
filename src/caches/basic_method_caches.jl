@@ -117,8 +117,7 @@ function alg_cache(alg::RKMilCommute,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
   RKMilCommuteCache(u,uprev,du1,du2,K,gtmp,L,WikJ,Dg,mil_correction,Kj,Dgj,tmp)
 end
 
-struct RKMil_GeneralConstantCache{WikType} <: StochasticDiffEqConstantCache
-  WikJ::WikType
+struct RKMil_GeneralConstantCache <: StochasticDiffEqConstantCache
   m_seq::Array{Int}
 end
 
@@ -143,12 +142,6 @@ end
 end
 
 function alg_cache(alg::RKMil_General,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
-  if typeof(ΔW) <: Number || is_diagonal_noise(prob)
-    WikJ = false .* ΔW .* ΔW
-  else
-    WikJ = false .* vec(ΔW) .* vec(ΔW)'
-  end
-
   if typeof(ΔW) <: Number || is_diagonal_noise(prob) || alg.is_commutative
     m_seq = zeros(Int,length(ΔW))
   else
@@ -163,7 +156,7 @@ function alg_cache(alg::RKMil_General,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate
       end
     end
   end
-  RKMil_GeneralConstantCache{typeof(WikJ)}(WikJ, m_seq)
+  RKMil_GeneralConstantCache(m_seq)
 end
 
 function alg_cache(alg::RKMil_General,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
