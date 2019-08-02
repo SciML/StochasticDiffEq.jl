@@ -15,9 +15,6 @@ function get_iterated_I!(integrator, cache::StochasticDiffEqConstantCache)
         m_seq  = cache.m_seq
         sum_dW² = zero(eltype(dW))
         sum_dW² = dW'*dW
-        # for i in 1:length(dW)
-        #     sum_dW² += dW[i]^2
-        # end
 
         WikJ = dW*dW'
         Gp1 = randn(M)
@@ -82,9 +79,6 @@ function get_iterated_I!(integrator, cache::StochasticDiffEqMutableCache)
 
         sum_dW² = zero(eltype(dW))
         mul!(sum_dW²,dW', dW)
-        # for i in 1:length(dW)
-        #     sum_dW² += dW[i]^2
-        # end
 
         @.. Gp1 = randn(M)
         α = sqrt(1 + sum_dW²/dt)
