@@ -23,16 +23,16 @@ end
 jacobian_autodiff(f,x,_,_)=ForwardDiff.derivative(f,x)
 jacobian_autodiff(f,x::AbstractArray,_,hascolorvec::Val{false})=ForwardDiff.jacobian(f,x)
 function jacobian_autodiff(f,x::AbstractArray,integrator,hascolorvec::Val{true})
-  colorvecvec=integrator.f.colorvecvec
+  colorvec=integrator.f.colorvec
   jac=integrator.f.jac_prototype
   J=jac isa SparseMatrixCSC ? similar(jac) : fill(0.,size(jac))
-  forwarddiff_color_jacobian!(J,f,x,colorvec=colorvecvec,sparsity=jac)
+  forwarddiff_color_jacobian!(J,f,x,colorvec=colorvec,sparsity=jac)
   J
 end
 jacobian_finitediff(f,x,difftype,_,_)=DiffEqDiffTools.finite_difference_derivative(f, x, difftype, eltype(x))
 jacobian_finitediff(f,x::AbstractArray,difftype,_,hascolorvec::Val{false})=DiffEqDiffTools.finite_difference_jacobian(f, x, difftype, eltype(x), Val{false})
 jacobian_finitediff(f,x::AbstractArray,difftype,integrator,hascolorvec::Val{true})=
-  DiffEqDiffTools.finite_difference_jacobian(f, x, difftype, eltype(x), Val(false),colorvec=integrator.f.colorvecvec,sparsity=integrator.f.jac_prototype)
+  DiffEqDiffTools.finite_difference_jacobian(f, x, difftype, eltype(x), Val(false),colorvec=integrator.f.colorvec,sparsity=integrator.f.jac_prototype)
 
 function jacobian(f, x,
                   integrator::DiffEqBase.DEIntegrator)
@@ -59,18 +59,18 @@ function jacobian!(J::AbstractMatrix{<:Number}, f, x::AbstractArray{<:Number}, f
 end
 
 jac_cache_autodiff(alg,f,uf,du1,uprev,u,hascolorvec::Val{false})=ForwardDiff.JacobianConfig(uf,du1,uprev,ForwardDiff.Chunk{determine_chunksize(u,alg)}())
-jac_cache_autodiff(alg,f,uf,du1,uprev,u,hascolorvec::Val{true})=ForwardColorJacCache(uf,uprev,colorvec=f.colorvecvec,sparsity=f.jac_prototype)
+jac_cache_autodiff(alg,f,uf,du1,uprev,u,hascolorvec::Val{true})=ForwardColorJacCache(uf,uprev,colorvec=f.colorvec,sparsity=f.jac_prototype)
 
 function DiffEqBase.build_jac_config(alg::StochasticDiffEqAlgorithm,f,uf,du1,uprev,u,tmp,du2)
   if !has_jac(f)
     if alg_autodiff(alg)
       jac_config = jac_cache_autodiff(alg,f,uf,du1,uprev,u,Val(DiffEqBase.has_colorvec(f)))
     else
-      colorvecvec= f.colorvecvec isa Nothing ? Base.OneTo(length(u)) : f.colorvecvec
+      colorvec= f.colorvec isa Nothing ? Base.OneTo(length(u)) : f.colorvec
       if alg.diff_type != Val{:complex}
-        jac_config = DiffEqDiffTools.JacobianCache(tmp,du1,du2,alg.diff_type,colorvec=colorvecvec,sparsity=f.jac_prototype)
+        jac_config = DiffEqDiffTools.JacobianCache(tmp,du1,du2,alg.diff_type,colorvec=colorvec,sparsity=f.jac_prototype)
       else
-        jac_config = DiffEqDiffTools.JacobianCache(Complex{eltype(tmp)}.(tmp),Complex{eltype(du1)}.(du1),nothing,alg.diff_type,colorvec=colorvecvec,sparsity=f.jac_prototype)
+        jac_config = DiffEqDiffTools.JacobianCache(Complex{eltype(tmp)}.(tmp),Complex{eltype(du1)}.(du1),nothing,alg.diff_type,colorvec=colorvec,sparsity=f.jac_prototype)
       end
     end
   else
