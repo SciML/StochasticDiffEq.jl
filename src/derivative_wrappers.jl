@@ -46,7 +46,7 @@ function jacobian(f, x,
     J
 end
 
-jacobian_autodiff!(J,f,fx,x,jac_config::ForwardcolorvecJacCache)=forwarddiff_color_jacobian!(J,f,x,jac_config)
+jacobian_autodiff!(J,f,fx,x,jac_config::ForwardColorJacCache)=forwarddiff_color_jacobian!(J,f,x,jac_config)
 jacobian_autodiff!(J,f,fx,x,jac_config::ForwardDiff.JacobianConfig)=ForwardDiff.jacobian!(J, f, fx, x, jac_config)
 
 function jacobian!(J::AbstractMatrix{<:Number}, f, x::AbstractArray{<:Number}, fx::AbstractArray{<:Number}, integrator::DEIntegrator, jac_config)
