@@ -216,7 +216,7 @@ end
 
   if typeof(integrator.f) <: SplitSDEFunction
     @.. u = tmp + γ*z₂
-    f2(k2,u,p,t + γ*dt); k2 .*= dt
+    f2(k2,u,p,t + 2γ*dt); k2 .*= dt
     @.. tmp = uprev + a31*z₁ + a32*z₂ + ea31*k1 + ea32*k2
   else
     @.. tmp = uprev + a31*z₁ + a32*z₂
