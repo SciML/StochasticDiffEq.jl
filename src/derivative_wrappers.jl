@@ -59,7 +59,7 @@ function jacobian!(J::AbstractMatrix{<:Number}, f, x::AbstractArray{<:Number}, f
 end
 
 jac_cache_autodiff(alg,f,uf,du1,uprev,u,hascolorvec::Val{false})=ForwardDiff.JacobianConfig(uf,du1,uprev,ForwardDiff.Chunk{determine_chunksize(u,alg)}())
-jac_cache_autodiff(alg,f,uf,du1,uprev,u,hascolorvec::Val{true})=ForwardcolorvecJacCache(uf,uprev,colorvec=f.colorvecvec,sparsity=f.jac_prototype)
+jac_cache_autodiff(alg,f,uf,du1,uprev,u,hascolorvec::Val{true})=ForwardColorJacCache(uf,uprev,colorvec=f.colorvecvec,sparsity=f.jac_prototype)
 
 function DiffEqBase.build_jac_config(alg::StochasticDiffEqAlgorithm,f,uf,du1,uprev,u,tmp,du2)
   if !has_jac(f)
