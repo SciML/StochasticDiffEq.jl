@@ -47,7 +47,7 @@ module StochasticDiffEq
 
   import DiffEqBase: iip_get_uf, oop_get_uf, build_jac_config
 
-  using SparseDiffTools: forwarddiff_color_jacobian!, ForwardcolorvecJacCache
+  using SparseDiffTools: forwarddiff_color_jacobian!, ForwardColorJacCache
 
 
   const CompiledFloats = Union{Float32,Float64}
