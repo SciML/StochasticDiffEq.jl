@@ -26,7 +26,7 @@ function jacobian_autodiff(f,x::AbstractArray,integrator,hascolorvec::Val{true})
   colorvecvec=integrator.f.colorvecvec
   jac=integrator.f.jac_prototype
   J=jac isa SparseMatrixCSC ? similar(jac) : fill(0.,size(jac))
-  forwarddiff_colorvec_jacobian!(J,f,x,colorvec=colorvecvec,sparsity=jac)
+  forwarddiff_color_jacobian!(J,f,x,colorvec=colorvecvec,sparsity=jac)
   J
 end
 jacobian_finitediff(f,x,difftype,_,_)=DiffEqDiffTools.finite_difference_derivative(f, x, difftype, eltype(x))
@@ -46,7 +46,7 @@ function jacobian(f, x,
     J
 end
 
-jacobian_autodiff!(J,f,fx,x,jac_config::ForwardcolorvecJacCache)=forwarddiff_colorvec_jacobian!(J,f,x,jac_config)
+jacobian_autodiff!(J,f,fx,x,jac_config::ForwardcolorvecJacCache)=forwarddiff_color_jacobian!(J,f,x,jac_config)
 jacobian_autodiff!(J,f,fx,x,jac_config::ForwardDiff.JacobianConfig)=ForwardDiff.jacobian!(J, f, fx, x, jac_config)
 
 function jacobian!(J::AbstractMatrix{<:Number}, f, x::AbstractArray{<:Number}, fx::AbstractArray{<:Number}, integrator::DEIntegrator, jac_config)
