@@ -266,15 +266,18 @@ struct SKenCarp{CS,AD,F,FDT,N,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAl
   smooth_est::Bool
   extrapolant::Symbol
   new_jac_conv_bound::T2
+  ode_error_est::Bool
 end
 
 SKenCarp(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                    linsolve=DEFAULT_LINSOLVE,nlsolve=NLNewton(),
                    smooth_est=true,extrapolant=:min_correct,
-                   new_jac_conv_bound = 1e-3,controller = :Predictive) =
+                   new_jac_conv_bound = 1e-3,controller = :Predictive,
+                   ode_error_est = true) =
  SKenCarp{chunk_size,autodiff,typeof(linsolve),typeof(diff_type),
         typeof(nlsolve),typeof(new_jac_conv_bound),controller}(
-        linsolve,diff_type,nlsolve,smooth_est,extrapolant,new_jac_conv_bound)
+        linsolve,diff_type,nlsolve,smooth_est,extrapolant,new_jac_conv_bound,
+        ode_error_est)
 
 ################################################################################
 
