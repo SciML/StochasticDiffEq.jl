@@ -36,10 +36,10 @@ end
 
 jac_sp = sparse(generate_sparsity_pattern(10))
 #jac = second_derivative_stencil(10)
-colors = repeat(1:3,10)[1:10]
+colorvec = repeat(1:3,10)[1:10]
 u0=[1.,2.,3,4,5,5,4,3,2,1]
 tspan=(0.,10.)
-sdefun_sp= SDEFunction(f,g,colorvec=colors,jac_prototype=jac_sp)
+sdefun_sp= SDEFunction(f,g,colorvec=colorvec,jac_prototype=jac_sp)
 prob_sp = SDEProblem(sdefun_sp,g,u0,tspan)
 prob_std = SDEProblem(f,g,u0,tspan)
 
