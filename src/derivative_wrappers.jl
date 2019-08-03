@@ -39,9 +39,9 @@ function jacobian(f, x,
     local J
     alg = unwrap_alg(integrator, true)
     if get_current_alg_autodiff(integrator.alg, integrator.cache)
-      J = jacobian_autodiff(f,x,integrator,Val(DiffEqBase.has_colorvecvec(integrator.f)))
+      J = jacobian_autodiff(f,x,integrator,Val(DiffEqBase.has_colorvec(integrator.f)))
     else
-      J = jacobian_finitediff(f,x,alg.diff_type,integrator,Val(DiffEqBase.has_colorvecvec(integrator.f)))
+      J = jacobian_finitediff(f,x,alg.diff_type,integrator,Val(DiffEqBase.has_colorvec(integrator.f)))
     end
     J
 end
@@ -64,7 +64,7 @@ jac_cache_autodiff(alg,f,uf,du1,uprev,u,hascolorvec::Val{true})=ForwardColorJacC
 function DiffEqBase.build_jac_config(alg::StochasticDiffEqAlgorithm,f,uf,du1,uprev,u,tmp,du2)
   if !has_jac(f)
     if alg_autodiff(alg)
-      jac_config = jac_cache_autodiff(alg,f,uf,du1,uprev,u,Val(DiffEqBase.has_colorvecvec(f)))
+      jac_config = jac_cache_autodiff(alg,f,uf,du1,uprev,u,Val(DiffEqBase.has_colorvec(f)))
     else
       colorvecvec= f.colorvecvec isa Nothing ? Base.OneTo(length(u)) : f.colorvecvec
       if alg.diff_type != Val{:complex}
