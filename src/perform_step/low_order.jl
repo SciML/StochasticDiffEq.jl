@@ -319,7 +319,7 @@ end
     tmp .= (alg_interpretation(integrator.alg) == :Ito ? K : uprev) .+ integrator.sqdt .* L
     integrator.g(du₂,tmp,p,t)
     @.. ggprime = (du₂ - L)/sqdt
-    ggprime_norm = internalnorm(ggprime,t)
+    ggprime_norm = integrator.opts.internalnorm(ggprime,t)
     @.. u = K + L*dW + ggprime*WikJ
   else
     for i in 1:length(dW)
