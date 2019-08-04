@@ -96,28 +96,40 @@ function fill_WikJGeneral_iip(ΔW)
     WikJCommute_iip{eltype(ΔW), typeof(WikJ)}(WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp1, Gp2)
 end
 
-function get_iterated_I!(dW, Wik::WikJDiagonal_oop)
-    Wik.WikJ = 1//2 .* dW .* dW
+function get_iterated_I!(dW, cache::StochasticDiffEqConstantCache, Wik::WikJDiagonal_oop)
+    @unpack WikJ = Wik
+    WikJ = 1//2 .* dW .* dW
+
+    cache.WikJ.WikJ = WikJ
     return nothing
 end
 
-function get_iterated_I!(dW, Wik::WikJDiagonal_iip)
+function get_iterated_I!(dW, cache::StochasticDiffEqMutableCache, Wik::WikJDiagonal_iip)
+    @unpack WikJ = Wik
     @.. Wik.WikJ = 1//2*dW^2
+
+    @.. cache.WikJ.WikJ = WikJ
     return nothing
 end
 
-function get_iterated_I!(dW, Wik::WikJCommute_oop)
-    Wik.WikJ = 1//2 .* vec(dW) .* vec(dW)'
+function get_iterated_I!(dW, cache::StochasticDiffEqConstantCache, Wik::WikJCommute_oop)
+    @unpack WikJ = Wik
+    WikJ = 1//2 .* vec(dW) .* vec(dW)'
+
+    cache.WikJ.WikJ = WikJ
     return nothing
 end
 
-function get_iterated_I!(dW, Wik::WikJCommute_iip)
-    mul!(Wik.WikJ,vec(dW),vec(dW)')
-    @.. Wik.WikJ = 1//2
+function get_iterated_I!(dW, cache::StochasticDiffEqMutableCache, Wik::WikJCommute_iip)
+    @unpack WikJ = Wik
+    mul!(WikJ,vec(dW),vec(dW)')
+    @.. WikJ = 1//2
+
+    @.. cache.WikJ.WikJ = WikJ
     return nothing
 end
 
-function get_iterated_I!(dW, Wik::WikJGeneral_oop)
+function get_iterated_I!(dW, cache::StochasticDiffEqConstantCache, Wik::WikJGeneral_oop)
     @unpack WikJ, m_seq = Wik
 
     m      = length(dW)
@@ -165,11 +177,12 @@ function get_iterated_I!(dW, Wik::WikJGeneral_oop)
 
     WikJ -= 1//2*(dW*Aₚ' - Aₚ*dW')
     WikJ += (sqrt(a2ₚ)*dt/π)*WikJ2
-    Wik.WikJ = WikJ
+
+    cache.WikJ.WikJ = WikJ
     return nothing
 end
 
-function get_iterated_I!(dW, Wik::WikJGeneral_iip)
+function get_iterated_I!(dW, cache::StochasticDiffEqMutableCache, Wik::WikJGeneral_iip)
     @unpack WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp1, Gp2 = Wik
 
     m      = length(dW)
@@ -221,6 +234,6 @@ function get_iterated_I!(dW, Wik::WikJGeneral_iip)
     @.. WikJ -= 1//2*(WikJ3 - WikJ3')
     @.. WikJ += (sqrt(a2ₚ)*dt/π)*WikJ2
 
-    @.. Wik.WikJ = WikJ
+    @.. cache.WikJ.WikJ = WikJ
     return nothing
 end
