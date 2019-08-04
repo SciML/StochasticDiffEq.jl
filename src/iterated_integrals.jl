@@ -10,7 +10,7 @@ struct WikJDiagonal_oop{WikJType} <: AbstractWikJDiagonal
     WikJ::WikJType
 end
 
-struct WikJDiagonal_iip{WikJType} <: AbstractWikJDiagonal
+mutable struct WikJDiagonal_iip{WikJType} <: AbstractWikJDiagonal
     WikJ::WikJType
 end
 
@@ -18,7 +18,7 @@ struct WikJCommute_oop{WikJType} <: AbstractWikJCommute
     WikJ::WikJType
 end
 
-struct WikJCommute_iip{WikJType} <: AbstractWikJCommute
+mutable struct WikJCommute_iip{WikJType} <: AbstractWikJCommute
     WikJ::WikJType
 end
 
@@ -27,7 +27,7 @@ struct WikJGeneral_oop{rateNoiseElTypeNoUnits, WikJType} <: AbstractWikJGeneral
     m_seq::Array{Int}
 end
 
-struct WikJGeneral_iip{rateNoiseElTypeNoUnits, WikJType} <: AbstractWikJGeneral
+mutable struct WikJGeneral_iip{rateNoiseElTypeNoUnits, WikJType} <: AbstractWikJGeneral
     WikJ::WikJType
     WikJ2::WikJType
     WikJ3::WikJType
@@ -104,9 +104,13 @@ end
 
 function get_iterated_I!(dW, Wik::WikJDiagonal_iip)
     @unpack WikJ = Wik
-    @.. Wik.WikJ = 1//2*dW^2
-
-    @.. Wik.WikJ = WikJ
+    if typeof(dW) <: Number
+        Wik.WikJ = 1//2 .* dW .^ 2
+        # println(Wik.WikJ == WikJ, "  ", Wik.WikJ === WikJ)
+    else
+        @.. WikJ = 1//2*dW^2
+        @.. Wik.WikJ = WikJ
+    end
     return nothing
 end
 
@@ -119,7 +123,7 @@ end
 function get_iterated_I!(dW, Wik::WikJCommute_iip)
     @unpack WikJ = Wik
     mul!(WikJ,vec(dW),vec(dW)')
-    @.. WikJ = 1//2
+    @.. WikJ *= 1//2
 
     @.. Wik.WikJ = WikJ
     return nothing
