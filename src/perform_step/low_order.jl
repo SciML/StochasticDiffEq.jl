@@ -232,9 +232,10 @@ end
 
 @muladd function perform_step!(integrator,cache::RKMil_GeneralConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
+  Wik = cache.WikJ
   dW = W.dW
 
-  WikJ = get_iterated_I!(dW, cache, cache.WikJ)
+  WikJ = get_iterated_I!(dW, Wik)
 
   if alg_interpretation(integrator.alg) == :Ito
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
@@ -296,8 +297,8 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   dW = W.dW; sqdt = integrator.sqdt
   Wik = cache.WikJ
-  get_iterated_I!(dW, cache, Wik)
-  WikJ = cache.WikJ.WikJ
+  get_iterated_I!(dW, Wik)
+  WikJ = Wik.WikJ
 
   integrator.f(du₁,uprev,p,t)
   integrator.g(L,uprev,p,t)
