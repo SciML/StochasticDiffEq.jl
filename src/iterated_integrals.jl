@@ -96,125 +96,131 @@ function fill_WikJGeneral_iip(ΔW)
     WikJCommute_iip{eltype(ΔW), typeof(WikJ)}(WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp1, Gp2)
 end
 
-function get_iterated_I!(integrator, cache::StochasticDiffEqConstantCache)
-    @unpack dt, u, uprev, t, p, W = integrator
-    dW = W.dW
-
-    if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
-        WikJ = 1//2 .* dW .^ 2
-    else
-        m      = length(dW)
-        M      = m*(m-1)/2
-        m_seq  = cache.m_seq
-        # sum_dW² = zero(eltype(dW))
-        sum_dW² = dW'*dW
-
-        WikJ = dW*dW'
-        Gp1 = randn(M)
-        α = sqrt(1 + sum_dW²/dt)
-        Gp2 = Gp1/(sqrt(2)*(1+α)*dt)
-
-        #operator (Iₘ² - Pₘ)Kₘᵀ
-        for i in 1:M
-            WikJ2[m_seq[i,1], m_seq[i,2]] = Gp2[i]
-            WikJ2[m_seq[i,2], m_seq[i,1]] = -Gp2[i]
-        end
-
-        #operator (Iₘ X W*Wᵀ)
-        WikJ2 = WikJ*WikJ2
-
-        #operator Kₘ(Iₘ² - Pₘ)
-        WikJ2 = WikJ2 - WikJ2'
-        for i in 1:M
-            Gp2[i] = WikJ2[m_seq[i,1], m_seq[i,2]]
-        end
-        Gp = Gp/sqrt(2) + Gp2
-
-        #operator (Iₘ² - Pₘ)Kₘᵀ
-        for i in 1:M
-            WikJ2[m_seq[i,1], m_seq[i,2]] = Gp[i]
-            WikJ2[m_seq[i,2], m_seq[i,1]] = -Gp[i]
-        end
-
-        WikJ *= 1//2
-        a2ₚ = (π^2)/6
-        p = Int(floor((1/π)*sqrt(M/(24*dt))*sqrt(m + 4*sum_dW²/dt) + 1))
-        for i in 1:p
-            a2ₚ -= (1/i^2)
-            var = sqrt(dt/(2*π*i))
-            vec_ζ = randn(m)*var
-            vec_η = randn(m)*var
-            WikJ += (vec_ζ*vec_η' - vec_η*vec_ζ')
-            Aₚ -= (2/sqrt(π*i))*vec_ζ
-        end
-
-        WikJ -= 1//2*(dW*Aₚ' - Aₚ*dW')
-        WikJ += (sqrt(a2ₚ)*dt/π)*WikJ2
-    end
-    WikJ
+function get_iterated_I!(dW, Wik::WikJDiagonal_oop)
+    Wik.WikJ = 1//2 .* dW .* dW
+    return nothing
 end
 
-function get_iterated_I!(integrator, cache::StochasticDiffEqMutableCache)
-    @unpack dt, u, uprev, t, p, W = integrator
-    @unpack WikJ = cache
-    dW = W.dW
+function get_iterated_I!(dW, Wik::WikJDiagonal_iip)
+    @.. Wik.WikJ = 1//2*dW^2
+    return nothing
+end
 
-    if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
-        @.. cache.WikJ = 1//2 .* dW .^ 2
-    else
-        m      = length(dW)
-        M      = m*(m-1)/2
-        m_seq  = cache.m_seq; WikJ2 = cache.WikJ2; WikJ3 = cache.WikJ3;
-        Gp1    = cache.Gp1; Gp2 = cache.Gp2
-        vec_ζ  = cache.vec_ζ; vec_η = cache.vec_η
+function get_iterated_I!(dW, Wik::WikJCommute_oop)
+    Wik.WikJ = 1//2 .* vec(dW) .* vec(dW)'
+    return nothing
+end
 
-        sum_dW² = zero(eltype(dW))
-        mul!(sum_dW²,dW', dW)
+function get_iterated_I!(dW, Wik::WikJCommute_iip)
+    mul!(Wik.WikJ,vec(dW),vec(dW)')
+    @.. Wik.WikJ = 1//2
+    return nothing
+end
 
-        @.. Gp1 = randn(M)
-        α = sqrt(1 + sum_dW²/dt)
-        @.. Gp2 = Gp1/(sqrt(2)*(1+α)*dt)
+function get_iterated_I!(dW, Wik::WikJGeneral_oop)
+    @unpack WikJ, m_seq = Wik
 
-        #operator (Iₘ² - Pₘ)Kₘᵀ
-        for i in 1:M
-            WikJ2[m_seq[i,1], m_seq[i,2]] = Gp2[i]
-            WikJ2[m_seq[i,2], m_seq[i,1]] = -Gp2[i]
-        end
+    m      = length(dW)
+    M      = m*(m-1)/2
+    sum_dW² = dW'*dW
 
-        #operator (Iₘ X W*Wᵀ)
-        mul!(WikJ,dW,dW')
-        mul!(WikJ3,WikJ,WikJ2)
+    WikJ = dW*dW'
+    Gp1 = randn(M)
+    α = sqrt(1 + sum_dW²/dt)
+    Gp2 = Gp1/(sqrt(2)*(1+α)*dt)
 
-        #operator Kₘ(Iₘ² - Pₘ)
-        @.. WikJ2 = WikJ3 - WikJ3'
-        for i in 1:M
-            Gp2[i] = WikJ2[m_seq[i,1], m_seq[i,2]]
-        end
-        Gp1 = Gp1/sqrt(2) + Gp2
-
-        #operator (Iₘ² - Pₘ)Kₘᵀ
-        for i in 1:M
-            WikJ2[m_seq[i,1], m_seq[i,2]] = Gp1[i]
-            WikJ2[m_seq[i,2], m_seq[i,1]] = -Gp1[i]
-        end
-
-        @.. WikJ *= 1//2
-        a2ₚ = (π^2)/6
-        p = Int(floor((1/π)*sqrt(M/(24*dt))*sqrt(m + 4*sum_dW²/dt) + 1))
-        for i in 1:p
-            a2ₚ -= (1/i^2)
-            var = sqrt(dt/(2*π*i))
-            @.. vec_ζ = randn(m)*var
-            @.. vec_η = randn(m)*var
-            mul!(WikJ3, vec_ζ, vec_η')
-            @.. WikJ += WikJ3 - WikJ3'
-            @.. Aₚ -= (2/sqrt(π*i))*vec_ζ
-        end
-        mul!(WikJ3, dW, Aₚ')
-        @.. WikJ -= 1//2*(WikJ3 - WikJ3')
-        @.. WikJ += (sqrt(a2ₚ)*dt/π)*WikJ2
-
-        @.. cache.WikJ = WikJ
+    #operator (Iₘ² - Pₘ)Kₘᵀ
+    for i in 1:M
+        WikJ2[m_seq[i,1], m_seq[i,2]] = Gp2[i]
+        WikJ2[m_seq[i,2], m_seq[i,1]] = -Gp2[i]
     end
-    return false
+
+    #operator (Iₘ X W*Wᵀ)
+    WikJ2 = WikJ*WikJ2
+
+    #operator Kₘ(Iₘ² - Pₘ)
+    WikJ2 = WikJ2 - WikJ2'
+    for i in 1:M
+        Gp2[i] = WikJ2[m_seq[i,1], m_seq[i,2]]
+    end
+    Gp = Gp/sqrt(2) + Gp2
+
+    #operator (Iₘ² - Pₘ)Kₘᵀ
+    for i in 1:M
+        WikJ2[m_seq[i,1], m_seq[i,2]] = Gp[i]
+        WikJ2[m_seq[i,2], m_seq[i,1]] = -Gp[i]
+    end
+
+    WikJ *= 1//2
+    a2ₚ = (π^2)/6
+    p = Int(floor((1/π)*sqrt(M/(24*dt))*sqrt(m + 4*sum_dW²/dt) + 1))
+    for i in 1:p
+        a2ₚ -= (1/i^2)
+        var = sqrt(dt/(2*π*i))
+        vec_ζ = randn(m)*var
+        vec_η = randn(m)*var
+        WikJ += (vec_ζ*vec_η' - vec_η*vec_ζ')
+        Aₚ -= (2/sqrt(π*i))*vec_ζ
+    end
+
+    WikJ -= 1//2*(dW*Aₚ' - Aₚ*dW')
+    WikJ += (sqrt(a2ₚ)*dt/π)*WikJ2
+    Wik.WikJ = WikJ
+    return nothing
+end
+
+function get_iterated_I!(dW, Wik::WikJGeneral_iip)
+    @unpack WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp1, Gp2 = Wik
+
+    m      = length(dW)
+    M      = m*(m-1)/2
+
+    sum_dW² = zero(eltype(dW))
+    mul!(sum_dW²,dW', dW)
+
+    @.. Gp1 = randn(M)
+    α = sqrt(1 + sum_dW²/dt)
+    @.. Gp2 = Gp1/(sqrt(2)*(1+α)*dt)
+
+    #operator (Iₘ² - Pₘ)Kₘᵀ
+    for i in 1:M
+        WikJ2[m_seq[i,1], m_seq[i,2]] = Gp2[i]
+        WikJ2[m_seq[i,2], m_seq[i,1]] = -Gp2[i]
+    end
+
+    #operator (Iₘ X W*Wᵀ)
+    mul!(WikJ,dW,dW')
+    mul!(WikJ3,WikJ,WikJ2)
+
+    #operator Kₘ(Iₘ² - Pₘ)
+    @.. WikJ2 = WikJ3 - WikJ3'
+    for i in 1:M
+        Gp2[i] = WikJ2[m_seq[i,1], m_seq[i,2]]
+    end
+    Gp1 = Gp1/sqrt(2) + Gp2
+
+    #operator (Iₘ² - Pₘ)Kₘᵀ
+    for i in 1:M
+        WikJ2[m_seq[i,1], m_seq[i,2]] = Gp1[i]
+        WikJ2[m_seq[i,2], m_seq[i,1]] = -Gp1[i]
+    end
+
+    @.. WikJ *= 1//2
+    a2ₚ = (π^2)/6
+    p = Int(floor((1/π)*sqrt(M/(24*dt))*sqrt(m + 4*sum_dW²/dt) + 1))
+    for i in 1:p
+        a2ₚ -= (1/i^2)
+        var = sqrt(dt/(2*π*i))
+        @.. vec_ζ = randn(m)*var
+        @.. vec_η = randn(m)*var
+        mul!(WikJ3, vec_ζ, vec_η')
+        @.. WikJ += WikJ3 - WikJ3'
+        @.. Aₚ -= (2/sqrt(π*i))*vec_ζ
+    end
+    mul!(WikJ3, dW, Aₚ')
+    @.. WikJ -= 1//2*(WikJ3 - WikJ3')
+    @.. WikJ += (sqrt(a2ₚ)*dt/π)*WikJ2
+
+    @.. Wik.WikJ = WikJ
+    return nothing
 end
