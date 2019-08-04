@@ -28,7 +28,7 @@
   J = update_W!(integrator, cache, γdt, repeat_step)
 
   z₁ = dt*f( uprev,p,t)
-  nlsolver.c = 2*γ
+  nlsolver.c = γ
 
   g1 = g(uprev,p,t)
   tmp = uprev + γ*z₁ + nb021*chi2.*g1
@@ -113,21 +113,20 @@
 
   if integrator.opts.adaptive
 
-    #=
-    if typeof(integrator.f) <: SplitSDEFunction
-      tmp = btilde1*z₁  + btilde2*z₂  + btilde3*z₃ + btilde4*z₄ + ebtilde1*k1 + ebtilde2*k2 + ebtilde3*k3 + ebtilde4*k4 + chi2*(g1-g4)
+    if alg.ode_error_est
+      if typeof(integrator.f) <: SplitSDEFunction
+        tmp = btilde1*z₁  + btilde2*z₂  + btilde3*z₃ + btilde4*z₄ + ebtilde1*k1 + ebtilde2*k2 + ebtilde3*k3 + ebtilde4*k4 + chi2*(g1-g4)
+      else
+        tmp = btilde1*z₁ + btilde2*z₂ + btilde3*z₃ + btilde4*z₄ + chi2*(g1-g4)
+      end
+      if alg.smooth_est # From Shampine
+        est = W\tmp
+      else
+        est = tmp
+      end
     else
-      tmp = btilde1*z₁ + btilde2*z₂ + btilde3*z₃ + btilde4*z₄ + chi2*(g1-g4)
+      E₁ = z₁ + z₂ + z₃ + z₄
     end
-    if alg.smooth_est # From Shampine
-      est = W\tmp
-    else
-      est = tmp
-    end
-
-    =#
-
-    E₁ = z₁ + z₂ + z₃ + z₄
 
     resids = calculate_residuals(E₁, E₂, uprev, u, integrator.opts.abstol,
                                  integrator.opts.reltol, integrator.opts.delta,
@@ -198,9 +197,6 @@ end
   elseif alg.extrapolant == :trivial
     @.. z₂ = z₁
   end
-  nlsolver.z = z₂
-  nlsolver.c = 2γ
-
 
   if typeof(integrator.f) <: SplitSDEFunction
     # This assumes the implicit part is cheaper than the explicit part
@@ -211,12 +207,12 @@ end
     @.. tmp += ea21*k1
   end
 
+  nlsolver.z = z₂
+  nlsolver.c = 2γ
   z₂ = nlsolve!(integrator, cache)
   nlsolvefail(nlsolver) && return nothing
 
   ################################## Solve Step 3
-
-  nlsolver.c = c3
 
   if typeof(integrator.f) <: SplitSDEFunction
     @.. u = tmp + γ*z₂
@@ -232,13 +228,11 @@ end
     @.. z₃ = z₂
   end
   nlsolver.z = z₃
-
+  nlsolver.c = c3
   z₃ = nlsolve!(integrator, cache)
   nlsolvefail(nlsolver) && return nothing
 
   ################################## Solve Step 4
-
-  nlsolver.c = one(nlsolver.c)
 
   if typeof(integrator.f) <: SplitSDEFunction
     @.. u = tmp + γ*z₃
@@ -256,8 +250,9 @@ end
   elseif alg.extrapolant == :trivial
     @.. z₄ = z₂
   end
-  nlsolver.z = z₄
 
+  nlsolver.z = z₄
+  nlsolver.c = one(nlsolver.c)
   z₄ = nlsolve!(integrator, cache)
   nlsolvefail(nlsolver) && return nothing
 
@@ -291,39 +286,20 @@ end
 
   if integrator.opts.adaptive
 
-    #=
-    if typeof(integrator.f) <: SplitSDEFunction
-      if is_diagonal_noise(integrator.sol.prob)
-        #@.. dz = btilde1*z₁  + btilde2*z₂  + btilde3*z₃ + btilde4*z₄ + ebtilde1*k1 + ebtilde2*k2 + ebtilde3*k3 + ebtilde4*k4
-        for i in eachindex(dz)
-          @inbounds dz[i] = btilde1*z₁[i] + btilde2*z₂[i] + btilde3*z₃[i] + btilde4*z₄[i] + ebtilde1*k1[i] + ebtilde2*k2[i] + ebtilde3*k3[i] + ebtilde4*k4[i] + chi2[i]*(g1[i]-g4[i])
-        end
+    if alg.ode_error_est
+      if typeof(integrator.f) <: SplitSDEFunction
+        @.. g1 = btilde1*z₁  + btilde2*z₂  + btilde3*z₃ + btilde4*z₄ + ebtilde1*k1 + ebtilde2*k2 + ebtilde3*k3 + ebtilde4*k4
       else
-        # dz already holds mul!(dz,g1,chi2)!
-        #@.. dz += btilde1*z₁ + btilde2*z₂ + btilde3*z₃ + btilde4*z₄ + ebtilde1*k1 + ebtilde2*k2 + ebtilde3*k3 + ebtilde4*k4
-        for i in eachindex(dz)
-          @inbounds dz[i] += btilde1*z₁[i] + btilde2*z₂[i] + btilde3*z₃[i] + btilde4*z₄[i] + ebtilde1*k1[i] + ebtilde2*k2[i] + ebtilde3*k3[i] + ebtilde4*k4[i]
-        end
+        @.. g1 = btilde1*z₁  + btilde2*z₂  + btilde3*z₃ + btilde4*z₄
+      end
+      if alg.smooth_est # From Shampine
+        nlsolver.linsolve(vec(E₁),get_W(nlsolver),vec(g1),false)
+      else
+        E₁ .= dz
       end
     else
-      if is_diagonal_noise(integrator.sol.prob)
-        #@.. dz = btilde1*z₁ + btilde2*z₂ + btilde3*z₃ + btilde4*z₄ + chi2*(g1-g4)
-        for i in eachindex(dz)
-          @inbounds dz[i] = btilde1*z₁[i] + btilde2*z₂[i] + btilde3*z₃[i] + btilde4*z₄[i] + chi2[i]*(g1[i]-g4[i])
-        end
-      else
-        # dz already holds mul!(dz,g1,chi2)!
-        @.. dz += btilde1*z₁ + btilde2*z₂ + btilde3*z₃ + btilde4*z₄
-      end
+      @.. E₁ = z₁ + z₂ + z₃ + z₄
     end
-    if alg.smooth_est # From Shampine
-      cache.linsolve(vec(tmp),W,vec(dz),false)
-    else
-      tmp .= dz
-    end
-    =#
-
-    @.. E₁ = z₁ + z₂ + z₃ + z₄
 
     calculate_residuals!(tmp, E₁, E₂, uprev, u, integrator.opts.abstol,
                          integrator.opts.reltol, integrator.opts.delta,

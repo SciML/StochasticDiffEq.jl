@@ -27,8 +27,8 @@ sol = solve(prob,SRIW1(),dt=1/2^(3),seed=1)
 sol2 = solve(prob,SRI(error_terms=2),dt=1/2^(3),seed=1,delta=1/6)
 sol.t ≈ sol2.t
 
-sol2 = solve(prob,SRI(tableau=StochasticDiffEq.constructSRIOpt1()),dt=1/2^(3),seed=1)
 sol = solve(prob,SOSRI(),dt=1/2^(3),seed=1)
+sol2 = solve(prob,SRI(tableau=StochasticDiffEq.constructSRIOpt1()),dt=1/2^(3),seed=1)
 sol.t ≈ sol2.t
 
 ## Convergence Testing

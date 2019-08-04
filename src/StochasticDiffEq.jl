@@ -6,7 +6,7 @@ module StochasticDiffEq
   @reexport using DiffEqBase
 
   using Parameters, RecursiveArrayTools, DataStructures
-  using DiffEqNoiseProcess, Random
+  using DiffEqNoiseProcess, Random, ArrayInterface
   using NLsolve, ForwardDiff, StaticArrays, MuladdMacro, DiffEqDiffTools
 
   import DiffEqBase: ODE_DEFAULT_NORM, ODE_DEFAULT_ISOUTOFDOMAIN,
@@ -16,7 +16,7 @@ module StochasticDiffEq
 
   import RecursiveArrayTools: chain
 
-  using Logging
+  using Logging, SparseArrays
 
   using LinearAlgebra, Random, FillArrays
 
