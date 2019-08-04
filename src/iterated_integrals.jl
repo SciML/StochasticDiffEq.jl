@@ -27,7 +27,7 @@ struct WikJGeneral_oop{rateNoiseElTypeNoUnits, WikJType} <: AbstractWikJGeneral
     m_seq::Array{Int}
 end
 
-struct WikJGeneral_iip{rateElTypeNoUnits, WikJType} <: AbstractWikJGeneral
+struct WikJGeneral_iip{rateNoiseTypeElTypeNoUnits, WikJType} <: AbstractWikJGeneral
     WikJ::WikJType
     WikJ2::WikJType
     WikJ3::WikJType
