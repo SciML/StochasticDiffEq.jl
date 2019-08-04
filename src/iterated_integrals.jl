@@ -99,9 +99,7 @@ end
 function get_iterated_I!(dW, cache::StochasticDiffEqConstantCache, Wik::WikJDiagonal_oop)
     @unpack WikJ = Wik
     WikJ = 1//2 .* dW .* dW
-
-    cache.WikJ.WikJ = WikJ
-    return nothing
+    WikJ
 end
 
 function get_iterated_I!(dW, cache::StochasticDiffEqMutableCache, Wik::WikJDiagonal_iip)
@@ -115,9 +113,7 @@ end
 function get_iterated_I!(dW, cache::StochasticDiffEqConstantCache, Wik::WikJCommute_oop)
     @unpack WikJ = Wik
     WikJ = 1//2 .* vec(dW) .* vec(dW)'
-
-    cache.WikJ.WikJ = WikJ
-    return nothing
+    WikJ
 end
 
 function get_iterated_I!(dW, cache::StochasticDiffEqMutableCache, Wik::WikJCommute_iip)
@@ -178,8 +174,7 @@ function get_iterated_I!(dW, cache::StochasticDiffEqConstantCache, Wik::WikJGene
     WikJ -= 1//2*(dW*Aₚ' - Aₚ*dW')
     WikJ += (sqrt(a2ₚ)*dt/π)*WikJ2
 
-    cache.WikJ.WikJ = WikJ
-    return nothing
+    WikJ
 end
 
 function get_iterated_I!(dW, cache::StochasticDiffEqMutableCache, Wik::WikJGeneral_iip)

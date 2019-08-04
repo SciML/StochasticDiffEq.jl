@@ -234,8 +234,7 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   dW = W.dW
 
-  get_iterated_I!(dW, cache, cache.WikJ)
-  WikJ = cache.WikJ.WikJ
+  WikJ = get_iterated_I!(dW, cache, cache.WikJ)
 
   if alg_interpretation(integrator.alg) == :Ito
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
