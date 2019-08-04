@@ -38,6 +38,64 @@ struct WikJGeneral_iip{rateElTypeNoUnits, WikJType} <: AbstractWikJGeneral
     Gp2::Vector{eltype(rateNoiseElTypeNoUnits)}
 end
 
+function fill_WikJDiagonal_oop(ΔW)
+    WikJ = false .* ΔW .* ΔW
+    WikJDiagonal_oop{typeof(WikJ)}(WikJ)
+end
+
+function fill_WikJDiagonal_iip(ΔW)
+    WikJ = false .* ΔW .* ΔW
+    WikJDiagonal_iip{typeof(WikJ)}(WikJ)
+end
+
+function fill_WikJCommute_oop(ΔW)
+    WikJ = false .* ΔW .* ΔW'
+    WikJCommute_oop{typeof(WikJ)}(WikJ)
+end
+
+function fill_WikJCommute_iip(ΔW)
+    WikJ = false .* ΔW .* ΔW'
+    WikJCommute_iip{typeof(WikJ)}(WikJ)
+end
+
+function fill_WikJGeneral_oop(ΔW)
+    WikJ = false .* ΔW .* ΔW'
+    m = length(ΔW)
+    M = m*(m-1)/2
+    m_seq = Array{Int}(undef, M, 2)
+    k = 1
+    for i in 1:length(ΔW)
+      for j in i+1:length(ΔW)
+        m_seq[k,1] = i
+        m_seq[k,2] = j
+        k += 1
+      end
+    end
+    WikJCommute_oop{eltype(ΔW), typeof(WikJ)}(WikJ, m_seq)
+end
+
+function fill_WikJGeneral_iip(ΔW)
+    WikJ = false .* ΔW .* ΔW'
+    WikJ2 = similar(WikJ)
+    WikJ3 = similar(WikJ)
+    m = length(ΔW)
+    M = m*(m-1)/2
+    m_seq = Array{Int}(undef, M, 2)
+    k = 1
+    for i in 1:length(ΔW)
+      for j in i+1:length(ΔW)
+        m_seq[k,1] = i
+        m_seq[k,2] = j
+        k += 1
+      end
+    end
+    vec_ζ = false .* vec(ΔW)
+    vec_η = similar(vec_ζ)
+    Gp1 = zeros(M)
+    Gp2 = similar(Gp1)
+    WikJCommute_iip{eltype(ΔW), typeof(WikJ)}(WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp1, Gp2)
+end
+
 function get_iterated_I!(integrator, cache::StochasticDiffEqConstantCache)
     @unpack dt, u, uprev, t, p, W = integrator
     dW = W.dW
