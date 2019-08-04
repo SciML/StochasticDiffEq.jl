@@ -106,7 +106,6 @@ function get_iterated_I!(dW, Wik::WikJDiagonal_iip)
     @unpack WikJ = Wik
     if typeof(dW) <: Number
         Wik.WikJ = 1//2 .* dW .^ 2
-        # println(Wik.WikJ == WikJ, "  ", Wik.WikJ === WikJ)
     else
         @.. WikJ = 1//2*dW^2
         @.. Wik.WikJ = WikJ
