@@ -234,11 +234,8 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   dW = W.dW
 
-  if integrator.alg.is_commutative
-    WikJ = 1//2 .* vec(dW) .* vec(dW)'
-  else
-    WikJ = get_iterated_I!(integrator, cache)
-  end
+  get_iterated_I!(dW, cache, cache.WikJ)
+  WikJ = cache.WikJ.WikJ
 
   if alg_interpretation(integrator.alg) == :Ito
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
@@ -291,21 +288,17 @@ end
 end
 
 @muladd function perform_step!(integrator,cache::RKMil_GeneralCache,f=integrator.f)
-  @unpack du₁, du₂, K, tmp, ggprime, L, WikJ, mil_correction = cache
+  @unpack du₁, du₂, K, tmp, ggprime, L, mil_correction = cache
   @unpack t,dt,uprev,u,W,p = integrator
+  dW = W.dW; sqdt = integrator.sqdt
+  Wik = cache.WikJ
+  get_iterated_I!(dW, cache, Wik)
+  WikJ = cache.WikJ.WikJ
 
   integrator.f(du₁,uprev,p,t)
   integrator.g(L,uprev,p,t)
-  dW = W.dW; sqdt = integrator.sqdt
   @.. mil_correction = zero(eltype(u))
   ggprime_norm = zero(eltype(ggprime))
-
-  if integrator.alg.is_commutative
-    WikJ .= 1//2 .* vec(dW) .* vec(dW)'
-  else
-    get_iterated_I!(integrator, cache)
-    WikJ .= cache.WikJ
-  end
 
   if alg_interpretation(integrator.alg) == :Ito
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
