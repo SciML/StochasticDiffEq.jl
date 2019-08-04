@@ -117,7 +117,7 @@ function alg_cache(alg::RKMilCommute,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
   RKMilCommuteCache(u,uprev,du1,du2,K,gtmp,L,WikJ,Dg,mil_correction,Kj,Dgj,tmp)
 end
 
-struct RKMil_GeneralConstantCache{Wiktype} <: StochasticDiffEqConstantCache
+struct RKMil_GeneralConstantCache{WikType} <: StochasticDiffEqConstantCache
   WikJ::WikType
 end
 
