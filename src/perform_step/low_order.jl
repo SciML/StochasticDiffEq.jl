@@ -266,7 +266,12 @@ end
       end
       mil_correction += ggprime*@view(WikJ[:,j])
     end
-    u = uprev + dt*du₁ + L*dW + mil_correction
+    if integrator.opts.adaptive
+      K = @.. uprev + dt*du₁
+      u = K + L*dW + mil_correction
+    else
+      u = uprev + dt*du₁ + L*dW + mil_correction
+    end
   end
 
   if integrator.opts.adaptive
@@ -328,7 +333,12 @@ end
       @.. mil_correction += tmp
     end
     mul!(tmp,L,dW)
-    @.. u .= uprev + dt*du₁ + tmp + mil_correction
+    if integrator.opts.adaptive
+      @.. K = uprev + dt*du₁
+      @.. u = K + tmp + mil_correction
+    else
+      @.. u = uprev + dt*du₁ + tmp + mil_correction
+    end
   end
 
   if integrator.opts.adaptive
