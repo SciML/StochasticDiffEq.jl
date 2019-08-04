@@ -57,6 +57,7 @@ module StochasticDiffEq
   include("options_type.jl")
   include("derivative_wrappers.jl")
   include("interp_func.jl")
+  include("iterated_integrals.jl")
   include("caches/cache_types.jl")
   include("caches/basic_method_caches.jl")
   include("caches/explicit_3s_mil_methods.jl")
@@ -96,7 +97,6 @@ module StochasticDiffEq
   include("SROCK_tableaus.jl")
   include("derivative_utils.jl")
   include("SROCK_utils.jl")
-  include("iterated_integrals.jl")
   include("composite_algs.jl")
 
    export StochasticDiffEqAlgorithm, StochasticDiffEqAdaptiveAlgorithm,
