@@ -1,6 +1,42 @@
 # This function calculates WikJ, a mxm Array for a m dimensional general noise problem,
 # which is a approximation to the second order iterated integrals
 # this is implementation of the section 4 of the paper doi:10.1016/j.cam.2006.05.037
+abstract type AbstractWikJ end
+abstract type AbstractWikJDiagonal <: AbstractWikJ end
+abstract type AbstractWikJCommute <: AbstractWikJ end
+abstract type AbstractWikJGeneral <: AbstractWikJ end
+
+struct WikJDiagonal_oop{WikJType} <: AbstractWikJDiagonal
+    WikJ::WikJType
+end
+
+struct WikJDiagonal_iip{WikJType} <: AbstractWikJDiagonal
+    WikJ::WikJType
+end
+
+struct WikJCommute_oop{WikJType} <: AbstractWikJCommute
+    WikJ::WikJType
+end
+
+struct WikJCommute_iip{WikJType} <: AbstractWikJCommute
+    WikJ::WikJType
+end
+
+struct WikJGeneral_oop{rateNoiseElTypeNoUnits, WikJType} <: AbstractWikJGeneral
+    WikJ::WikJType
+    m_seq::Array{Int}
+end
+
+struct WikJGeneral_iip{rateElTypeNoUnits, WikJType} <: AbstractWikJGeneral
+    WikJ::WikJType
+    WikJ2::WikJType
+    WikJ3::WikJType
+    m_seq::Array{Int}
+    vec_ζ::Vector{eltype(rateNoiseElTypeNoUnits)}
+    vec_η::Vector{eltype(rateNoiseElTypeNoUnits)}
+    Gp1::Vector{eltype(rateNoiseElTypeNoUnits)}
+    Gp2::Vector{eltype(rateNoiseElTypeNoUnits)}
+end
 
 function get_iterated_I!(integrator, cache::StochasticDiffEqConstantCache)
     @unpack dt, u, uprev, t, p, W = integrator
