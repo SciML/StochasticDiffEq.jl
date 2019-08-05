@@ -278,7 +278,7 @@ end
     du₂ = integrator.f(K,p,t+dt)
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
       tmp  = dt*(du₂ -du₁)/2
-      En = W.dW.^3 .* ((du2-L)/(integrator.sqdt)).^2 / 6
+      En = W.dW.^3 .* ((du₂-L)/(integrator.sqdt)).^2 / 6
       tmp = calculate_residuals(tmp, En, uprev, u, integrator.opts.abstol,
             integrator.opts.reltol, integrator.opts.delta, integrator.opts.internalnorm, t)
     else
