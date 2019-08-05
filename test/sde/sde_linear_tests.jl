@@ -8,6 +8,7 @@ prob = prob_sde_linear
 println("Solve and Plot")
 sol = solve(prob,EM(),dt=1//2^(4))
 sol = solve(prob,RKMil(),dt=1//2^(4))
+sol = solve(prob,RKMil_General(),dt=1//2^(4))
 sol = solve(prob,SRI(),dt=1//2^(4))
 sol = solve(prob,SRIW1(),dt=1//2^(4))
 trajectories = 100
@@ -19,11 +20,15 @@ sim = test_convergence(dts,prob,EM(),trajectories=trajectories)
 
 sim2 = test_convergence(dts,prob,RKMil(),trajectories=trajectories)
 
+sim21 = test_convergence(dts,prob,RKMil_General(),trajectories=trajectories)
+
 sim3 = test_convergence(dts,prob,SRI(),trajectories=trajectories)
 
 #TEST_PLOT && plot(plot(sim),plot(sim2),plot(sim3),layout=@layout([a b c]),size=(1200,600))
 
 @test abs(sim.𝒪est[:l2]-.5) + abs(sim2.𝒪est[:l∞]-1) + abs(sim3.𝒪est[:final]-1.5)<.441  #High tolerance since low dts for testing!
+
+@test abs(sim.𝒪est[:l2]-.5) + abs(sim21.𝒪est[:l∞]-1) + abs(sim3.𝒪est[:final]-1.5)<.441  #High tolerance since low dts for testing!
 
 # test reinit
 integrator = init(prob,EM(),dt=1//2^(4))
