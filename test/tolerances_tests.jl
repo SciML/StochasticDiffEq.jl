@@ -39,5 +39,5 @@ function tolerance_testing(probs,algs)
 end
 
 probs = [prob_sde_2Dlinear]
-algs = [SRI(),SRIW1(),SRA1(),SRA(),RKMil()]
+algs = [SRI(),SRIW1(),SRA1(),SRA(),RKMil(),RKMil_General()]
 tolerance_testing(probs,algs)
