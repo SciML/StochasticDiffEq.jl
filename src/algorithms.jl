@@ -33,8 +33,9 @@ RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
 struct RKMil_General <: StochasticDiffEqAdaptiveAlgorithm
   interpretation::Symbol
   is_commutative::Bool
+  c::Int
 end
-RKMil_General(;interpretation=:Ito, is_commutative=false) = RKMil_General(interpretation, is_commutative)
+RKMil_General(;interpretation=:Ito, is_commutative=false, c = 1) = RKMil_General(interpretation, is_commutative, c)
 
 struct WangLi3SMil_A <: StochasticDiffEqAlgorithm end
 struct WangLi3SMil_B <: StochasticDiffEqAlgorithm end

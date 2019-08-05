@@ -31,6 +31,7 @@ mutable struct WikJGeneral_iip{rateNoiseElTypeNoUnits, WikJType} <: AbstractWikJ
     vec_η::Vector{eltype(rateNoiseElTypeNoUnits)}
     Gp1::Vector{eltype(rateNoiseElTypeNoUnits)}
     Gp2::Vector{eltype(rateNoiseElTypeNoUnits)}
+    Aᵢ::Vector{eltype(rateNoiseElTypeNoUnits)}
 end
 
 function fill_WikJDiagonal_oop(ΔW)
@@ -68,8 +69,8 @@ end
 
 function fill_WikJGeneral_iip(ΔW)
     WikJ = false .* ΔW .* ΔW'
-    WikJ2 = similar(WikJ)
-    WikJ3 = similar(WikJ)
+    WikJ2 = false .* ΔW .* ΔW'
+    WikJ3 = false .* ΔW .* ΔW'
     m = length(ΔW)
     M = m*(m-1)/2
     m_seq = Array{Int}(undef, M, 2)
@@ -82,10 +83,11 @@ function fill_WikJGeneral_iip(ΔW)
       end
     end
     vec_ζ = false .* vec(ΔW)
-    vec_η = similar(vec_ζ)
-    Gp1 = zeros(M)
-    Gp2 = similar(Gp1)
-    WikJGeneral_iip{eltype(ΔW), typeof(WikJ)}(WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp1, Gp2)
+    vec_η = false .* vec(ΔW)
+    Gp1 = false .* Array{eltype(ΔW)}(undef, M)
+    Gp2 = false .* Array{eltype(ΔW)}(undef, M)
+    Aᵢ = false .* vec(ΔW)
+    WikJGeneral_iip{eltype(ΔW), typeof(WikJ)}(WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp1, Gp2, Aᵢ)
 end
 
 function get_iterated_I!(dW, Wik::WikJDiagonal_oop)
@@ -115,9 +117,8 @@ function get_iterated_I!(dW, Wik::WikJCommute_iip)
     return nothing
 end
 
-function get_iterated_I!(dW, Wik::WikJGeneral_oop)
+function get_iterated_I!(dW, Wik::WikJGeneral_oop, C=1)
     @unpack m_seq = Wik
-
     m      = length(dW)
     M      = m*(m-1)/2
     sum_dW² = dW'*dW
@@ -150,25 +151,25 @@ function get_iterated_I!(dW, Wik::WikJGeneral_oop)
     end
 
     WikJ *= 1//2
-    a2ₚ = (π^2)/6
-    p = Int(floor((1/π)*sqrt(M/(24*dt))*sqrt(m + 4*sum_dW²/dt) + 1))
-    for i in 1:p
-        a2ₚ -= (1/i^2)
-        var = sqrt(dt/(2*π*i))
+    𝑎ₚ = (π^2)/6
+    p = Int(floor((1/(C*π))*sqrt(M/(24*dt))*sqrt(m + 4*sum_dW²/dt) + 1))
+    Aᵢ = false .* vec(dW)   # Aᵢ is vector of aᵢ₀
+    for r in 1:p
+        𝑎ₚ -= (1/r^2)
+        var = sqrt(dt/(2*π*r))
         vec_ζ = randn(m)*var
         vec_η = randn(m)*var
         WikJ += (vec_ζ*vec_η' - vec_η*vec_ζ')
-        Aₚ -= (2/sqrt(π*i))*vec_ζ
+        Aᵢ -= (2/sqrt(π*r))*vec_ζ
     end
 
-    WikJ -= 1//2*(dW*Aₚ' - Aₚ*dW')
-    WikJ += (sqrt(a2ₚ)*dt/π)*WikJ2
-
+    WikJ -= 1//2*(dW*Aᵢ' - Aᵢ*dW')
+    WikJ += (sqrt(𝑎ₚ)*dt/π)*WikJ2
     WikJ
 end
 
-function get_iterated_I!(dW, Wik::WikJGeneral_iip)
-    @unpack WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp1, Gp2 = Wik
+function get_iterated_I!(dW, Wik::WikJGeneral_iip, C=1)
+    @unpack WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp1, Gp2, Aᵢ = Wik
 
     m      = length(dW)
     M      = m*(m-1)/2
@@ -204,20 +205,20 @@ function get_iterated_I!(dW, Wik::WikJGeneral_iip)
     end
 
     @.. WikJ *= 1//2
-    a2ₚ = (π^2)/6
-    p = Int(floor((1/π)*sqrt(M/(24*dt))*sqrt(m + 4*sum_dW²/dt) + 1))
-    for i in 1:p
-        a2ₚ -= (1/i^2)
-        var = sqrt(dt/(2*π*i))
+    𝑎ₚ = (π^2)/6
+    p = Int(floor((1/(C*π))*sqrt(M/(24*dt))*sqrt(m + 4*sum_dW²/dt) + 1))
+    @.. Aᵢ = false .* vec(dW)    # Aᵢ is vector of aᵢ₀
+    for r in 1:p
+        𝑎ₚ -= (1/r^2)
+        var = sqrt(dt/(2*π*r))
         @.. vec_ζ = randn(m)*var
         @.. vec_η = randn(m)*var
         mul!(WikJ3, vec_ζ, vec_η')
         @.. WikJ += WikJ3 - WikJ3'
-        @.. Aₚ -= (2/sqrt(π*i))*vec_ζ
+        @.. Aᵢ -= (2/sqrt(π*r))*vec_ζ
     end
-    mul!(WikJ3, dW, Aₚ')
+    mul!(WikJ3, dW, Aᵢ')
     @.. WikJ -= 1//2*(WikJ3 - WikJ3')
-    @.. WikJ += (sqrt(a2ₚ)*dt/π)*WikJ2
-
+    @.. WikJ += (sqrt(𝑎ₚ)*dt/π)*WikJ2
     return nothing
 end
