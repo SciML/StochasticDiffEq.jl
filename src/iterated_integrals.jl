@@ -108,7 +108,6 @@ function get_iterated_I!(dW, Wik::WikJDiagonal_iip)
         Wik.WikJ = 1//2 .* dW .^ 2
     else
         @.. WikJ = 1//2*dW^2
-        @.. Wik.WikJ = WikJ
     end
     return nothing
 end
@@ -123,8 +122,6 @@ function get_iterated_I!(dW, Wik::WikJCommute_iip)
     @unpack WikJ = Wik
     mul!(WikJ,vec(dW),vec(dW)')
     @.. WikJ *= 1//2
-
-    @.. Wik.WikJ = WikJ
     return nothing
 end
 
@@ -232,6 +229,5 @@ function get_iterated_I!(dW, Wik::WikJGeneral_iip)
     @.. WikJ -= 1//2*(WikJ3 - WikJ3')
     @.. WikJ += (sqrt(a2ₚ)*dt/π)*WikJ2
 
-    @.. Wik.WikJ = WikJ
     return nothing
 end
