@@ -1,6 +1,17 @@
-# This function calculates WikJ, a mxm Array for a m dimensional general noise problem,
-# which is a approximation to the second order iterated integrals
-# this is implementation of the section 4 of the paper doi:10.1016/j.cam.2006.05.037
+"""
+
+    get_iterated_I!(dW, Wik::AbstractWikJ, C)
+
+This function calculates WikJ, a mxm Array for a m dimensional general noise problem, which is a approximation
+to the second order iterated integrals.
+
+WikJDiagonal and WikJCommute use the properties of respective noises to simplify the calculations.
+While the calculation for General Noise case is taken from section 4 of [SDELab: A Package for solving stochastic differential
+equations in MATLAB](https://doi.org/10.1016/j.cam.2006.05.037) and SDELAB2(https://github.com/tonyshardlow/SDELAB2)
+which is the Implementation of SDELab in Julia.
+
+
+"""
 abstract type AbstractWikJ end
 abstract type AbstractWikJDiagonal <: AbstractWikJ end
 abstract type AbstractWikJCommute <: AbstractWikJ end
@@ -90,12 +101,12 @@ function fill_WikJGeneral_iip(ΔW)
     WikJGeneral_iip{eltype(ΔW), typeof(WikJ)}(WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp1, Gp2, Aᵢ)
 end
 
-function get_iterated_I!(dW, Wik::WikJDiagonal_oop)
+function get_iterated_I!(dW, Wik::WikJDiagonal_oop, C=1)
     WikJ = 1//2 .* dW .* dW
     WikJ
 end
 
-function get_iterated_I!(dW, Wik::WikJDiagonal_iip)
+function get_iterated_I!(dW, Wik::WikJDiagonal_iip, C=1)
     @unpack WikJ = Wik
     if typeof(dW) <: Number
         Wik.WikJ = 1//2 .* dW .^ 2
@@ -105,12 +116,12 @@ function get_iterated_I!(dW, Wik::WikJDiagonal_iip)
     return nothing
 end
 
-function get_iterated_I!(dW, Wik::WikJCommute_oop)
+function get_iterated_I!(dW, Wik::WikJCommute_oop, C=1)
     WikJ = 1//2 .* vec(dW) .* vec(dW)'
     WikJ
 end
 
-function get_iterated_I!(dW, Wik::WikJCommute_iip)
+function get_iterated_I!(dW, Wik::WikJCommute_iip, C=1)
     @unpack WikJ = Wik
     mul!(WikJ,vec(dW),vec(dW)')
     @.. WikJ *= 1//2
