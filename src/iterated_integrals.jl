@@ -6,24 +6,19 @@ abstract type AbstractWikJDiagonal <: AbstractWikJ end
 abstract type AbstractWikJCommute <: AbstractWikJ end
 abstract type AbstractWikJGeneral <: AbstractWikJ end
 
-struct WikJDiagonal_oop{WikJType} <: AbstractWikJDiagonal
-    WikJ::WikJType
-end
+struct WikJDiagonal_oop <: AbstractWikJDiagonal end
 
 mutable struct WikJDiagonal_iip{WikJType} <: AbstractWikJDiagonal
     WikJ::WikJType
 end
 
-struct WikJCommute_oop{WikJType} <: AbstractWikJCommute
-    WikJ::WikJType
-end
+struct WikJCommute_oop <: AbstractWikJCommute end
 
 mutable struct WikJCommute_iip{WikJType} <: AbstractWikJCommute
     WikJ::WikJType
 end
 
-struct WikJGeneral_oop{rateNoiseElTypeNoUnits, WikJType} <: AbstractWikJGeneral
-    WikJ::WikJType
+struct WikJGeneral_oop <: AbstractWikJGeneral
     m_seq::Array{Int}
 end
 
@@ -39,8 +34,7 @@ mutable struct WikJGeneral_iip{rateNoiseElTypeNoUnits, WikJType} <: AbstractWikJ
 end
 
 function fill_WikJDiagonal_oop(ΔW)
-    WikJ = false .* ΔW .* ΔW
-    WikJDiagonal_oop{typeof(WikJ)}(WikJ)
+    WikJDiagonal_oop()
 end
 
 function fill_WikJDiagonal_iip(ΔW)
@@ -49,8 +43,7 @@ function fill_WikJDiagonal_iip(ΔW)
 end
 
 function fill_WikJCommute_oop(ΔW)
-    WikJ = false .* ΔW .* ΔW'
-    WikJCommute_oop{typeof(WikJ)}(WikJ)
+    WikJCommute_oop()
 end
 
 function fill_WikJCommute_iip(ΔW)
@@ -59,7 +52,6 @@ function fill_WikJCommute_iip(ΔW)
 end
 
 function fill_WikJGeneral_oop(ΔW)
-    WikJ = false .* ΔW .* ΔW'
     m = length(ΔW)
     M = m*(m-1)/2
     m_seq = Array{Int}(undef, M, 2)
@@ -71,7 +63,7 @@ function fill_WikJGeneral_oop(ΔW)
         k += 1
       end
     end
-    WikJCommute_oop{eltype(ΔW), typeof(WikJ)}(WikJ, m_seq)
+    WikJCommute_oop(m_seq)
 end
 
 function fill_WikJGeneral_iip(ΔW)
@@ -97,7 +89,6 @@ function fill_WikJGeneral_iip(ΔW)
 end
 
 function get_iterated_I!(dW, Wik::WikJDiagonal_oop)
-    @unpack WikJ = Wik
     WikJ = 1//2 .* dW .* dW
     WikJ
 end
@@ -113,7 +104,6 @@ function get_iterated_I!(dW, Wik::WikJDiagonal_iip)
 end
 
 function get_iterated_I!(dW, Wik::WikJCommute_oop)
-    @unpack WikJ = Wik
     WikJ = 1//2 .* vec(dW) .* vec(dW)'
     WikJ
 end
@@ -126,7 +116,7 @@ function get_iterated_I!(dW, Wik::WikJCommute_iip)
 end
 
 function get_iterated_I!(dW, Wik::WikJGeneral_oop)
-    @unpack WikJ, m_seq = Wik
+    @unpack m_seq = Wik
 
     m      = length(dW)
     M      = m*(m-1)/2
