@@ -257,14 +257,14 @@ end
     u = K + L .* dW + mil_correction
   else
     for i in 1:length(dW)
-      K = uprev + dt*du₁ + sqdt*@view(L[:,j])
+      K = uprev + dt*du₁ + sqdt*@view(L[:,i])
       gtmp = integrator.g(K,p,t)
       ggprime = (gtmp - L)/sqdt
       ggprime_norm = zero(eltype(u))
       if integrator.opts.adaptive
         ggprime_norm += integrator.opts.internalnorm(ggprime, t)
       end
-      mil_correction += ggprime*@view(WikJ[:,j])
+      mil_correction += ggprime*@view(WikJ[:,i])
     end
     if integrator.opts.adaptive
       K = @.. uprev + dt*du₁
@@ -323,13 +323,13 @@ end
     @.. u = K + L*dW + ggprime*WikJ
   else
     for i in 1:length(dW)
-      @.. K = uprev + dt*du₁ + sqdt*@view(L[:,j])
+      @.. K = uprev + dt*du₁ + sqdt*@view(L[:,i])
       integrator.g(ggprime, K, p, t)
       @.. ggprime = (ggprime - L)/sqdt
       if integrator.opts.adaptive
         ggprime_norm += integrator.opts.internalnorm(ggprime,t)
       end
-      mul!(tmp,ggprime,@view(WikJ[:,j]))
+      mul!(tmp,ggprime,@view(WikJ[:,i]))
       @.. mil_correction += tmp
     end
     mul!(tmp,L,dW)
