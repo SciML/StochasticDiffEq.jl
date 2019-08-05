@@ -63,7 +63,7 @@ function fill_WikJGeneral_oop(ΔW)
         k += 1
       end
     end
-    WikJCommute_oop(m_seq)
+    WikJGeneral_oop(m_seq)
 end
 
 function fill_WikJGeneral_iip(ΔW)
@@ -85,7 +85,7 @@ function fill_WikJGeneral_iip(ΔW)
     vec_η = similar(vec_ζ)
     Gp1 = zeros(M)
     Gp2 = similar(Gp1)
-    WikJCommute_iip{eltype(ΔW), typeof(WikJ)}(WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp1, Gp2)
+    WikJGeneral_iip{eltype(ΔW), typeof(WikJ)}(WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp1, Gp2)
 end
 
 function get_iterated_I!(dW, Wik::WikJDiagonal_oop)
