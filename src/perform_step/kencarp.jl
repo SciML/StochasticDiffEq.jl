@@ -120,9 +120,9 @@
         tmp = btilde1*z₁ + btilde2*z₂ + btilde3*z₃ + btilde4*z₄ + chi2*(g1-g4)
       end
       if alg.smooth_est # From Shampine
-        est = get_W(nlsolver)\tmp
+        E₁ = get_W(nlsolver)\tmp
       else
-        est = tmp
+        E₁ = tmp
       end
     else
       E₁ = z₁ + z₂ + z₃ + z₄
