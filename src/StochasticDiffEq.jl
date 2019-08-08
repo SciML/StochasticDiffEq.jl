@@ -12,7 +12,7 @@ module StochasticDiffEq
   import DiffEqBase: ODE_DEFAULT_NORM, ODE_DEFAULT_ISOUTOFDOMAIN,
          ODE_DEFAULT_PROG_MESSAGE, ODE_DEFAULT_UNSTABLE_CHECK
 
-  using DiffEqOperators: DiffEqArrayOperator
+  using DiffEqBase: DiffEqArrayOperator
 
   import RecursiveArrayTools: chain
 
