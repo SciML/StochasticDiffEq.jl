@@ -1,68 +1,3 @@
-"""
-
-    get_iterated_I!(dW, Wik::AbstractWikJ, C)
-
-This function calculates WikJ, a mxm Array for a m dimensional general noise problem, which is a approximation
-to the second order iterated integrals.
-
-WikJDiagonal and WikJCommute use the properties of respective noises to simplify the calculations.
-While the calculation for General Noise case is taken from section 4 of [SDELab: A Package for solving stochastic differential
-equations in MATLAB](https://doi.org/10.1016/j.cam.2006.05.037) and SDELAB2(https://github.com/tonyshardlow/SDELAB2)
-which is the Implementation of SDELab in Julia.
-```math
-    𝒜ᵖ = (Iₘ² - Pₘ)Kₘᵀ Δt/(2π) √(𝑎ₚ) √(Σ∞) Gₚ
-```
-
-```math
-    √(Σ∞) = (Σ∞ + 2αIₘ)/(√2 * (1 + α))
-```
-
-```math
-    Σ∞ = 2Iₘ + (2/Δt)Kₘ(Iₘ² - Pₘ)(Iₘ ⨂ W(Δt)W(Δt)ᵀ)(Iₘ² - Pₘ)Kₘᵀ
-```
-
-See the paper for further details of specific operators.
-Here we've only shown in which order these are implemented in this code.
-
-From above we can see:
-
-```math
-    Δt/(2π) √(𝑎ₚ) √(Σ∞) Gₚ = Δt/π √(𝑎ₚ) (√(Σ∞)/2 Gₚ)
-```
-
-```math
-    Oper1(Gₚ) = (√(Σ∞)/2 Gₚ) = (Iₘ/√2 + 1/(√2 * (1 + α) * Δt) Kₘ(Iₘ² - Pₘ)(Iₘ ⨂ W(Δt)W(Δt)ᵀ)(Iₘ² - Pₘ)Kₘᵀ)Gₚ
-```
-
-let the combined operators be
-```math
-     F = Kₘ(Iₘ² - Pₘ)(Iₘ ⨂ W(Δt)W(Δt)ᵀ)(Iₘ² - Pₘ)Kₘᵀ
-```
-then,
-
-```math
-    (√(Σ∞)/2 Gₚ) = Iₘ*Gₚ/√2 + F(Gₚ/(√2*(1+α)*Δt))
-    (√(Σ∞)/2 Gₚ) = Gₚ/√2 + F(Gₚ/(√2*(1+α)*Δt))
-```
-
-initially we have
-
-    Gp2 = Gp1/(sqrt(2)*(1+α)*dt)
-
-thus applying operator `F` on `Gp2`. And hence we have
-
-```math
-    𝒜ᵖ = (Iₘ² - Pₘ)Kₘᵀ Δt/π √(𝑎ₚ) Oper1(Gₚ)
-    𝒜ᵖ = √(𝑎ₚ)*Δt/π * (Iₘ² - Pₘ)Kₘᵀ(Oper1(Gₚ))
-```
-In the code we have
-
-```math
-    WikJ2 = (Iₘ² - Pₘ)Kₘᵀ(Oper1(Gₚ))
-```
-
-"""
-
 abstract type AbstractWikJ end
 abstract type AbstractWikJDiagonal <: AbstractWikJ end
 abstract type AbstractWikJCommute <: AbstractWikJ end
@@ -151,6 +86,71 @@ function fill_WikJGeneral_iip(ΔW)
     Aᵢ = false .* vec(ΔW)
     WikJGeneral_iip{eltype(ΔW), typeof(WikJ)}(WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp1, Gp2, Aᵢ)
 end
+
+"""
+
+    get_iterated_I!(dW, Wik::AbstractWikJ, C=1)
+
+This function calculates WikJ, a mxm Array for a m dimensional general noise problem, which is a approximation
+to the second order iterated integrals.
+
+WikJDiagonal and WikJCommute use the properties of respective noises to simplify the calculations.
+While the calculation for General Noise case is taken from section 4 of [SDELab: A Package for solving stochastic differential
+equations in MATLAB](https://doi.org/10.1016/j.cam.2006.05.037) and SDELAB2(https://github.com/tonyshardlow/SDELAB2)
+which is the Implementation of SDELab in Julia.
+```math
+    𝒜ᵖ = (Iₘ² - Pₘ)Kₘᵀ Δt/(2π) √(𝑎ₚ) √(Σ∞) Gₚ
+```
+
+```math
+    √(Σ∞) = (Σ∞ + 2αIₘ)/(√2 * (1 + α))
+```
+
+```math
+    Σ∞ = 2Iₘ + (2/Δt)Kₘ(Iₘ² - Pₘ)(Iₘ ⨂ W(Δt)W(Δt)ᵀ)(Iₘ² - Pₘ)Kₘᵀ
+```
+
+See the paper for further details of specific operators.
+Here we've only shown in which order these are implemented in this code.
+
+From above we can see:
+
+```math
+    Δt/(2π) √(𝑎ₚ) √(Σ∞) Gₚ = Δt/π √(𝑎ₚ) (√(Σ∞)/2 Gₚ)
+```
+
+```math
+    Oper1(Gₚ) = (√(Σ∞)/2 Gₚ) = (Iₘ/√2 + 1/(√2 * (1 + α) * Δt) Kₘ(Iₘ² - Pₘ)(Iₘ ⨂ W(Δt)W(Δt)ᵀ)(Iₘ² - Pₘ)Kₘᵀ)Gₚ
+```
+
+let the combined operators be
+```math
+     F = Kₘ(Iₘ² - Pₘ)(Iₘ ⨂ W(Δt)W(Δt)ᵀ)(Iₘ² - Pₘ)Kₘᵀ
+```
+then,
+
+```math
+    (√(Σ∞)/2 Gₚ) = Iₘ*Gₚ/√2 + F(Gₚ/(√2*(1+α)*Δt))
+    (√(Σ∞)/2 Gₚ) = Gₚ/√2 + F(Gₚ/(√2*(1+α)*Δt))
+```
+
+initially we have
+
+    Gp2 = Gp1/(sqrt(2)*(1+α)*dt)
+
+thus applying operator `F` on `Gp2`. And hence we have
+
+```math
+    𝒜ᵖ = (Iₘ² - Pₘ)Kₘᵀ Δt/π √(𝑎ₚ) Oper1(Gₚ)
+    𝒜ᵖ = √(𝑎ₚ)*Δt/π * (Iₘ² - Pₘ)Kₘᵀ(Oper1(Gₚ))
+```
+In the code we have
+
+```math
+    WikJ2 = (Iₘ² - Pₘ)Kₘᵀ(Oper1(Gₚ))
+```
+
+"""
 
 function get_iterated_I!(dW, Wik::WikJDiagonal_oop, C=1)
     WikJ = 1//2 .* dW .* dW
