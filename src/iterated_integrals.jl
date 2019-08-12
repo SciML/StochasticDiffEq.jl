@@ -31,25 +31,25 @@ mutable struct WikJGeneral_iip{rateNoiseElTypeNoUnits, WikJType} <: AbstractWikJ
     Aᵢ::Vector{eltype(rateNoiseElTypeNoUnits)}
 end
 
-function fill_WikJDiagonal_oop(ΔW)
-    WikJDiagonal_oop()
+function WikJDiagonal_oop(ΔW)
+    new()
 end
 
-function fill_WikJDiagonal_iip(ΔW)
+function WikJDiagonal_iip(ΔW)
     WikJ = false .* ΔW .* ΔW
-    WikJDiagonal_iip{typeof(WikJ)}(WikJ)
+    new{typeof(WikJ)}(WikJ)
 end
 
-function fill_WikJCommute_oop(ΔW)
-    WikJCommute_oop()
+function WikJCommute_oop(ΔW)
+    new()
 end
 
-function fill_WikJCommute_iip(ΔW)
+function WikJCommute_iip(ΔW)
     WikJ = false .* ΔW .* ΔW'
-    WikJCommute_iip{typeof(WikJ)}(WikJ)
+    new{typeof(WikJ)}(WikJ)
 end
 
-function fill_WikJGeneral_oop(ΔW)
+function WikJGeneral_oop(ΔW)
     m = length(ΔW)
     M = m*(m-1)/2
     m_seq = Array{Int}(undef, M, 2)
@@ -61,10 +61,10 @@ function fill_WikJGeneral_oop(ΔW)
         k += 1
       end
     end
-    WikJGeneral_oop(m_seq)
+    new(m_seq)
 end
 
-function fill_WikJGeneral_iip(ΔW)
+function WikJGeneral_iip(ΔW)
     WikJ = false .* ΔW .* ΔW'
     WikJ2 = false .* ΔW .* ΔW'
     WikJ3 = false .* ΔW .* ΔW'
@@ -84,7 +84,7 @@ function fill_WikJGeneral_iip(ΔW)
     Gp1 = false .* Array{eltype(ΔW)}(undef, M)
     Gp2 = false .* Array{eltype(ΔW)}(undef, M)
     Aᵢ = false .* vec(ΔW)
-    WikJGeneral_iip{eltype(ΔW), typeof(WikJ)}(WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp1, Gp2, Aᵢ)
+    new{eltype(ΔW), typeof(WikJ)}(WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp1, Gp2, Aᵢ)
 end
 
 """
