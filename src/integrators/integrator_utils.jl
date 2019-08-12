@@ -336,7 +336,7 @@ end
 
 @inline initialize!(integrator,cache::StochasticDiffEqCache,f=integrator.f) = nothing
 
-nlsolve!(integrator, cache) = DiffEqBase.nlsolve!(cache.nlsolver, cache.nlsolver.cache, integrator)
+nlsolve!(integrator, cache) = DiffEqBase.nlsolve!(cache.nlsolver, integrator)
 
 
 DiffEqBase.nlsolve_f(f, alg::StochasticDiffEqAlgorithm) = f isa SplitSDEFunction && issplit(alg) ? f.f1 : f
@@ -370,32 +370,38 @@ function iip_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
 end
 
 function oop_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
-  nf = nlsolve_f(f, alg)
-  islin = f isa Union{SDEFunction,SplitSDEFunction} && islinear(nf.f)
-  if islin || DiffEqBase.has_jac(f)
-    # get the operator
-    J = islin ? nf.f : f.jac(uprev, p, t)
-    if !isa(J, DiffEqBase.AbstractDiffEqLinearOperator)
-      J = DiffEqArrayOperator(J)
-    end
-    W = WOperator(f.mass_matrix, dt, J, false)
-  else
-    if u isa StaticArray
-      # get a "fake" `J`
-      J = if u isa AbstractMatrix && size(u, 1) > 1 # `u` is already a matrix
-        u
-      elseif size(u, 1) == 1 # `u` is a row vector
-        vcat(u, u)
-      else # `u` is a column vector
-        hcat(u, u)
+  if alg.nlsolve isa NLNewton
+    nf = nlsolve_f(f, alg)
+    islin = f isa Union{SDEFunction,SplitSDEFunction} && islinear(nf.f)
+    if islin || DiffEqBase.has_jac(f)
+      # get the operator
+      J = islin ? nf.f : f.jac(uprev, p, t)
+      if !isa(J, DiffEqBase.AbstractDiffEqLinearOperator)
+        J = DiffEqArrayOperator(J)
       end
-      W = lu(J)
+      W = WOperator(f.mass_matrix, dt, J, false)
     else
-      W = u isa Number ? u : LU{LinearAlgebra.lutype(uEltypeNoUnits)}(Matrix{uEltypeNoUnits}(undef, 0, 0),
-                                                                      Vector{LinearAlgebra.BlasInt}(undef, 0),
-                                                                      zero(LinearAlgebra.BlasInt))
-      J = u isa Number ? u : (false .* vec(u) .* vec(u)')
+      # https://github.com/JuliaDiffEq/OrdinaryDiffEq.jl/pull/672
+      if u isa StaticArray
+        # get a "fake" `J`
+        J = if u isa AbstractMatrix && size(u, 1) > 1 # `u` is already a matrix
+          u
+        elseif size(u, 1) == 1 # `u` is a row vector
+          vcat(u, u)
+        else # `u` is a column vector
+          hcat(u, u)
+        end
+        W = lu(J)
+      else
+        W = u isa Number ? u : LU{LinearAlgebra.lutype(uEltypeNoUnits)}(Matrix{uEltypeNoUnits}(undef, 0, 0),
+                                                                        Vector{LinearAlgebra.BlasInt}(undef, 0),
+                                                                        zero(LinearAlgebra.BlasInt))
+        J = u isa Number ? u : (false .* vec(u) .* vec(u)')
+      end
     end
+  else
+    J = nothing
+    W = nothing
   end
   J, W
 end

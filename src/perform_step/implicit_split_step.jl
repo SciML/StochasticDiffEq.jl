@@ -4,7 +4,6 @@
                                             f=integrator.f)
   @unpack t,dt,uprev,u,p = integrator
   @unpack nlsolver = cache
-  @unpack uf = nlsolver
   alg = unwrap_alg(integrator, true)
   theta = alg.theta
   alg.symplectic ? a = dt/2 : a = theta*dt
@@ -14,6 +13,7 @@
 
   repeat_step = false
   if isnewton(nlsolver)
+    @unpack uf = nlsolver.cache
     uf.t = t
     J = update_W!(integrator, cache, a, repeat_step)
   end
@@ -89,7 +89,7 @@ end
                                f=integrator.f)
   @unpack t,dt,uprev,u,p = integrator
   @unpack gtmp,gtmp2,dW_cache,nlsolver = cache
-  @unpack uf,du1,dz,z,k,tmp = nlsolver
+  @unpack dz,z,k,tmp = nlsolver
   J = (isnewton(nlsolver) ? nlsolver.cache.J : nothing)
   alg = unwrap_alg(integrator, true)
   alg.symplectic ? a = dt/2 : a = alg.theta*dt

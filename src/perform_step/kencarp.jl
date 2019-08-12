@@ -1,7 +1,6 @@
 @muladd function perform_step!(integrator, cache::SKenCarpConstantCache, f=integrator.f)
   @unpack t,dt,uprev,u,g,p = integrator
   @unpack nlsolver = cache
-  @unpack uf = nlsolver
   @unpack γ,a31,a32,a41,a42,a43,btilde1,btilde2,btilde3,btilde4,c3,α31,α32 = cache.tab
   @unpack ea21,ea31,ea32,ea41,ea42,ea43,eb1,eb2,eb3,eb4,ebtilde1,ebtilde2,ebtilde3,ebtilde4 = cache.tab
   @unpack nb021,nb043 = cache.tab
@@ -23,6 +22,7 @@
   # calculate W
   repeat_step = false
   if isnewton(nlsolver)
+    @unpack uf = nlsolver.cache
     uf.t = t
   end
   J = update_W!(integrator, cache, γdt, repeat_step)
@@ -142,7 +142,7 @@ end
   @unpack t,dt,uprev,u,g,p = integrator
   @unpack z₁,z₂,z₃,z₄,k1,k2,k3,k4,atmp = cache
   @unpack g1,g4,chi2,nlsolver = cache
-  @unpack dz,k,jac_config,tmp = nlsolver
+  @unpack dz,k,tmp = nlsolver
   @unpack γ,a31,a32,a41,a42,a43,btilde1,btilde2,btilde3,btilde4,c3,α31,α32 = cache.tab
   @unpack ea21,ea31,ea32,ea41,ea42,ea43,eb1,eb2,eb3,eb4 = cache.tab
   @unpack ebtilde1,ebtilde2,ebtilde3,ebtilde4 = cache.tab
@@ -293,7 +293,8 @@ end
         @.. g1 = btilde1*z₁  + btilde2*z₂  + btilde3*z₃ + btilde4*z₄
       end
       if alg.smooth_est # From Shampine
-        nlsolver.linsolve(vec(E₁),get_W(nlsolver),vec(g1),false)
+        linsolve = get_linsolve(nlsolver)
+        linsolve(vec(E₁),get_W(nlsolver),vec(g1),false)
       else
         E₁ .= dz
       end
