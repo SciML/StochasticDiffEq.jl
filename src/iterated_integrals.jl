@@ -136,18 +136,22 @@ then,
 
 initially we have
 
+    Gp1 = Gₚ
     Gp2 = Gp1/(sqrt(2)*(1+α)*dt)
 
 thus applying operator `F` on `Gp2`. And hence we have
 
+    Gp2 = F(Gp2)
+    Gp1 = (Gp1/√2) + Gp2
+
 ```math
-    𝒜ᵖ = (Iₘ² - Pₘ)Kₘᵀ Δt/π √(𝑎ₚ) Oper1(Gₚ)
-    𝒜ᵖ = √(𝑎ₚ)*Δt/π * (Iₘ² - Pₘ)Kₘᵀ(Oper1(Gₚ))
+    𝒜ᵖ = (Iₘ² - Pₘ)Kₘᵀ Δt/π √(𝑎ₚ) Oper1(Gp1)
+    𝒜ᵖ = √(𝑎ₚ)*Δt/π * (Iₘ² - Pₘ)Kₘᵀ(Oper1(Gp1))
 ```
 In the code we have
 
 ```math
-    WikJ2 = (Iₘ² - Pₘ)Kₘᵀ(Oper1(Gₚ))
+    WikJ2 = (Iₘ² - Pₘ)Kₘᵀ(Oper1(Gp1))
 ```
 
 """
