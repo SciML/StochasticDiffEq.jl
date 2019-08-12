@@ -28,7 +28,7 @@
   J = update_W!(integrator, cache, γdt, repeat_step)
 
   z₁ = dt*f( uprev,p,t)
-  nlsolver.c = γ
+  nlsolver.c = 2γ
 
   g1 = g(uprev,p,t)
   tmp = uprev + γ*z₁ + nb021*chi2.*g1
