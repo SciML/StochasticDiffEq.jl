@@ -204,7 +204,7 @@ function get_iterated_I!(dW, Wik::WikJGeneral_oop, C=1)
     for i in 1:M
         Gp2[i] = WikJ2[m_seq[i,1], m_seq[i,2]]
     end
-    Gp = Gp/sqrt(2) + Gp2
+    Gp1 = Gp1/sqrt(2) + Gp2
 
     #operator (Iₘ² - Pₘ)Kₘᵀ
     for i in 1:M
@@ -258,7 +258,7 @@ function get_iterated_I!(dW, Wik::WikJGeneral_iip, C=1)
     for i in 1:M
         Gp2[i] = WikJ2[m_seq[i,1], m_seq[i,2]]
     end
-    Gp1 = Gp1/sqrt(2) + Gp2
+    @.. Gp1 = Gp1/sqrt(2) + Gp2
 
     #operator (Iₘ² - Pₘ)Kₘᵀ
     for i in 1:M
