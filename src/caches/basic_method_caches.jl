@@ -136,11 +136,11 @@ end
 
 function alg_cache(alg::RKMil_General,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   if typeof(ΔW) <: Number || is_diagonal_noise(prob)
-    WikJ = fill_WikJDiagonal_oop(ΔW)
+    WikJ = WikJDiagonal_oop(ΔW)
   elseif alg.is_commutative
-    WikJ = fill_WikJCommute_oop(ΔW)
+    WikJ = WikJCommute_oop(ΔW)
   else
-    WikJ = fill_WikJGeneral_oop(ΔW)
+    WikJ = WikJGeneral_oop(ΔW)
   end
   RKMil_GeneralConstantCache{typeof(WikJ)}(WikJ)
 end
@@ -154,11 +154,11 @@ function alg_cache(alg::RKMil_General,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate
   mil_correction = zero(u)
   ggprime = zero(noise_rate_prototype)
   if typeof(ΔW) <: Number || is_diagonal_noise(prob)
-    WikJ = fill_WikJDiagonal_iip(ΔW)
+    WikJ = WikJDiagonal_iip(ΔW)
   elseif alg.is_commutative
-    WikJ = fill_WikJCommute_iip(ΔW)
+    WikJ = WikJCommute_iip(ΔW)
   else
-    WikJ = fill_WikJGeneral_iip(ΔW)
+    WikJ = WikJGeneral_iip(ΔW)
   end
   RKMil_GeneralCache{typeof(u), typeof(rate_prototype), typeof(noise_rate_prototype), typeof(WikJ)}(u, uprev, tmp, du₁, du₂, K, L, mil_correction, ggprime, WikJ)
 end
