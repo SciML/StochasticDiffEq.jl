@@ -1,4 +1,4 @@
-using StochasticDiffEq, Test
+using StochasticDiffEq, DiffEqDevTools, Test
 
 linear = (u,p,t) -> (p*u)
 g = (u,p,t) -> zero(u)
