@@ -87,6 +87,13 @@ function WikJGeneral_iip(ΔW)
     new{eltype(ΔW), typeof(WikJ)}(WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp₁, Gp₂, Aᵢ)
 end
 
+fill_WikJ(ΔW,::Val{1},::Val{false}) = WikJDiagonal_oop(ΔW)
+fill_WikJ(ΔW,::Val{1},::Val{true}) = WikJDiagonal_iip(ΔW)
+fill_WikJ(ΔW,::Val{2},::Val{false}) = WikJCommute_oop(ΔW)
+fill_WikJ(ΔW,::Val{2},::Val{true}) = WikJCommute_iip(ΔW)
+fill_WikJ(ΔW,::Val{3},::Val{false}) = WikJGeneral_oop(ΔW)
+fill_WikJ(ΔW,::Val{3},::Val{true}) = WikJGeneral_iip(ΔW)
+
 """
 
     get_iterated_I!(dW, Wik::AbstractWikJ, C=1)

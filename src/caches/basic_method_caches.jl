@@ -135,13 +135,15 @@ end
 end
 
 function alg_cache(alg::RKMil_General,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
-  if typeof(ΔW) <: Number || is_diagonal_noise(prob)
-    WikJ = WikJDiagonal_oop(ΔW)
-  elseif alg.is_commutative
-    WikJ = WikJCommute_oop(ΔW)
-  else
-    WikJ = WikJGeneral_oop(ΔW)
-  end
+  m = (typeof(ΔW) <: Number || is_diagonal_noise(prob))*1 + (alg.is_commutative)*2 + (!(typeof(ΔW) <: Number || is_diagonal_noise(prob) || alg.is_commutative))*3
+  WikJ = fill_WikJ(ΔW,Val(m),Val(false))
+  # if typeof(ΔW) <: Number || is_diagonal_noise(prob)
+  #   WikJ = WikJDiagonal_oop(ΔW,Val(1))
+  # elseif alg.is_commutative
+  #   WikJ = WikJCommute_oop(ΔW,Val(2))
+  # else
+  #   WikJ = WikJGeneral_oop(ΔW,Val(3))
+  # end
   RKMil_GeneralConstantCache{typeof(WikJ)}(WikJ)
 end
 
@@ -153,12 +155,15 @@ function alg_cache(alg::RKMil_General,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate
   L = zero(noise_rate_prototype)
   mil_correction = zero(u)
   ggprime = zero(noise_rate_prototype)
-  if typeof(ΔW) <: Number || is_diagonal_noise(prob)
-    WikJ = WikJDiagonal_iip(ΔW)
-  elseif alg.is_commutative
-    WikJ = WikJCommute_iip(ΔW)
-  else
-    WikJ = WikJGeneral_iip(ΔW)
-  end
+  m = (typeof(ΔW) <: Number || is_diagonal_noise(prob))*1 + (alg.is_commutative)*2 + (!(typeof(ΔW) <: Number || is_diagonal_noise(prob) || alg.is_commutative))*3
+  WikJ = fill_WikJ(ΔW,Val(m),Val(true))
+  #
+  # if typeof(ΔW) <: Number || is_diagonal_noise(prob)
+  #   WikJ = WikJDiagonal_iip(ΔW,Val(1))
+  # elseif alg.is_commutative
+  #   WikJ = WikJCommute_iip(ΔW,Val(2))
+  # else
+  #   WikJ = WikJGeneral_iip(ΔW,Val(3))
+  # end
   RKMil_GeneralCache{typeof(u), typeof(rate_prototype), typeof(noise_rate_prototype), typeof(WikJ)}(u, uprev, tmp, du₁, du₂, K, L, mil_correction, ggprime, WikJ)
 end
