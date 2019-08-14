@@ -31,25 +31,30 @@ mutable struct WikJGeneral_iip{rateNoiseElTypeNoUnits, WikJType} <: AbstractWikJ
     Aᵢ::Vector{eltype(rateNoiseElTypeNoUnits)}
 end
 
-function WikJDiagonal_oop(ΔW)
+# function WikJDiagonal_oop(ΔW)
+function fill_WikJ(ΔW,::Val{1},::Val{false})
     WikJDiagonal_oop()
 end
 
-function WikJDiagonal_iip(ΔW)
+# function WikJDiagonal_iip(ΔW)
+function fill_WikJ(ΔW,::Val{1},::Val{true})
     WikJ = false .* ΔW .* ΔW
     WikJDiagonal_iip{typeof(WikJ)}(WikJ)
 end
 
-function WikJCommute_oop(ΔW)
+# function WikJCommute_oop(ΔW)
+function fill_WikJ(ΔW,::Val{2},::Val{false})
     WikJCommute_oop()
 end
 
-function WikJCommute_iip(ΔW)
+# function WikJCommute_iip(ΔW)
+function fill_WikJ(ΔW,::Val{2},::Val{true})
     WikJ = false .* ΔW .* ΔW'
     WikJCommute_iip{typeof(WikJ)}(WikJ)
 end
 
-function WikJGeneral_oop(ΔW)
+# function WikJGeneral_oop(ΔW)
+function fill_WikJ(ΔW,::Val{3},::Val{false})
     m = length(ΔW)
     M = m*(m-1)/2
     m_seq = Array{Int}(undef, M, 2)
@@ -64,7 +69,8 @@ function WikJGeneral_oop(ΔW)
     WikJGeneral_oop(m_seq)
 end
 
-function WikJGeneral_iip(ΔW)
+# function WikJGeneral_iip(ΔW)
+function fill_WikJ(ΔW,::Val{3},::Val{true})
     WikJ = false .* ΔW .* ΔW'
     WikJ2 = false .* ΔW .* ΔW'
     WikJ3 = false .* ΔW .* ΔW'
@@ -87,12 +93,12 @@ function WikJGeneral_iip(ΔW)
     WikJGeneral_iip{eltype(ΔW), typeof(WikJ)}(WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp₁, Gp₂, Aᵢ)
 end
 
-fill_WikJ(ΔW,::Val{1},::Val{false}) = WikJDiagonal_oop(ΔW)
-fill_WikJ(ΔW,::Val{1},::Val{true}) = WikJDiagonal_iip(ΔW)
-fill_WikJ(ΔW,::Val{2},::Val{false}) = WikJCommute_oop(ΔW)
-fill_WikJ(ΔW,::Val{2},::Val{true}) = WikJCommute_iip(ΔW)
-fill_WikJ(ΔW,::Val{3},::Val{false}) = WikJGeneral_oop(ΔW)
-fill_WikJ(ΔW,::Val{3},::Val{true}) = WikJGeneral_iip(ΔW)
+# fill_WikJ(ΔW,::Val{1},::Val{false}) = WikJDiagonal_oop(ΔW)
+# fill_WikJ(ΔW,::Val{1},::Val{true}) = WikJDiagonal_iip(ΔW)
+# fill_WikJ(ΔW,::Val{2},::Val{false}) = WikJCommute_oop(ΔW)
+# fill_WikJ(ΔW,::Val{2},::Val{true}) = WikJCommute_iip(ΔW)
+# fill_WikJ(ΔW,::Val{3},::Val{false}) = WikJGeneral_oop(ΔW)
+# fill_WikJ(ΔW,::Val{3},::Val{true}) = WikJGeneral_iip(ΔW)
 
 """
 
