@@ -32,21 +32,21 @@ mutable struct WikJGeneral_iip{rateNoiseElTypeNoUnits, WikJType} <: AbstractWikJ
 end
 
 function WikJDiagonal_oop(ΔW)
-    new()
+    WikJDiagonal_oop()
 end
 
 function WikJDiagonal_iip(ΔW)
     WikJ = false .* ΔW .* ΔW
-    new{typeof(WikJ)}(WikJ)
+    WikJDiagonal_iip{typeof(WikJ)}(WikJ)
 end
 
 function WikJCommute_oop(ΔW)
-    new()
+    WikJCommute_oop()
 end
 
 function WikJCommute_iip(ΔW)
     WikJ = false .* ΔW .* ΔW'
-    new{typeof(WikJ)}(WikJ)
+    WikJCommute_iip{typeof(WikJ)}(WikJ)
 end
 
 function WikJGeneral_oop(ΔW)
@@ -61,7 +61,7 @@ function WikJGeneral_oop(ΔW)
         k += 1
       end
     end
-    new(m_seq)
+    WikJGeneral_oop(m_seq)
 end
 
 function WikJGeneral_iip(ΔW)
@@ -84,7 +84,7 @@ function WikJGeneral_iip(ΔW)
     Gp₁ = false .* Array{eltype(ΔW)}(undef, M)
     Gp₂ = false .* Array{eltype(ΔW)}(undef, M)
     Aᵢ = false .* vec(ΔW)
-    new{eltype(ΔW), typeof(WikJ)}(WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp₁, Gp₂, Aᵢ)
+    WikJGeneral_iip{eltype(ΔW), typeof(WikJ)}(WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp₁, Gp₂, Aᵢ)
 end
 
 fill_WikJ(ΔW,::Val{1},::Val{false}) = WikJDiagonal_oop(ΔW)
