@@ -37,7 +37,7 @@ module StochasticDiffEq
 
   using DiffEqBase: check_error!, is_diagonal_noise, @..
 
-  using DiffEqBase: nlsolvefail, isnewton, set_new_W!, get_W, iipnlsolve, oopnlsolve, _vec, _reshape, @getiipnlsolvefields
+  using DiffEqBase: nlsolvefail, isnewton, set_new_W!, get_W, iipnlsolve, oopnlsolve, _vec, _reshape
 
   using DiffEqBase: NLSolver
 
