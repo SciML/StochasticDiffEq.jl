@@ -137,14 +137,11 @@ From above we can see:
     Δt/(2π) √(𝑎ₚ) √(Σ∞) Gp₁ = Δt/π √(𝑎ₚ) (√(Σ∞)/2 Gp₁)
 ```
 
+let,
 ```math
     Oper2(Gp₁) = (√(Σ∞)/2 Gp₁) = (Iₘ/√2 + F/(√2 * (1 + α) * Δt))(Gp₁)
-```
-then,
-
-```math
-    (√(Σ∞)/2 Gp₁) = Iₘ*Gp₁/√2 + F(Gp₁/(√2*(1+α)*Δt))
-    (√(Σ∞)/2 Gp₁) = Gp₁/√2 + F(Gp₁/(√2*(1+α)*Δt))
+    Oper2(Gp₁) = Iₘ*Gp₁/√2 + F(Gp₁/(√2*(1+α)*Δt))
+    Oper2(Gp₁) = Gp₁/√2 + F(Gp₁/(√2*(1+α)*Δt))
 ```
 
 initially we have
