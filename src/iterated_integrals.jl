@@ -102,7 +102,7 @@ end
 
 """
 
-    get_iterated_I!(dW, Wik::AbstractWikJ, C=1)
+    get_iterated_I!(dW, Wik::WikJDiagonal_oop, C=1)
 
 This function calculates WikJ, a mxm Array for a m dimensional general noise problem, which is a approximation
 to the second order iterated integrals.
@@ -144,18 +144,13 @@ let,
     Oper2(Gp₁) = Gp₁/√2 + F(Gp₁/(√2*(1+α)*Δt))
 ```
 
-initially we have
+we have,
 
     Gp₂ = Gp₁/(sqrt(2)*(1+α)*dt)
 
-thus applying operator `F` on `Gp₂`. And hence we have
-
-    Gp₂ = F(Gp₂)
-    Gp₁ = (Gp₁/√2) + Gp₂
-
 ```math
-    𝒜ᵖ = (Iₘ² - Pₘ)Kₘᵀ Δt/π √(𝑎ₚ) Oper2(Gp₁)
-    𝒜ᵖ = √(𝑎ₚ)*Δt/π * (Iₘ² - Pₘ)Kₘᵀ(Oper2(Gp₁))
+    𝒜ᵖ = (Iₘ² - Pₘ)Kₘᵀ Δt/π √(𝑎ₚ) Oper2(Gp₁/√2 + F(Gp₂))
+    𝒜ᵖ = √(𝑎ₚ)*Δt/π * (Iₘ² - Pₘ)Kₘᵀ Oper2(Gp₁/√2 + F(Gp₂))
 ```
 In the code we have
 
@@ -221,8 +216,8 @@ function get_iterated_I!(dW, Wik::WikJGeneral_oop, C=1)
 
     #operator (Iₘ² - Pₘ)Kₘᵀ
     for i in 1:M
-        WikJ2[m_seq[i,1], m_seq[i,2]] = Gp[i]
-        WikJ2[m_seq[i,2], m_seq[i,1]] = -Gp[i]
+        WikJ2[m_seq[i,1], m_seq[i,2]] = Gp₁[i]
+        WikJ2[m_seq[i,2], m_seq[i,1]] = -Gp₁[i]
     end
 
     WikJ *= 1//2
