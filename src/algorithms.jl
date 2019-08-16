@@ -9,6 +9,10 @@ abstract type StochasticDiffEqRODECompositeAlgorithm <: StochasticDiffEqRODEAlgo
 abstract type StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller} <: StochasticDiffEqAdaptiveAlgorithm end
 abstract type StochasticDiffEqNewtonAlgorithm{CS,AD,Controller} <: StochasticDiffEqAlgorithm end
 
+abstract type IteratedIntegralApprox end
+struct IICommutative <:  IteratedIntegralApprox end
+struct IIWiktorsson <:  IteratedIntegralApprox end
+
 ################################################################################
 
 # Basics
@@ -30,17 +34,13 @@ RKMil(;interpretation=:Ito) = RKMil{interpretation}()
 struct RKMilCommute{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
 RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
 
-struct RKMil_General <: StochasticDiffEqAdaptiveAlgorithm
+struct RKMil_General{T<:IteratedIntegralApprox} <: StochasticDiffEqAdaptiveAlgorithm
   interpretation::Symbol
-  is_commutative::Val{Bool}
+  ii_approx::T
   c::Int
 end
-function RKMil_General(;interpretation=:Ito, is_commutative=Val(false), c = 1)
-  if is_commutative isa Bool
-    RKMil_General(interpretation, Val(is_commutative), c)
-  else
-    RKMil_General(interpretation, is_commutative, c)
-  end
+function RKMil_General(;interpretation=:Ito, ii_approx=IIWiktorsson(), c = 1)
+  RKMil_General(interpretation, IIWiktorsson(), c)
 end
 
 struct WangLi3SMil_A <: StochasticDiffEqAlgorithm end
