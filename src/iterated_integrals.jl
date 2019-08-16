@@ -7,14 +7,17 @@ struct WikJDiagonal_oop <: AbstractWikJDiagonal end
 
 mutable struct WikJDiagonal_iip{WikJType} <: AbstractWikJDiagonal
     WikJ::WikJType
-    WikJDiagonal_iip(ΔW) = new(false .* ΔW .* ΔW)
+    WikJDiagonal_iip(ΔW) = new{typeof(ΔW)}(false .* ΔW .* ΔW)
 end
 
 struct WikJCommute_oop <: AbstractWikJCommute end
 
 mutable struct WikJCommute_iip{WikJType} <: AbstractWikJCommute
     WikJ::WikJType
-    WikJCommute_iip(ΔW) = new(false .* ΔW .* ΔW')
+    function WikJCommute_iip(ΔW)
+        WikJ = false .* ΔW .* ΔW'
+        new{typeof(WikJ)}(WikJ)
+    end
 end
 
 struct WikJGeneral_oop <: AbstractWikJGeneral
