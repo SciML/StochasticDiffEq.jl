@@ -43,4 +43,4 @@ sim2 = test_convergence(dts,prob,EM(),trajectories=Int(1e2))
 sim2 = test_convergence(dts,prob,RKMilCommute(),trajectories=Int(2e2))
 sim2 = test_convergence(dts,prob,RKMil_General(ii_approx=IICommutative()),trajectories=Int(2e2))
 
-sim2.𝒪est[:final] - 1 < 0.2
+abs(sim2.𝒪est[:final] - 1) < 0.2

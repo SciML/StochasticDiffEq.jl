@@ -38,7 +38,6 @@ struct WikJGeneral_oop <: AbstractWikJGeneral
     end
 end
 
-
 mutable struct WikJGeneral_iip{rateNoiseElTypeNoUnits, WikJType} <: AbstractWikJGeneral
     WikJ::WikJType
     WikJ2::WikJType

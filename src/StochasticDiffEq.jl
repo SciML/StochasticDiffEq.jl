@@ -122,6 +122,8 @@ module StochasticDiffEq
 
   export RandomEM
 
+  export IteratedIntegralApprox, IICommutative, IIWiktorsson
+
   #General Functions
   export solve, init, solve!, step!
 
