@@ -21,28 +21,29 @@ mutable struct WikJCommute_iip{WikJType} <: AbstractWikJCommute
 end
 
 struct WikJGeneral_oop <: AbstractWikJGeneral
-    m_seq::Array{Int}
-end
-function WikJGeneral_oop(ΔW)
-    m = length(ΔW)
-    M = m*(m-1)/2
-    m_seq = Array{Int}(undef, M, 2)
-    k = 1
-    for i in 1:length(ΔW)
-      for j in i+1:length(ΔW)
-        m_seq[k,1] = i
-        m_seq[k,2] = j
-        k += 1
-      end
+    m_seq::Matrix{Int}
+    function WikJGeneral_oop(ΔW)
+        m = length(ΔW)
+        M = m*(m-1)/2
+        m_seq = Matrix{Int}(undef, M, 2)
+        k = 1
+        for i in 1:length(ΔW)
+          for j in i+1:length(ΔW)
+            m_seq[k,1] = i
+            m_seq[k,2] = j
+            k += 1
+          end
+        end
+        new(m_seq)
     end
-    WikJGeneral_oop(m_seq)
 end
+
 
 mutable struct WikJGeneral_iip{rateNoiseElTypeNoUnits, WikJType} <: AbstractWikJGeneral
     WikJ::WikJType
     WikJ2::WikJType
     WikJ3::WikJType
-    m_seq::Array{Int}
+    m_seq::Matrix{Int}
     vec_ζ::Vector{eltype(rateNoiseElTypeNoUnits)}
     vec_η::Vector{eltype(rateNoiseElTypeNoUnits)}
     Gp₁::Vector{eltype(rateNoiseElTypeNoUnits)}
@@ -85,7 +86,7 @@ function get_WikJ(dW,prob,alg)
     else
         if typeof(ΔW) <: Number || is_diagonal_noise(prob)
           return WikJDiagonal_oop()
-        elseif alg_commutative_approx(alg))
+        elseif alg_commutative_approx(alg)
           return WikJCommute_oop()
         else
           return WikJGeneral_oop(ΔW)
