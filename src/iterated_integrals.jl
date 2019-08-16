@@ -24,7 +24,7 @@ struct WikJGeneral_oop <: AbstractWikJGeneral
     m_seq::Matrix{Int}
     function WikJGeneral_oop(ΔW)
         m = length(ΔW)
-        M = m*(m-1)/2
+        M = Int(m*(m-1)/2)
         m_seq = Matrix{Int}(undef, M, 2)
         k = 1
         for i in 1:length(ΔW)
@@ -53,8 +53,6 @@ end
 function WikJGeneral_iip(ΔW)
     WikJ = false .* ΔW .* ΔW'
     WikJ2 = false .* ΔW .* ΔW'
-    println(typeof(WikJ))
-    println(typeof(WikJ2))
     WikJ3 = false .* ΔW .* ΔW'
     m = length(ΔW)
     M = Int(m*(m-1)/2)
@@ -95,12 +93,12 @@ function get_WikJ(ΔW,prob,alg)
     end
 end
 
-function get_iterated_I!(dW, Wik::WikJDiagonal_oop, C=1)
+function get_iterated_I!(dt, dW, Wik::WikJDiagonal_oop, C=1)
     WikJ = 1//2 .* dW .* dW
     WikJ
 end
 
-function get_iterated_I!(dW, Wik::WikJDiagonal_iip, C=1)
+function get_iterated_I!(dt, dW, Wik::WikJDiagonal_iip, C=1)
     @unpack WikJ = Wik
     if typeof(dW) <: Number
         Wik.WikJ = 1//2 .* dW .^ 2
@@ -110,12 +108,12 @@ function get_iterated_I!(dW, Wik::WikJDiagonal_iip, C=1)
     return nothing
 end
 
-function get_iterated_I!(dW, Wik::WikJCommute_oop, C=1)
+function get_iterated_I!(dt, dW, Wik::WikJCommute_oop, C=1)
     WikJ = 1//2 .* vec(dW) .* vec(dW)'
     WikJ
 end
 
-function get_iterated_I!(dW, Wik::WikJCommute_iip, C=1)
+function get_iterated_I!(dt, dW, Wik::WikJCommute_iip, C=1)
     @unpack WikJ = Wik
     mul!(WikJ,vec(dW),vec(dW)')
     @.. WikJ *= 1//2
@@ -124,7 +122,7 @@ end
 
 """
 
-    get_iterated_I!(dW, Wik::WikJGeneral_oop, C=1)
+    get_iterated_I!(dt, dW, Wik::WikJGeneral_oop, C=1)
 
 This function calculates WikJ, a mxm Array for a m dimensional general noise problem, which is a approximation
 to the second order iterated integrals.
@@ -181,10 +179,10 @@ In the code we have
 ```
 
 """
-function get_iterated_I!(dW, Wik::WikJGeneral_oop, C=1)
+function get_iterated_I!(dt, dW, Wik::WikJGeneral_oop, C=1)
     @unpack m_seq = Wik
     m      = length(dW)
-    M      = m*(m-1)/2
+    M      = Int(m*(m-1)/2)
     sum_dW² = dW'*dW
 
     WikJ = dW*dW'
@@ -234,7 +232,7 @@ end
 
 """
 
-    get_iterated_I!(dW, Wik::WikJGeneral_iip, C=1)
+    get_iterated_I!(dt, dW, Wik::WikJGeneral_iip, C=1)
 
 This function calculates WikJ, a mxm Array for a m dimensional general noise problem, which is a approximation
 to the second order iterated integrals.
@@ -291,13 +289,13 @@ In the code we have
 ```
 
 """
-function get_iterated_I!(dW, Wik::WikJGeneral_iip, C=1)
+function get_iterated_I!(dt, dW, Wik::WikJGeneral_iip, C=1)
     @unpack WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp₁, Gp₂, Aᵢ = Wik
 
     m      = length(dW)
     M      = Int(m*(m-1)/2)
 
-    sum_dW² = dW'*dW #zero(eltype(dW))
+    sum_dW² = dW' * dW #zero(eltype(dW))
     # mul!(sum_dW²,dW', dW)
 
     Gp₁ .= randn(M)
@@ -330,12 +328,12 @@ function get_iterated_I!(dW, Wik::WikJGeneral_iip, C=1)
     @.. WikJ *= 1//2
     𝑎ₚ = (π^2)/6
     p = Int(floor((1/(C*π))*sqrt(M/(24*dt))*sqrt(m + 4*sum_dW²/dt) + 1))
-    @.. Aᵢ = false .* vec(dW)    # Aᵢ is vector of aᵢ₀
+    Aᵢ .= false .* vec(dW)    # Aᵢ is vector of aᵢ₀
     for r in 1:p
         𝑎ₚ -= (1/r^2)
         var = sqrt(dt/(2*π*r))
-        @.. vec_ζ = randn(m)*var
-        @.. vec_η = randn(m)*var
+        vec_ζ .= randn(m) .* var
+        vec_η .= randn(m) .* var
         mul!(WikJ3, vec_ζ, vec_η')
         @.. WikJ += WikJ3 - WikJ3'
         @.. Aᵢ -= (2/sqrt(π*r))*vec_ζ
