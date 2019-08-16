@@ -93,12 +93,32 @@ function fill_WikJ(ΔW,::Val{3},::Val{true})
     WikJGeneral_iip{eltype(ΔW), typeof(WikJ)}(WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp₁, Gp₂, Aᵢ)
 end
 
-# fill_WikJ(ΔW,::Val{1},::Val{false}) = WikJDiagonal_oop(ΔW)
-# fill_WikJ(ΔW,::Val{1},::Val{true}) = WikJDiagonal_iip(ΔW)
-# fill_WikJ(ΔW,::Val{2},::Val{false}) = WikJCommute_oop(ΔW)
-# fill_WikJ(ΔW,::Val{2},::Val{true}) = WikJCommute_iip(ΔW)
-# fill_WikJ(ΔW,::Val{3},::Val{false}) = WikJGeneral_oop(ΔW)
-# fill_WikJ(ΔW,::Val{3},::Val{true}) = WikJGeneral_iip(ΔW)
+function get_iterated_I!(dW, Wik::WikJDiagonal_oop, C=1)
+    WikJ = 1//2 .* dW .* dW
+    WikJ
+end
+
+function get_iterated_I!(dW, Wik::WikJDiagonal_iip, C=1)
+    @unpack WikJ = Wik
+    if typeof(dW) <: Number
+        Wik.WikJ = 1//2 .* dW .^ 2
+    else
+        @.. WikJ = 1//2*dW^2
+    end
+    return nothing
+end
+
+function get_iterated_I!(dW, Wik::WikJCommute_oop, C=1)
+    WikJ = 1//2 .* vec(dW) .* vec(dW)'
+    WikJ
+end
+
+function get_iterated_I!(dW, Wik::WikJCommute_iip, C=1)
+    @unpack WikJ = Wik
+    mul!(WikJ,vec(dW),vec(dW)')
+    @.. WikJ *= 1//2
+    return nothing
+end
 
 """
 
@@ -159,34 +179,6 @@ In the code we have
 ```
 
 """
-
-function get_iterated_I!(dW, Wik::WikJDiagonal_oop, C=1)
-    WikJ = 1//2 .* dW .* dW
-    WikJ
-end
-
-function get_iterated_I!(dW, Wik::WikJDiagonal_iip, C=1)
-    @unpack WikJ = Wik
-    if typeof(dW) <: Number
-        Wik.WikJ = 1//2 .* dW .^ 2
-    else
-        @.. WikJ = 1//2*dW^2
-    end
-    return nothing
-end
-
-function get_iterated_I!(dW, Wik::WikJCommute_oop, C=1)
-    WikJ = 1//2 .* vec(dW) .* vec(dW)'
-    WikJ
-end
-
-function get_iterated_I!(dW, Wik::WikJCommute_iip, C=1)
-    @unpack WikJ = Wik
-    mul!(WikJ,vec(dW),vec(dW)')
-    @.. WikJ *= 1//2
-    return nothing
-end
-
 function get_iterated_I!(dW, Wik::WikJGeneral_oop, C=1)
     @unpack m_seq = Wik
     m      = length(dW)
