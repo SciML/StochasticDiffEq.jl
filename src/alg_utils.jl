@@ -79,6 +79,9 @@ alg_interpretation(alg::ImplicitRKMil{CS,AD,F,S,N,T2,Controller,interpretation})
 
 alg_compatible(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = true
 
+alg_commutative_approx(alg::StochasticDiffEqAlgorithm) = getvalue(alg.is_commutative)
+getvalue(::Type{Val{T}}) where T = T
+
 alg_compatible(prob,alg::StochasticDiffEqAlgorithm) = false
 alg_compatible(prob,alg::SRI) = is_diagonal_noise(prob)
 alg_compatible(prob,alg::SRIW1) = is_diagonal_noise(prob)
