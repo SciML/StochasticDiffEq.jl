@@ -74,7 +74,7 @@ function WikJGeneral_iip(ΔW)
     WikJGeneral_iip{eltype(ΔW), typeof(WikJ)}(WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp₁, Gp₂, Aᵢ)
 end
 
-function get_WikJ(dW,prob,alg)
+function get_WikJ(ΔW,prob,alg)
     if isinplace(prob)
         if typeof(ΔW) <: Number || is_diagonal_noise(prob)
           return WikJDiagonal_iip(ΔW)
@@ -123,7 +123,7 @@ end
 
 """
 
-    get_iterated_I!(dW, Wik::WikJDiagonal_oop, C=1)
+    get_iterated_I!(dW, Wik::WikJGeneral_oop, C=1)
 
 This function calculates WikJ, a mxm Array for a m dimensional general noise problem, which is a approximation
 to the second order iterated integrals.
@@ -233,7 +233,7 @@ end
 
 """
 
-    get_iterated_I!(dW, Wik::WikJDiagonal_oop, C=1)
+    get_iterated_I!(dW, Wik::WikJGeneral_iip, C=1)
 
 This function calculates WikJ, a mxm Array for a m dimensional general noise problem, which is a approximation
 to the second order iterated integrals.
