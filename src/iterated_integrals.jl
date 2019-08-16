@@ -43,19 +43,21 @@ mutable struct WikJGeneral_iip{rateNoiseElTypeNoUnits, WikJType} <: AbstractWikJ
     WikJ2::WikJType
     WikJ3::WikJType
     m_seq::Matrix{Int}
-    vec_ζ::Vector{eltype(rateNoiseElTypeNoUnits)}
-    vec_η::Vector{eltype(rateNoiseElTypeNoUnits)}
-    Gp₁::Vector{eltype(rateNoiseElTypeNoUnits)}
-    Gp₂::Vector{eltype(rateNoiseElTypeNoUnits)}
-    Aᵢ::Vector{eltype(rateNoiseElTypeNoUnits)}
+    vec_ζ::Vector{rateNoiseElTypeNoUnits}
+    vec_η::Vector{rateNoiseElTypeNoUnits}
+    Gp₁::Vector{rateNoiseElTypeNoUnits}
+    Gp₂::Vector{rateNoiseElTypeNoUnits}
+    Aᵢ::Vector{rateNoiseElTypeNoUnits}
 end
 
 function WikJGeneral_iip(ΔW)
     WikJ = false .* ΔW .* ΔW'
     WikJ2 = false .* ΔW .* ΔW'
+    println(typeof(WikJ))
+    println(typeof(WikJ2))
     WikJ3 = false .* ΔW .* ΔW'
     m = length(ΔW)
-    M = m*(m-1)/2
+    M = Int(m*(m-1)/2)
     m_seq = Array{Int}(undef, M, 2)
     k = 1
     for i in 1:length(ΔW)
@@ -293,12 +295,12 @@ function get_iterated_I!(dW, Wik::WikJGeneral_iip, C=1)
     @unpack WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp₁, Gp₂, Aᵢ = Wik
 
     m      = length(dW)
-    M      = m*(m-1)/2
+    M      = Int(m*(m-1)/2)
 
-    sum_dW² = zero(eltype(dW))
-    mul!(sum_dW²,dW', dW)
+    sum_dW² = dW'*dW #zero(eltype(dW))
+    # mul!(sum_dW²,dW', dW)
 
-    @.. Gp₁ = randn(M)
+    Gp₁ .= randn(M)
     α = sqrt(1 + sum_dW²/dt)
     @.. Gp₂ = Gp₁/(sqrt(2)*(1+α)*dt)
 
