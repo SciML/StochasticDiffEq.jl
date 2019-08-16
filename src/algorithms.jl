@@ -40,7 +40,7 @@ struct RKMil_General{T<:IteratedIntegralApprox} <: StochasticDiffEqAdaptiveAlgor
   c::Int
 end
 function RKMil_General(;interpretation=:Ito, ii_approx=IIWiktorsson(), c = 1)
-  RKMil_General(interpretation, IIWiktorsson(), c)
+  RKMil_General(interpretation, ii_approx, c)
 end
 
 struct WangLi3SMil_A <: StochasticDiffEqAlgorithm end
