@@ -78,7 +78,7 @@ function get_WikJ(dW,prob,alg)
     if isinplace(prob)
         if typeof(ΔW) <: Number || is_diagonal_noise(prob)
           return WikJDiagonal_iip(ΔW)
-      elseif alg_commutative_approx(alg)
+      elseif alg.ii_approx isa IICommutative
           return WikJCommute_iip(ΔW)
         else
           return WikJGeneral_iip(ΔW)
@@ -86,7 +86,7 @@ function get_WikJ(dW,prob,alg)
     else
         if typeof(ΔW) <: Number || is_diagonal_noise(prob)
           return WikJDiagonal_oop()
-        elseif alg_commutative_approx(alg)
+        elseif alg.ii_approx isa IICommutative
           return WikJCommute_oop()
         else
           return WikJGeneral_oop(ΔW)
