@@ -55,7 +55,7 @@ function WikJGeneral_iip(ΔW)
     WikJ2 = false .* vec(ΔW) .* vec(ΔW)'
     WikJ3 = false .* vec(ΔW) .* vec(ΔW)'
     m = length(ΔW)
-    M = div(m*(m-1)),2)
+    M = div(m*(m-1),2)
     m_seq = Array{Int}(undef, M, 2)
     k = 1
     for i in 1:length(ΔW)
@@ -182,7 +182,7 @@ In the code we have
 function get_iterated_I!(dt, dW, Wik::WikJGeneral_oop, C=1)
     @unpack m_seq = Wik
     m      = length(dW)
-    M      = div(m*(m-1)),2)
+    M      = div(m*(m-1),2)
     sum_dW² = dot(dW,dW)
 
     WikJ = dW*dW'
@@ -293,7 +293,7 @@ function get_iterated_I!(dt, dW, Wik::WikJGeneral_iip, C=1)
     @unpack WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp₁, Gp₂, Aᵢ = Wik
 
     m      = length(dW)
-    M      = div(m*(m-1)),2)
+    M      = div(m*(m-1),2)
 
     sum_dW² = dot(dW,dW) #zero(eltype(dW))
     # mul!(sum_dW²,dW', dW)
