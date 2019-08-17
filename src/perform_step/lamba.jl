@@ -9,17 +9,25 @@
     L = integrator.g(K,p,t+dt)
   end
 
+  if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
+    noise = L*W.dW
+  else
+    noise = L.*W.dW
+  end
+
   mil_correction = zero(u)
 
-  u = K+L.*W.dW
+  u = K+noise
 
   if integrator.opts.adaptive
     du2 = integrator.f(K,p,t+dt)
     Ed = dt*(du2 - du1)/2
+    utilde =  K .+ L*(zero(W.dW).+1).*integrator.sqdt
+    gtmp = integrator.g(utilde,p,t)
+    ggprime = (L.-gtmp)./(integrator.sqdt)
 
-    utilde =  K + L*integrator.sqdt
-    ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
-    En = ggprime.*(W.dW.^2 .- dt)./2
+    dW_cache = W.dW.^2 .- dt
+    En = ggprime*dW_cache
 
     resids = calculate_residuals(Ed, En, uprev, u, integrator.opts.abstol,
                                  integrator.opts.reltol, integrator.opts.delta,

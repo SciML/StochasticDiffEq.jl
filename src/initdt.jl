@@ -1,7 +1,8 @@
-function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,internalnorm,prob,order,integrator) where {tType,uType}
+function sde_determine_initdt(u0::uType,t::tType,tdir,dtmin,dtmax,abstol,reltol,internalnorm,prob,order,integrator) where {tType,uType}
   f = prob.f
   g = prob.g
   p = prob.p
+  dtmax_tdir = tdir*dtmax
   d₀ = internalnorm(u0./(abstol.+internalnorm.(u0,t).*reltol),t)
   if !isinplace(prob)
     f₀ = f(u0,p,t)
@@ -37,11 +38,12 @@ function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,intern
   else
     dt₀ = tType(0.01*(d₀/d₁))
   end
-  dt₀ = min(dt₀,tdir*dtmax)
-  u₁ = u0 .+ tdir.*dt₀.*f₀
+  dt₀ = min(dt₀,dtmax_tdir)
+  dt₀_tdir = tdir*dt₀
+  u₁ = u0 .+ dt₀_tdir.*f₀
   if !isinplace(prob)
-    f₁ = f(u₁,p,t+tdir*dt₀)
-    g₁ = 3g(u₁,p,t+tdir*dt₀)
+    f₁ = f(u₁,p,t+dt₀_tdir)
+    g₁ = 3g(u₁,p,t+dt₀_tdir)
   else
     f₁ = zero(u0)
     if prob.noise_rate_prototype !== nothing
@@ -52,6 +54,12 @@ function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,intern
     f(f₁,u0,p,t)
     g(g₁,u0,p,t); g₁.*=3
   end
+
+  # Constant zone before callback
+  # Just return first guess
+  # Avoids AD issues
+  f₀ == f₁ && return tdir*100dt₀
+
   ΔgMax = max.(internalnorm.(g₀.-g₁,t),internalnorm.(g₀.+g₁,t))
   d₂ = internalnorm(max.(internalnorm.(f₁.-f₀.+ΔgMax,t),internalnorm.(f₁.-f₀.-ΔgMax,t))./(abstol.+internalnorm.(u0,t).*reltol),t)./dt₀
   if max(d₁,d₂)<=T1(1//Int64(10)^(15))
@@ -59,5 +67,7 @@ function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,intern
   else
     dt₁ = tType(10.0^(-(2+log10(max(d₁,d₂)))/(order+.5)))
   end
-  dt = tdir*min(100dt₀,dt₁,tdir*dtmax)
+  dt = tdir*min(100dt₀,dt₁,dtmax_tdir)
+
+  dt = max(dt,10dtmin)
 end
