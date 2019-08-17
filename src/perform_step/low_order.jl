@@ -259,7 +259,7 @@ end
     for i in 1:length(dW)
       K = uprev + dt*du₁ + sqdt*@view(L[:,i])
       gtmp = integrator.g(K,p,t)
-      ggprime = (gtmp - L)/sqdt
+      ggprime = @.. (gtmp - L)/sqdt
       ggprime_norm = zero(eltype(u))
       if integrator.opts.adaptive
         ggprime_norm += integrator.opts.internalnorm(ggprime, t)
@@ -279,14 +279,12 @@ end
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
       tmp  = dt*(du₂ -du₁)/2
       En = W.dW.^3 .* ((du₂-L)/(integrator.sqdt)).^2 / 6
-      tmp = calculate_residuals(tmp, En, uprev, u, integrator.opts.abstol,
-            integrator.opts.reltol, integrator.opts.delta, integrator.opts.internalnorm, t)
     else
       En = integrator.opts.internalnorm(W.dW,t)^3*ggprime_norm^2 / 6
-      tmp = @.. integrator.opts.internalnorm(dt*(du₂ - du₁)/2,t)
-      tmp = @.. calculate_residuals(tmp, En, uprev, u, integrator.opts.abstol,
-                integrator.opts.reltol, integrator.opts.delta, integrator.opts.internalnorm, t)
+      tmp = integrator.opts.internalnorm((@.. dt*(du₂ - du₁)/2),t)
     end
+    tmp = calculate_residuals(tmp, En, uprev, u, integrator.opts.abstol,
+              integrator.opts.reltol, integrator.opts.delta, integrator.opts.internalnorm, t)
     integrator.EEst = integrator.opts.internalnorm(tmp, t)
   end
   integrator.u = u
