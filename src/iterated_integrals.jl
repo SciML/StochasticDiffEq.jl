@@ -24,7 +24,7 @@ struct WikJGeneral_oop <: AbstractWikJGeneral
     m_seq::Matrix{Int}
     function WikJGeneral_oop(ΔW)
         m = length(ΔW)
-        M = div(m*(m-1)),2)
+        M = div(m*(m-1),2)
         m_seq = Matrix{Int}(undef, M, 2)
         k = 1
         for i in 1:length(ΔW)
