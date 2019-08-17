@@ -15,7 +15,7 @@ struct WikJCommute_oop <: AbstractWikJCommute end
 mutable struct WikJCommute_iip{WikJType} <: AbstractWikJCommute
     WikJ::WikJType
     function WikJCommute_iip(ΔW)
-        WikJ = false .* ΔW .* ΔW'
+        WikJ = false .* vec(ΔW) .* vec(ΔW)'
         new{typeof(WikJ)}(WikJ)
     end
 end
@@ -24,7 +24,7 @@ struct WikJGeneral_oop <: AbstractWikJGeneral
     m_seq::Matrix{Int}
     function WikJGeneral_oop(ΔW)
         m = length(ΔW)
-        M = Int(m*(m-1)/2)
+        M = div(m*(m-1)),2)
         m_seq = Matrix{Int}(undef, M, 2)
         k = 1
         for i in 1:length(ΔW)
@@ -51,11 +51,11 @@ mutable struct WikJGeneral_iip{rateNoiseElTypeNoUnits, WikJType} <: AbstractWikJ
 end
 
 function WikJGeneral_iip(ΔW)
-    WikJ = false .* ΔW .* ΔW'
-    WikJ2 = false .* ΔW .* ΔW'
-    WikJ3 = false .* ΔW .* ΔW'
+    WikJ = false .* vec(ΔW) .* vec(ΔW)'
+    WikJ2 = false .* vec(ΔW) .* vec(ΔW)'
+    WikJ3 = false .* vec(ΔW) .* vec(ΔW)'
     m = length(ΔW)
-    M = Int(m*(m-1)/2)
+    M = div(m*(m-1)),2)
     m_seq = Array{Int}(undef, M, 2)
     k = 1
     for i in 1:length(ΔW)
@@ -65,11 +65,11 @@ function WikJGeneral_iip(ΔW)
         k += 1
       end
     end
-    vec_ζ = false .* vec(ΔW)
-    vec_η = false .* vec(ΔW)
+    vec_ζ = zero(ΔW)
+    vec_η = zero(ΔW)
     Gp₁ = false .* Array{eltype(ΔW)}(undef, M)
     Gp₂ = false .* Array{eltype(ΔW)}(undef, M)
-    Aᵢ = false .* vec(ΔW)
+    Aᵢ = zero(ΔW)
     WikJGeneral_iip{eltype(ΔW), typeof(WikJ)}(WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp₁, Gp₂, Aᵢ)
 end
 
@@ -182,8 +182,8 @@ In the code we have
 function get_iterated_I!(dt, dW, Wik::WikJGeneral_oop, C=1)
     @unpack m_seq = Wik
     m      = length(dW)
-    M      = Int(m*(m-1)/2)
-    sum_dW² = dW'*dW
+    M      = div(m*(m-1)),2)
+    sum_dW² = dot(dW,dW)
 
     WikJ = dW*dW'
     Gp₁ = randn(M)
@@ -293,9 +293,9 @@ function get_iterated_I!(dt, dW, Wik::WikJGeneral_iip, C=1)
     @unpack WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp₁, Gp₂, Aᵢ = Wik
 
     m      = length(dW)
-    M      = Int(m*(m-1)/2)
+    M      = div(m*(m-1)),2)
 
-    sum_dW² = dW' * dW #zero(eltype(dW))
+    sum_dW² = dot(dW,dW) #zero(eltype(dW))
     # mul!(sum_dW²,dW', dW)
 
     Gp₁ .= randn(M)
