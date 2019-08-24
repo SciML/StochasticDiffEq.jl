@@ -57,12 +57,15 @@ function maxeig!(integrator, cache::StochasticDiffEqConstantCache)
       quot = dz_u/Δ
       z = uprev + quot*fz
     else
-      # An arbitrary change on `z`
-      if typeof(z) <: Number
-        z *= -1
-      else
-        Random.shuffle!(z)
-      end
+        # An arbitrary change on `z`
+        nind = length(z)
+        if (nind != 1)
+          ind = 1 + iter % nind
+          # val = (uprev[ind] - (z[ind] - uprev[ind]))*one(eltype(z))*2
+          vec(z) = vec(z) .* (1 .- 2 .*((1:length(z)) .== ind))
+        else
+          z = -z
+        end
     end
   end
   return false
@@ -130,11 +133,14 @@ function maxeig!(integrator, cache::StochasticDiffEqMutableCache)
       @.. z = uprev + quot*fz
     else
       # An arbitrary change on `z`
-      if typeof(z) <: Number
-        z *= -1
-      else
-        Random.shuffle!(z)
-      end
+       nind = length(uprev)
+       if (nind != 1)
+         ind = 1 + iter % nind
+         # val = (uprev[ind] - (z[ind] - uprev[ind]))*one(eltype(z))
+         vec(z) .= vec(z) .* (1 .- 2 .*((1:length(z)) .== ind))
+       else
+         z = -z
+       end
     end
   end
   return false
