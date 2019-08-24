@@ -524,7 +524,7 @@ end
       for i in 1:length(W.dW)
         WikJ = W.dW[i]
         WikRange = 1//2 .* (W.dW .* WikJ - (1:length(W.dW) .== i) .* dt)
-        uᵢ₋₂ = Gₛ .* WikRange
+        uᵢ₋₂ = Gₛ*WikRange
         WikRange = 1//2 .* (1:length(W.dW) .== i)
         tmp = u + uᵢ₋₂
         Gₛ₁ = integrator.g(tmp,p,tᵢ)
