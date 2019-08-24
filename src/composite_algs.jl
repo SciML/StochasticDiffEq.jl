@@ -13,7 +13,7 @@ end
 AutoSwitch(nonstiffalg, stiffalg;
            maxstiffstep=10, maxnonstiffstep=3,
            nonstifftol=9//10, stifftol=9//10,
-           dtfac=2.0, stiffalgfirst=false) =
+           dtfac=2, stiffalgfirst=false) =
            AutoSwitch(0, nonstiffalg, stiffalg, stiffalgfirst,
                       maxstiffstep, maxnonstiffstep, promote(nonstifftol, stifftol)...,
                       dtfac, stiffalgfirst)
