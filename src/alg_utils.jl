@@ -31,6 +31,7 @@ alg_order(alg::LambaEulerHeun) = 1//2
 alg_order(alg::RandomEM) = 1//2
 alg_order(alg::RKMil) = 1//1
 alg_order(alg::RKMilCommute) = 1//1
+alg_order(alg::RKMil_General) = 1//1
 
 # Generalised version of SROCK1, both Ito ans Stratonovich, will have strong order of 1//2
 # and weak order of 1 for Multidimensional Weiner process
@@ -73,6 +74,7 @@ alg_interpretation(alg::KomBurSROCK2) = :Stratonovich
 alg_interpretation(alg::RKMil{interpretation}) where {interpretation} = interpretation
 alg_interpretation(alg::SROCK1{interpretation}) where {interpretation} = interpretation
 alg_interpretation(alg::RKMilCommute{interpretation}) where {interpretation} = interpretation
+alg_interpretation(alg::RKMil_General) = alg.interpretation
 alg_interpretation(alg::ImplicitRKMil{CS,AD,F,S,N,T2,Controller,interpretation}) where {CS,AD,F,S,N,T2,Controller,interpretation} = interpretation
 
 alg_compatible(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = true
@@ -116,6 +118,7 @@ alg_compatible(prob,alg::ISSEulerHeun) = true
 alg_compatible(prob,alg::RKMil) = is_diagonal_noise(prob)
 alg_compatible(prob,alg::ImplicitRKMil) = is_diagonal_noise(prob)
 alg_compatible(prob,alg::RKMilCommute) = true # No good check for commutative noise
+alg_compatible(prob,alg::RKMil_General) = true
 alg_compatible(prob,alg::IIF1M) = true
 alg_compatible(prob,alg::IIF2M) = true
 alg_compatible(prob,alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = max((alg_compatible(prob,a) for a in alg.algs)...)

@@ -116,3 +116,37 @@ function alg_cache(alg::RKMilCommute,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
   Kj = zero(u); Dgj = zero(noise_rate_prototype)
   RKMilCommuteCache(u,uprev,du1,du2,K,gtmp,L,WikJ,Dg,mil_correction,Kj,Dgj,tmp)
 end
+
+struct RKMil_GeneralConstantCache{WikType} <: StochasticDiffEqConstantCache
+  WikJ::WikType
+end
+
+@cache struct RKMil_GeneralCache{uType, rateType, rateNoiseType, WikType} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+  tmp::uType
+  du₁::rateType
+  du₂::rateType
+  K::uType
+  L::rateNoiseType
+  mil_correction::uType
+  ggprime::rateNoiseType
+  WikJ::WikType
+end
+
+function alg_cache(alg::RKMil_General,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  WikJ = get_WikJ(ΔW,prob,alg)
+  RKMil_GeneralConstantCache{typeof(WikJ)}(WikJ)
+end
+
+function alg_cache(alg::RKMil_General,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  tmp = zero(u)
+  du₁ = zero(rate_prototype)
+  du₂ = zero(rate_prototype)
+  K = zero(u)
+  L = zero(noise_rate_prototype)
+  mil_correction = zero(u)
+  ggprime = zero(noise_rate_prototype)
+  WikJ = get_WikJ(ΔW,prob,alg)
+  RKMil_GeneralCache{typeof(u), typeof(rate_prototype), typeof(noise_rate_prototype), typeof(WikJ)}(u, uprev, tmp, du₁, du₂, K, L, mil_correction, ggprime, WikJ)
+end

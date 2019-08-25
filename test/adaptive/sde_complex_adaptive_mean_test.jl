@@ -72,3 +72,46 @@ plot!(T, avg3)
 
 @test maximum(avg1-avg2) < 0.02
 @test maximum(avg1-avg3) < 0.03
+
+#Adding Similar Tests for RKMil_General
+# Simple averaging
+Ntraj = 1000
+avg1 = zeros(size(T)...)
+avg2 = zeros(size(T)...)
+avg3 = zeros(size(T)...)
+
+let
+  global avg1,avg2,avg3
+  for i=1:Ntraj
+
+    out1 = SavedValues(Float64,ComplexF64)
+    scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
+
+    solve(prob1, RKMil_General(interpretation = :Stratonovich), dt=1e-4, callback=scb1, seed = i, adaptive = false)
+    avg1 .+= out1.saveval ./ Ntraj
+
+    out1 = SavedValues(Float64,ComplexF64)
+    scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
+
+    solve(prob1, RKMil_General(interpretation = :Stratonovich), tstops = T, callback=scb1,
+          save_everystep=false, save_start=false)
+    avg2 .+= out1.saveval ./ Ntraj
+
+    out1 = SavedValues(Float64,ComplexF64)
+    scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
+
+    solve(prob2, RKMil_General(interpretation = :Stratonovich), tstops = T, callback=scb1,
+          save_everystep=false, save_start=false)
+    avg3 .+= out1.saveval ./ Ntraj
+  end
+end
+
+#=
+using Plots; gr()
+plot(T, avg1)
+plot!(T, avg2)
+plot!(T, avg3)
+=#
+
+@test maximum(avg1-avg2) < 0.02
+@test maximum(avg1-avg3) < 0.03

@@ -95,6 +95,7 @@ module StochasticDiffEq
   include("tableaus.jl")
   include("SROCK_tableaus.jl")
   include("derivative_utils.jl")
+  include("iterated_integrals.jl")
   include("SROCK_utils.jl")
   include("composite_algs.jl")
 
@@ -103,7 +104,7 @@ module StochasticDiffEq
 
   export EM, LambaEM, PCEuler, RKMil, SRA, SRI, SRIW1,
          SRA1, SRA2, SRA3,
-         SOSRA, SOSRA2, RKMilCommute,
+         SOSRA, SOSRA2, RKMilCommute, RKMil_General,
          SRIW2, SOSRI, SOSRI2, SKenCarp,
          SROCK1, SROCK2, SROCKEM, SKSROCK, TangXiaoSROCK2, KomBurSROCK2, SROCKC2,
          WangLi3SMil_A, WangLi3SMil_B, WangLi3SMil_C, WangLi3SMil_D, WangLi3SMil_E, WangLi3SMil_F,
@@ -120,6 +121,8 @@ module StochasticDiffEq
          StochasticDiffEqRODECompositeAlgorithm
 
   export RandomEM
+
+  export IteratedIntegralApprox, IICommutative, IIWiktorsson
 
   #General Functions
   export solve, init, solve!, step!

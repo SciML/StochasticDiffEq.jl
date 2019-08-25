@@ -12,6 +12,13 @@ sol1 =solve(prob,RKMil(),adaptive=true)
 err12 = sol1.errors[:final]
 @test err12 < err1
 
+sol1 =solve(prob,RKMil_General(),abstol=1,reltol=0,adaptive=true)
+err11 = sol1.errors[:final]
+
+sol1 =solve(prob,RKMil_General(),adaptive=true)
+err112 = sol1.errors[:final]
+@test err112 < err11
+
 sol2 =solve(prob,SRI(),dt=1/2^(4),abstol=1,reltol=0)
 err2 = sol2.errors[:final]
 
@@ -30,6 +37,7 @@ err5 = sol5.errors[:final]
 println("""
 Final error for the solutions were:
           $err1
+          $err11
           $err2
           $err3
           $err4
