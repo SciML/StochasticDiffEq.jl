@@ -204,8 +204,9 @@ end
   integrator.f(du1,uprev,p,t)
   integrator.g(L,uprev,p,t)
 
+  @.. K = uprev + dt*du1
   for j = 1:length(dW)
-    @.. Kj = uprev + dt*du1 + sqdt*@view(L[:,j]) # This works too
+    @.. Kj = K + sqdt*@view(L[:,j]) # This works too
     #Kj .= uprev .+ sqdt*L[:,j]
     g(gtmp,Kj,p,t)
     @.. Dgj = (gtmp - L)/sqdt
