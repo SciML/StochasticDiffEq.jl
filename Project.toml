@@ -26,8 +26,20 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
 ArrayInterface = "1.1"
-SparseDiffTools = ">= 0.3.0"
-DiffEqBase = ">= 5.20.0"
+DataStructures = "0.17"
+DiffEqBase = "5.20"
+DiffEqDiffTools = "1"
+DiffEqNoiseProcess = "3.3.1"
+FillArrays = "0.6"
+ForwardDiff = "0.10.3"
+MuladdMacro = "0.2.1"
+NLsolve = "4"
+Parameters = "0.11"
+RandomNumbers = "1"
+RecursiveArrayTools = "1"
+Reexport = "0.2"
+SparseDiffTools = "0.9"
+StaticArrays = "0.11"
 julia = "1"
 
 [extras]

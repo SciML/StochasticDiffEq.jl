@@ -382,7 +382,7 @@ function calc_W!(nlsolver, integrator, cache::StochasticDiffEqConstantCache, dtg
                            -mass_matrix + dtgamma*J
     W = W_full isa Number ? W_full : lu(W_full)
   end
-  is_compos && (integrator.eigen_est = isarray ? opnorm(J, Inf) : J)
+  is_compos && (integrator.eigen_est = isarray ? opnorm(J, Inf) : abs(J))
   J, W
 end
 
