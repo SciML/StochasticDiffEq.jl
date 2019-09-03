@@ -52,6 +52,13 @@ module StochasticDiffEq
 
   const CompiledFloats = Union{Float32,Float64}
 
+  import Base.Threads
+  @static if VERSION < v"1.3"
+    seed_multiplier() = Threads.threadid()
+  else
+    seed_multiplier() = 1
+  end
+
   include("misc_utils.jl")
   include("algorithms.jl")
   include("options_type.jl")

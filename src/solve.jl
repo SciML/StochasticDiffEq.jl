@@ -243,7 +243,7 @@ function DiffEqBase.__init(
     randType = typeof(rand_prototype) # Strip units and type info
   end
 
-  _seed = iszero(seed) ? (iszero(prob.seed) ? rand(UInt64) : prob.seed) : seed
+  _seed = iszero(seed) ? (iszero(prob.seed) ? seed_multiplier()*rand(UInt64) : prob.seed) : seed
 
   if prob.noise === nothing
     rswm = isadaptive(alg) ? RSWM(adaptivealg=:RSwM3) : RSWM(adaptivealg=:RSwM1)
