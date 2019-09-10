@@ -163,7 +163,7 @@ function DiffEqBase.__init(
   tstops_internal, saveat_internal, d_discontinuities_internal =
     tstop_saveat_disc_handling(tstops, saveat, d_discontinuities, tspan)
 
-  callbacks_internal = CallbackSet(callback,prob.callback)
+  callbacks_internal = CallbackSet(callback)
 
   max_len_cb = DiffEqBase.max_vector_callback_length(callbacks_internal)
   if max_len_cb isa DiffEqBase.VectorContinuousCallback

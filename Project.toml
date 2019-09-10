@@ -27,7 +27,7 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 [compat]
 ArrayInterface = "1.1"
 DataStructures = "0.17"
-DiffEqBase = "5.20"
+DiffEqBase = "6"
 DiffEqDiffTools = "1"
 DiffEqNoiseProcess = "3.3.1"
 FillArrays = "0.6"
