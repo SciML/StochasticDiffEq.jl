@@ -5,6 +5,7 @@ os:
 #  - osx
 julia:
   - 1.1
+  - 1.3
 env:
   - GROUP=Interface
   - GROUP=Interface2
