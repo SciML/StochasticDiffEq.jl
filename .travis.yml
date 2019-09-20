@@ -4,7 +4,7 @@ os:
   - linux
 #  - osx
 julia:
-  - 1.1
+  - 1.2
 env:
   - GROUP=Interface
   - GROUP=Interface2
