@@ -1,7 +1,7 @@
 name = "StochasticDiffEq"
 uuid = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
 authors = ["Chris Rackauckas <accounts@chrisrackauckas.com>"]
-version = "6.11.2"
+version = "6.11.3"
 
 [deps]
 ArrayInterface = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
@@ -27,7 +27,7 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 [compat]
 ArrayInterface = "1.1"
 DataStructures = "0.17"
-DiffEqBase = "6"
+DiffEqBase = "6.4"
 DiffEqDiffTools = "1"
 DiffEqNoiseProcess = "3.3.1"
 FillArrays = "0.6, 0.7"
