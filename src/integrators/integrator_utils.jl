@@ -128,7 +128,17 @@ end
       integrator.tprev = integrator.t
       if typeof(integrator.t)<:AbstractFloat && !isempty(integrator.opts.tstops)
         tstop = integrator.tdir * top(integrator.opts.tstops)
-        @fastmath abs(ttmp - tstop) < 10eps(integrator.t) ? (integrator.t = tstop) : (integrator.t = ttmp)
+        if @fastmath abs(ttmp - tstop) < 10eps(integrator.t/oneunit(integrator.t))*oneunit(integrator.t)
+          integrator.t = tstop
+          pop!(integrator.opts.tstops)
+          while !isempty(integrator.opts.tstops) &&
+                abs(ttmp - top(integrator.opts.tstops)) < 10eps(integrator.t/oneunit(integrator.t))*oneunit(integrator.t)
+            integrator.t = top(integrator.opts.tstops)
+            pop!(integrator.opts.tstops)
+          end
+        else
+          integrator.t = ttmp
+        end
       else
         integrator.t = ttmp
       end
@@ -141,7 +151,17 @@ end
       tstop = integrator.tdir * top(integrator.opts.tstops)
       # For some reason 10eps(integrator.t) is slow here
       # TODO: Allow higher precision but profile
-      @fastmath abs(ttmp - tstop) < 10eps(max(integrator.t,tstop)) ? (integrator.t = tstop) : (integrator.t = ttmp)
+      if @fastmath abs(ttmp - tstop) < 10eps(integrator.t/oneunit(integrator.t))*oneunit(integrator.t)
+        integrator.t = tstop
+        pop!(integrator.opts.tstops)
+        while !isempty(integrator.opts.tstops) &&
+              abs(ttmp - top(integrator.opts.tstops)) < 10eps(integrator.t/oneunit(integrator.t))*oneunit(integrator.t)
+          integrator.t = top(integrator.opts.tstops)
+          pop!(integrator.opts.tstops)
+        end
+      else
+        integrator.t = ttmp
+      end
     else
       integrator.t = ttmp
     end
