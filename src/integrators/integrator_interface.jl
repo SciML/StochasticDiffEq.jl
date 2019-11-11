@@ -56,9 +56,16 @@ end
     get_tmp_cache(integrator, alg.algs[1], cache.caches[1])
 
 full_cache(integrator::SDEIntegrator) = full_cache(integrator.cache)
+full_cache(integrator::StochasticCompositeCache) = Iterators.flatten(full_cache(c) for c in integrator.caches)
+
 ratenoise_cache(integrator::SDEIntegrator) = ratenoise_cache(integrator.cache)
+ratenoise_cache(integrator::StochasticCompositeCache) = Iterators.flatten(ratenoise_cache(c) for c in integrator.caches)
+
 rand_cache(integrator::SDEIntegrator) = rand_cache(integrator.cache)
+rand_cache(integrator::StochasticCompositeCache) = Iterators.flatten(rand_cache(c) for c in integrator.caches)
+
 jac_iter(integrator::SDEIntegrator) = jac_iter(integrator.cache)
+jac_iter(integrator::StochasticCompositeCache) = Iterators.flatten(jac_iter(c) for c in integrator.caches)
 
 @inline function add_tstop!(integrator::SDEIntegrator,t)
   t < integrator.t && error("Tried to add a tstop that is behind the current time. This is strictly forbidden")
