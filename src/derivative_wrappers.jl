@@ -30,9 +30,9 @@ function jacobian_autodiff(f,x::AbstractArray,integrator,hascolorvec::Val{true})
   J
 end
 jacobian_finitediff(f,x,difftype,_,_)=DiffEqDiffTools.finite_difference_derivative(f, x, difftype, eltype(x))
-jacobian_finitediff(f,x::AbstractArray,difftype,_,hascolorvec::Val{false})=DiffEqDiffTools.finite_difference_jacobian(f, x, difftype, eltype(x), Val{false})
+jacobian_finitediff(f,x::AbstractArray,difftype,_,hascolorvec::Val{false})=DiffEqDiffTools.finite_difference_jacobian(f, x, difftype, eltype(x))
 jacobian_finitediff(f,x::AbstractArray,difftype,integrator,hascolorvec::Val{true})=
-  DiffEqDiffTools.finite_difference_jacobian(f, x, difftype, eltype(x), Val(false),colorvec=integrator.f.colorvec,sparsity=integrator.f.jac_prototype)
+  DiffEqDiffTools.finite_difference_jacobian(f, x, difftype, eltype(x), colorvec=integrator.f.colorvec,sparsity=integrator.f.jac_prototype)
 
 function jacobian(f, x,
                   integrator::DiffEqBase.DEIntegrator)
