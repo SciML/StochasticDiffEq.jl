@@ -181,7 +181,7 @@ end
   @unpack recf, recf2, mα, mσ, mτ = cache
 
   gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (typeof(W.dW) <: Number) || (length(W.dW) == 1))
-  gen_prob && (vec_χ = 2 .* floor.(false .* W.dW .+ 0.5 .+ rand(eltype(W.dW),length(W.dW))) .- 1.0)
+  gen_prob && (vec_χ = 2 .* floor.(false .* W.dW .+ 1//2 .+ convert(typeof(W.dW), rand(W.rng,length(W.dW)))) .- true)
 
   maxeig!(integrator, cache)
   cache.mdeg = Int(floor(sqrt((2*dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1))
@@ -192,8 +192,8 @@ end
   start     = cache.start
   deg_index = cache.deg_index
   α = mα[deg_index]
-  σ = (1.0-α)*0.5 + α*mσ[deg_index]
-  τ = 0.5*((1.0-α)^2) + 2*α*(1.0-α)*mσ[deg_index] + (α^2.0)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
+  σ = (1-α)*1//2 + α*mσ[deg_index]
+  τ = 1//2*((1-α)^2) + 2*α*(1-α)*mσ[deg_index] + (α^2)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
 
   sqrt_dt   = sqrt(dt)
 
@@ -223,12 +223,12 @@ end
   #2 stage-finishing procedure
   #stage s-1
   μ, κ = recf2[(deg_index-1)*4 + 1], recf2[(deg_index-1)*4 + 2]
-  ν    = 1.0 + κ
+  ν    = 1 + κ
   uᵢ   = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
 
   tₓ   = tᵢ₋₁ + 2*dt*τ                    # So that we don't have to calculate f(uₛ₋₂) again
   uₓ   = uᵢ₋₁ + 2*dt*τ*uᵢ                 # uₓ and tₓ represent u_star
-  u    = uᵢ₋₁ + (2*σ - 0.5)*dt*uᵢ
+  u    = uᵢ₋₁ + (2*σ - 1//2)*dt*uᵢ
 
   uᵢ   = α*dt*μ*uᵢ + ν*uᵢ₋₁ - κ*uᵢ₋₂
   tᵢ   = α*dt*μ + ν*tᵢ₋₁ - κ*tᵢ₋₂
@@ -283,7 +283,7 @@ end
       WikJ = W.dW[i]; WikJ2 = vec_χ[i]
       WikRange = 1//2 .* (W.dW .* WikJ .- (1:length(W.dW) .== i) .* dt) #.- (1:length(W.dW) .> i) .* dt .* vec_χ .+ (1:length(W.dW) .< i) .* dt .* WikJ2)
       uₓ = Gₛ*WikRange
-      WikRange = 0.5 .* (1:length(W.dW) .== i)
+      WikRange = 1//2 .* (1:length(W.dW) .== i)
       uᵢ₋₂ = uᵢ + uₓ
       Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ)
       u   += (Gₛ₁*WikRange)
@@ -465,33 +465,33 @@ end
 
   mdeg = cache.mdeg
   η  = cache.optimal_η
-  ω₀ = one(eltype(u)) + (η/(mdeg^2))
-  ωSq = ω₀^2 - one(eltype(u))
+  ω₀ = oneunit(t) + (η/(mdeg^2))
+  ωSq = ω₀^2 - oneunit(t)
   Sqrt_ω = sqrt(ωSq)
   cosh_inv = log(ω₀ + Sqrt_ω)             # arcosh(ω₀)
   ω₁ = (Sqrt_ω*cosh(mdeg*cosh_inv))/(mdeg*sinh(mdeg*cosh_inv))
 
   uᵢ₋₂ = copy(uprev)
   k = integrator.f(uprev,p,t)
-  Tᵢ₋₂ = one(eltype(u))
-  Tᵢ₋₁ = convert(eltype(u),ω₀)
+  Tᵢ₋₂ = oneunit(t)
+  Tᵢ₋₁ = oftype(t,ω₀)
   Tᵢ   = Tᵢ₋₁
   tᵢ₋₁ = t+dt*(ω₁/ω₀)
   tᵢ   = tᵢ₋₁
   tᵢ₋₂ = t
 
   #stage 1
-  uᵢ₋₁ = uprev + (dt*ω₁/ω₀)*k
+  uᵢ₋₁ = uprev + dt*(ω₁/ω₀)*k
 
   for i in 2:mdeg
     Tᵢ = 2*ω₀*Tᵢ₋₁ - Tᵢ₋₂
     μ = 2*ω₁*(Tᵢ₋₁/Tᵢ)
     ν = 2*ω₀*(Tᵢ₋₁/Tᵢ)
-    κ = (-Tᵢ₋₂/Tᵢ)
+    κ = -Tᵢ₋₂/Tᵢ
     k = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
 
-    u = dt*μ*k + ν*uᵢ₋₁ + κ*uᵢ₋₂
-    tᵢ = μ*dt + ν*tᵢ₋₁ + κ*tᵢ₋₂
+    u = @. dt*μ*k + ν*uᵢ₋₁ + κ*uᵢ₋₂
+    tᵢ = @. μ*dt + ν*tᵢ₋₁ + κ*tᵢ₋₂
 
     if i < mdeg
       uᵢ₋₂ = uᵢ₋₁
@@ -507,19 +507,19 @@ end
   if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || is_diagonal_noise(integrator.sol.prob)
     u += Gₛ .* W.dW
   else
-    u += Gₛ*W.dW
+    u += Gₛ * W.dW
   end
 
   if integrator.alg.strong_order_1
     if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || (is_diagonal_noise(integrator.sol.prob))
-      uᵢ₋₂  = 1//2 .* Gₛ .* (W.dW .^ 2 .- dt)
-      tmp = u + uᵢ₋₂
+      uᵢ₋₂  = @. 1//2 * Gₛ * (W.dW ^ 2 - dt)
+      tmp = @. u + uᵢ₋₂
       Gₛ  = integrator.g(tmp,p,tᵢ)
-      uᵢ₋₁ = 0.5*Gₛ
-      tmp = u - uᵢ₋₂
+      uᵢ₋₁ = @. 0.5*Gₛ
+      tmp = @. u - uᵢ₋₂
       Gₛ  = integrator.g(tmp,p,tᵢ)
-      uᵢ₋₁ -= 0.5*Gₛ
-      u += uᵢ₋₁
+      uᵢ₋₁ = @. uᵢ₋₁ - 0.5*Gₛ
+      u = @. u + uᵢ₋₁
     else
       for i in 1:length(W.dW)
         WikJ = W.dW[i]
