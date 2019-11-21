@@ -110,7 +110,7 @@ end
   end
 
   @.. uᵢ₋₂ = uprev
-  Tᵢ₋₂ = oneunit(u)
+  Tᵢ₋₂ = oneunit(t)
   Tᵢ₋₁ = oftype(t,ω₀)
   Tᵢ   = Tᵢ₋₁
   tᵢ₋₁ = t + dt*(ω₁/ω₀)
@@ -555,15 +555,15 @@ end
 
   mdeg = ccache.mdeg
   η  = ccache.optimal_η
-  ω₀ = one(eltype(u)) + η/(mdeg^2)
-  ωSq = ω₀^2 - one(eltype(u))
+  ω₀ = oneunit(t) + η/(mdeg^2)
+  ωSq = ω₀^2 - oneunit(t)
   Sqrt_ω = sqrt(ωSq)
   cosh_inv = log(ω₀ + Sqrt_ω)             # arcosh(ω₀)
   ω₁ = (Sqrt_ω*cosh(mdeg*cosh_inv))/(mdeg*sinh(mdeg*cosh_inv))
 
   @.. uᵢ₋₂ = uprev
   integrator.f(k,uprev,p,t)
-  Tᵢ₋₂ = one(eltype(u))
+  Tᵢ₋₂ = oneunit(t)
   Tᵢ₋₁ = convert(eltype(u),ω₀)
   Tᵢ   = Tᵢ₋₁
   tᵢ₋₁ = t + dt*(ω₁/ω₀)
@@ -646,7 +646,7 @@ end
   ω₁ = (Sqrt_ω*cosh(mdeg*cosh_inv))/(mdeg*sinh(mdeg*cosh_inv))
 
   μ, ν , κ = ω₁/ω₀, mdeg*ω₁/2, mdeg*ω₁/ω₀
-  Tᵢ₋₂ = one(eltype(u))
+  Tᵢ₋₂ = oneunit(t)
   Tᵢ₋₁ = convert(eltype(u),ω₀)
   Tᵢ   = Tᵢ₋₁
   tᵢ₋₁ = t+dt*(ω₁/ω₀)
@@ -731,7 +731,7 @@ end
   ω₁ = (Sqrt_ω*cosh(mdeg*cosh_inv))/(mdeg*sinh(mdeg*cosh_inv))
 
   μ, ν , κ = ω₁/ω₀, mdeg*ω₁/2, mdeg*ω₁/ω₀
-  Tᵢ₋₂ = one(eltype(u))
+  Tᵢ₋₂ = oneunit(t)
   Tᵢ₋₁ = convert(eltype(u),ω₀)
   Tᵢ   = Tᵢ₋₁
   tᵢ₋₁ = t+dt*(ω₁/ω₀)
