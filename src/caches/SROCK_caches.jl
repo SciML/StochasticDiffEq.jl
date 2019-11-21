@@ -299,8 +299,9 @@ function alg_cache(alg::KomBurSROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
   fsalfirst = k
   atmp = yₛ₋₂
   constantcache = KomBurSROCK2ConstantCache{typeof(t)}(u)
-  KomBurSROCK2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype),typeof(vec_χ)}(u,uprev,utmp,uᵢ₋₁,uᵢ₋₂,k,yₛ₋₁,yₛ₋₂,
-                                            yₛ₋₃,SXₛ₋₁,SXₛ₋₂,SXₛ₋₃,Gₛ,Xₛ₋₁,Xₛ₋₂,Xₛ₋₃,vec_χ,tmp,fsalfirst,WikRange,atmp,constantcache)
+  KomBurSROCK2Cache(u,uprev,utmp,uᵢ₋₁,uᵢ₋₂,k,yₛ₋₁,yₛ₋₂,
+                    yₛ₋₃,SXₛ₋₁,SXₛ₋₂,SXₛ₋₃,Gₛ,Xₛ₋₁,Xₛ₋₂,Xₛ₋₃,vec_χ,
+                    tmp,fsalfirst,WikRange,atmp,constantcache)
 end
 
 mutable struct SROCKC2ConstantCache{zType,T} <: StochasticDiffEqConstantCache
