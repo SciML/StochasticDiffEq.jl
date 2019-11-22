@@ -85,7 +85,7 @@ function alg_cache(alg::SROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_protot
   fsalfirst = k
   atmp = zero(rate_prototype)
   constantcache = SROCK2ConstantCache{typeof(t)}(u)
-  SROCK2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype),typeof(vec_χ)}(u,uprev,uᵢ,uₓ,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,WikRange,vec_χ,tmp,k,fsalfirst,atmp,constantcache)
+  SROCK2Cache(u,uprev,uᵢ,uₓ,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,WikRange,vec_χ,tmp,k,fsalfirst,atmp,constantcache)
 end
 
 mutable struct SROCKEMConstantCache{zType,tType} <: StochasticDiffEqConstantCache
@@ -130,7 +130,7 @@ function alg_cache(alg::SROCKEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_proto
   fsalfirst = k
   atmp = zero(rate_prototype)
   constantcache = SROCKEMConstantCache{typeof(t)}(u)
-  SROCKEMCache{typeof(u),typeof(k),typeof(Gₛ),typeof(WikRange)}(u,uprev,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,tmp,k,fsalfirst,WikRange,atmp,constantcache)
+  SROCKEMCache(u,uprev,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,tmp,k,fsalfirst,WikRange,atmp,constantcache)
 end
 
 mutable struct SKSROCKConstantCache{zType,T} <: StochasticDiffEqConstantCache
@@ -167,7 +167,7 @@ function alg_cache(alg::SKSROCK,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_proto
   WikRange = false .* vec(ΔW)
   atmp = zero(rate_prototype)
   constantcache = SKSROCKConstantCache{typeof(t)}(u)
-  SKSROCKCache{typeof(u),typeof(k),typeof(Gₛ),typeof(WikRange)}(u,uprev,uᵢ₋₁,uᵢ₋₂,Gₛ,tmp,k,fsalfirst,WikRange,atmp,constantcache)
+  SKSROCKCache(u,uprev,uᵢ₋₁,uᵢ₋₂,Gₛ,tmp,k,fsalfirst,WikRange,atmp,constantcache)
 end
 
 mutable struct TangXiaoSROCK2ConstantCache{zType,T} <: StochasticDiffEqConstantCache
@@ -227,7 +227,7 @@ function alg_cache(alg::TangXiaoSROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rat
   fsalfirst = k
   atmp = zero(rate_prototype)
   constantcache = TangXiaoSROCK2ConstantCache{typeof(t)}(u)
-  TangXiaoSROCK2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype)}(u,uprev,uᵢ,uₓ,Û₁,Û₂,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,tmp,k,fsalfirst,atmp,constantcache)
+  TangXiaoSROCK2Cache(u,uprev,uᵢ,uₓ,Û₁,Û₂,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,tmp,k,fsalfirst,atmp,constantcache)
 end
 
 mutable struct KomBurSROCK2ConstantCache{zType,T} <: StochasticDiffEqConstantCache
@@ -347,5 +347,5 @@ function alg_cache(alg::SROCKC2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_proto
   fsalfirst = k           # this variables are dummied to use same memory
   atmp = zero(rate_prototype)
   constantcache = SROCKC2ConstantCache{typeof(t)}(u)
-  SROCKC2Cache{typeof(u),typeof(k),typeof(noise_rate_prototype),typeof(WikRange)}(u,uprev,uᵢ,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,WikRange,tmp,k,fsalfirst,atmp,constantcache)
+  SROCKC2Cache(u,uprev,uᵢ,uᵢ₋₁,uᵢ₋₂,Gₛ,Gₛ₁,WikRange,tmp,k,fsalfirst,atmp,constantcache)
 end
