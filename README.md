@@ -5,7 +5,6 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/k01khnd8waktsg1q?svg=true)](https://ci.appveyor.com/project/ChrisRackauckas/stochasticdiffeq-jl)
 [![Coverage Status](https://coveralls.io/repos/github/JuliaDiffEq/StochasticDiffEq.jl/badge.svg)](https://coveralls.io/github/JuliaDiffEq/StochasticDiffEq.jl)
 [![codecov](https://codecov.io/gh/JuliaDiffEq/StochasticDiffEq.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaDiffEq/StochasticDiffEq.jl)
-[![StochasticDiffEq](http://pkg.julialang.org/badges/StochasticDiffEq_0.6.svg)](http://pkg.julialang.org/?pkg=StochasticDiffEq)
 
 StochasticDiffEq.jl is a component package in the DifferentialEquations ecosystem. It holds the
 stochastic differential equations solvers and utilities. While completely independent
@@ -14,7 +13,7 @@ functionality should check out [DifferentialEquations.jl](https://github.com/Jul
 
 ## API
 
-StochasticDiffEq.jl is part of the JuliaDiffEq common interface, but can be used independently of DifferentialEquations.jl. The only requirement is that the user passes an StochasticDiffEq.jl algorithm to `solve`. For example, we can solve the [ODE tutorial from the docs](http://docs.juliadiffeq.org/latest/tutorials/sde_example.html) using the `SRIW1()` algorithm:
+StochasticDiffEq.jl is part of the JuliaDiffEq common interface, but can be used independently of DifferentialEquations.jl. The only requirement is that the user passes an StochasticDiffEq.jl algorithm to `solve`. For example, we can solve the [ODE tutorial from the docs](http://docs.juliadiffeq.org/dev/tutorials/sde_example.html) using the `SRIW1()` algorithm:
 
 ```julia
 using StochasticDiffEq
@@ -29,7 +28,7 @@ prob = SDEProblem(f,g,u₀,(0.0,1.0))
 sol =solve(prob,SRIW1())
 ```
 
-The options for `solve` are defined in the [common solver options page](http://docs.juliadiffeq.org/latest/basics/common_solver_opts.html) and are thoroughly explained in [the ODE tutorial](http://docs.juliadiffeq.org/latest/tutorials/ode_example.html).
+The options for `solve` are defined in the [common solver options page](http://docs.juliadiffeq.org/dev/basics/common_solver_opts.html) and are thoroughly explained in [the ODE tutorial](http://docs.juliadiffeq.org/dev/tutorials/ode_example.html).
 
 That example uses the out-of-place syntax `f(u,p,t)`, while the inplace syntax (more efficient for systems of equations) is shown in the Lorenz example:
 
@@ -69,7 +68,7 @@ end
 prob = SDEProblem(f,g,ones(2),(0.0,1.0),noise_rate_prototype=zeros(2,4))
 ```
 
-Colored noise can be set using [an `AbstractNoiseProcess`](http://docs.juliadiffeq.org/latest/features/noise_process.html). For example, we can set the underlying noise process to a `GeometricBrownian` via:
+Colored noise can be set using [an `AbstractNoiseProcess`](http://docs.juliadiffeq.org/dev/features/noise_process.html). For example, we can set the underlying noise process to a `GeometricBrownian` via:
 
 ```julia
 μ = 1.0
@@ -81,7 +80,7 @@ W = GeometricBrownianMotionProcess(μ,σ,0.0,1.0,1.0)
 prob = SDEProblem(f,g,u0,tspan,noise=W)
 ```
 
-StochasticDiffEq.jl also handles solving random ordinary differential equations. This is shown [in the RODE tutorial](http://docs.juliadiffeq.org/latest/tutorials/rode_example.html).
+StochasticDiffEq.jl also handles solving random ordinary differential equations. This is shown [in the RODE tutorial](http://docs.juliadiffeq.org/dev/tutorials/rode_example.html).
 
 ```julia
 using StochasticDiffEq
@@ -96,4 +95,4 @@ sol = solve(prob,RandomEM(),dt=1/100)
 
 ## Available Solvers
 
-For the list of available solvers, please refer to the [DifferentialEquations.jl SDE Solvers page](http://docs.juliadiffeq.org/latest/solvers/sde_solve.html) and the [RODE Solvers page](http://docs.juliadiffeq.org/latest/solvers/rode_solve.html).
+For the list of available solvers, please refer to the [DifferentialEquations.jl SDE Solvers page](http://docs.juliadiffeq.org/dev/solvers/sde_solve.html) and the [RODE Solvers page](http://docs.juliadiffeq.org/dev/solvers/rode_solve.html).
