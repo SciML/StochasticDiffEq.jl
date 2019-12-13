@@ -103,11 +103,11 @@ sim2 = test_convergence(dts,prob,WangLi3SMil_F(),trajectories=100)
 
 print(".")
 
-sim2 = test_convergence(dts,prob,SROCK1(),trajectories=100)
-@test abs(sim2.𝒪est[:l∞]-1) < 0.2
-
-sim2 = test_convergence(dts,prob,SROCK2(),trajectories=100)
-@test abs(sim2.𝒪est[:l∞]-1) < 0.2
+eigen_est = (integrator) -> integrator.eigen_est = 10.0
+for Alg in [SROCK1, SROCK2], alg in [Alg(), Alg(eigen_est=eigen_est)]
+  sim2 = test_convergence(dts,prob,alg,trajectories=100)
+  @test abs(sim2.𝒪est[:l∞]-1) < 0.2
+end
 
 sim2 = test_convergence(dts,prob,SROCKEM(strong_order_1=false),trajectories=100)
 @test abs(sim2.𝒪est[:l∞]-0.5) < 0.2
@@ -115,10 +115,17 @@ sim2 = test_convergence(dts,prob,SROCKEM(strong_order_1=false),trajectories=100)
 sim2 = test_convergence(dts,prob,SROCKEM(),trajectories=100)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 
+sim2 = test_convergence(dts,prob,SROCKEM(eigen_est=eigen_est),trajectories=100)
+@test abs(sim2.𝒪est[:l∞]-1) < 0.2
+
 sim2 = test_convergence(dts,prob,SKSROCK(),trajectories=500)
+@test abs(sim2.𝒪est[:l∞]-0.5) < 0.2
+sim2 = test_convergence(dts,prob,SKSROCK(eigen_est=eigen_est),trajectories=500)
 @test abs(sim2.𝒪est[:l∞]-0.5) < 0.2
 
 sim2 = test_convergence(dts,prob,SROCKC2(),trajectories=100)
+@test abs(sim2.𝒪est[:l∞]-1) < 0.2
+sim2 = test_convergence(dts,prob,SROCKC2(eigen_est=eigen_est),trajectories=100)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 
 # #omitting tests for incomplete methods

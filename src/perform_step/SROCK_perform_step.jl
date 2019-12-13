@@ -1,7 +1,8 @@
 @muladd function perform_step!(integrator,cache::SROCK1ConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
 
-  maxeig!(integrator, cache)
+  alg = unwrap_alg(integrator, true)
+  alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
   cache.mdeg = Int(floor(sqrt(2*dt*integrator.opts.internalnorm(integrator.eigen_est,t))+1)) # this is the spectral radius estimate to choose optimal stage
   choose_deg!(integrator,cache)
 
@@ -91,7 +92,8 @@ end
   @unpack uᵢ₋₁,uᵢ₋₂,k, gₘ₋₁, gₘ₋₂ = cache
   @unpack t,dt,uprev,u,W,p = integrator
   ccache = cache.constantcache
-  maxeig!(integrator, cache)
+  alg = unwrap_alg(integrator, true)
+  alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
   ccache.mdeg = Int(floor(sqrt(2*dt*integrator.opts.internalnorm(integrator.eigen_est,t))+1))   # this is the spectral radius estimate to choose optimal stage
   choose_deg!(integrator,cache)
 
@@ -183,7 +185,8 @@ end
   gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (typeof(W.dW) <: Number) || (length(W.dW) == 1))
   gen_prob && (vec_χ = 2 .* floor.(false .* W.dW .+ 1//2 .+ oftype(W.dW, rand(W.rng,length(W.dW)))) .- true)
 
-  maxeig!(integrator, cache)
+  alg = unwrap_alg(integrator, true)
+  alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
   cache.mdeg = Int(floor(sqrt((2*dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1))
   cache.mdeg = max(3,min(cache.mdeg,200))-2
   choose_deg!(integrator,cache)
@@ -314,7 +317,8 @@ end
   ccache = cache.constantcache
   gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (typeof(W.dW) <: Number) || (length(W.dW) == 1))
 
-  maxeig!(integrator, cache)
+  alg = unwrap_alg(integrator, true)
+  alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
   ccache.mdeg = Int(floor(sqrt((2*dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1))
   ccache.mdeg = max(3,min(ccache.mdeg,200))-2
   choose_deg!(integrator,cache)
@@ -454,7 +458,8 @@ end
 @muladd function perform_step!(integrator,cache::SROCKEMConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
 
-  maxeig!(integrator, cache)
+  alg = unwrap_alg(integrator, true)
+  alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
   if integrator.alg.strong_order_1
     cache.mdeg = Int(floor(sqrt(dt*integrator.opts.internalnorm(integrator.eigen_est,t)/0.19)+1))
   else
@@ -544,7 +549,8 @@ end
   @unpack uᵢ₋₁,uᵢ₋₂,tmp,k,Gₛ,Gₛ₁,WikRange = cache
   @unpack t,dt,uprev,u,W,p = integrator
   ccache = cache.constantcache
-  maxeig!(integrator, cache)
+  alg = unwrap_alg(integrator, true)
+  alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
   if integrator.alg.strong_order_1
     ccache.mdeg = Int(floor(sqrt(dt*integrator.opts.internalnorm(integrator.eigen_est,t)/0.19)+1))
   else
@@ -634,7 +640,8 @@ end
 @muladd function perform_step!(integrator,cache::SKSROCKConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
 
-  maxeig!(integrator, cache)
+  alg = unwrap_alg(integrator, true)
+  alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
   η = oftype(t,0.05)
   mdeg = Int(floor(sqrt((dt*integrator.opts.internalnorm(integrator.eigen_est,t) + 1.5)/(2-η*4/3))+1))
   mdeg = max(3,min(mdeg,200))
@@ -719,7 +726,8 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
 
   ccache = cache.constantcache
-  maxeig!(integrator, cache)
+  alg = unwrap_alg(integrator, true)
+  alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
   η = oftype(t,0.05)
   mdeg = Int(floor(sqrt((dt*integrator.opts.internalnorm(integrator.eigen_est,t) + 1.5)/(2-η*4/3))+1))
   mdeg = max(3,min(mdeg,200))
@@ -809,7 +817,8 @@ end
 
   n̂ = mn̂[integrator.alg.version_num]
 
-  maxeig!(integrator, cache)
+  alg = unwrap_alg(integrator, true)
+  alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
   (integrator.alg.version_num <= 2) && (cache.mdeg = Int(floor(sqrt((dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1)))
   (integrator.alg.version_num > 2) && (cache.mdeg = Int(floor(sqrt((dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.611)+1)))
 
@@ -963,7 +972,8 @@ end
   n̂ = mn̂[integrator.alg.version_num]
   ccache = cache.constantcache
 
-  maxeig!(integrator, cache)
+  alg = unwrap_alg(integrator, true)
+  alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
   (integrator.alg.version_num <= 2) && (ccache.mdeg = Int(floor(sqrt((dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1)))
   (integrator.alg.version_num > 2) && (ccache.mdeg = Int(floor(sqrt((dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.611)+1)))
   ccache.mdeg = max(4,min(ccache.mdeg,200))-2
@@ -1097,7 +1107,8 @@ end
 
   gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (typeof(W.dW) <: Number) || (length(W.dW) == 1))
 
-  maxeig!(integrator, cache)
+  alg = unwrap_alg(integrator, true)
+  alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
   cache.mdeg = Int(floor(sqrt((2*dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1))
   cache.mdeg = max(6,min(cache.mdeg,200))-2
   choose_deg!(integrator,cache)
@@ -1285,7 +1296,8 @@ end
   ccache = cache.constantcache
   gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (typeof(W.dW) <: Number) || (length(W.dW) == 1))
 
-  maxeig!(integrator, cache)
+  alg = unwrap_alg(integrator, true)
+  alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
   ccache.mdeg = Int(floor(sqrt((2*dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1))
   ccache.mdeg = max(6,min(ccache.mdeg,200))-2
   choose_deg!(integrator,cache)
@@ -1497,7 +1509,8 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack recf, mσ, mτ = cache
 
-  maxeig!(integrator, cache)
+  alg = unwrap_alg(integrator, true)
+  alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
   cache.mdeg = Int(floor(sqrt((2*dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1))
   cache.mdeg = max(3,min(cache.mdeg,200))-2
   choose_deg!(integrator,cache)
@@ -1582,7 +1595,8 @@ end
   @unpack recf, mσ, mτ = cache.constantcache
   ccache = cache.constantcache
 
-  maxeig!(integrator, cache)
+  alg = unwrap_alg(integrator, true)
+  alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
   ccache.mdeg = Int(floor(sqrt((2*dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1))
   ccache.mdeg = max(3,min(ccache.mdeg,200))-2
   choose_deg!(integrator,cache)
