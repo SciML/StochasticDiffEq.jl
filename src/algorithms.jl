@@ -51,29 +51,39 @@ struct WangLi3SMil_E <: StochasticDiffEqAlgorithm end
 struct WangLi3SMil_F <: StochasticDiffEqAlgorithm end
 
 #SROCK methods
-struct SROCK1{interpretation} <: StochasticDiffEqAlgorithm end
-SROCK1(;interpretation=:Ito) = SROCK1{interpretation}()
+struct SROCK1{interpretation,E} <: StochasticDiffEqAlgorithm
+  eigen_est::E
+end
+SROCK1(;interpretation=:Ito,eigen_est=nothing) = SROCK1{interpretation,typeof(eigen_est)}(eigen_est)
 
 # Weak Order 2
-struct SROCK2 <: StochasticDiffEqAlgorithm end
-struct KomBurSROCK2 <: StochasticDiffEqAlgorithm end
-struct SROCKC2 <: StochasticDiffEqAlgorithm end
+for Alg in [:SROCK2, :KomBurSROCK2, :SROCKC2]
+  @eval begin
+    struct $Alg{E} <: StochasticDiffEqAlgorithm
+      eigen_est::E
+    end
+    $Alg(;eigen_est=nothing) = $Alg(eigen_est)
+  end
+end
 
 # ROCK stabilization for EM
-struct SROCKEM <: StochasticDiffEqAlgorithm
+struct SROCKEM{E} <: StochasticDiffEqAlgorithm
   strong_order_1::Bool
+  eigen_est::E
 end
-SROCKEM(;strong_order_1=true) = SROCKEM(strong_order_1)
+SROCKEM(;strong_order_1=true,eigen_est=nothing) = SROCKEM(strong_order_1,eigen_est)
 
-struct SKSROCK <: StochasticDiffEqAlgorithm
+struct SKSROCK{E} <: StochasticDiffEqAlgorithm
   post_processing::Bool
+  eigen_est::E
 end
-SKSROCK(;post_processing=false) = SKSROCK(post_processing)
+SKSROCK(;post_processing=false,eigen_est=nothing) = SKSROCK(post_processing,eigen_est)
 
-struct TangXiaoSROCK2 <: StochasticDiffEqAlgorithm
+struct TangXiaoSROCK2{E} <: StochasticDiffEqAlgorithm
   version_num::Int
+  eigen_est::E
 end
-TangXiaoSROCK2(;version_num=5) = TangXiaoSROCK2(version_num)
+TangXiaoSROCK2(;version_num=5,eigen_est=nothing) = TangXiaoSROCK2(version_num,eigen_est)
 ###############################################################################
 
 # Predictor Corrector
