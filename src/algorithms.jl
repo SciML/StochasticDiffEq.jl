@@ -54,7 +54,7 @@ struct WangLi3SMil_F <: StochasticDiffEqAlgorithm end
 struct SROCK1{interpretation,E} <: StochasticDiffEqAlgorithm
   eigen_est::E
 end
-SROCK1(;interpretation=:Ito,eigen_est=nothing) = SROCK1{interpretation}(eigen_est)
+SROCK1(;interpretation=:Ito,eigen_est=nothing) = SROCK1{interpretation,typeof(eigen_est)}(eigen_est)
 
 # Weak Order 2
 for Alg in [:SROCK2, :KomBurSROCK2, :SROCKC2]
