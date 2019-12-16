@@ -341,7 +341,7 @@ function DiffEqBase.__init(
   dtcache = tType(dt)
   iter = 0
   u_modified = false
-  eigen_est = one(uBottomEltypeNoUnits)/oneunit(tType) # rate/state = (state/time)/state = 1/t units
+  eigen_est = inv(one(tType)) # rate/state = (state/time)/state = 1/t units
   EEst = tTypeNoUnits(1)
   just_hit_tstop = false
   isout = false
