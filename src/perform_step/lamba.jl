@@ -10,17 +10,25 @@
   end
 
   mil_correction = zero(u)
+  if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
+      noise = L*W.dW
+  else
+      noise = L.*W.dW
+  end
 
-  u = K+L.*W.dW
+  u = K+noise
 
   if integrator.opts.adaptive
     du2 = integrator.f(K,p,t+dt)
     Ed = dt*(du2 - du1)/2
 
-    utilde =  K + L*integrator.sqdt
+    utilde =  K + noise*integrator.sqdt #L*integrator.sqdt
     ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
-    En = ggprime.*(W.dW.^2 .- dt)./2
-
+    if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
+        En = ggprime*(W.dW.^2 .- dt)./2
+    else
+        En = ggprime.*(W.dW.^2 .- dt)./2
+    end
     resids = calculate_residuals(Ed, En, uprev, u, integrator.opts.abstol,
                                  integrator.opts.reltol, integrator.opts.delta,
                                  integrator.opts.internalnorm, t)

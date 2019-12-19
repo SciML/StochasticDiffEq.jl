@@ -249,6 +249,8 @@ end
   du₁ = integrator.f(uprev,p,t)
   L = integrator.g(uprev,p,t)
   mil_correction = zero(u)
+  ggprime_norm = zero(eltype(u)) #0
+  # sqdt = integrator.sqdt
 
   if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
     K = @.. uprev + dt*du₁
@@ -258,9 +260,9 @@ end
     u = K + L .* dW + mil_correction
   else
     for i in 1:length(dW)
-      K = uprev + dt*du₁ + sqdt*@view(L[:,i])
+      K = uprev + dt*du₁ + integrator.sqdt*@view(L[:,i])
       gtmp = integrator.g(K,p,t)
-      ggprime = @.. (gtmp - L)/sqdt
+      ggprime = @.. (gtmp - L)/integrator.sqdt
       ggprime_norm = zero(eltype(u))
       if integrator.opts.adaptive
         ggprime_norm += integrator.opts.internalnorm(ggprime, t)
@@ -294,7 +296,8 @@ end
 @muladd function perform_step!(integrator,cache::RKMil_GeneralCache,f=integrator.f)
   @unpack du₁, du₂, K, tmp, ggprime, L, mil_correction = cache
   @unpack t,dt,uprev,u,W,p = integrator
-  dW = W.dW; sqdt = integrator.sqdt
+  dW = W.dW;
+  sqdt = integrator.sqdt
   Wik = cache.WikJ
   get_iterated_I!(dt, dW, Wik, integrator.alg.c)
   WikJ = Wik.WikJ
