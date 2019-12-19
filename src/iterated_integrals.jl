@@ -186,10 +186,11 @@ function get_iterated_I!(dt, dW, Wik::WikJGeneral_oop, C=1)
     sum_dW² = dot(dW,dW)
 
     WikJ = dW*dW'
-    Gp₁ = randn(M)
-    α = sqrt(1 + sum_dW²/dt)
-    Gp₂ = Gp₁/(sqrt(2)*(1+α)*dt)
-
+    eltWikJ = eltype(WikJ)
+    WikJ2 =zeros(eltWikJ, size(WikJ))
+    Gp₁ = randn(eltype(WikJ),M)
+    α = eltype(WikJ)(sqrt(1 + sum_dW²/dt))
+    Gp₂ = Gp₁/(eltype(WikJ)(sqrt(2))*(1+α)*dt)
     #operator (Iₘ² - Pₘ)Kₘᵀ
     for i in 1:M
         WikJ2[m_seq[i,1], m_seq[i,2]] = Gp₂[i]
@@ -204,7 +205,7 @@ function get_iterated_I!(dt, dW, Wik::WikJGeneral_oop, C=1)
     for i in 1:M
         Gp₂[i] = WikJ2[m_seq[i,1], m_seq[i,2]]
     end
-    Gp₁ = Gp₁/sqrt(2) + Gp₂
+    Gp₁ = Gp₁/eltype(WikJ)(sqrt(2)) + Gp₂
 
     #operator (Iₘ² - Pₘ)Kₘᵀ
     for i in 1:M
@@ -218,15 +219,15 @@ function get_iterated_I!(dt, dW, Wik::WikJGeneral_oop, C=1)
     Aᵢ = false .* vec(dW)   # Aᵢ is vector of aᵢ₀
     for r in 1:p
         𝑎ₚ -= (1/r^2)
-        var = sqrt(dt/(2*π*r))
-        vec_ζ = randn(m)*var
-        vec_η = randn(m)*var
+        var = eltWikJ(sqrt(dt/(2*π*r)))
+        vec_ζ = randn(eltype(WikJ),m)*var
+        vec_η = randn(eltype(WikJ),m)*var
         WikJ += (vec_ζ*vec_η' - vec_η*vec_ζ')
-        Aᵢ -= (2/sqrt(π*r))*vec_ζ
+        Aᵢ -= (2/eltWikJ(sqrt(π*r)))*vec_ζ
     end
 
     WikJ -= 1//2*(dW*Aᵢ' - Aᵢ*dW')
-    WikJ += (sqrt(𝑎ₚ)*dt/π)*WikJ2
+    WikJ += (eltWikJ(sqrt(𝑎ₚ))*dt/π)*WikJ2
     WikJ
 end
 
