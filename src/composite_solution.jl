@@ -1,4 +1,4 @@
-struct RODECompositeSolution{T,N,uType,uType2,EType,tType,randType,P,A,IType} <: DiffEqBase.AbstractRODESolution{T,N}
+struct RODECompositeSolution{T,N,uType,uType2,EType,tType,randType,P,A,IType} <: DiffEqBase.AbstractRODESolution{T,N,uType}
   u::uType
   u_analytic::uType2
   errors::EType
