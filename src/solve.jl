@@ -357,7 +357,7 @@ function DiffEqBase.__init(
   q = tTypeNoUnits(1)
 
   integrator =    SDEIntegrator{typeof(alg),isinplace(prob),uType,
-                  uBottomEltype,tType,typeof(p),
+                  uBottomEltype,tType,typeof(tdir),typeof(p),
                   typeof(eigen_est),QT,
                   uEltypeNoUnits,typeof(W),rateType,typeof(sol),typeof(cache),
                   FType,GType,typeof(opts),typeof(noise),typeof(last_event_error),typeof(callback_cache)}(

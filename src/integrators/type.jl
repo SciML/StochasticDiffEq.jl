@@ -1,4 +1,4 @@
-mutable struct SDEIntegrator{algType,IIP,uType,uEltype,tType,P,eigenType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,cacheType,F4,F5,OType,noiseType,EventErrorType,CallbackCacheType} <: AbstractSDEIntegrator{algType,IIP,uType,tType}
+mutable struct SDEIntegrator{algType,IIP,uType,uEltype,tType,tdirType,P,eigenType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,cacheType,F4,F5,OType,noiseType,EventErrorType,CallbackCacheType} <: AbstractSDEIntegrator{algType,IIP,uType,tType}
   f::F4
   g::F5
   noise::noiseType
@@ -12,7 +12,7 @@ mutable struct SDEIntegrator{algType,IIP,uType,uEltype,tType,P,eigenType,tTypeNo
   dtpropose::tType
   dtcache::tType
   T::tType
-  tdir::Int
+  tdir::tdirType
   just_hit_tstop::Bool
   isout::Bool
   event_last_time::Int
