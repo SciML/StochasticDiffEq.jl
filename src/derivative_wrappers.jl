@@ -5,7 +5,7 @@ function derivative(f, x::Union{Number,AbstractArray{<:Number}},
     if get_current_alg_autodiff(integrator.alg, integrator.cache)
       d = ForwardDiff.derivative(f, x)
     else
-      d = DiffEqDiffTools.finite_difference_gradient(f, x, alg.diff_type, eltype(x), Val(false))
+      d = FiniteDiff.finite_difference_gradient(f, x, alg.diff_type, eltype(x), Val(false))
     end
     d
 end
@@ -15,7 +15,7 @@ function derivative!(df::AbstractArray{<:Number}, f, x::Union{Number,AbstractArr
         ForwardDiff.derivative!(df, f, fx, x)
     else
         RealOrComplex = eltype(integrator.u) <: Complex ? Val{:Complex} : Val{:Real}
-        DiffEqDiffTools.finite_difference!(df, f, x, integrator.alg.diff_type, RealOrComplex, fx)
+        FiniteDiff.finite_difference!(df, f, x, integrator.alg.diff_type, RealOrComplex, fx)
     end
     nothing
 end
@@ -29,10 +29,10 @@ function jacobian_autodiff(f,x::AbstractArray,integrator,hascolorvec::Val{true})
   forwarddiff_color_jacobian!(J,f,x,colorvec=colorvec,sparsity=jac)
   J
 end
-jacobian_finitediff(f,x,difftype,_,_)=DiffEqDiffTools.finite_difference_derivative(f, x, difftype, eltype(x))
-jacobian_finitediff(f,x::AbstractArray,difftype,_,hascolorvec::Val{false})=DiffEqDiffTools.finite_difference_jacobian(f, x, difftype, eltype(x))
+jacobian_finitediff(f,x,difftype,_,_)=FiniteDiff.finite_difference_derivative(f, x, difftype, eltype(x))
+jacobian_finitediff(f,x::AbstractArray,difftype,_,hascolorvec::Val{false})=FiniteDiff.finite_difference_jacobian(f, x, difftype, eltype(x))
 jacobian_finitediff(f,x::AbstractArray,difftype,integrator,hascolorvec::Val{true})=
-  DiffEqDiffTools.finite_difference_jacobian(f, x, difftype, eltype(x), colorvec=integrator.f.colorvec,sparsity=integrator.f.jac_prototype)
+  FiniteDiff.finite_difference_jacobian(f, x, difftype, eltype(x), colorvec=integrator.f.colorvec,sparsity=integrator.f.jac_prototype)
 
 function jacobian(f, x,
                   integrator::DiffEqBase.DEIntegrator)
@@ -53,7 +53,7 @@ function jacobian!(J::AbstractMatrix{<:Number}, f, x::AbstractArray{<:Number}, f
     if alg_autodiff(integrator.alg)
       jacobian_autodiff!(J, f, fx, x, jac_config)
     else
-      DiffEqDiffTools.finite_difference_jacobian!(J, f, x, jac_config)
+      FiniteDiff.finite_difference_jacobian!(J, f, x, jac_config)
     end
     nothing
 end
@@ -68,9 +68,9 @@ function DiffEqBase.build_jac_config(alg::StochasticDiffEqAlgorithm,f,uf,du1,upr
     else
       colorvec= f.colorvec isa Nothing ? Base.OneTo(length(u)) : f.colorvec
       if alg.diff_type != Val{:complex}
-        jac_config = DiffEqDiffTools.JacobianCache(tmp,du1,du2,alg.diff_type,colorvec=colorvec,sparsity=f.jac_prototype)
+        jac_config = FiniteDiff.JacobianCache(tmp,du1,du2,alg.diff_type,colorvec=colorvec,sparsity=f.jac_prototype)
       else
-        jac_config = DiffEqDiffTools.JacobianCache(Complex{eltype(tmp)}.(tmp),Complex{eltype(du1)}.(du1),nothing,alg.diff_type,colorvec=colorvec,sparsity=f.jac_prototype)
+        jac_config = FiniteDiff.JacobianCache(Complex{eltype(tmp)}.(tmp),Complex{eltype(du1)}.(du1),nothing,alg.diff_type,colorvec=colorvec,sparsity=f.jac_prototype)
       end
     end
   else

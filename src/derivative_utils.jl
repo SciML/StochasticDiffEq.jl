@@ -406,5 +406,5 @@ function update_W!(nlsolver::NLSolver, integrator, cache::StochasticDiffEqConsta
   nothing
 end
 
-iip_get_uf(alg::StochasticDiffEqAlgorithm,nf,t,p) = DiffEqDiffTools.UJacobianWrapper(nf,t,p)
-oop_get_uf(alg::StochasticDiffEqAlgorithm,nf,t,p) = DiffEqDiffTools.UDerivativeWrapper(nf,t,p)
+iip_get_uf(alg::StochasticDiffEqAlgorithm,nf,t,p) = UJacobianWrapper(nf,t,p)
+oop_get_uf(alg::StochasticDiffEqAlgorithm,nf,t,p) = UDerivativeWrapper(nf,t,p)
