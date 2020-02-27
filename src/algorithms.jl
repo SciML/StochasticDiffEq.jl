@@ -144,6 +144,12 @@ struct SOSRA2 <: StochasticDiffEqAdaptiveAlgorithm end
 
 ################################################################################
 
+# Rossler second order for weak approx.
+
+struct DRI1 <: StochasticDiffEqAlgorithm end
+
+################################################################################
+
 # IIF
 
 struct IIF1M{F} <: StochasticDiffEqAlgorithm
