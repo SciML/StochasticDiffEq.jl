@@ -75,6 +75,7 @@ module StochasticDiffEq
   include("caches/implicit_split_step_caches.jl")
   include("caches/sra_caches.jl")
   include("caches/rossler_caches.jl")
+  include("caches/srk_weak_caches.jl")
   include("caches/kencarp_caches.jl")
   include("caches/predcorr_caches.jl")
   include("caches/SROCK_caches.jl")
@@ -94,6 +95,7 @@ module StochasticDiffEq
   include("perform_step/iif.jl")
   include("perform_step/sri.jl")
   include("perform_step/sra.jl")
+  include("perform_step/srk_weak.jl")
   include("perform_step/sdirk.jl")
   include("perform_step/implicit_split_step.jl")
   include("perform_step/kencarp.jl")
@@ -117,7 +119,8 @@ module StochasticDiffEq
          SRIW2, SOSRI, SOSRI2, SKenCarp,
          SROCK1, SROCK2, SROCKEM, SKSROCK, TangXiaoSROCK2, KomBurSROCK2, SROCKC2,
          WangLi3SMil_A, WangLi3SMil_B, WangLi3SMil_C, WangLi3SMil_D, WangLi3SMil_E, WangLi3SMil_F,
-         AutoSOSRI2, AutoSOSRA2
+         AutoSOSRI2, AutoSOSRA2,
+         DRI1
 
   export EulerHeun, LambaEulerHeun
 
