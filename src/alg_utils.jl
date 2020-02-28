@@ -58,7 +58,8 @@ alg_order(alg::SRA3) = 2//1
 alg_order(alg::SOSRA) = 2//1
 alg_order(alg::SOSRA2) = 2//1
 
-alg_order(alg::DRI1) = 3//2 # deterministic // weak
+alg_order(alg::DRI1) = 1//1
+alg_order(alg::RI1) = 1//1
 
 alg_order(alg::SKenCarp) = 2//1
 alg_order(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = maximum(alg_order.(alg.algs))
@@ -95,6 +96,7 @@ alg_compatible(prob,alg::SRA3) = true
 alg_compatible(prob,alg::SOSRA) = true
 alg_compatible(prob,alg::SOSRA2) = true
 alg_compatible(prob,alg::DRI1) = true
+alg_compatible(prob,alg::RI1) = true
 alg_compatible(prob,alg::SKenCarp) = true
 alg_compatible(prob,alg::EM) = true
 alg_compatible(prob,alg::LambaEM) = true
@@ -141,6 +143,8 @@ alg_needs_extra_process(alg::SRA3) = true
 alg_needs_extra_process(alg::SOSRA) = true
 alg_needs_extra_process(alg::SOSRA2) = true
 alg_needs_extra_process(alg::SKenCarp) = true
+alg_needs_extra_process(alg::DRI1) = true
+alg_needs_extra_process(alg::RI1) = true
 
 alg_autodiff(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
 alg_autodiff(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD

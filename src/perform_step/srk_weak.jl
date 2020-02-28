@@ -1,40 +1,26 @@
 
-
 @muladd function perform_step!(integrator,cache::DRI1ConstantCache,f=integrator.f)
-  @unpack a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43 = cache
+  @unpack a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43, NORMAL_ONESIX_QUANTILE = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
-  # define random processes
-  # table method for sampling
-  sqrt3dt = sqrt(3one(eltype(W.dW)))*integrator.sqdt
-  I1_outcomes = [-sqrt3dt, sqrt3dt, zero(eltype(W.dW)), zero(eltype(W.dW)), zero(eltype(W.dW)), zero(eltype(W.dW))]
-  if typeof(W.dW) <: Number
-    m = 1  # dim of Wiener process
-    picks = rand(1:6) # to have it a simple float instead of an array
-  else
-    m = length(W.dW)
-    picks = rand(1:6, m)
-  end
-  # three-point distributed random variables
-  Ihat1 = I1_outcomes[picks] # I^_(k)
+  # define three-point distributed random variables
+  dW_scaled = W.dW / sqrt(dt)
+  _dW = map(x -> x < NORMAL_ONESIX_QUANTILE ? -sqrt(3dt) : x > -NORMAL_ONESIX_QUANTILE ? sqrt(3dt) : zero(dt), dW_scaled)
 
-  # two-point distributed random variables
-  if typeof(W.dW) <: Number
-    Ihat2 = (Ihat1^2-dt)/2
-  else # m>1
-    diagIhat2 = (Ihat1.^2 .-dt)/2
-    picks = rand(1:2, m-1)
-    I2_outcomes = [-integrator.sqdt, integrator.sqdt]
-    Itilde = I2_outcomes[picks] # I~_(k)
+  Ihat2_diag = map(x -> (x^2-dt)/2, _dW)
+  if !(typeof(W.dW) <: Number)
+    m = length(W.dW)
+    # define two-point distributed random variables
+    _dZ = map(x -> sign(x) > 0.0 ? integrator.sqdt : -integrator.sqdt, W.dZ)
     Ihat2 = zeros(eltype(W.dW), m, m) # I^_(k,l)
     for k = 1:m
       for l = 1:m
-        if l<k
-          Ihat2[k, l] = (Ihat1[k]*Ihat1[l]+integrator.sqdt*Itilde[l])/2
-        elseif k<l
+        if k<l
           Ihat2[k, l] = (Ihat1[k]*Ihat1[l]-integrator.sqdt*Itilde[k])/2
+        elseif l<k
+          Ihat2[k, l] = (Ihat1[k]*Ihat1[l]+integrator.sqdt*Itilde[l])/2
         else k==l
-          Ihat2[k, k] = diagIhat2[k]
+          Ihat2[k, k] = Ihat2_diag[k]
         end
       end
     end
@@ -47,20 +33,19 @@
   # H_i^(0), stage 1
   # H01 = uprev
   # H_i^(0), stage 2
-  # @show !is_diagonal_noise(integrator.sol.prob), typeof(W.dW)<: Number
   if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
-    H02 = uprev + a021*k1*dt + b021*g1*Ihat1
+    H02 = uprev + a021*k1*dt + b021*g1*_dW
   else
-    H02 = uprev + a021*k1*dt + b021*g1.*Ihat1
+    H02 = uprev + a021*k1*dt + b021*g1.*_dW
   end
 
   # H_i^(0), stage 3 (requires H_i^(k) stage 2 in general)
   k2 = integrator.f(H02,p,t+c02*dt)
   H03 = uprev + a032*k2*dt + a031*k1*dt
   if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
-    H03 += b031*g1*Ihat1
+    H03 += b031*g1*_dW
   else
-    H03 += b031*g1.*Ihat1
+    H03 += b031*g1.*_dW
   end
 
   k3 = integrator.f(H03,p,t+c03*dt)
@@ -71,18 +56,18 @@
   if typeof(W.dW) <: Number
     H12 = uprev + a121*k1*dt + b121*g1*integrator.sqdt
   elseif is_diagonal_noise(integrator.sol.prob)
-    H12 = [uprev + a121*k1*dt .+ b121*g1[k]*integrator.sqdt for k=1:m]
+    H12 = [uprev .+ a121*k1*dt .+ b121*g1[k]*integrator.sqdt for k=1:m]
   else
-    H12 = [uprev + a121*k1*dt + b121*g1[:,k]*integrator.sqdt for k=1:m]
+    H12 = [uprev .+ a121*k1*dt .+ b121*g1[:,k]*integrator.sqdt for k=1:m]
   end
 
   # # H_i^(k), stage 3
   if typeof(W.dW) <: Number
     H13 = uprev + a131*k1*dt + b131*g1*integrator.sqdt
   elseif is_diagonal_noise(integrator.sol.prob)
-    H13 = [uprev + a131*k1*dt .+ b131*g1[k]*integrator.sqdt for k=1:m]
+    H13 = [uprev .+ a131*k1*dt .+ b131*g1[k]*integrator.sqdt for k=1:m]
   else
-    H13 = [uprev + a131*k1*dt + b131*g1[:,k]*integrator.sqdt for k=1:m]
+    H13 = [uprev .+ a131*k1*dt .+ b131*g1[:,k]*integrator.sqdt for k=1:m]
   end
 
   # H^_i^(k), stage 1
@@ -137,28 +122,28 @@
   # add noise
   if typeof(W.dW) <: Number
     # lines 2 and 3
-    u += g1*(Ihat1*beta11) + g2*(Ihat1*beta12+Ihat2*beta22/integrator.sqdt) + g3*(Ihat1*beta13+Ihat2*beta23/integrator.sqdt)
+    u += g1*(_dW*beta11) + g2*(_dW*beta12+Ihat2_diag*beta22/integrator.sqdt) + g3*(_dW*beta13+Ihat2_diag*beta23/integrator.sqdt)
     # lines 4 and 5 are zero by construction
-    # u += g1*(Ihat1*(beta31+beta32+beta33)+Ihat2*integrator.sqdt*(beta42+beta43))
+    # u += g1*(_dW*(beta31+beta32+beta33)+Ihat2_diag*integrator.sqdt*(beta42+beta43))
 
   else
-
     for k=1:m
       if is_diagonal_noise(integrator.sol.prob)
-        u += g1.*Ihat1*beta11 + g2[k].*Ihat1*beta12 + g3[k].*Ihat1*beta13
-        u += g2[k].*diagIhat2/integrator.sqdt*beta22 + g3[k].*diagIhat2/integrator.sqdt*beta23
-        u += g1.*Ihat1*beta31 + integrator.g(H22[k],p,t).*(Ihat1*beta32 .+ integrator.sqdt*beta42) + integrator.g(H23[k],p,t).*(Ihat1*beta33 .+ integrator.sqdt*beta43)     
+        u += g1.*_dW*beta11 + g2[k].*_dW*beta12 + g3[k].*_dW*beta13
+        u += g2[k].*Ihat2_diag/integrator.sqdt*beta22 + g3[k].*Ihat2_diag/integrator.sqdt*beta23
+        u += g1.*_dW*beta31 + integrator.g(H22[k],p,t).*(_dW*beta32 .+ integrator.sqdt*beta42) + integrator.g(H23[k],p,t).*(_dW*beta33 .+ integrator.sqdt*beta43)
       else
         # non-diag noise
-        u += g1*Ihat1*beta11 + g2[k]*Ihat1*beta12 + g3[k]*Ihat1*beta13
-        u += g2[k]*diagIhat2/integrator.sqdt*beta22 + g3[k]*diagIhat2/integrator.sqdt*beta23
-        u += g1*Ihat1*beta31 + integrator.g(H22[k],p,t)*(Ihat1*beta32 .+ integrator.sqdt*beta42) + integrator.g(H23[k],p,t)*(Ihat1*beta33 .+ integrator.sqdt*beta43)
+        u += g1*_dW*beta11 + g2[k]*_dW*beta12 + g3[k]*_dW*beta13
+        u += g2[k]*Ihat2_diag/integrator.sqdt*beta22 + g3[k]*Ihat2_diag/integrator.sqdt*beta23
+        u += g1*_dW*beta31 + integrator.g(H22[k],p,t)*(_dW*beta32 .+ integrator.sqdt*beta42) + integrator.g(H23[k],p,t)*(_dW*beta33 .+ integrator.sqdt*beta43)
       end
     end
   end
 
   # Test EM scheme:
-  #integrator.u = uprev + 1*k1*dt + 1*g1*Ihat1
+  # integrator.u = uprev + 1*k1*dt + 1*g1*_dW
 
   integrator.u = u
+
 end
