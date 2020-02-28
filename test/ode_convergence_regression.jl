@@ -30,6 +30,9 @@ g = (u,p,t) -> zero(u)
 linear_analytic = (u0,p,t,W) -> u0*exp(p*t)
 prob = SDEProblem(SDEFunction(linear,g,analytic=linear_analytic),g, 1/2,(0.0,1.0),1.01)
 dts = 1 .//2 .^(10:-1:2)
+
+sim2 = test_convergence(dts,prob, DRI1(),trajectories=20)
+@test abs(sim2.𝒪est[:l∞]-3) <.1
 sim2 = test_convergence(dts,prob, RI1(),trajectories=20)
 @test abs(sim2.𝒪est[:l∞]-3) <.1
 

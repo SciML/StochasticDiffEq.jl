@@ -60,6 +60,9 @@ struct DRI1ConstantCache{T,T2} <: StochasticDiffEqConstantCache
   #beta41::T
   beta42::T
   beta43::T
+
+  #quantile(Normal(),1/6)
+  NORMAL_ONESIX_QUANTILE::T
 end
 
 function DRI1ConstantCache(T::Type, T2::Type)
@@ -107,10 +110,69 @@ function DRI1ConstantCache(T::Type, T2::Type)
   beta42 = convert(T, -1//8*sqrt(4955//221))
   beta43 = convert(T, 1//8*sqrt(4955//221))
 
-  DRI1ConstantCache(a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43)
+  NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
+
+  DRI1ConstantCache(a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43,NORMAL_ONESIX_QUANTILE)
 end
 
 
 function alg_cache(alg::DRI1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   DRI1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+end
+
+
+
+function RI1ConstantCache(T::Type, T2::Type)
+  a021 = convert(T, 2//3) # convert(T, 2//3)
+  a031 = convert(T, -1//3)
+  a032 = convert(T, 1)
+
+  a121 = convert(T, 1)
+  a131 = convert(T, 1)
+
+  b021 = convert(T, 1)
+  b031 = convert(T, 0)
+
+  b121 = convert(T, 1)
+  b131 = convert(T, -1)
+
+  b221 = convert(T, 1)
+  b222 = convert(T, 0)
+  b223 = convert(T, 0)
+  b231 = convert(T, -1)
+  b232 = convert(T, 0)
+  b233 = convert(T, 0)
+
+  α1 = convert(T, 1//4)
+  α2 = convert(T, 1//2)
+  α3 = convert(T, 1//4)
+
+  c02 = convert(T2, 2//3)
+  c03 = convert(T2, 2//3)
+
+  c12 = convert(T2, 1)
+  c13 = convert(T2, 1)
+
+  beta11 = convert(T, 1//2)
+  beta12 = convert(T, 1//4)
+  beta13 = convert(T, 1//4)
+
+  beta22 = convert(T, 1//2)
+  beta23 = convert(T, -1//2)
+
+  beta31 = convert(T, -1//2)
+  beta32 = convert(T, 1//4)
+  beta33 = convert(T, 1//4)
+
+  beta42 = convert(T, 1//2)
+  beta43 = convert(T, -1//2)
+
+  NORMAL_ONESIX_QUANTILE = convert(T,-0.9674215661017014)
+
+  DRI1ConstantCache(a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43,NORMAL_ONESIX_QUANTILE)
+end
+
+
+function alg_cache(alg::RI1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  RI1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
