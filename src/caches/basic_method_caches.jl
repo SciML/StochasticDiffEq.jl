@@ -68,6 +68,23 @@ function alg_cache(alg::RandomEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prot
   RandomEMCache(u,uprev,tmp,rtmp)
 end
 
+struct SimplifiedEMConstantCache <: StochasticDiffEqConstantCache end
+@cache struct SimplifiedEMCache{uType,rateType,rateNoiseType} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+  rtmp1::rateType
+  rtmp2::rateNoiseType
+end
+
+alg_cache(alg::SimplifiedEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}}) = SimplifiedEMConstantCache()
+
+function alg_cache(alg::SimplifiedEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  rtmp1 = zero(rate_prototype)
+  rtmp2 = zero(noise_rate_prototype)
+  SimplifiedEMCache(u,uprev,rtmp1,rtmp2)
+end
+
+
 struct RKMilConstantCache <: StochasticDiffEqConstantCache end
 @cache struct RKMilCache{uType,rateType} <: StochasticDiffEqMutableCache
   u::uType

@@ -124,6 +124,8 @@ module StochasticDiffEq
 
   export EulerHeun, LambaEulerHeun
 
+  export SimplifiedEM
+
   export SplitEM, IIF1M, IIF2M, IIF1Mil
 
   export ImplicitEM, ImplicitEulerHeun, ISSEM, ISSEulerHeun,
