@@ -104,6 +104,44 @@ end
   @.. u = uprev + dt * rtmp
 end
 
+# weak approximation EM
+@muladd function perform_step!(integrator,cache::SimplifiedEMConstantCache,f=integrator.f)
+  @unpack t,dt,uprev,u,W,p = integrator
+
+  K = uprev .+ dt .* integrator.f(uprev,p,t)
+
+  _dW = map(x -> sign(x) > 0.0 ? integrator.sqdt : -integrator.sqdt, W.dW)
+  if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
+    noise = integrator.g(uprev,p,t)*_dW
+  else
+    noise = integrator.g(uprev,p,t).*_dW
+  end
+
+  u = K + noise
+  integrator.u = u
+end
+
+@muladd function perform_step!(integrator,cache::SimplifiedEMCache,f=integrator.f)
+  @unpack rtmp1,rtmp2 = cache
+  @unpack t,dt,uprev,u,W,p = integrator
+
+  integrator.f(rtmp1,uprev,p,t)
+
+  @.. u = uprev + dt * rtmp1
+
+  integrator.g(rtmp2,uprev,p,t)
+
+  _dW = map(x -> sign(x) > 0.0 ? integrator.sqdt : -integrator.sqdt, W.dW)
+  if is_diagonal_noise(integrator.sol.prob)
+    @.. rtmp2 *= _dW
+    @.. u += rtmp2
+  else
+    mul!(rtmp1,rtmp2,_dW)
+    @.. u += rtmp1
+  end
+end
+
+
 @muladd function perform_step!(integrator,cache::RKMilConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
   du1 = integrator.f(uprev,p,t)
