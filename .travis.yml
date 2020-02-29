@@ -8,7 +8,7 @@ os:
   - linux
 #  - osx
 julia:
-  - 1.2
+  - 1
 env:
   - GROUP=Interface
   - GROUP=Interface2
@@ -16,6 +16,7 @@ env:
   - GROUP=AlgConvergence
   - GROUP=AlgConvergence2
   - GROUP=AlgConvergence3
+  - GROUP=WeakConvergence
 #matrix:
 #  allow_failures:
 #    - julia: nightly
