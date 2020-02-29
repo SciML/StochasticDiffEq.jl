@@ -1,4 +1,3 @@
-using Distributed
 @everywhere using StochasticDiffEq, DiffEqDevTools, Test
 @everywhere using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems
 @everywhere importsdeproblems()
