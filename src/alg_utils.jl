@@ -58,9 +58,6 @@ alg_order(alg::SRA2) = 2//1
 alg_order(alg::SRA3) = 2//1
 alg_order(alg::SOSRA) = 2//1
 alg_order(alg::SOSRA2) = 2//1
-
-alg_order(alg::DRI1) = 3//2 # deterministic // weak
-
 alg_order(alg::SKenCarp) = 2//1
 alg_order(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = maximum(alg_order.(alg.algs))
 get_current_alg_order(alg::StochasticDiffEqAlgorithm,cache) = alg_order(alg)
@@ -95,7 +92,6 @@ alg_compatible(prob,alg::SRA2) = true
 alg_compatible(prob,alg::SRA3) = true
 alg_compatible(prob,alg::SOSRA) = true
 alg_compatible(prob,alg::SOSRA2) = true
-alg_compatible(prob,alg::DRI1) = true
 alg_compatible(prob,alg::SKenCarp) = true
 alg_compatible(prob,alg::EM) = true
 alg_compatible(prob,alg::LambaEM) = true
