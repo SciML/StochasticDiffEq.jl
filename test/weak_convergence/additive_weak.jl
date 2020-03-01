@@ -1,4 +1,5 @@
 using StochasticDiffEq, DiffEqDevTools, Test
+using Random
 using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems
 importsdeproblems()
 using DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear, prob_sde_2Dlinear, prob_sde_additive
