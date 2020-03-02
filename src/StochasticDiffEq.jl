@@ -107,8 +107,9 @@ module StochasticDiffEq
   include("iterated_integrals.jl")
   include("SROCK_utils.jl")
   include("composite_algs.jl")
+  include("weak_utils.jl")
 
-   export StochasticDiffEqAlgorithm, StochasticDiffEqAdaptiveAlgorithm,
+  export StochasticDiffEqAlgorithm, StochasticDiffEqAdaptiveAlgorithm,
           StochasticCompositeAlgorithm
 
   export EM, LambaEM, PCEuler, RKMil, SRA, SRI, SRIW1,

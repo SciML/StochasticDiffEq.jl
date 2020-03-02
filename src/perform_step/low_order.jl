@@ -110,7 +110,8 @@ end
 
   K = uprev .+ dt .* integrator.f(uprev,p,t)
 
-  _dW = map(x -> sign(x) > 0.0 ? integrator.sqdt : -integrator.sqdt, W.dW)
+  _dW = map(x -> calc_twopoint_random(integrator, x),  W.dW)
+
   if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
     noise = integrator.g(uprev,p,t)*_dW
   else
@@ -122,7 +123,7 @@ end
 end
 
 @muladd function perform_step!(integrator,cache::SimplifiedEMCache,f=integrator.f)
-  @unpack rtmp1,rtmp2 = cache
+  @unpack rtmp1,rtmp2, _dW = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
   integrator.f(rtmp1,uprev,p,t)
@@ -131,7 +132,12 @@ end
 
   integrator.g(rtmp2,uprev,p,t)
 
-  _dW = map(x -> sign(x) > 0.0 ? integrator.sqdt : -integrator.sqdt, W.dW)
+  if typeof(W.dW) <: Union{SArray,Number}
+    _dW = map(x -> calc_twopoint_random(integrator, x),  W.dW)
+  else
+    calc_twopoint_random!(_dW, integrator, W.dW)
+  end
+
   if is_diagonal_noise(integrator.sol.prob)
     @.. rtmp2 *= _dW
     @.. u += rtmp2
