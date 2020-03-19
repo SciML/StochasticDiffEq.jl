@@ -15,6 +15,11 @@ sim  = test_convergence(dts,prob,EM(),trajectories=Int(1e4),
 @test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
 @test abs(sim.𝒪est[:weak_L2]-1) < 0.3
 @test abs(sim.𝒪est[:weak_L∞]-1) < 0.3
+sim  = test_convergence(dts,prob,SimplifiedEM(),trajectories=Int(1e5),
+                        weak_timeseries_errors=true,weak_dense_errors=true)
+@test abs(sim.𝒪est[:weak_final]-1) < 0.3
+@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
+@test abs(sim.𝒪est[:weak_l∞]-1) < 0.35
 sim2 = test_convergence(dts,prob,RKMil(),trajectories=Int(1e4),
                         weak_timeseries_errors=true,dense_errors=true)
 @test abs(sim2.𝒪est[:weak_final]-1) < 0.3
@@ -138,6 +143,11 @@ sim  = test_convergence(dts,prob,EM(),trajectories=Int(1e4),
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 @test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 @test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
+sim  = test_convergence(dts,prob,SimplifiedEM(),trajectories=Int(1e5),
+                        weak_timeseries_errors=true)
+@test abs(sim.𝒪est[:weak_final]-1) < 0.3
+@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
+@test abs(sim.𝒪est[:weak_l∞]-1) < 0.35
 sim2 = test_convergence(dts,prob,RKMil(),trajectories=Int(1e4),
                         weak_timeseries_errors=true)
 @test abs(sim2.𝒪est[:weak_final]-1) < 0.3
@@ -253,6 +263,11 @@ sim  = test_convergence(dts,prob,EM(),trajectories=Int(1e4),
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 @test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 @test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
+sim  = test_convergence(dts,prob,SimplifiedEM(),trajectories=Int(1e5),
+                        weak_timeseries_errors=true)
+@test abs(sim.𝒪est[:weak_final]-1) < 0.3
+@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
+@test abs(sim.𝒪est[:weak_l∞]-1) < 0.35
 sim2 = test_convergence(dts,prob,RKMil(),trajectories=Int(1e4),
                         weak_timeseries_errors=true)
 @test abs(sim2.𝒪est[:weak_final]-1) < 0.3

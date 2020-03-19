@@ -28,6 +28,8 @@ LambaEM(split=true) = LambaEM{split}()
 
 struct LambaEulerHeun <: StochasticDiffEqAdaptiveAlgorithm end
 
+struct SimplifiedEM <: StochasticDiffEqAlgorithm end
+
 struct RKMil{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
 RKMil(;interpretation=:Ito) = RKMil{interpretation}()
 

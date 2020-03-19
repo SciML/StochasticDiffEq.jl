@@ -14,6 +14,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
     @time @safetestset "Static Array Tests" begin include("static_array_tests.jl") end
     @time @safetestset "Noise Type Tests" begin include("noise_type_test.jl") end
     @time @safetestset "Mass matrix tests" begin include("mass_matrix_tests.jl") end
+    #@time @safetestset "Sparse Jacobian tests" begin include("sparsediff_tests.jl") end
     @time @safetestset "Outofplace Arrays Tests" begin include("outofplace_arrays.jl") end
     @time @safetestset "tdir Tests" begin include("tdir_tests.jl") end
     @time @safetestset "tstops Tests" begin include("tstops_tests.jl") end
