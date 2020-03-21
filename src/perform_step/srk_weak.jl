@@ -5,14 +5,13 @@
 
   # define three-point distributed random variables
   dW_scaled = W.dW / sqrt(dt)
-  _dW = map(x -> x < NORMAL_ONESIX_QUANTILE ? -sqrt(3dt) : x > -NORMAL_ONESIX_QUANTILE ? sqrt(3dt) : zero(dt), dW_scaled)
-
+  _dW = map(x -> calc_threepoint_random(integrator, NORMAL_ONESIX_QUANTILE, x), dW_scaled)
   Ihat2_diag = map(x -> (x^2-dt)/2, _dW)
   if !(typeof(W.dW) <: Number)
     m = length(W.dW)
     # define two-point distributed random variables
-    _dZ = map(x -> sign(x) > 0.0 ? integrator.sqdt : -integrator.sqdt, W.dZ)
-    Ihat2 = zeros(eltype(W.dW), m, m) # I^_(k,l)
+    _dZ = map(x -> calc_twopoint_random(integrator, x),  W.dZ)
+    Ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
     for k = 1:m
       for l = 1:m
         if k<l
