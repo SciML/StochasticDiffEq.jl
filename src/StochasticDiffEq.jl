@@ -143,5 +143,5 @@ module StochasticDiffEq
   export solve, init, solve!, step!
 
   #Misc Tools
-  export checkSRIOrder, checkSRAOrder,  constructSRIW1, constructSRA1
+  export checkSRIOrder, checkSRAOrder,  checkRIOrder, constructSRIW1, constructSRA1, constructDRI1, constructRI1
 end # module
