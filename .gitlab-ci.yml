@@ -9,7 +9,7 @@ variables:
 
 .root:
   tags:
-    - 'diffeqfast'
+    - 'p6000'
   only:
     - master
     - tags
