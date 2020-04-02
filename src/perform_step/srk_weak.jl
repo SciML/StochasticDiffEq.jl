@@ -1,6 +1,6 @@
 
 @muladd function perform_step!(integrator,cache::DRI1ConstantCache,f=integrator.f)
-  @unpack a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43, NORMAL_ONESIX_QUANTILE = cache
+  @unpack a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43,NORMAL_ONESIX_QUANTILE = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
   # define three-point distributed random variables
@@ -15,9 +15,9 @@
     for k = 1:m
       for l = 1:m
         if k<l
-          Ihat2[k, l] = (Ihat1[k]*Ihat1[l]-integrator.sqdt*Itilde[k])/2
+          Ihat2[k, l] = (_dW[k]*_dW[l]-integrator.sqdt*_dZ[k])/2
         elseif l<k
-          Ihat2[k, l] = (Ihat1[k]*Ihat1[l]+integrator.sqdt*Itilde[l])/2
+          Ihat2[k, l] = (_dW[k]*_dW[l]+integrator.sqdt*_dZ[l])/2
         else k==l
           Ihat2[k, k] = Ihat2_diag[k]
         end
@@ -55,18 +55,18 @@
   if typeof(W.dW) <: Number
     H12 = uprev + a121*k1*dt + b121*g1*integrator.sqdt
   elseif is_diagonal_noise(integrator.sol.prob)
-    H12 = [uprev .+ a121*k1*dt .+ b121*g1[k]*integrator.sqdt for k=1:m]
+    H12 = [uprev .+ a121*k1*dt .+ b121*g1[k]*integrator.sqdt for k=1:m]::Vector{typeof(uprev)}
   else
-    H12 = [uprev .+ a121*k1*dt .+ b121*g1[:,k]*integrator.sqdt for k=1:m]
+    H12 = [uprev .+ a121*k1*dt .+ b121*g1[:,k]*integrator.sqdt for k=1:m]::Vector{typeof(uprev)}
   end
 
   # # H_i^(k), stage 3
   if typeof(W.dW) <: Number
     H13 = uprev + a131*k1*dt + b131*g1*integrator.sqdt
   elseif is_diagonal_noise(integrator.sol.prob)
-    H13 = [uprev .+ a131*k1*dt .+ b131*g1[k]*integrator.sqdt for k=1:m]
+    H13 = [uprev .+ a131*k1*dt .+ b131*g1[k]*integrator.sqdt for k=1:m]::Vector{typeof(uprev)}
   else
-    H13 = [uprev .+ a131*k1*dt .+ b131*g1[:,k]*integrator.sqdt for k=1:m]
+    H13 = [uprev .+ a131*k1*dt .+ b131*g1[:,k]*integrator.sqdt for k=1:m]::Vector{typeof(uprev)}
   end
 
   # H^_i^(k), stage 1

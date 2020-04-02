@@ -65,7 +65,8 @@ struct DRI1ConstantCache{T,T2} <: StochasticDiffEqConstantCache
   NORMAL_ONESIX_QUANTILE::T
 end
 
-function DRI1ConstantCache(T::Type, T2::Type)
+function DRI1ConstantCache(::Type{T}, ::Type{T2}) where {T,T2}
+
   a021 = convert(T, 1//2)
   a031 = convert(T, -1)
   a032 = convert(T, 2)
