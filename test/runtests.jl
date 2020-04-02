@@ -57,6 +57,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
   end
 
   if !is_APPVEYOR && (GROUP == "All" || GROUP == "AlgConvergence3")
+    @time @safetestset "Roessler weak SRK Tests" begin include("sde/srk_weak_final.jl") end
     @time @safetestset "Rossler Order Tests" begin include("sde/sde_rosslerorder_tests.jl") end
     @time @safetestset "ODE Convergence Regression Tests" begin include("ode_convergence_regression.jl") end
     @time @safetestset "Additive SDE Tests" begin include("sde/sde_additive_tests.jl") end
