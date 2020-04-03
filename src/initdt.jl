@@ -3,6 +3,8 @@ function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,intern
   g = prob.g
   p = prob.p
   d₀ = internalnorm(ArrayInterface.aos_to_soa(u0)./(abstol.+internalnorm.(u0,t).*reltol),t)
+  dtmin = nextfloat(integrator.opts.dtmin)
+  smalldt = tType(1//10^(6))
   if !isinplace(prob)
     f₀ = f(u0,p,t)
     if integrator.opts.verbose && any(x->any(isnan,x),f₀)
@@ -33,7 +35,7 @@ function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,intern
   T0 = typeof(d₀)
   T1 = typeof(d₁)
   if d₀ < T0(1//10^(5)) || d₁ < T1(1//10^(5))
-    dt₀ = tType(1e-6)
+    dt₀ = smalldt
   else
     dt₀ = tType(0.01*(d₀/d₁))
   end
@@ -55,9 +57,9 @@ function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,intern
   ΔgMax = max.(internalnorm.(g₀.-g₁,t),internalnorm.(g₀.+g₁,t))
   d₂ = internalnorm(max.(internalnorm.(f₁.-f₀.+ΔgMax,t),internalnorm.(f₁.-f₀.-ΔgMax,t))./(abstol.+internalnorm.(u0,t).*reltol),t)./dt₀
   if max(d₁,d₂)<=T1(1//Int64(10)^(15))
-    dt₁ = max(tType(1//10^(6)),dt₀*1//10^(3))
+    dt₁ = max(smalldt,dt₀*1//10^(3))
   else
     dt₁ = tType(10.0^(-(2+log10(max(d₁,d₂)))/(order+.5)))
   end
-  dt = tdir*min(100dt₀,dt₁,tdir*dtmax)
+  dt = tdir*max(dtmin, min(100dt₀,dt₁,tdir*dtmax))
 end
