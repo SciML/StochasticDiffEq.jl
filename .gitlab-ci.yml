@@ -26,7 +26,7 @@ build:
     - mkdir $JULIA_DEPOT_PATH # Pkg.jl#325
     - julia -e "using InteractiveUtils;
                 versioninfo()"
-    - julia --project -e "using Pkg; Pkg.build(); using OrdinaryDiffEq;"
+    - julia --project -e "using Pkg; Pkg.build(); using StochasticDiffEq;"
   artifacts:
     when: always
     paths:
@@ -43,7 +43,7 @@ build:
     - export PATH="$(pwd)/julia-${JULIA_VERSION}/bin:$PATH"
     - julia -e "using InteractiveUtils;
                 versioninfo()"
-                
+
 test-weak:
   extends: .test
   variables:
