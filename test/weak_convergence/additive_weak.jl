@@ -168,3 +168,14 @@ sim6 = test_convergence(dts,prob,SRA3(),trajectories=Int(1e4),
 @test abs(sim6.𝒪est[:weak_final]-3) < 0.3
 @test abs(sim6.𝒪est[:weak_l2]-3) < 0.3
 @test abs(sim6.𝒪est[:weak_l∞]-3) < 0.3
+
+#sim2 = test_convergence(dts,prob,DRI1(),trajectories=Int(1e5),
+#                        weak_timeseries_errors=true)
+#@test abs(sim2.𝒪est[:weak_final]-2) < 0.3
+#@test abs(sim2.𝒪est[:weak_l2]-2) < 0.3
+#@test abs(sim2.𝒪est[:weak_l∞]-2) < 0.3
+#sim2 = test_convergence(dts,prob,RI1(),trajectories=Int(1e5),
+#                        weak_timeseries_errors=true)
+#@test abs(sim2.𝒪est[:weak_final]-2) < 0.3
+#@test abs(sim2.𝒪est[:weak_l2]-2) < 0.3
+#@test abs(sim2.𝒪est[:weak_l∞]-2) < 0.3
