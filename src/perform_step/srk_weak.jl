@@ -55,18 +55,18 @@
   if typeof(W.dW) <: Number
     H12 = uprev + a121*k1*dt + b121*g1*integrator.sqdt
   elseif is_diagonal_noise(integrator.sol.prob)
-    H12 = [uprev .+ a121*k1*dt .+ b121*g1[k]*integrator.sqdt for k=1:m]::Vector{typeof(uprev)}
+    H12 = Vector{typeof(uprev)}[uprev .+ a121*k1*dt .+ b121*g1[k]*integrator.sqdt for k=1:m]
   else
-    H12 = [uprev .+ a121*k1*dt .+ b121*g1[:,k]*integrator.sqdt for k=1:m]::Vector{typeof(uprev)}
+    H12 = Vector{typeof(uprev)}[uprev .+ a121*k1*dt .+ b121*g1[:,k]*integrator.sqdt for k=1:m]
   end
 
   # # H_i^(k), stage 3
   if typeof(W.dW) <: Number
     H13 = uprev + a131*k1*dt + b131*g1*integrator.sqdt
   elseif is_diagonal_noise(integrator.sol.prob)
-    H13 = [uprev .+ a131*k1*dt .+ b131*g1[k]*integrator.sqdt for k=1:m]::Vector{typeof(uprev)}
+    H13 = Vector{typeof(uprev)}[uprev .+ a131*k1*dt .+ b131*g1[k]*integrator.sqdt for k=1:m]
   else
-    H13 = [uprev .+ a131*k1*dt .+ b131*g1[:,k]*integrator.sqdt for k=1:m]::Vector{typeof(uprev)}
+    H13 = Vector{typeof(uprev)}[uprev .+ a131*k1*dt .+ b131*g1[:,k]*integrator.sqdt for k=1:m]
   end
 
   # H^_i^(k), stage 1
