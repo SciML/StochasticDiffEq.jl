@@ -51,17 +51,22 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
 
   if !is_APPVEYOR && (GROUP == "All" || GROUP == "AlgConvergence2")
     @time @safetestset "IIF Convergence Tests" begin include("iif_methods.jl") end
-    LONGER_TESTS && @time @safetestset "Weak Convergence Tests" begin include("weak_convergence.jl") end
     @time @safetestset "Cummutative Noise Methods Tests" begin include("commutative_tests.jl") end
     @time @safetestset "Multivariate Geometric Tests" begin include("multivariate_geometric.jl") end
   end
 
   if !is_APPVEYOR && (GROUP == "All" || GROUP == "AlgConvergence3")
-    @time @safetestset "Roessler weak SRK Tests" begin include("srk_weak_final.jl") end
     @time @safetestset "Rossler Order Tests" begin include("sde/sde_rosslerorder_tests.jl") end
     @time @safetestset "ODE Convergence Regression Tests" begin include("ode_convergence_regression.jl") end
     @time @safetestset "Additive SDE Tests" begin include("sde/sde_additive_tests.jl") end
     @time @safetestset "Split Tests" begin include("split_tests.jl") end
     @time @safetestset "Stratonovich Convergence Tests" begin include("stratonovich_convergence_tests.jl") end
+  end
+
+  if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence")
+    @time @safetestset "Roessler weak SRK Tests" begin include("weak_convergence/srk_weak_final.jl") end
+    #@time @safetestset "OOP Weak Convergence Tests" begin include("weak_convergence/oop_weak.jl") end
+    #@time @safetestset "IIP Weak Convergence Tests" begin include("weak_convergence/iip_weak.jl") end
+    #@time @safetestset "Additive Weak Convergence Tests" begin include("weak_convergence/additive_weak.jl") end
   end
 end
