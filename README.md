@@ -95,4 +95,4 @@ sol = solve(prob,RandomEM(),dt=1/100)
 
 ## Available Solvers
 
-For the list of available solvers, please refer to the [DifferentialEquations.jl SDE Solvers page](http://docs.juliadiffeq.org/dev/solvers/sde_solve.html) and the [RODE Solvers page](http://docs.juliadiffeq.org/dev/solvers/rode_solve.html).
+For the list of available solvers, please refer to the [DifferentialEquations.jl SDE Solvers page](https://docs.sciml.ai/v6.9/solvers/sde_solve/) and the [RODE Solvers page](https://docs.sciml.ai/v6.9/solvers/rode_solve/).
