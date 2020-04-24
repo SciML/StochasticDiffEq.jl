@@ -177,3 +177,76 @@ end
 function alg_cache(alg::RI1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   RI1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
+
+
+@cache struct DRI1Cache{uType,randType,MType1,tabType,rateNoiseType,rateType,possibleRateType} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+
+  _dW::randType
+  _dZ::randType
+  chi1::randType
+  Ihat2::MType1
+
+  tab::tabType
+
+  g1::rateNoiseType
+  g2::Vector{rateNoiseType}
+  g3::Vector{rateNoiseType}
+
+  k1::rateType
+  k2::rateType
+  k3::rateType
+
+  H02::uType
+  H03::uType
+  H12::Vector{uType}
+  H13::Vector{uType}
+  H22::Vector{uType}
+  H23::Vector{uType}
+
+  tmp1::possibleRateType
+  tmpg::rateNoiseType
+
+end
+
+
+function alg_cache(alg::DRI1,prob,u,ΔW,ΔZ,p,rate_prototype,
+                   noise_rate_prototype,uEltypeNoUnits,
+                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  if typeof(ΔW) <: Union{SArray,Number}
+    _dW = copy(ΔW)
+    _dZ = copy(ΔW)
+    chi1 = copy(ΔW)
+  else
+    _dW = zero(ΔW)
+    _dZ = zero(ΔW)
+    chi1 = zero(ΔW)
+  end
+  m = length(ΔW)
+  Ihat2 = zeros(eltype(ΔW), m, m)
+  tab = DRI1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+  g1 = zero(noise_rate_prototype)
+  g2 = [zero(noise_rate_prototype) for k=1:m]
+  g3 = [zero(noise_rate_prototype) for k=1:m]
+  k1 = zero(rate_prototype); k2 = zero(rate_prototype); k3 = zero(rate_prototype)
+
+  H02 = zero(u)
+  H03 = zero(u)
+  H12 = Vector{typeof(u)}()
+  H13 = Vector{typeof(u)}()
+  H22 = Vector{typeof(u)}()
+  H23 = Vector{typeof(u)}()
+
+  for k=1:m
+    push!(H12,zero(u))
+    push!(H13,zero(u))
+    push!(H22,zero(u))
+    push!(H23,zero(u))
+  end
+
+  tmp1 = zero(rate_prototype)
+  tmpg = zero(noise_rate_prototype)
+
+  DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
+end
