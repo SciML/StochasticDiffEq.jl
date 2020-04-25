@@ -117,9 +117,9 @@ end
     integrator.last_stepfail = true
     integrator.accept_step = false
   elseif integrator.opts.adaptive
-    integrator.q11 = DiffEqBase.fastpow(integrator.EEst,integrator.opts.beta1)
-    integrator.q = integrator.q11/DiffEqBase.fastpow(integrator.qold,integrator.opts.beta2)
-    @fastmath integrator.q = max(inv(integrator.opts.qmax),min(inv(integrator.opts.qmin),integrator.q/integrator.opts.gamma))
+    integrator.q11 = DiffEqBase.value(DiffEqBase.fastpow(integrator.EEst,integrator.opts.beta1))
+    integrator.q = DiffEqBase.value(integrator.q11/DiffEqBase.fastpow(integrator.qold,integrator.opts.beta2))
+    @fastmath integrator.q = DiffEqBase.value(max(inv(integrator.opts.qmax),min(inv(integrator.opts.qmin),integrator.q/integrator.opts.gamma)))
     integrator.dtnew = integrator.dt/integrator.q
     integrator.isout = integrator.opts.isoutofdomain(integrator.u,integrator.p,ttmp)
     integrator.accept_step = (!integrator.isout && integrator.EEst <= 1.0) || (integrator.opts.force_dtmin && integrator.dt <= integrator.opts.dtmin)
