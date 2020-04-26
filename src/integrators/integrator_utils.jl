@@ -120,7 +120,7 @@ end
     integrator.q11 = DiffEqBase.value(DiffEqBase.fastpow(integrator.EEst,integrator.opts.beta1))
     integrator.q = DiffEqBase.value(integrator.q11/DiffEqBase.fastpow(integrator.qold,integrator.opts.beta2))
     @fastmath integrator.q = DiffEqBase.value(max(inv(integrator.opts.qmax),min(inv(integrator.opts.qmin),integrator.q/integrator.opts.gamma)))
-    integrator.dtnew = DiffEqBase.value(integrator.dt/integrator.q)
+    integrator.dtnew = DiffEqBase.value(integrator.dt/integrator.q) * oneunit(integrator.dt)
     integrator.isout = integrator.opts.isoutofdomain(integrator.u,integrator.p,ttmp)
     integrator.accept_step = (!integrator.isout && integrator.EEst <= 1.0) || (integrator.opts.force_dtmin && integrator.dt <= integrator.opts.dtmin)
     if integrator.accept_step # Accepted
