@@ -45,11 +45,11 @@ _solutions = @time [solve(ensemble_prob,
 
 errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test (m-2) < 0.3
+@test -(m-2) < 0.3
 
 #convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
 #savefig(convergence_plot, "DRI1-CPU-final-"*string(numtraj)*".pdf")
-println(m)
+println("DRI1:", m)
 
 
 
@@ -65,11 +65,11 @@ _solutions = @time [solve(ensemble_prob,
 
 errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test (m-2) < 0.3
+@test -(m-2) < 0.3
 
 # convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
 # savefig(convergence_plot, "RI1-CPU-final-"*string(numtraj)*".pdf")
-println(m)
+println("RI1:", m)
 
 
 """
@@ -101,11 +101,26 @@ _solutions = @time [solve(ensemble_prob,
 
 errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test (m-2) < 0.3
+@test -(m-2) < 0.3
 
 # convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
 # savefig(convergence_plot, "Scalar-DRI1-CPU-final-"*string(numtraj)*".pdf")
-println(m)
+println("DRI1:", m)
+
+_solutions = @time [solve(ensemble_prob,
+        RI1();
+        dt=dts[i],
+        save_start=false,
+        save_everystep=false,
+        weak_timeseries_errors=false,
+        weak_dense_errors=false,
+        trajectories=numtraj) for i in 1:N]
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("RI1:", m)
 
 """
  Test non-commutative noise SDEs (iip)
@@ -144,12 +159,26 @@ _solutions = @time [solve(ensemble_prob,
 
 errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-exp(-10.0)) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test (m-2) < 0.3
+@test -(m-2) < 0.3
 
 # convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
 # savefig(convergence_plot, "ND-DRI1-CPU-final-"*string(numtraj)*".pdf")
-println(m)
+println("DRI1:", m)
 
+_solutions = @time [solve(ensemble_prob,
+        RI1();
+        dt=dts[i],
+        save_start=false,
+        save_everystep=false,
+        weak_timeseries_errors=false,
+        weak_dense_errors=false,
+        trajectories=numtraj) for i in 1:N]
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-exp(-10.0)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("RI1:", m)
 
 """
  Test Diagonal noise SDEs (iip), SIAM Journal on Numerical Analysis, 47 (2009), pp. 1713–1738
@@ -186,10 +215,24 @@ _solutions = @time [solve(ensemble_prob,
 
 errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test (m-2) < 0.5
+@test -(m-2) < 0.5
 
-println(m)
+println("DRI1:", m)
 
 #convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
 #savefig(convergence_plot, "RI1-CPU-final-"*string(numtraj)*".pdf")
 #println(m)
+
+_solutions = @time [solve(ensemble_prob,
+        RI1();
+        dt=dts[i],
+        save_start=false,
+        save_everystep=false,
+        weak_timeseries_errors=false,
+        weak_dense_errors=false,
+        trajectories=numtraj) for i in 1:N]
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.5
+println("RI1:", m)
