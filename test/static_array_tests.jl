@@ -22,7 +22,7 @@ sol = solve(ode, DRI1(), dt=1.e-2)
 
 u0 = ones(SVector{2,Float64})
 f(u,p,t) = u
-prob = SDEProblem(f, f, u0, (0.,1.))
-@test_broken sol = solve(prob, EM(), dt=1.e-2)
-@test_broken sol = solve(prob, SRIW1())
-@test_broken sol = solve(prob, DRI1(), dt=1.e-2)
+prob = SDEProblem{false}(f, f, u0, (0.,1.))
+sol = solve(prob, EM(), dt=1.e-2)
+sol = solve(prob, SRIW1())
+sol = solve(prob, DRI1(), dt=1.e-2)
