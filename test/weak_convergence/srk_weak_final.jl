@@ -78,7 +78,7 @@ println("RI1:", m)
  Test Scalar SDEs (iip)
 """
 
-numtraj = 5e6
+numtraj = 3e6
 u₀ = [0.0]
 f1!(du,u,p,t) = @.(du = 1//2*u+sqrt(u^2 +1))
 g1!(du,u,p,t) = @.(du = sqrt(u^2 +1))
@@ -128,7 +128,7 @@ println("RI1:", m)
  Test non-commutative noise SDEs (iip)
 """
 
-numtraj = 1e6
+numtraj = 1.8e6
 u₀ = [1.0,1.0]
 function f2!(du,u,p,t)
   du[1] = -273//512*u[1]
@@ -174,11 +174,11 @@ _solutions = @time [solve(ensemble_prob,
         save_everystep=false,
         weak_timeseries_errors=false,
         weak_dense_errors=false,
-        trajectories=2e6) for i in 1:N]
+        trajectories=1.9e6) for i in 1:N]
 
 errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-exp(-10.0)) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
+@test -(m-2) < 0.5
 
 println("RI1:", m)
 
