@@ -12,6 +12,17 @@ Random.seed!(20)
 #using DiffEqGPU
 #using Plots
 
+function generate_solutions(prob, alg, dts, numtraj, n=1)
+  sols = []
+  for i in 1:n
+    sol = solve(prob, alg;dt=dts[i],save_start=false,save_everystep=false,weak_timeseries_errors=false,weak_dense_errors=false,trajectories=numtraj)
+    println(i)
+    push!(sols,sol)
+  end
+  return sols
+end
+
+
 """
  Test Scalar SDEs (oop)
 """
@@ -35,15 +46,7 @@ ensemble_prob = EnsembleProblem(prob;
         )
 N = length(dts)
 
-_solutions = @time [solve(ensemble_prob,
-        RI1();
-        #ensemblealg = EnsembleGPUArray(); # EnsembleGPUArray or EnsembleDistributed()
-        dt=dts[i],
-        save_start=false,
-        save_everystep=false,
-        weak_timeseries_errors=false,
-        weak_dense_errors=false,
-        trajectories=numtraj) for i in 1:N]
+_solutions = @time generate_solutions(ensemble_prob, RI1(), dts, numtraj, N)
 
 errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
@@ -70,14 +73,7 @@ ensemble_prob = EnsembleProblem(prob;
         output_func = (sol,i) -> (h1(asinh(sol[end][1])),false)
         )
 N = length(dts)
-_solutions = @time [solve(ensemble_prob,
-        RI1();
-        dt=dts[i],
-        save_start=false,
-        save_everystep=false,
-        weak_timeseries_errors=false,
-        weak_dense_errors=false,
-        trajectories=numtraj) for i in 1:N]
+_solutions = @time generate_solutions(ensemble_prob, RI1(), dts, numtraj, N)
 
 errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
@@ -111,14 +107,7 @@ ensemble_prob = EnsembleProblem(prob;
         output_func = (sol,i) -> (h2(sol[end][1]),false)
         )
 N = length(dts)
-_solutions = @time [solve(ensemble_prob,
-        RI1();
-        dt=dts[i],
-        save_start=false,
-        save_everystep=false,
-        weak_timeseries_errors=false,
-        weak_dense_errors=false,
-        trajectories=1.9e6) for i in 1:N]
+_solutions = @time generate_solutions(ensemble_prob, RI1(), dts, numtraj, N)
 
 errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-exp(-10.0)) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
@@ -150,14 +139,7 @@ ensemble_prob = EnsembleProblem(prob;
         output_func = (sol,i) -> (h3(sol[end][1]),false)
         )
 N = length(dts)
-_solutions = @time [solve(ensemble_prob,
-        RI1();
-        dt=dts[i],
-        save_start=false,
-        save_everystep=false,
-        weak_timeseries_errors=false,
-        weak_dense_errors=false,
-        trajectories=numtraj) for i in 1:N]
+_solutions = @time generate_solutions(ensemble_prob, RI1(), dts, numtraj, N)
 
 errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
