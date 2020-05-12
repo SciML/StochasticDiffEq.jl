@@ -1,15 +1,14 @@
 """
  Tests for https://arxiv.org/abs/1303.5103 with test problems as in the paper.
- DRI1 (and RI1)
+ RI1
 """
-
 
 import Statistics # for mean values of trajectories
 import LinearAlgebra # for the normn
 using StochasticDiffEq
 using Test
 using Random
-Random.seed!(100)
+Random.seed!(20)
 #using DiffEqGPU
 #using Plots
 
@@ -19,7 +18,7 @@ Random.seed!(100)
 
 println("start with scalar")
 
-numtraj = 3e6 # in the paper they use 1e9
+numtraj = 1e6 # in the paper they use 1e9
 u₀ = 0.0
 f(u,p,t) = 1//2*u+sqrt(u^2+1)
 g(u,p,t) = sqrt(u^2+1)
@@ -35,25 +34,6 @@ ensemble_prob = EnsembleProblem(prob;
         output_func = (sol,i) -> (h1(asinh(sol[end])),false)
         )
 N = length(dts)
-_solutions = @time [solve(ensemble_prob,
-        DRI1();
-        #ensemblealg = EnsembleGPUArray(); # EnsembleGPUArray or EnsembleDistributed()
-        dt=dts[i],
-        save_start=false,
-        save_everystep=false,
-        weak_timeseries_errors=false,
-        weak_dense_errors=false,
-        trajectories=numtraj) for i in 1:N]
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-#convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
-#savefig(convergence_plot, "DRI1-CPU-final-"*string(numtraj)*".pdf")
-println("DRI1:", m)
-
-
 
 _solutions = @time [solve(ensemble_prob,
         RI1();
@@ -69,8 +49,6 @@ errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test -(m-2) < 0.3
 
-# convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
-# savefig(convergence_plot, "RI1-CPU-final-"*string(numtraj)*".pdf")
 println("RI1:", m)
 
 
@@ -78,7 +56,7 @@ println("RI1:", m)
  Test Scalar SDEs (iip)
 """
 
-numtraj = 3e6
+numtraj = 1e6
 u₀ = [0.0]
 f1!(du,u,p,t) = @.(du = 1//2*u+sqrt(u^2 +1))
 g1!(du,u,p,t) = @.(du = sqrt(u^2 +1))
@@ -92,23 +70,6 @@ ensemble_prob = EnsembleProblem(prob;
         output_func = (sol,i) -> (h1(asinh(sol[end][1])),false)
         )
 N = length(dts)
-_solutions = @time [solve(ensemble_prob,
-        DRI1();
-        dt=dts[i],
-        save_start=false,
-        save_everystep=false,
-        weak_timeseries_errors=false,
-        weak_dense_errors=false,
-        trajectories=numtraj) for i in 1:N]
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-# convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
-# savefig(convergence_plot, "Scalar-DRI1-CPU-final-"*string(numtraj)*".pdf")
-println("DRI1:", m)
-
 _solutions = @time [solve(ensemble_prob,
         RI1();
         dt=dts[i],
@@ -151,23 +112,6 @@ ensemble_prob = EnsembleProblem(prob;
         )
 N = length(dts)
 _solutions = @time [solve(ensemble_prob,
-        DRI1();
-        dt=dts[i],
-        save_start=false,
-        save_everystep=false,
-        weak_timeseries_errors=false,
-        weak_dense_errors=false,
-        trajectories=numtraj) for i in 1:N]
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-exp(-10.0)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-# convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
-# savefig(convergence_plot, "ND-DRI1-CPU-final-"*string(numtraj)*".pdf")
-println("DRI1:", m)
-
-_solutions = @time [solve(ensemble_prob,
         RI1();
         dt=dts[i],
         save_start=false,
@@ -206,25 +150,6 @@ ensemble_prob = EnsembleProblem(prob;
         output_func = (sol,i) -> (h3(sol[end][1]),false)
         )
 N = length(dts)
-_solutions = @time [solve(ensemble_prob,
-        DRI1();
-        dt=dts[i],
-        save_start=false,
-        save_everystep=false,
-        weak_timeseries_errors=false,
-        weak_dense_errors=false,
-        trajectories=numtraj) for i in 1:N]
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.5
-
-println("DRI1:", m)
-
-#convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
-#savefig(convergence_plot, "RI1-CPU-final-"*string(numtraj)*".pdf")
-#println(m)
-
 _solutions = @time [solve(ensemble_prob,
         RI1();
         dt=dts[i],
