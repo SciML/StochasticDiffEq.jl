@@ -72,8 +72,8 @@ alg_order(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODEComp
 get_current_alg_order(alg::StochasticDiffEqAlgorithm,cache) = alg_order(alg)
 get_current_alg_order(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm},cache) = alg_order(alg.algs[cache.current])
 
-beta2_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = 2//(5alg_order(alg))
-beta1_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm},beta2) = 7//(10alg_order(alg))
+beta2_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = isadaptive(alg) ? 2//(5alg_order(alg)) : 0
+beta1_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm},beta2) = isadaptive(alg) ? 7//(10alg_order(alg)) : 0
 
 isdtchangeable(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = true
 
