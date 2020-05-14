@@ -6,6 +6,7 @@ dts = (1/2) .^ (10:-1:2) #14->7 good plot
 
 print("prob_sde_wave")
 prob = prob_sde_wave
+solve(prob,ImplicitEM(),dt=0.1)
 sim  = test_convergence(dts,prob,ImplicitEM(),trajectories=Int(1e1))
 @test abs(sim.𝒪est[:l2]-.5) < 0.2
 sim  = test_convergence(dts,prob,ImplicitEM(nlsolve=StochasticDiffEq.NLFunctional()),trajectories=Int(1e1))
