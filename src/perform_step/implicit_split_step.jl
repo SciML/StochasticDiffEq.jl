@@ -105,8 +105,6 @@ end
     copyto!(u,uprev)
   end
 
-  update_W!(integrator, cache, a, repeat_step)
-
   integrator.f(tmp,uprev,p,t)
 
   if alg.symplectic
