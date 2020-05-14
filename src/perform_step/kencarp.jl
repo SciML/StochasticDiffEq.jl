@@ -1,11 +1,11 @@
 @muladd function perform_step!(integrator, cache::SKenCarpConstantCache, f=integrator.f)
   @unpack t,dt,uprev,u,g,p = integrator
   @unpack nlsolver = cache
-  @unpack uf = nlsolver
   @unpack γ,a31,a32,a41,a42,a43,btilde1,btilde2,btilde3,btilde4,c3,α31,α32 = cache.tab
   @unpack ea21,ea31,ea32,ea41,ea42,ea43,eb1,eb2,eb3,eb4,ebtilde1,ebtilde2,ebtilde3,ebtilde4 = cache.tab
   @unpack nb021,nb043 = cache.tab
   alg = unwrap_alg(integrator, true)
+  OrdinaryDiffEq.markfirststage!(nlsolver)
 
   sqrt3 = sqrt(3one(eltype(integrator.W.dW)))
   chi2 = (integrator.W.dW + integrator.W.dZ/sqrt3)/2 #I_(1,0)/h
@@ -22,10 +22,6 @@
 
   # calculate W
   repeat_step = false
-  if isnewton(nlsolver)
-    uf.t = t
-  end
-  J = update_W!(integrator, cache, γdt, repeat_step)
 
   z₁ = dt*f( uprev,p,t)
   nlsolver.c = 2γ
@@ -46,9 +42,8 @@
   end
   nlsolver.z = z₂
 
-  z₂ = nlsolve!(integrator, cache)
-  nlsolvefail(nlsolver) && return nothing
-
+  z₂ = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
+  OrdinaryDiffEq.nlsolvefail(nlsolver) && return
 
   ################################## Solve Step 3
 
@@ -69,8 +64,8 @@
   end
   nlsolver.z = z₃
 
-  z₃ = nlsolve!(integrator, cache)
-  nlsolvefail(nlsolver) && return nothing
+  z₃ = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
+  OrdinaryDiffEq.nlsolvefail(nlsolver) && return
 
   ################################## Solve Step 4
 
@@ -94,8 +89,8 @@
   end
   nlsolver.z = z₄
 
-  z₄ = nlsolve!(integrator, cache)
-  nlsolvefail(nlsolver) && return nothing
+  z₄ = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
+  OrdinaryDiffEq.nlsolvefail(nlsolver) && return
 
   u = tmp + γ*z₄
   g4 = g(uprev,p,t+dt)
@@ -120,7 +115,7 @@
         tmp = btilde1*z₁ + btilde2*z₂ + btilde3*z₃ + btilde4*z₄ + chi2*(g1-g4)
       end
       if alg.smooth_est # From Shampine
-        E₁ = get_W(nlsolver)\tmp
+        E₁ = OrdinaryDiffEq._reshape(OrdinaryDiffEq.get_W(nlsolver) \OrdinaryDiffEq._vec(tmp), axes(tmp))
       else
         E₁ = tmp
       end
@@ -142,12 +137,14 @@ end
   @unpack t,dt,uprev,u,g,p = integrator
   @unpack z₁,z₂,z₃,z₄,k1,k2,k3,k4,atmp = cache
   @unpack g1,g4,chi2,nlsolver = cache
-  @unpack dz,k,jac_config,tmp = nlsolver
+  @unpack z,tmp = nlsolver
+  @unpack k,dz = nlsolver.cache # alias to reduce memory
   @unpack γ,a31,a32,a41,a42,a43,btilde1,btilde2,btilde3,btilde4,c3,α31,α32 = cache.tab
   @unpack ea21,ea31,ea32,ea41,ea42,ea43,eb1,eb2,eb3,eb4 = cache.tab
   @unpack ebtilde1,ebtilde2,ebtilde3,ebtilde4 = cache.tab
   @unpack nb021,nb043 = cache.tab
   alg = unwrap_alg(integrator, true)
+  OrdinaryDiffEq.markfirststage!(nlsolver)
 
   # Some aliases
 
@@ -171,8 +168,6 @@ end
   # precalculations
 
   γdt = γ*dt
-
-  update_W!(integrator, cache, γdt, repeat_step)
 
   if !repeat_step && !integrator.last_stepfail
     f(z₁, integrator.uprev, p, integrator.t)
@@ -209,8 +204,9 @@ end
 
   nlsolver.z = z₂
   nlsolver.c = 2γ
-  z₂ = nlsolve!(integrator, cache)
-  nlsolvefail(nlsolver) && return nothing
+
+  z₂ = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
+  OrdinaryDiffEq.nlsolvefail(nlsolver) && return
 
   ################################## Solve Step 3
 
@@ -229,8 +225,8 @@ end
   end
   nlsolver.z = z₃
   nlsolver.c = c3
-  z₃ = nlsolve!(integrator, cache)
-  nlsolvefail(nlsolver) && return nothing
+  z₃ = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
+  OrdinaryDiffEq.nlsolvefail(nlsolver) && return
 
   ################################## Solve Step 4
 
@@ -253,8 +249,8 @@ end
 
   nlsolver.z = z₄
   nlsolver.c = one(nlsolver.c)
-  z₄ = nlsolve!(integrator, cache)
-  nlsolvefail(nlsolver) && return nothing
+  z₄ = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
+  OrdinaryDiffEq.nlsolvefail(nlsolver) && return
 
   g(g4,u,p,t+dt)
 
@@ -293,7 +289,7 @@ end
         @.. g1 = btilde1*z₁  + btilde2*z₂  + btilde3*z₃ + btilde4*z₄
       end
       if alg.smooth_est # From Shampine
-        nlsolver.linsolve(vec(E₁),get_W(nlsolver),vec(g1),false)
+        nlsolver.cache.linsolve(vec(E₁),OrdinaryDiffEq.get_W(nlsolver),vec(g1),false)
       else
         E₁ .= dz
       end
