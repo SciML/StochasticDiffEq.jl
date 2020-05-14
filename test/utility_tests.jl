@@ -1,5 +1,5 @@
 using StochasticDiffEq, LinearAlgebra, SparseArrays, Random, Test, DiffEqOperators
-using StochasticDiffEq: WOperator, set_gamma!, calc_W!
+using StochasticDiffEq.OrdinaryDiffEq: WOperator, set_gamma!, calc_W!
 
 @testset "Derivative Utilities" begin
   @testset "WOperator" begin
