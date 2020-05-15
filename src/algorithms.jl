@@ -11,11 +11,11 @@ abstract type StochasticDiffEqNewtonAlgorithm{CS,AD,Controller} <: StochasticDif
 
 abstract type StochasticDiffEqJumpAlgorithm <: StochasticDiffEqAlgorithm end
 abstract type StochasticDiffEqJumpAdaptiveAlgorithm <: StochasticDiffEqAlgorithm end
-abstract type StochasticDiffEqJumpNewtonAdaptiveAlgorithm{CS,AD,Controller} <: StochasticDiffEqAdaptiveAlgorithm end
+abstract type StochasticDiffEqJumpNewtonAdaptiveAlgorithm{CS,AD,Controller} <: StochasticDiffEqJumpAdaptiveAlgorithm end
 
 abstract type StochasticDiffEqJumpDiffusionAlgorithm <: StochasticDiffEqAlgorithm end
 abstract type StochasticDiffEqJumpDiffusionAdaptiveAlgorithm <: StochasticDiffEqAlgorithm end
-abstract type StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{CS,AD,Controller} <: StochasticDiffEqAdaptiveAlgorithm end
+abstract type StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{CS,AD,Controller} <: StochasticDiffEqJumpDiffusionAdaptiveAlgorithm end
 
 abstract type IteratedIntegralApprox end
 struct IICommutative <:  IteratedIntegralApprox end

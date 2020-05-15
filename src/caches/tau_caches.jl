@@ -1,6 +1,6 @@
 struct TauLeapingConstantCache <: StochasticDiffEqConstantCache end
 
-@cache struct TauLeapingCache{uType,rateType,rateNoiseType} <: StochasticDiffEqMutableCache
+@cache struct TauLeapingCache{uType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   tmp::uType

@@ -57,6 +57,7 @@ module StochasticDiffEq
   const CompiledFloats = Union{Float32,Float64}
 
   import DiffEqJump
+  import DiffEqJump: JumpProblem
 
   import Base.Threads
   @static if VERSION < v"1.3"
@@ -82,6 +83,7 @@ module StochasticDiffEq
   include("caches/kencarp_caches.jl")
   include("caches/predcorr_caches.jl")
   include("caches/SROCK_caches.jl")
+  include("caches/tau_caches.jl")
   include("integrators/type.jl")
   include("dense.jl")
   include("alg_utils.jl")
@@ -106,6 +108,7 @@ module StochasticDiffEq
   include("perform_step/split.jl")
   include("perform_step/composite.jl")
   include("perform_step/SROCK_perform_step.jl")
+  include("perform_step/tau_leaping.jl")
   include("tableaus.jl")
   include("SROCK_tableaus.jl")
   include("iterated_integrals.jl")
