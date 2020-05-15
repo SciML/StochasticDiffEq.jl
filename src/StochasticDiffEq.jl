@@ -56,6 +56,8 @@ module StochasticDiffEq
 
   const CompiledFloats = Union{Float32,Float64}
 
+  import DiffEqJump
+
   import Base.Threads
   @static if VERSION < v"1.3"
     seed_multiplier() = Threads.threadid()
@@ -131,6 +133,8 @@ module StochasticDiffEq
 
   export ImplicitEM, ImplicitEulerHeun, ISSEM, ISSEulerHeun,
          ImplicitRKMil
+
+  export TauLeaping, CaoTaoLeaping
 
   export StochasticDiffEqRODEAlgorithm, StochasticDiffEqRODEAdaptiveAlgorithm,
          StochasticDiffEqRODECompositeAlgorithm

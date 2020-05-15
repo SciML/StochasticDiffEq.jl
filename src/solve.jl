@@ -8,26 +8,30 @@ function DiffEqBase.__solve(prob::DiffEqBase.AbstractRODEProblem,
   integrator.sol
 end
 
+# Make it easy to grab the RODEProblem/SDEProblem/DiscreteProblem from the keyword arguments
+concrete_prob(prob) = prob
+concrete_prob(prob::JumpProblem) = prob.prob
+
 function DiffEqBase.__init(
-  prob::DiffEqBase.AbstractRODEProblem,
-  alg::Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},timeseries_init=typeof(prob.u0)[],
-  ts_init=eltype(prob.tspan)[],
+  _prob::Union{DiffEqBase.AbstractRODEProblem,JumpProblem},
+  alg::Union{AbstractRODEAlgorithm,AbstractSDEAlgorithm},timeseries_init=typeof(_prob.u0)[],
+  ts_init=eltype(concrete_prob(_prob).tspan)[],
   ks_init=nothing,
   recompile::Type{Val{recompile_flag}}=Val{true};
-  saveat = eltype(prob.tspan)[],
-  tstops = eltype(prob.tspan)[],
-  d_discontinuities= eltype(prob.tspan)[],
+  saveat = eltype(concrete_prob(_prob).tspan)[],
+  tstops = eltype(concrete_prob(_prob).tspan)[],
+  d_discontinuities= eltype(_prob.tspan)[],
   save_idxs = nothing,
   save_everystep = isempty(saveat),
-  save_noise = save_everystep && (typeof(prob.f) <: Tuple ?
-               DiffEqBase.has_analytic(prob.f[1]) : DiffEqBase.has_analytic(prob.f)),
+  save_noise = save_everystep && (typeof(concrete_prob(_prob).f) <: Tuple ?
+               DiffEqBase.has_analytic(concrete_prob(_prob).f[1]) : DiffEqBase.has_analytic(concrete_prob(_prob).f)),
   save_on = true,
-  save_start = save_everystep || isempty(saveat) || typeof(saveat) <: Number ? true : prob.tspan[1] in saveat,
-  save_end = save_everystep || isempty(saveat) || typeof(saveat) <: Number ? true : prob.tspan[2] in saveat,
+  save_start = save_everystep || isempty(saveat) || typeof(saveat) <: Number ? true : concrete_prob(_prob).tspan[1] in saveat,
+  save_end = save_everystep || isempty(saveat) || typeof(saveat) <: Number ? true : concrete_prob(_prob).tspan[2] in saveat,
   callback=nothing,
   dense = save_everystep && isempty(saveat),
   calck = (!isempty(setdiff(saveat,tstops)) || dense),
-  dt = eltype(prob.tspan)(0),
+  dt = eltype(concrete_prob(_prob).tspan)(0),
   adaptive = isadaptive(alg),
   gamma=9//10,
   abstol=nothing,
@@ -39,10 +43,10 @@ function DiffEqBase.__init(
   beta1=beta1_default(alg,beta2),
   delta=delta_default(alg),
   maxiters = adaptive ? 1000000 : typemax(Int),
-  dtmax=eltype(prob.tspan)((prob.tspan[end]-prob.tspan[1])),
-  dtmin = typeof(one(eltype(prob.tspan))) <: AbstractFloat ? eps(eltype(prob.tspan)) :
-          typeof(one(eltype(prob.tspan))) <: Integer ? 0 :
-          eltype(prob.tspan)(1//10^(10)),
+  dtmax=eltype(concrete_prob(_prob).tspan)((concrete_prob(_prob).tspan[end]-concrete_prob(_prob).tspan[1])),
+  dtmin = typeof(one(eltype(concrete_prob(_prob).tspan))) <: AbstractFloat ? eps(eltype(concrete_prob(_prob).tspan)) :
+          typeof(one(eltype(concrete_prob(_prob).tspan))) <: Integer ? 0 :
+          eltype(concrete_prob(_prob).tspan)(1//10^(10)),
   internalnorm = ODE_DEFAULT_NORM,
   isoutofdomain = ODE_DEFAULT_ISOUTOFDOMAIN,
   unstable_check = ODE_DEFAULT_UNSTABLE_CHECK,
@@ -56,6 +60,8 @@ function DiffEqBase.__init(
   initialize_integrator=true,
   seed = UInt64(0), alias_u0=false, kwargs...) where recompile_flag
 
+  prob = concrete_prob(_prob)
+
   if typeof(prob.f)<:Tuple
     if any(mm != I for mm in prob.f.mass_matrix)
       error("This solver is not able to use mass matrices.")
@@ -68,7 +74,7 @@ function DiffEqBase.__init(
     @warn("Dense output is incompatible with saveat. Please use the SavingCallback from the Callback Library to mix the two behaviors.")
   end
 
-  if typeof(prob.noise)<:NoiseProcess && prob.noise.bridge === nothing && adaptive
+  if typeof(prob) <: DiffEqBase.AbstractRODEProblem && typeof(prob.noise)<:NoiseProcess && prob.noise.bridge === nothing && adaptive
     error("Bridge function must be given for adaptivity. Either declare this function in noise process or set adaptive=false")
   end
 
@@ -163,14 +169,7 @@ function DiffEqBase.__init(
   tstops_internal, saveat_internal, d_discontinuities_internal =
     tstop_saveat_disc_handling(tstops, saveat, d_discontinuities, tspan)
 
-  callbacks_internal = CallbackSet(callback)
 
-  max_len_cb = DiffEqBase.max_vector_callback_length(callbacks_internal)
-  if max_len_cb isa DiffEqBase.VectorContinuousCallback
-    callback_cache = DiffEqBase.CallbackCache(max_len_cb.len,uBottomEltype,uBottomEltype)
-  else
-    callback_cache = nothing
-  end
 
   ### Algorithm-specific defaults ###
   # if save_idxs === nothing
@@ -245,7 +244,21 @@ function DiffEqBase.__init(
 
   _seed = iszero(seed) ? (iszero(prob.seed) ? seed_multiplier()*rand(UInt64) : prob.seed) : seed
 
-  if prob.noise === nothing
+  if typeof(_prob) <: JumpProblem
+    DiffEqJump.reset_jump_problem!(jump_prob,_seed)
+    callbacks_internal = CallbackSet(callback,jump_prob.jump_callback)
+  else
+    callbacks_internal = CallbackSet(callback)
+  end
+
+  max_len_cb = DiffEqBase.max_vector_callback_length(callbacks_internal)
+  if max_len_cb isa DiffEqBase.VectorContinuousCallback
+    callback_cache = DiffEqBase.CallbackCache(max_len_cb.len,uBottomEltype,uBottomEltype)
+  else
+    callback_cache = nothing
+  end
+
+  if typeof(prob) <: AbstractRODEProblem && prob.noise === nothing
     rswm = isadaptive(alg) ? RSWM(adaptivealg=:RSwM3) : RSWM(adaptivealg=:RSwM1)
     if isinplace(prob)
       if alg_needs_extra_process(alg)
@@ -272,7 +285,7 @@ function DiffEqBase.__init(
                            rng = Xorshifts.Xoroshiro128Plus(_seed))
       end
     end
-  else
+  elseif typeof(prob) <: AbstractRODEProblem
     W = prob.noise
     if W.reset
       if W.t[end] != t
@@ -284,6 +297,23 @@ function DiffEqBase.__init(
       end
     elseif W.t[end] != t
       error("Starting time in the noise process is not the starting time of the simulation. The noise process should be re-initialized for repeated use")
+    end
+  else # Only a jump problem
+    @assert typeof(_prob) <: JumpProblem
+    W = nothing
+  end
+
+  if typeof(_prob) <: JumpProblem && _prob.regular_jump !== nothing
+    if isinplace(prob)
+      P = CompoundPoissonProcess!(t,rand_prototype,
+                                  save_everystep=save_noise,
+                                  rswm=rswm,
+                                  rng = Xorshifts.Xoroshiro128Plus(_seed))
+    else
+      P = CompoundPoissonProcess(t,rand_prototype,
+                                 save_everystep=save_noise,
+                                 rswm=rswm,
+                                 rng = Xorshifts.Xoroshiro128Plus(_seed))
     end
   end
 
@@ -360,7 +390,7 @@ function DiffEqBase.__init(
   integrator =    SDEIntegrator{typeof(alg),isinplace(prob),uType,
                   uBottomEltype,tType,typeof(tdir),typeof(p),
                   typeof(eigen_est),QT,
-                  uEltypeNoUnits,typeof(W),rateType,typeof(sol),typeof(cache),
+                  uEltypeNoUnits,typeof(W),typeof(P),rateType,typeof(sol),typeof(cache),
                   FType,GType,typeof(opts),typeof(noise),typeof(last_event_error),typeof(callback_cache)}(
                   f,g,noise,uprev,tprev,t,u,p,tType(dt),tType(dt),tType(dt),dtcache,tspan[2],tdir,
                   just_hit_tstop,isout,event_last_time,vector_event_last_time,last_event_error,accept_step,
@@ -368,7 +398,7 @@ function DiffEqBase.__init(
                   dtchangeable,u_modified,
                   saveiter,
                   alg,sol,
-                  cache,callback_cache,tType(dt),W,
+                  cache,callback_cache,tType(dt),W,P,
                   opts,iter,success_iter,eigen_est,EEst,q,
                   QT(qoldinit),q11,destats)
 
@@ -387,7 +417,7 @@ function DiffEqBase.__init(
   integrator.sqdt = integrator.tdir*sqrt(abs(integrator.dt))
 
   integrator.W.dt = integrator.dt
-  DiffEqNoiseProcess.setup_next_step!(integrator.W,integrator.u,integrator.p)
+  DiffEqNoiseProcess.setup_next_step!(integrator::SDEIntegrator)
 
   integrator
 end

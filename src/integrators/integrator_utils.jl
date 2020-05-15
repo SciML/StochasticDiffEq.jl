@@ -1,3 +1,23 @@
+@inline function DiffEqNoiseProcess.setup_next_step!(integrator::SDEIntegrator)
+  !isnothing(integrator.W) && DiffEqNoiseProcess.setup_next_step!(integrator.W,integrator.u,integrator.p)
+  !isnothing(integrator.P) && DiffEqNoiseProcess.setup_next_step!(integrator.P,integrator.u,integrator.p)
+end
+
+@inline function DiffEqNoiseProcess.reject_step!(integrator::SDEIntegrator)
+  !isnothing(integrator.W) && reject_step!(integrator.W,integrator.dtnew,integrator.u,integrator.p)
+  !isnothing(integrator.P) && reject_step!(integrator.P,integrator.dtnew,integrator.u,integrator.p)
+end
+
+@inline function DiffEqNoiseProcess.accept_step!(integrator::SDEIntegrator)
+  !isnothing(integrator.W) && accept_step!(integrator.W,integrator.dt,integrator.u,integrator.p,false)
+  !isnothing(integrator.P) && accept_step!(integrator.P,integrator.dt,integrator.u,integrator.p,false)
+end
+
+@inline function DiffEqNoiseProcess.save_noise!(integrator::SDEIntegrator)
+  !isnothing(integrator.W) && DiffEqNoiseProcess.save_noise!(integrator.W)
+  !isnothing(integrator.P) && DiffEqNoiseProcess.save_noise!(integrator.P)
+end
+
 @inline function loopheader!(integrator::SDEIntegrator)
   # Apply right after iterators / callbacks
 
@@ -15,7 +35,7 @@
       choose_algorithm!(integrator,integrator.cache)
       fix_dtnew_at_bounds!(integrator)
       modify_dtnew_for_tstops!(integrator)
-      reject_step!(integrator.W,integrator.dtnew,integrator.u,integrator.p)
+      reject_step!(integrator)
       integrator.dt = integrator.dtnew
       integrator.sqdt = sqrt(abs(integrator.dt))
     end
@@ -184,9 +204,9 @@ end
     end
   end
   if integrator.W.curt != integrator.t
-    accept_step!(integrator.W,integrator.dt,integrator.u,integrator.p,false)
+    accept_step!(integrator)
   end
-  save_noise!(integrator.W)
+  save_noise!(integrator)
 end
 
 @inline function postamble!(integrator::SDEIntegrator)
@@ -248,7 +268,7 @@ end
   end
   integrator.dt = integrator.dtpropose
   modify_dt_for_tstops!(integrator)
-  accept_step!(integrator.W,integrator.dt,integrator.u,integrator.p)
+  accept_step!(integrator)
   integrator.dt = integrator.W.dt
   integrator.sqdt = @fastmath sqrt(abs(integrator.dt)) # It can change dt, like in RSwM1
 end

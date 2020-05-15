@@ -1,4 +1,4 @@
-mutable struct SDEIntegrator{algType,IIP,uType,uEltype,tType,tdirType,P,eigenType,tTypeNoUnits,uEltypeNoUnits,randType,rateType,solType,cacheType,F4,F5,OType,noiseType,EventErrorType,CallbackCacheType} <: AbstractSDEIntegrator{algType,IIP,uType,tType}
+mutable struct SDEIntegrator{algType,IIP,uType,uEltype,tType,tdirType,P2,eigenType,tTypeNoUnits,uEltypeNoUnits,randType,randType2,rateType,solType,cacheType,F4,F5,OType,noiseType,EventErrorType,CallbackCacheType} <: AbstractSDEIntegrator{algType,IIP,uType,tType}
   f::F4
   g::F5
   noise::noiseType
@@ -6,7 +6,7 @@ mutable struct SDEIntegrator{algType,IIP,uType,uEltype,tType,tdirType,P,eigenTyp
   tprev::tType
   t::tType
   u::uType
-  p::P
+  p::P2
   dt::tType
   dtnew::tType
   dtpropose::tType
@@ -30,6 +30,7 @@ mutable struct SDEIntegrator{algType,IIP,uType,uEltype,tType,tdirType,P,eigenTyp
   callback_cache::CallbackCacheType
   sqdt::tType
   W::randType
+  P::randType2
   opts::OType
   iter::Int
   success_iter::Int
