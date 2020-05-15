@@ -324,7 +324,7 @@ function DiffEqBase.__init(
     jump_prototype = zeros(_prob.regular_jump.numjumps)
     c = _prob.regular_jump.c
 
-    if isinplace(prob)
+    if isinplace(_prob.regular_jump)
       P = CompoundPoissonProcess!(_prob.regular_jump.rate,t,jump_prototype,
                                   save_everystep=save_noise,
                                   rng = Xorshifts.Xoroshiro128Plus(_seed))
@@ -340,7 +340,7 @@ function DiffEqBase.__init(
 
   dW,dZ = isnothing(W) ? (nothing,nothing) : (W.dW,W.dZ)
 
-  cache = alg_cache(alg,prob,u,dW,dZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,Val{isinplace(prob)})
+  cache = alg_cache(alg,prob,u,dW,dZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,Val{isinplace(_prob)})
 
   id = LinearInterpolationData(timeseries,ts)
 
