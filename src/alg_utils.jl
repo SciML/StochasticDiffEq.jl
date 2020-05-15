@@ -194,3 +194,16 @@ end
 
 issplit(::StochasticDiffEqAlgorithm) = false
 issplit(::SplitSDEAlgorithms) = true
+
+function OrdinaryDiffEq.unwrap_alg(integrator::SDEIntegrator, is_stiff)
+  alg = integrator.alg
+  iscomp = typeof(alg) <: StochasticCompositeAlgorithm
+  if !iscomp
+    return alg
+  elseif typeof(alg.choice_function) <: AutoSwitch
+    num = is_stiff ? 2 : 1
+    return alg.algs[num]
+  else
+    return alg.algs[integrator.cache.current]
+  end
+end
