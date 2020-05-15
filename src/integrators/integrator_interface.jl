@@ -11,7 +11,7 @@
       integrator.u = integrator(t)
     end
     integrator.dtnew = integrator.t - t
-    reject_step!(integrator.W,t-integrator.tprev) #this only changes dt and noise, so no interpolation problems
+    reject_step!(integrator.W,t-integrator.tprev,integrator.u,integrator.p) #this only changes dt and noise, so no interpolation problems
     integrator.dt = integrator.dtnew
     integrator.sqdt = sqrt(abs(integrator.dt))
     integrator.t = t
@@ -142,9 +142,9 @@ end
 
 @inline function fill_new_noise_caches!(integrator,c,scaling_factor,idxs)
   if isinplace(integrator.W)
-    integrator.W.dist(@view(c[2][idxs]),integrator.W,scaling_factor,integrator.W.rng)
+    integrator.W.dist(@view(c[2][idxs]),integrator.W,scaling_factor,integrator.u,integrator.p,integrator.t,integrator.W.rng)
     if alg_needs_extra_process(integrator.alg)
-      integrator.W.dist(@view(c[3][idxs]),integrator.W,scaling_factor,integrator.W.rng)
+      integrator.W.dist(@view(c[3][idxs]),integrator.W,scaling_factor,integrator.u,integrator.p,integrator.t,integrator.W.rng)
     end
   else
     c[2][idxs] .= integrator.noise(length(idxs),integrator,scaling_factor)

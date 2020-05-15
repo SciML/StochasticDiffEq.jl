@@ -387,7 +387,7 @@ function DiffEqBase.__init(
   integrator.sqdt = integrator.tdir*sqrt(abs(integrator.dt))
 
   integrator.W.dt = integrator.dt
-  DiffEqNoiseProcess.setup_next_step!(integrator.W)
+  DiffEqNoiseProcess.setup_next_step!(integrator.W,integrator.u,integrator.p)
 
   integrator
 end
