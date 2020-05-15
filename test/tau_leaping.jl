@@ -6,7 +6,7 @@ function regular_rate(out,u,p,t)
     out[2] = 0.01u[2]
 end
 
-const _dc = zeros(3, 2)
+const dc = zeros(3, 2)
 dc[1,1] = -1
 dc[2,1] = 1
 dc[2,2] = -1
@@ -18,6 +18,7 @@ end
 
 rj = RegularJump(regular_rate,regular_c,2)
 jumps = JumpSet(rj)
-prob = DiscreteProblem([999,1,0],(0.0,250.0))
+prob = DiscreteProblem([999.0,1,0],(0.0,250.0))
 jump_prob = JumpProblem(prob,Direct(),rj)
+sol = solve(jump_prob,TauLeaping();dt=1.0)
 sol = solve(jump_prob,SimpleTauLeaping();dt=1.0)

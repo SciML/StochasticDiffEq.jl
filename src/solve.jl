@@ -20,7 +20,7 @@ function DiffEqBase.__init(
   recompile::Type{Val{recompile_flag}}=Val{true};
   saveat = eltype(concrete_prob(_prob).tspan)[],
   tstops = eltype(concrete_prob(_prob).tspan)[],
-  d_discontinuities= eltype(_prob.tspan)[],
+  d_discontinuities= eltype(concrete_prob(_prob).tspan)[],
   save_idxs = nothing,
   save_everystep = isempty(saveat),
   save_noise = save_everystep && (typeof(concrete_prob(_prob).f) <: Tuple ?
@@ -66,7 +66,7 @@ function DiffEqBase.__init(
     if any(mm != I for mm in prob.f.mass_matrix)
       error("This solver is not able to use mass matrices.")
     end
-  elseif prob.f.mass_matrix != I && !alg_mass_matrix_compatible(alg)
+  elseif typeof(prob) <: DiffEqBase.AbstractRODEProblem && prob.f.mass_matrix != I && !alg_mass_matrix_compatible(alg)
     error("This solver is not able to use mass matrices.")
   end
 
@@ -78,14 +78,14 @@ function DiffEqBase.__init(
     error("Bridge function must be given for adaptivity. Either declare this function in noise process or set adaptive=false")
   end
 
-  if !alg_compatible(prob,alg)
+  if !alg_compatible(_prob,alg)
     error("The algorithm is not compatible with the chosen noise type. Please see the documentation on the solver methods")
   end
 
   progress && @logmsg(-1,progress_name,_id=_id = :StochasticDiffEq,progress=0)
 
   tType = eltype(prob.tspan)
-  noise = prob.noise
+  noise = prob isa DiffEqBase.AbstractRODEProblem ? prob.noise : nothing
   tspan = prob.tspan
   tdir = sign(tspan[end]-tspan[1])
 
@@ -158,12 +158,14 @@ function DiffEqBase.__init(
 
   if is_diagonal_noise(prob)
     noise_rate_prototype = rate_prototype
-  else
+  elseif prob isa DiffEqBase.AbstractRODEProblem
     if prob isa DiffEqBase.AbstractSDEProblem
       noise_rate_prototype = copy(prob.noise_rate_prototype)
     else
       noise_rate_prototype = copy(prob.rand_prototype)
     end
+  else
+    noise_rate_prototype = nothing
   end
 
   tstops_internal, saveat_internal, d_discontinuities_internal =
@@ -236,17 +238,27 @@ function DiffEqBase.__init(
       end
     elseif prob isa DiffEqBase.AbstractSDEProblem
       rand_prototype = false .* noise_rate_prototype[1,:]
-    else
+    elseif prob isa DiffEqBase.AbstractRODEProblem
       rand_prototype = copy(prob.rand_prototype)
+    else
+      rand_prototype = nothing
     end
     randType = typeof(rand_prototype) # Strip units and type info
   end
 
-  _seed = iszero(seed) ? (iszero(prob.seed) ? seed_multiplier()*rand(UInt64) : prob.seed) : seed
+  _seed = if iszero(seed)
+    if (!(typeof(prob) <: DiffEqBase.AbstractRODEProblem) || iszero(prob.seed))
+      seed_multiplier()*rand(UInt64)
+    else
+      prob.seed
+    end
+  else
+    seed
+  end
 
   if typeof(_prob) <: JumpProblem
-    DiffEqJump.reset_jump_problem!(jump_prob,_seed)
-    callbacks_internal = CallbackSet(callback,jump_prob.jump_callback)
+    DiffEqJump.reset_jump_problem!(_prob,_seed)
+    callbacks_internal = CallbackSet(callback,_prob.jump_callback)
   else
     callbacks_internal = CallbackSet(callback)
   end
@@ -258,7 +270,7 @@ function DiffEqBase.__init(
     callback_cache = nothing
   end
 
-  if typeof(prob) <: AbstractRODEProblem && prob.noise === nothing
+  if typeof(prob) <: DiffEqBase.AbstractRODEProblem && prob.noise === nothing
     rswm = isadaptive(alg) ? RSWM(adaptivealg=:RSwM3) : RSWM(adaptivealg=:RSwM1)
     if isinplace(prob)
       if alg_needs_extra_process(alg)
@@ -285,7 +297,7 @@ function DiffEqBase.__init(
                            rng = Xorshifts.Xoroshiro128Plus(_seed))
       end
     end
-  elseif typeof(prob) <: AbstractRODEProblem
+  elseif typeof(prob) <: DiffEqBase.AbstractRODEProblem
     W = prob.noise
     if W.reset
       if W.t[end] != t
@@ -304,20 +316,31 @@ function DiffEqBase.__init(
   end
 
   if typeof(_prob) <: JumpProblem && _prob.regular_jump !== nothing
+
+    if !isnothing(_prob.regular_jump.mark_dist) == nothing # https://github.com/JuliaDiffEq/DifferentialEquations.jl/issues/250
+      error("Mark distributions are currently not supported in SimpleTauLeaping")
+    end
+
+    jump_prototype = zeros(_prob.regular_jump.numjumps)
+    c = _prob.regular_jump.c
+
     if isinplace(prob)
-      P = CompoundPoissonProcess!(t,rand_prototype,
+      P = CompoundPoissonProcess!(_prob.regular_jump.rate,t,jump_prototype,
                                   save_everystep=save_noise,
-                                  rswm=rswm,
                                   rng = Xorshifts.Xoroshiro128Plus(_seed))
     else
-      P = CompoundPoissonProcess(t,rand_prototype,
+      P = CompoundPoissonProcess(_prob.regular_jump.rate,t,jump_prototype,
                                  save_everystep=save_noise,
-                                 rswm=rswm,
                                  rng = Xorshifts.Xoroshiro128Plus(_seed))
     end
+  else
+    jump_prototype = nothing
+    c = nothing
   end
 
-  cache = alg_cache(alg,prob,u,W.dW,W.dZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,Val{isinplace(prob)})
+  dW,dZ = isnothing(W) ? (nothing,nothing) : (W.dW,W.dZ)
+
+  cache = alg_cache(alg,prob,u,dW,dZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,Val{isinplace(prob)})
 
   id = LinearInterpolationData(timeseries,ts)
 
@@ -359,11 +382,13 @@ function DiffEqBase.__init(
   if recompile_flag == true
     FType = typeof(f)
     GType = typeof(g)
+    CType = typeof(c)
     SolType = typeof(sol)
     cacheType = typeof(cache)
   else
     FType = Function
     GType = Function
+    CType = Function
     SolType = DiffEqBase.AbstractRODESolution
     cacheType = StochasticDiffEqCache
   end
@@ -391,8 +416,8 @@ function DiffEqBase.__init(
                   uBottomEltype,tType,typeof(tdir),typeof(p),
                   typeof(eigen_est),QT,
                   uEltypeNoUnits,typeof(W),typeof(P),rateType,typeof(sol),typeof(cache),
-                  FType,GType,typeof(opts),typeof(noise),typeof(last_event_error),typeof(callback_cache)}(
-                  f,g,noise,uprev,tprev,t,u,p,tType(dt),tType(dt),tType(dt),dtcache,tspan[2],tdir,
+                  FType,GType,CType,typeof(opts),typeof(noise),typeof(last_event_error),typeof(callback_cache)}(
+                  f,g,c,noise,uprev,tprev,t,u,p,tType(dt),tType(dt),tType(dt),dtcache,tspan[2],tdir,
                   just_hit_tstop,isout,event_last_time,vector_event_last_time,last_event_error,accept_step,
                   last_stepfail,force_stepfail,
                   dtchangeable,u_modified,
@@ -416,7 +441,9 @@ function DiffEqBase.__init(
   ### Needs to be done before first rand
   integrator.sqdt = integrator.tdir*sqrt(abs(integrator.dt))
 
-  integrator.W.dt = integrator.dt
+  !isnothing(integrator.W) && (integrator.W.dt = integrator.dt)
+  !isnothing(integrator.P) && (integrator.P.dt = integrator.dt)
+
   DiffEqNoiseProcess.setup_next_step!(integrator::SDEIntegrator)
 
   integrator

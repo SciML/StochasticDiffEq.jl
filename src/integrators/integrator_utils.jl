@@ -3,14 +3,14 @@
   !isnothing(integrator.P) && DiffEqNoiseProcess.setup_next_step!(integrator.P,integrator.u,integrator.p)
 end
 
-@inline function DiffEqNoiseProcess.reject_step!(integrator::SDEIntegrator)
-  !isnothing(integrator.W) && reject_step!(integrator.W,integrator.dtnew,integrator.u,integrator.p)
-  !isnothing(integrator.P) && reject_step!(integrator.P,integrator.dtnew,integrator.u,integrator.p)
+@inline function DiffEqNoiseProcess.reject_step!(integrator::SDEIntegrator,dtnew = integrator.dtnew)
+  !isnothing(integrator.W) && reject_step!(integrator.W,dtnew,integrator.u,integrator.p)
+  !isnothing(integrator.P) && reject_step!(integrator.P,dtnew,integrator.u,integrator.p)
 end
 
-@inline function DiffEqNoiseProcess.accept_step!(integrator::SDEIntegrator)
-  !isnothing(integrator.W) && accept_step!(integrator.W,integrator.dt,integrator.u,integrator.p,false)
-  !isnothing(integrator.P) && accept_step!(integrator.P,integrator.dt,integrator.u,integrator.p,false)
+@inline function DiffEqNoiseProcess.accept_step!(integrator::SDEIntegrator,setup)
+  !isnothing(integrator.W) && accept_step!(integrator.W,integrator.dt,integrator.u,integrator.p,setup)
+  !isnothing(integrator.P) && accept_step!(integrator.P,integrator.dt,integrator.u,integrator.p,setup)
 end
 
 @inline function DiffEqNoiseProcess.save_noise!(integrator::SDEIntegrator)
@@ -203,8 +203,8 @@ end
       copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})
     end
   end
-  if integrator.W.curt != integrator.t
-    accept_step!(integrator)
+  if !isnothing(integrator.W) && integrator.W.curt != integrator.t || !isnothing(integrator.P) && integrator.P.curt != integrator.t
+    accept_step!(integrator,false)
   end
   save_noise!(integrator)
 end
@@ -268,8 +268,10 @@ end
   end
   integrator.dt = integrator.dtpropose
   modify_dt_for_tstops!(integrator)
-  accept_step!(integrator)
-  integrator.dt = integrator.W.dt
+  accept_step!(integrator,true)
+
+  # Allow RSWM1 on Wiener Process to change dt
+  !isnothing(integrator.W) && (integrator.dt = integrator.W.dt)
   integrator.sqdt = @fastmath sqrt(abs(integrator.dt)) # It can change dt, like in RSwM1
 end
 
