@@ -336,6 +336,7 @@ function DiffEqBase.__init(
   else
     jump_prototype = nothing
     c = nothing
+    P = nothing
   end
 
   dW,dZ = isnothing(W) ? (nothing,nothing) : (W.dW,W.dZ)
