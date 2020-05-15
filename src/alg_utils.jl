@@ -197,8 +197,7 @@ issplit(::SplitSDEAlgorithms) = true
 
 function OrdinaryDiffEq.unwrap_alg(integrator::SDEIntegrator, is_stiff)
   alg = integrator.alg
-  iscomp = typeof(alg) <: StochasticCompositeAlgorithm
-  if !iscomp
+  if !is_composite(alg)
     return alg
   elseif typeof(alg.choice_function) <: AutoSwitch
     num = is_stiff ? 2 : 1
