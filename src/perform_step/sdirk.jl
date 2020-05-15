@@ -5,15 +5,12 @@
                                             f=integrator.f)
   @unpack t,dt,uprev,u,p = integrator
   @unpack nlsolver = cache
-  @unpack uf = nlsolver
   alg = unwrap_alg(integrator, true)
+  OrdinaryDiffEq.markfirststage!(nlsolver)
+
   theta = alg.theta
   alg.symplectic ? a = dt/2 : a = theta*dt
   repeat_step = false
-  if isnewton(nlsolver)
-    uf.t = t
-    J = update_W!(integrator, cache, a, repeat_step)
-  end
 
   # TODO: Stochastic extrapolants?
   u = uprev
@@ -61,8 +58,8 @@
     tmp = uprev + dt*(1-theta)*ftmp + gtmp
   end
   nlsolver.tmp = tmp
-  z = nlsolve!(integrator, cache)
-  nlsolvefail(nlsolver) && return nothing
+  z = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
+  OrdinaryDiffEq.nlsolvefail(nlsolver) && return nothing
 
   if alg.symplectic
     u = uprev + z + gtmp
@@ -73,12 +70,12 @@
 
   if integrator.opts.adaptive
 
-    if !isnewton(nlsolver)
+    if !OrdinaryDiffEq.isnewton(nlsolver)
       is_compos = isa(integrator.alg, StochasticDiffEqCompositeAlgorithm)
-      J = calc_J(nlsolver, integrator,cache,is_compos)
+      J = OrdinaryDiffEq.calc_J(integrator, nlsolver.cache)
     end
 
-    Ed = _reshape(dt*(J*_vec(ftmp))/2, axes(ftmp))
+    Ed = _reshape(dt*(nlsolver.cache.J*_vec(ftmp))/2, axes(ftmp))
     if typeof(cache) <: Union{ImplicitEMConstantCache,ImplicitEulerHeunConstantCache}
         En = mil_correction
     else
@@ -103,13 +100,16 @@ end
                                f=integrator.f)
   @unpack t,dt,uprev,u,p = integrator
   @unpack gtmp,gtmp2,nlsolver = cache
-  @unpack du1,dz,z,k,tmp = nlsolver
-  J = (isnewton(nlsolver) ? nlsolver.cache.J : nothing)
+  @unpack z,tmp = nlsolver
+  @unpack k,dz = nlsolver.cache # alias to reduce memory
+  J = (OrdinaryDiffEq.isnewton(nlsolver) ? nlsolver.cache.J : nothing)
   alg = unwrap_alg(integrator, true)
   alg.symplectic ? a = dt/2 : a = alg.theta*dt
   dW = integrator.W.dW
   mass_matrix = integrator.f.mass_matrix
   theta = alg.theta
+
+  OrdinaryDiffEq.markfirststage!(nlsolver)
 
   repeat_step = false
 
@@ -120,8 +120,6 @@ end
   else # :constant
     copyto!(u,uprev)
   end
-
-  update_W!(integrator, cache, a, repeat_step)
 
   ##############################################################################
 
@@ -179,7 +177,8 @@ end
     #@.. u = uprev + dt*(1-theta)*tmp + theta*z + gtmp2
     @.. tmp = uprev + dt*(1-theta)*tmp + gtmp2
   end
-  z = nlsolve!(integrator, cache)
+  z = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
+  OrdinaryDiffEq.nlsolvefail(nlsolver) && return
 
   if alg.symplectic
     @.. u = uprev + z + gtmp2
@@ -252,4 +251,12 @@ end
     integrator.EEst = integrator.opts.internalnorm(tmp, t)
 
   end
+end
+
+### Mirror OrdinaryDiffEq because of dispatch on cache
+function OrdinaryDiffEq.update_W!(nlsolver::OrdinaryDiffEq.AbstractNLSolver, integrator, cache::StochasticDiffEqMutableCache, dtgamma, repeat_step)
+  if OrdinaryDiffEq.isnewton(nlsolver)
+    OrdinaryDiffEq.calc_W!(OrdinaryDiffEq.get_W(nlsolver), integrator, nlsolver, cache, dtgamma, repeat_step, true)
+  end
+  nothing
 end

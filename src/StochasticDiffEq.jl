@@ -5,6 +5,8 @@ module StochasticDiffEq
   using Reexport
   @reexport using DiffEqBase
 
+  import OrdinaryDiffEq
+
   using UnPack, RecursiveArrayTools, DataStructures
   using DiffEqNoiseProcess, Random, ArrayInterface
   using NLsolve, ForwardDiff, StaticArrays, MuladdMacro, FiniteDiff
@@ -64,7 +66,6 @@ module StochasticDiffEq
   include("misc_utils.jl")
   include("algorithms.jl")
   include("options_type.jl")
-  include("derivative_wrappers.jl")
   include("interp_func.jl")
   include("caches/cache_types.jl")
   include("caches/basic_method_caches.jl")
@@ -105,7 +106,6 @@ module StochasticDiffEq
   include("perform_step/SROCK_perform_step.jl")
   include("tableaus.jl")
   include("SROCK_tableaus.jl")
-  include("derivative_utils.jl")
   include("iterated_integrals.jl")
   include("SROCK_utils.jl")
   include("composite_algs.jl")

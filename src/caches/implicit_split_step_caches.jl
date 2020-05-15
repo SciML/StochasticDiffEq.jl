@@ -11,8 +11,7 @@ end
 function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
   γ, c = alg.theta,zero(t)
-  J, W = iip_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
-  nlsolver = iipnlsolve(alg,u,uprev,p,t,dt,f,W,J,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,γ,c)
+  nlsolver = OrdinaryDiffEq.build_nlsolver(alg,u,uprev,p,t,dt,f,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,γ,c,Val(true))
   fsalfirst = zero(rate_prototype)
   gtmp = zero(noise_rate_prototype)
   if is_diagonal_noise(prob)
@@ -33,8 +32,7 @@ end
 function alg_cache(alg::ISSEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   γ, c = alg.theta,zero(t)
-  J, W = oop_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
-  nlsolver = oopnlsolve(alg,u,uprev,p,t,dt,f,W,J,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,γ,c)
+  nlsolver = OrdinaryDiffEq.build_nlsolver(alg,u,uprev,p,t,dt,f,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,γ,c,Val(false))
   ISSEMConstantCache(nlsolver)
 end
 
@@ -52,8 +50,7 @@ end
 function alg_cache(alg::ISSEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
   γ, c = alg.theta,zero(t)
-  J, W = iip_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
-  nlsolver = iipnlsolve(alg,u,uprev,p,t,dt,f,W,J,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,γ,c)
+  nlsolver = OrdinaryDiffEq.build_nlsolver(alg,u,uprev,p,t,dt,f,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,γ,c,Val(true))
   fsalfirst = zero(rate_prototype)
 
   gtmp = zero(noise_rate_prototype)
@@ -77,7 +74,6 @@ end
 function alg_cache(alg::ISSEulerHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,
                    uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   γ, c = alg.theta,zero(t)
-  J, W = oop_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
-  nlsolver = oopnlsolve(alg,u,uprev,p,t,dt,f,W,J,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,γ,c)
+  nlsolver = OrdinaryDiffEq.build_nlsolver(alg,u,uprev,p,t,dt,f,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,γ,c,Val(false))
   ISSEulerHeunConstantCache(nlsolver)
 end

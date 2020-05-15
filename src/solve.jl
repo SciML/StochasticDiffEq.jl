@@ -312,15 +312,16 @@ function DiffEqBase.__init(
                     verbose,calck,force_dtmin,
                     advance_to_tstop,stop_at_next_tstop)
 
+  destats = DiffEqBase.DEStats(0)
   if typeof(alg) <: Union{StochasticDiffEqCompositeAlgorithm,
                           StochasticDiffEqRODECompositeAlgorithm}
     sol = DiffEqBase.build_solution(prob,alg,ts,timeseries,W=W,
-                                    destats = DiffEqBase.DEStats(0),
+                                    destats = destats,
                                     calculate_error = false, alg_choice=alg_choice,
                                     interp = id, dense = dense, seed = _seed)
   else
     sol = DiffEqBase.build_solution(prob,alg,ts,timeseries,W=W,
-                                    destats = DiffEqBase.DEStats(0),
+                                    destats = destats,
                                     calculate_error = false,
                                     interp = id, dense = dense, seed = _seed)
   end
@@ -369,7 +370,7 @@ function DiffEqBase.__init(
                   alg,sol,
                   cache,callback_cache,tType(dt),W,
                   opts,iter,success_iter,eigen_est,EEst,q,
-                  QT(qoldinit),q11)
+                  QT(qoldinit),q11,destats)
 
   if initialize_integrator
     initialize_callbacks!(integrator, initialize_save)

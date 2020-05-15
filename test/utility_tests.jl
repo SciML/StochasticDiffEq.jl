@@ -1,5 +1,5 @@
 using StochasticDiffEq, LinearAlgebra, SparseArrays, Random, Test, DiffEqOperators
-using StochasticDiffEq: WOperator, set_gamma!, calc_W!
+using StochasticDiffEq.OrdinaryDiffEq: WOperator, set_gamma!, calc_W!
 
 @testset "Derivative Utilities" begin
   @testset "WOperator" begin
@@ -32,7 +32,8 @@ using StochasticDiffEq: WOperator, set_gamma!, calc_W!
                       jac=(u,p,t) -> A)
     prob = SDEProblem(fun, _g, u0, tspan)
     integrator = init(prob, ImplicitEM(theta=1); adaptive=false, dt=dt)
-    J, W = calc_W!(integrator.cache.nlsolver, integrator, integrator.cache, dt, false)
+    W = integrator.cache.nlsolver.cache.W
+    calc_W!(W, integrator, integrator.cache.nlsolver, integrator.cache, dt, false)
     @test convert(AbstractMatrix, W) ≈ concrete_W
     @test W \ u0 ≈ concrete_W \ u0
 
@@ -43,7 +44,8 @@ using StochasticDiffEq: WOperator, set_gamma!, calc_W!
                       jac_prototype=DiffEqArrayOperator(A))
     prob = SDEProblem(fun, _g, u0, tspan)
     integrator = init(prob, ImplicitEM(theta=1); adaptive=false, dt=dt)
-    calc_W!(integrator.cache.nlsolver, integrator, integrator.cache, dt, false)
+    W = integrator.cache.nlsolver.cache.W
+    calc_W!(W, integrator, integrator.cache.nlsolver, integrator.cache, dt, false)
     @test convert(AbstractMatrix, integrator.cache.nlsolver.cache.W) ≈ concrete_W
     ldiv!(tmp, lu!(integrator.cache.nlsolver.cache.W), u0); @test tmp ≈ concrete_W \ u0
   end

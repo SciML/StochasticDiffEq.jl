@@ -6,8 +6,7 @@ end
 function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   tab = SKenCarpTableau(real(uBottomEltypeNoUnits),real(tTypeNoUnits))
   γ, c = tab.γ,tab.c3
-  J, W = oop_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
-  nlsolver = oopnlsolve(alg,u,uprev,p,t,dt,f,W,J,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,γ,c)
+  nlsolver = OrdinaryDiffEq.build_nlsolver(alg,u,uprev,p,t,dt,f,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,γ,c,Val(false))
   SKenCarpConstantCache(nlsolver,tab)
 end
 
@@ -37,8 +36,7 @@ du_cache(c::SKenCarpCache)   = (c.nlsolver.k,c.fsalfirst)
 function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
   tab = SKenCarpTableau(real(uBottomEltypeNoUnits),real(tTypeNoUnits))
   γ, c = tab.γ,tab.c3
-  J, W = iip_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
-  nlsolver = iipnlsolve(alg,u,uprev,p,t,dt,f,W,J,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,γ,c)
+  nlsolver = OrdinaryDiffEq.build_nlsolver(alg,u,uprev,p,t,dt,f,rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,γ,c,Val(true))
   fsalfirst = zero(rate_prototype)
 
   atmp = fill!(similar(u,uEltypeNoUnits),0)

@@ -146,7 +146,7 @@ sim2 = test_convergence(dts,prob,SROCKC2(eigen_est=eigen_est),trajectories=100)
 
 print(".")
 
-sim3 = test_convergence(dts,prob,SRI(),trajectories=10)
+sim3 = test_convergence(dts,prob,SRI(),trajectories=100)
 @test abs(sim3.𝒪est[:final]-1.5) < 0.3
 
 sim4 = test_convergence(dts,prob,SRIW1(),trajectories=100)

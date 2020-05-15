@@ -148,14 +148,13 @@ alg_needs_extra_process(alg::SKenCarp) = true
 alg_needs_extra_process(alg::DRI1) = true
 alg_needs_extra_process(alg::RI1) = true
 
-alg_autodiff(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
-alg_autodiff(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
+OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
+OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
 
-get_current_alg_autodiff(alg, cache) = alg_autodiff(alg)
-get_current_alg_autodiff(alg::StochasticDiffEqCompositeAlgorithm, cache) = alg_autodiff(alg.algs[cache.current])
+OrdinaryDiffEq.get_current_alg_autodiff(alg::StochasticDiffEqCompositeAlgorithm, cache) = OrdinaryDiffEq.alg_autodiff(alg.algs[cache.current])
 
-get_chunksize(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = CS
-get_chunksize(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = CS
+OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = CS
+OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = CS
 
 alg_mass_matrix_compatible(alg::StochasticDiffEqAlgorithm) = false
 
@@ -195,3 +194,15 @@ end
 
 issplit(::StochasticDiffEqAlgorithm) = false
 issplit(::SplitSDEAlgorithms) = true
+
+function OrdinaryDiffEq.unwrap_alg(integrator::SDEIntegrator, is_stiff)
+  alg = integrator.alg
+  if !is_composite(alg)
+    return alg
+  elseif typeof(alg.choice_function) <: AutoSwitch
+    num = is_stiff ? 2 : 1
+    return alg.algs[num]
+  else
+    return alg.algs[integrator.cache.current]
+  end
+end
