@@ -23,6 +23,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
   end
 
   if GROUP == "All" || GROUP == "Interface2"
+    @time @safetestset "Basic Tau Leaping Tests" begin include("tau_leaping.jl") end
     @time @safetestset "Linear SDE Tests" begin include("sde/sde_linear_tests.jl") end
     @time @safetestset "Two-dimensional Linear SDE Tests" begin include("sde/sde_twodimlinear_tests.jl") end
     @time @safetestset "Element-wise Tolerances Tests" begin include("tolerances_tests.jl") end
