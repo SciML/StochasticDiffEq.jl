@@ -15,7 +15,7 @@
       choose_algorithm!(integrator,integrator.cache)
       fix_dtnew_at_bounds!(integrator)
       modify_dtnew_for_tstops!(integrator)
-      reject_step!(integrator.W,integrator.dtnew)
+      reject_step!(integrator.W,integrator.dtnew,integrator.u,integrator.p)
       integrator.dt = integrator.dtnew
       integrator.sqdt = sqrt(abs(integrator.dt))
     end
@@ -184,7 +184,7 @@ end
     end
   end
   if integrator.W.curt != integrator.t
-    accept_step!(integrator.W,integrator.dt,false)
+    accept_step!(integrator.W,integrator.dt,integrator.u,integrator.p,false)
   end
   save_noise!(integrator.W)
 end
@@ -248,7 +248,7 @@ end
   end
   integrator.dt = integrator.dtpropose
   modify_dt_for_tstops!(integrator)
-  accept_step!(integrator.W,integrator.dt)
+  accept_step!(integrator.W,integrator.dt,integrator.u,integrator.p)
   integrator.dt = integrator.W.dt
   integrator.sqdt = @fastmath sqrt(abs(integrator.dt)) # It can change dt, like in RSwM1
 end
