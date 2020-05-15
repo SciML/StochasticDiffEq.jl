@@ -9,6 +9,14 @@ abstract type StochasticDiffEqRODECompositeAlgorithm <: StochasticDiffEqRODEAlgo
 abstract type StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller} <: StochasticDiffEqAdaptiveAlgorithm end
 abstract type StochasticDiffEqNewtonAlgorithm{CS,AD,Controller} <: StochasticDiffEqAlgorithm end
 
+abstract type StochasticDiffEqJumpAlgorithm <: StochasticDiffEqAlgorithm end
+abstract type StochasticDiffEqJumpAdaptiveAlgorithm <: StochasticDiffEqAlgorithm end
+abstract type StochasticDiffEqJumpNewtonAdaptiveAlgorithm{CS,AD,Controller} <: StochasticDiffEqJumpAdaptiveAlgorithm end
+
+abstract type StochasticDiffEqJumpDiffusionAlgorithm <: StochasticDiffEqAlgorithm end
+abstract type StochasticDiffEqJumpDiffusionAdaptiveAlgorithm <: StochasticDiffEqAlgorithm end
+abstract type StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{CS,AD,Controller} <: StochasticDiffEqJumpDiffusionAdaptiveAlgorithm end
+
 abstract type IteratedIntegralApprox end
 struct IICommutative <:  IteratedIntegralApprox end
 struct IIWiktorsson <:  IteratedIntegralApprox end
@@ -310,6 +318,14 @@ SKenCarp(;chunk_size=0,autodiff=true,diff_type=Val{:central},
         typeof(nlsolve),typeof(new_jac_conv_bound),controller}(
         linsolve,diff_type,nlsolve,smooth_est,extrapolant,new_jac_conv_bound,
         ode_error_est)
+
+
+################################################################################
+
+# Jumps
+
+struct TauLeaping <: StochasticDiffEqJumpAlgorithm end
+struct CaoTauLeaping <: StochasticDiffEqJumpAlgorithm end
 
 ################################################################################
 

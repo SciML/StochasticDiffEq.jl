@@ -5,8 +5,11 @@ delta_default(alg) = 1//1
 delta_default(alg::SRIW1) = 1//6
 
 isadaptive(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = false
-isadaptive(alg::Union{StochasticDiffEqAdaptiveAlgorithm,StochasticDiffEqRODEAdaptiveAlgorithm}) = true
+isadaptive(alg::Union{StochasticDiffEqAdaptiveAlgorithm,StochasticDiffEqRODEAdaptiveAlgorithm,StochasticDiffEqJumpAdaptiveAlgorithm,StochasticDiffEqJumpDiffusionAdaptiveAlgorithm}) = true
 isadaptive(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = all(isadaptive.(alg.algs))
+
+# For whether an algorithm uses a priori dt estimates or utilizes an error estimate
+isaposteriori(alg) = true
 
 alg_order(alg::EM) = 1//2
 alg_order(alg::LambaEM) = 1//2
@@ -62,6 +65,8 @@ alg_order(alg::SOSRA2) = 2//1
 alg_order(alg::DRI1) = 1//1
 alg_order(alg::RI1) = 1//1
 
+alg_order(alg::TauLeaping) = 1//1
+
 alg_order(alg::SKenCarp) = 2//1
 alg_order(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = maximum(alg_order.(alg.algs))
 get_current_alg_order(alg::StochasticDiffEqAlgorithm,cache) = alg_order(alg)
@@ -85,51 +90,53 @@ alg_interpretation(alg::ImplicitRKMil{CS,AD,F,S,N,T2,Controller,interpretation})
 alg_compatible(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = true
 
 alg_compatible(prob,alg::StochasticDiffEqAlgorithm) = false
-alg_compatible(prob,alg::SRI) = is_diagonal_noise(prob)
-alg_compatible(prob,alg::SRIW1) = is_diagonal_noise(prob)
-alg_compatible(prob,alg::SRIW2) = is_diagonal_noise(prob)
-alg_compatible(prob,alg::SOSRI) = is_diagonal_noise(prob)
-alg_compatible(prob,alg::SOSRI2) = is_diagonal_noise(prob)
-alg_compatible(prob,alg::SRA) = true
-alg_compatible(prob,alg::SRA1) = true
-alg_compatible(prob,alg::SRA2) = true
-alg_compatible(prob,alg::SRA3) = true
-alg_compatible(prob,alg::SOSRA) = true
-alg_compatible(prob,alg::SOSRA2) = true
-alg_compatible(prob,alg::DRI1) = true
-alg_compatible(prob,alg::RI1) = true
-alg_compatible(prob,alg::SKenCarp) = true
-alg_compatible(prob,alg::EM) = true
-alg_compatible(prob,alg::LambaEM) = true
-alg_compatible(prob,alg::WangLi3SMil_A) = true
-alg_compatible(prob,alg::WangLi3SMil_B) = true
-alg_compatible(prob,alg::WangLi3SMil_C) = true
-alg_compatible(prob,alg::WangLi3SMil_D) = true
-alg_compatible(prob,alg::WangLi3SMil_E) = true
-alg_compatible(prob,alg::WangLi3SMil_F) = true
-alg_compatible(prob,alg::SROCK1) = true
-alg_compatible(prob,alg::SROCK2) = true
-alg_compatible(prob,alg::KomBurSROCK2) = true
-alg_compatible(prob,alg::SROCKC2) = true
-alg_compatible(prob,alg::SROCKEM) = true
-alg_compatible(prob,alg::SKSROCK) = true
-alg_compatible(prob,alg::TangXiaoSROCK2) = true
-alg_compatible(prob,alg::EulerHeun) = true
-alg_compatible(prob,alg::LambaEulerHeun) = true
-alg_compatible(prob,alg::SplitEM) = true
-alg_compatible(prob,alg::PCEuler) = true
-alg_compatible(prob,alg::ImplicitEM) = true
-alg_compatible(prob,alg::ImplicitEulerHeun) = true
-alg_compatible(prob,alg::ISSEM) = true
-alg_compatible(prob,alg::ISSEulerHeun) = true
-alg_compatible(prob,alg::SimplifiedEM) = true
-alg_compatible(prob,alg::RKMil) = is_diagonal_noise(prob)
-alg_compatible(prob,alg::ImplicitRKMil) = is_diagonal_noise(prob)
-alg_compatible(prob,alg::RKMilCommute) = true # No good check for commutative noise
-alg_compatible(prob,alg::RKMil_General) = true
-alg_compatible(prob,alg::IIF1M) = true
-alg_compatible(prob,alg::IIF2M) = true
-alg_compatible(prob,alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = max((alg_compatible(prob,a) for a in alg.algs)...)
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SRI) = is_diagonal_noise(prob)
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SRIW1) = is_diagonal_noise(prob)
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SRIW2) = is_diagonal_noise(prob)
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SOSRI) = is_diagonal_noise(prob)
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SOSRI2) = is_diagonal_noise(prob)
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SRA) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SRA1) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SRA2) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SRA3) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SOSRA) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SOSRA2) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::DRI1) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RI1) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SKenCarp) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::EM) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::LambaEM) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::WangLi3SMil_A) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::WangLi3SMil_B) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::WangLi3SMil_C) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::WangLi3SMil_D) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::WangLi3SMil_E) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::WangLi3SMil_F) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SROCK1) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SROCK2) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::KomBurSROCK2) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SROCKC2) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SROCKEM) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SKSROCK) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::TangXiaoSROCK2) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::EulerHeun) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::LambaEulerHeun) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SplitEM) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::PCEuler) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::ImplicitEM) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::ImplicitEulerHeun) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::ISSEM) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::ISSEulerHeun) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SimplifiedEM) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RKMil) = is_diagonal_noise(prob)
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::ImplicitRKMil) = is_diagonal_noise(prob)
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RKMilCommute) = true # No good check for commutative noise
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RKMil_General) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::IIF1M) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::IIF2M) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = max((alg_compatible(prob,a) for a in alg.algs)...)
+
+alg_compatible(prob::JumpProblem,alg::Union{StochasticDiffEqJumpAdaptiveAlgorithm,StochasticDiffEqJumpAlgorithm}) = true
 
 alg_needs_extra_process(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = false
 alg_needs_extra_process(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = max((alg_needs_extra_process(a) for a in alg.algs)...)
@@ -150,11 +157,15 @@ alg_needs_extra_process(alg::RI1) = true
 
 OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
 OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
+OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqJumpNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
+OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
 
 OrdinaryDiffEq.get_current_alg_autodiff(alg::StochasticDiffEqCompositeAlgorithm, cache) = OrdinaryDiffEq.alg_autodiff(alg.algs[cache.current])
 
 OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = CS
 OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = CS
+OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqJumpNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = CS
+OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = CS
 
 alg_mass_matrix_compatible(alg::StochasticDiffEqAlgorithm) = false
 
