@@ -89,6 +89,7 @@ alg_interpretation(alg::ImplicitRKMil{CS,AD,F,S,N,T2,Controller,interpretation})
 
 alg_compatible(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = true
 
+alg_compatible(prob::JumpProblem,alg::StochasticDiffEqAlgorithm) = alg_compatible(prob.prob,alg) && prob.regular_jump === nothing
 alg_compatible(prob,alg::StochasticDiffEqAlgorithm) = false
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SRI) = is_diagonal_noise(prob)
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SRIW1) = is_diagonal_noise(prob)
