@@ -131,7 +131,7 @@ function DiffEqBase.__init(
   end
 
   if reltol === nothing
-    if uBottomEltypeNoUnits == uBottomEltype && !(uBottomEltype <: Integer)
+    if uBottomEltypeNoUnits === uBottomEltype && !(uBottomEltype <: Integer)
       reltol_internal = real(convert(uBottomEltype,oneunit(uBottomEltype)*1//10^2))
     elseif uBottomEltype <: Integer
       reltol_internal = real(oneunit(uBottomEltype)*1//10^2)
