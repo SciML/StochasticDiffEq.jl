@@ -119,8 +119,10 @@ function DiffEqBase.__init(
   tTypeNoUnits   = typeof(one(tType))
 
   if abstol === nothing
-    if uBottomEltypeNoUnits == uBottomEltype
+    if uBottomEltypeNoUnits == uBottomEltype && !(uBottomEltype <: Integer)
       abstol_internal = real(convert(uBottomEltype,oneunit(uBottomEltype)*1//10^2))
+    elseif uBottomEltype <: Integer
+      abstol_internal = real(oneunit(uBottomEltype)*1//10^2)
     else
       abstol_internal = real.(oneunit.(u).*1//10^2)
     end
@@ -129,8 +131,10 @@ function DiffEqBase.__init(
   end
 
   if reltol === nothing
-    if uBottomEltypeNoUnits == uBottomEltype
+    if uBottomEltypeNoUnits == uBottomEltype && !(uBottomEltype <: Integer)
       reltol_internal = real(convert(uBottomEltype,oneunit(uBottomEltype)*1//10^2))
+    elseif uBottomEltype <: Integer
+      reltol_internal = real(oneunit(uBottomEltype)*1//10^2)
     else
       reltol_internal = real.(oneunit.(u).*1//10^2)
     end
@@ -352,7 +356,11 @@ function DiffEqBase.__init(
 
   cache = alg_cache(alg,prob,u,dW,dZ,p,rate_prototype,noise_rate_prototype,jump_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,Val{isinplace(_prob)})
 
-  id = LinearInterpolationData(timeseries,ts)
+  if typeof(_prob) <: JumpProblem && typeof(prob) <: DiscreteProblem
+    id = DiffEqBase.ConstantInterpolation(ts,timeseries)
+  else
+    id = LinearInterpolationData(timeseries,ts)
+  end
 
   opts = SDEOptions(maxiters,save_everystep,
                     adaptive,abstol_internal,
