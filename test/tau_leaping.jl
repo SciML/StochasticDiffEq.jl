@@ -18,10 +18,14 @@ end
 
 rj = RegularJump(regular_rate,regular_c,2)
 jumps = JumpSet(rj)
-prob = DiscreteProblem([999.0,1,0],(0.0,250.0))
-jump_prob = JumpProblem(prob,Direct(),rj)
-sol = solve(jump_prob,TauLeaping();dt=1.0)
-sol = solve(jump_prob,SimpleTauLeaping();dt=1.0)
+iip_prob = DiscreteProblem([999.0,1,0],(0.0,250.0))
+jump_iipprob = JumpProblem(iip_prob,Direct(),rj)
+@time sol = solve(jump_iipprob,TauLeaping())
+@time sol = solve(jump_iipprob,SimpleTauLeaping();dt=1.0)
+@time sol = solve(jump_iipprob,TauLeaping();dt=1.0,adaptive=false)
+
+using Plots
+plot(sol)
 
 function rate_oop(u,p,t)
     [(0.1/1000.0)*u[1]*u[2],0.01u[2]]
@@ -41,4 +45,4 @@ rj = RegularJump(rate_oop,regular_c,2)
 jumps = JumpSet(rj)
 prob = DiscreteProblem([999.0,1,0],(0.0,250.0))
 jump_prob = JumpProblem(prob,Direct(),rj)
-sol = solve(jump_prob,TauLeaping();dt=1.0)
+sol = solve(jump_prob,TauLeaping(),reltol=5e-2)

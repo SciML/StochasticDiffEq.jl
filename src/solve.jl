@@ -325,23 +325,32 @@ function DiffEqBase.__init(
     c = _prob.regular_jump.c
 
     if isinplace(_prob.regular_jump)
+      rate_constants = zeros(_prob.regular_jump.numjumps)
+      _prob.regular_jump.rate(rate_constants,u./u,prob.p,tspan[1])
       P = CompoundPoissonProcess!(_prob.regular_jump.rate,t,jump_prototype,
+                                  computerates = !adaptive,
                                   save_everystep=save_noise,
                                   rng = Xorshifts.Xoroshiro128Plus(_seed))
+      adaptive && P.cache.rate(P.cache.currate,u,p,tspan[1])
     else
+      rate_constants = _prob.regular_jump.rate(u./u,prob.p,tspan[1])
       P = CompoundPoissonProcess(_prob.regular_jump.rate,t,jump_prototype,
                                  save_everystep=save_noise,
+                                 computerates = !adaptive,
                                  rng = Xorshifts.Xoroshiro128Plus(_seed))
+      adaptive && (P.cache.currate = P.cache.rate(u,p,tspan[1]))
     end
+
   else
     jump_prototype = nothing
     c = nothing
     P = nothing
+    rate_constants = nothing
   end
 
   dW,dZ = isnothing(W) ? (nothing,nothing) : (W.dW,W.dZ)
 
-  cache = alg_cache(alg,prob,u,dW,dZ,p,rate_prototype,noise_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,Val{isinplace(_prob)})
+  cache = alg_cache(alg,prob,u,dW,dZ,p,rate_prototype,noise_rate_prototype,jump_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,Val{isinplace(_prob)})
 
   id = LinearInterpolationData(timeseries,ts)
 
@@ -417,14 +426,14 @@ function DiffEqBase.__init(
                   uBottomEltype,tType,typeof(tdir),typeof(p),
                   typeof(eigen_est),QT,
                   uEltypeNoUnits,typeof(W),typeof(P),rateType,typeof(sol),typeof(cache),
-                  FType,GType,CType,typeof(opts),typeof(noise),typeof(last_event_error),typeof(callback_cache)}(
+                  FType,GType,CType,typeof(opts),typeof(noise),typeof(last_event_error),typeof(callback_cache),typeof(rate_constants)}(
                   f,g,c,noise,uprev,tprev,t,u,p,tType(dt),tType(dt),tType(dt),dtcache,tspan[2],tdir,
                   just_hit_tstop,isout,event_last_time,vector_event_last_time,last_event_error,accept_step,
                   last_stepfail,force_stepfail,
                   dtchangeable,u_modified,
                   saveiter,
                   alg,sol,
-                  cache,callback_cache,tType(dt),W,P,
+                  cache,callback_cache,tType(dt),W,P,rate_constants,
                   opts,iter,success_iter,eigen_est,EEst,q,
                   QT(qoldinit),q11,destats)
 

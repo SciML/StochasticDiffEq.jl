@@ -1,4 +1,10 @@
 function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,internalnorm,prob,order,integrator) where {tType,uType}
+
+  if integrator.P !== nothing
+    # Don't have a good estimate with jumps
+    return tdir*dtmax/1e6
+  end
+
   f = prob.f
   g = prob.g
   p = prob.p

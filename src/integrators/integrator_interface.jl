@@ -15,6 +15,7 @@
     integrator.dt = integrator.dtnew
     integrator.sqdt = sqrt(abs(integrator.dt))
     integrator.t = t
+
     # reeval_internals_due_to_modification!(integrator) # Not necessary for linear interp
     if T
       solution_endpoint_match_cur_integrator!(integrator)

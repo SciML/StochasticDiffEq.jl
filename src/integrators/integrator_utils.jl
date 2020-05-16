@@ -30,7 +30,7 @@ end
       if integrator.isout
         integrator.dtnew = integrator.dt*integrator.opts.qmin
       elseif !integrator.force_stepfail
-        integrator.dtnew = integrator.dt/min(inv(integrator.opts.qmin),integrator.q11/integrator.opts.gamma)
+        step_reject_controller!(integrator,integrator.alg)
       end
       choose_algorithm!(integrator,integrator.cache)
       fix_dtnew_at_bounds!(integrator)
@@ -137,13 +137,11 @@ end
     integrator.last_stepfail = true
     integrator.accept_step = false
   elseif integrator.opts.adaptive
-    integrator.q11 = DiffEqBase.value(DiffEqBase.fastpow(integrator.EEst,integrator.opts.beta1))
-    integrator.q = DiffEqBase.value(integrator.q11/DiffEqBase.fastpow(integrator.qold,integrator.opts.beta2))
-    @fastmath integrator.q = DiffEqBase.value(max(inv(integrator.opts.qmax),min(inv(integrator.opts.qmin),integrator.q/integrator.opts.gamma)))
-    integrator.dtnew = DiffEqBase.value(integrator.dt/integrator.q) * oneunit(integrator.dt)
+    stepsize_controller!(integrator,integrator.alg)
     integrator.isout = integrator.opts.isoutofdomain(integrator.u,integrator.p,ttmp)
     integrator.accept_step = (!integrator.isout && integrator.EEst <= 1.0) || (integrator.opts.force_dtmin && integrator.dt <= integrator.opts.dtmin)
     if integrator.accept_step # Accepted
+      step_accept_controller!(integrator,integrator.alg)
       integrator.last_stepfail = false
       integrator.tprev = integrator.t
       if typeof(integrator.t)<:AbstractFloat && !isempty(integrator.opts.tstops)
@@ -258,6 +256,14 @@ end
 
 @inline function handle_callback_modifiers!(integrator::SDEIntegrator)
   #integrator.reeval_fsal = true
+  if integrator.P !== nothing && integrator.opts.adaptive
+    if typeof(integrator.cache) <: StochasticDiffEqMutableCache
+      oldrate = integrator.P.cache.currate
+      P.cache.rate(oldrate,u,p,t)
+    else
+      integrator.P.cache.currate = P.cache.rate(u,p,t)
+    end
+  end
 end
 
 @inline function apply_step!(integrator)

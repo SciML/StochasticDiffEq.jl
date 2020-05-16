@@ -87,6 +87,7 @@ module StochasticDiffEq
   include("integrators/type.jl")
   include("dense.jl")
   include("alg_utils.jl")
+  include("integrators/stepsize_controllers.jl")
   include("integrators/integrator_utils.jl")
   include("cache_utils.jl")
   include("integrators/integrator_interface.jl")

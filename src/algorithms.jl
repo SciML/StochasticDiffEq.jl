@@ -324,8 +324,8 @@ SKenCarp(;chunk_size=0,autodiff=true,diff_type=Val{:central},
 
 # Jumps
 
-struct TauLeaping <: StochasticDiffEqJumpAlgorithm end
-struct CaoTauLeaping <: StochasticDiffEqJumpAlgorithm end
+struct TauLeaping <: StochasticDiffEqJumpAdaptiveAlgorithm end
+struct CaoTauLeaping <: StochasticDiffEqJumpAdaptiveAlgorithm end
 
 ################################################################################
 
