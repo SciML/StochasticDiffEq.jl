@@ -119,7 +119,7 @@ function DiffEqBase.__init(
   tTypeNoUnits   = typeof(one(tType))
 
   if abstol === nothing
-    if uBottomEltypeNoUnits == uBottomEltype && !(uBottomEltype <: Integer)
+    if uBottomEltypeNoUnits === uBottomEltype && !(uBottomEltype <: Integer)
       abstol_internal = real(convert(uBottomEltype,oneunit(uBottomEltype)*1//10^2))
     elseif uBottomEltype <: Integer
       abstol_internal = real(oneunit(uBottomEltype)*1//10^2)
