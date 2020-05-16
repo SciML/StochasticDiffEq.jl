@@ -356,7 +356,7 @@ function DiffEqBase.__init(
 
   cache = alg_cache(alg,prob,u,dW,dZ,p,rate_prototype,noise_rate_prototype,jump_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,Val{isinplace(_prob)})
 
-  if typeof(_prob) <: JumpProblem && typeof(prob) <: DiscreteProblem
+  if typeof(_prob) <: JumpProblem && typeof(prob) <: DiscreteProblem && typeof(prob) <: Integer
     id = DiffEqBase.ConstantInterpolation(ts,timeseries)
   else
     id = LinearInterpolationData(timeseries,ts)

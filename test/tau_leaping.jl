@@ -24,8 +24,9 @@ jump_iipprob = JumpProblem(iip_prob,Direct(),rj)
 @time sol = solve(jump_iipprob,SimpleTauLeaping();dt=1.0)
 @time sol = solve(jump_iipprob,TauLeaping();dt=1.0,adaptive=false)
 
-using Plots
-plot(sol)
+iip_prob = DiscreteProblem([999,1,0],(0.0,250.0))
+jump_iipprob = JumpProblem(iip_prob,Direct(),rj)
+sol = solve(jump_iipprob,TauLeaping())
 
 function rate_oop(u,p,t)
     [(0.1/1000.0)*u[1]*u[2],0.01u[2]]
