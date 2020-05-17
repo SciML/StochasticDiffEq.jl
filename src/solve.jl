@@ -62,6 +62,23 @@ function DiffEqBase.__init(
 
   prob = concrete_prob(_prob)
 
+  _seed = if iszero(seed)
+    if (!(typeof(prob) <: DiffEqBase.AbstractRODEProblem) || iszero(prob.seed))
+      seed_multiplier()*rand(UInt64)
+    else
+      prob.seed
+    end
+  else
+    seed
+  end
+
+  if typeof(_prob) <: JumpProblem
+    _prob = DiffEqJump.resetted_jump_problem(_prob,_seed)
+  end
+
+  # Grab the deepcopied version for caching reasons.
+  prob = concrete_prob(_prob)
+
   if typeof(prob.f)<:Tuple
     if any(mm != I for mm in prob.f.mass_matrix)
       error("This solver is not able to use mass matrices.")
@@ -250,18 +267,7 @@ function DiffEqBase.__init(
     randType = typeof(rand_prototype) # Strip units and type info
   end
 
-  _seed = if iszero(seed)
-    if (!(typeof(prob) <: DiffEqBase.AbstractRODEProblem) || iszero(prob.seed))
-      seed_multiplier()*rand(UInt64)
-    else
-      prob.seed
-    end
-  else
-    seed
-  end
-
   if typeof(_prob) <: JumpProblem
-    DiffEqJump.reset_jump_problem!(_prob,_seed)
     callbacks_internal = CallbackSet(callback,_prob.jump_callback)
   else
     callbacks_internal = CallbackSet(callback)
