@@ -52,29 +52,31 @@ end
 
 @inline function modify_dt_for_tstops!(integrator)
   tstops = integrator.opts.tstops
-  @fastmath if !isempty(tstops)
+  @fastmath if !isempty(tstops) || tstops === ()
+    tstop = tstops === () ? integrator.sol.prob.tspan[2] : top(tstops)
     if integrator.opts.adaptive
       if integrator.tdir > 0
-        integrator.dt = min(abs(integrator.dt), abs(top(tstops) - integrator.t)) # step! to the end
+        integrator.dt = min(abs(integrator.dt), abs(tstop - integrator.t)) # step! to the end
       else
-        integrator.dt = -min(abs(integrator.dt), abs(top(tstops) + integrator.t))
+        integrator.dt = -min(abs(integrator.dt), abs(tstop + integrator.t))
       end
     elseif iszero(integrator.dtcache) && integrator.dtchangeable # Use integrator.opts.tstops
-      integrator.dt = integrator.tdir * abs(top(tstops) - integrator.tdir * integrator.t)
+      integrator.dt = integrator.tdir * abs(tstop - integrator.tdir * integrator.t)
     elseif integrator.dtchangeable && !integrator.force_stepfail
       # always try to step! with dtcache, but lower if a tstops
-      integrator.dt = @fastmath integrator.tdir*min(abs(integrator.dtcache), abs(top(tstops) - integrator.tdir * integrator.t)) # step! to the end
+      integrator.dt = @fastmath integrator.tdir*min(abs(integrator.dtcache), abs(tstop - integrator.tdir * integrator.t)) # step! to the end
     end
   end
 end
 
 @inline function modify_dtnew_for_tstops!(integrator)
   tstops = integrator.opts.tstops
-  if !isempty(tstops)
+  if !isempty(tstops) || tstops === ()
+    tstop = tstops === () ? integrator.sol.prob.tspan[2] : top(tstops)
     if integrator.tdir > 0
-      integrator.dt = min(abs(integrator.dtnew),abs(top(tstops) - integrator.t)) # step! to the end
+      integrator.dt = min(abs(integrator.dtnew),abs(tstop - integrator.t)) # step! to the end
     else
-      integrator.dt = -min(abs(integrator.dtnew),abs(top(tstops) + integrator.t))
+      integrator.dt = -min(abs(integrator.dtnew),abs(tstop + integrator.t))
     end
   end
 end
@@ -147,6 +149,9 @@ end
       if typeof(integrator.t)<:AbstractFloat && !isempty(integrator.opts.tstops)
         tstop = integrator.tdir * top(integrator.opts.tstops)
         @fastmath abs(ttmp - tstop) < 10eps(integrator.t) ? (integrator.t = tstop) : (integrator.t = ttmp)
+      elseif typeof(integrator.t)<:AbstractFloat && integrator.opts.tstops === ()
+        tstop = integrator.tdir * integrator.sol.prob.tspan[2]
+        @fastmath abs(ttmp - tstop) < 10eps(integrator.t) ? (integrator.t = tstop) : (integrator.t = ttmp)
       else
         integrator.t = ttmp
       end
@@ -160,6 +165,9 @@ end
       # For some reason 10eps(integrator.t) is slow here
       # TODO: Allow higher precision but profile
       @fastmath abs(ttmp - tstop) < 10eps(max(integrator.t,tstop)) ? (integrator.t = tstop) : (integrator.t = ttmp)
+    elseif typeof(integrator.t)<:AbstractFloat && integrator.opts.tstops === ()
+      tstop = integrator.tdir * integrator.sol.prob.tspan[2]
+      @fastmath abs(ttmp - tstop) < 10eps(integrator.t) ? (integrator.t = tstop) : (integrator.t = ttmp)
     else
       integrator.t = ttmp
     end
@@ -285,15 +293,16 @@ end
 
 @inline function handle_tstop!(integrator)
   tstops = integrator.opts.tstops
-  if !isempty(tstops)
+  if !isempty(tstops) || tstops === ()
     tdir_t = integrator.tdir * integrator.t
-    tdir_ts_top = top(tstops)
+    tdir_ts_top = tstops === () ? integrator.sol.prob.tspan[2] : top(tstops)
     if tdir_t == tdir_ts_top
-      pop!(tstops)
+      tstops !== () && pop!(tstops)
       integrator.just_hit_tstop = true
     elseif tdir_t > tdir_ts_top
       if !integrator.dtchangeable
-        change_t_via_interpolation!(integrator, integrator.tdir * pop!(tstops), Val{true})
+        pop!(tstops)
+        change_t_via_interpolation!(integrator, integrator.tdir * tdir_ts_top, Val{true})
         integrator.just_hit_tstop = true
       else
         error("Something went wrong. Integrator stepped past tstops but the algorithm was dtchangeable. Please report this error.")

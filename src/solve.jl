@@ -3,7 +3,7 @@ function DiffEqBase.__solve(prob::DiffEqBase.AbstractRODEProblem,
                             timeseries=[],ts=[],ks=nothing, # needed for variable rate
                             recompile::Type{Val{recompile_flag}}=Val{true};
                             kwargs...) where recompile_flag
-  integrator = DiffEqBase.__init(prob,alg,timeseries,ts,recompile;kwargs...)
+  integrator = DiffEqBase.__init(prob,alg,timeseries,ts,recompile;solve_called = true, kwargs...)
   solve!(integrator)
   integrator.sol
 end
@@ -59,6 +59,7 @@ function DiffEqBase.__init(
   userdata=nothing,
   initialize_integrator=true,
   seed = UInt64(0), alias_u0=false, alias_jumps = Threads.threadid()==1,
+  solve_called = false,
   kwargs...) where recompile_flag
 
   prob = concrete_prob(_prob)
@@ -194,10 +195,16 @@ function DiffEqBase.__init(
     noise_rate_prototype = nothing
   end
 
-  tstops_internal, saveat_internal, d_discontinuities_internal =
-    tstop_saveat_disc_handling(tstops, saveat, d_discontinuities, tspan)
-
-
+  if callback === nothing && solve_called && tstops === () && saveat === () && d_discontinuities === ()
+    # No events are possible, so don't build caches for things the user
+    # can change
+    tstops_internal = ()
+    saveat_internal = ()
+    d_discontinuities_internal = ()
+  else
+    tstops_internal, saveat_internal, d_discontinuities_internal =
+      tstop_saveat_disc_handling(tstops, saveat, d_discontinuities, tspan)
+  end
 
   ### Algorithm-specific defaults ###
   # if save_idxs === nothing
@@ -489,19 +496,31 @@ function DiffEqBase.__init(
 end
 
 function DiffEqBase.solve!(integrator::SDEIntegrator)
-  @inbounds while !isempty(integrator.opts.tstops)
-    while integrator.tdir*integrator.t < top(integrator.opts.tstops)
+  if integrator.opts.tstops === ()
+    while integrator.tdir*integrator.t < integrator.tdir*integrator.sol.prob.tspan[2]
       loopheader!(integrator)
       if check_error!(integrator) != :Success
         return integrator.sol
       end
       perform_step!(integrator,integrator.cache)
       loopfooter!(integrator)
-      if isempty(integrator.opts.tstops)
-        break
-      end
     end
     handle_tstop!(integrator)
+  else
+    @inbounds while !isempty(integrator.opts.tstops)
+      while integrator.tdir*integrator.t < top(integrator.opts.tstops)
+        loopheader!(integrator)
+        if check_error!(integrator) != :Success
+          return integrator.sol
+        end
+        perform_step!(integrator,integrator.cache)
+        loopfooter!(integrator)
+        if isempty(integrator.opts.tstops)
+          break
+        end
+      end
+      handle_tstop!(integrator)
+    end
   end
   postamble!(integrator)
 
