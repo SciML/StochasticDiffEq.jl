@@ -29,8 +29,8 @@ function DiffEqBase.__init(
   save_start = save_everystep || isempty(saveat) || typeof(saveat) <: Number ? true : concrete_prob(_prob).tspan[1] in saveat,
   save_end = save_everystep || isempty(saveat) || typeof(saveat) <: Number ? true : concrete_prob(_prob).tspan[2] in saveat,
   callback=nothing,
-  dense = save_everystep && isempty(saveat),
-  calck = (!isempty(setdiff(saveat,tstops)) || dense),
+  dense = false, # save_everystep && isempty(saveat),
+  calck = false, #(!isempty(setdiff(saveat,tstops)) || dense),
   dt = eltype(concrete_prob(_prob).tspan)(0),
   adaptive = isadaptive(alg),
   gamma= isadaptive(alg) ? 9//10 : 0,
@@ -135,7 +135,7 @@ function DiffEqBase.__init(
   uBottomEltype = recursive_bottom_eltype(u)
   uBottomEltypeNoUnits = recursive_unitless_bottom_eltype(u)
 
-  ks = Vector{uType}(undef, 0)
+  ks = ()
 
   uEltypeNoUnits = recursive_unitless_eltype(u)
   tTypeNoUnits   = typeof(one(tType))
@@ -300,15 +300,26 @@ function DiffEqBase.__init(
                            rng = Xorshifts.Xoroshiro128Plus(_seed))
       end
     else
-      constructor = isadaptive(alg) ? WienerProcess : SimpleWienerProcess
-      if alg_needs_extra_process(alg)
-        W = constructor(t,rand_prototype,rand_prototype,
-                           save_everystep=save_noise,
-                           rng = Xorshifts.Xoroshiro128Plus(_seed))
+      if isadaptive(alg)
+        if alg_needs_extra_process(alg)
+          W = WienerProcess(t,rand_prototype,rand_prototype,
+                             save_everystep=save_noise,
+                             rng = Xorshifts.Xoroshiro128Plus(_seed))
+        else
+          W = WienerProcess(t,rand_prototype,
+                             save_everystep=save_noise,
+                             rng = Xorshifts.Xoroshiro128Plus(_seed))
+        end
       else
-        W = constructor(t,rand_prototype,
-                           save_everystep=save_noise,
-                           rng = Xorshifts.Xoroshiro128Plus(_seed))
+        if alg_needs_extra_process(alg)
+          W = SimpleWienerProcess(t,rand_prototype,rand_prototype,
+                             save_everystep=save_noise,
+                             rng = Xorshifts.Xoroshiro128Plus(_seed))
+        else
+          W = SimpleWienerProcess(t,rand_prototype,
+                             save_everystep=save_noise,
+                             rng = Xorshifts.Xoroshiro128Plus(_seed))
+        end
       end
     end
   elseif typeof(prob) <: DiffEqBase.AbstractRODEProblem
