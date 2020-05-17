@@ -58,7 +58,8 @@ function DiffEqBase.__init(
   progress_message = ODE_DEFAULT_PROG_MESSAGE,
   userdata=nothing,
   initialize_integrator=true,
-  seed = UInt64(0), alias_u0=false, kwargs...) where recompile_flag
+  seed = UInt64(0), alias_u0=false, alias_jumps = Threads.threadid()==1,
+  kwargs...) where recompile_flag
 
   prob = concrete_prob(_prob)
 
@@ -72,8 +73,10 @@ function DiffEqBase.__init(
     seed
   end
 
-  if typeof(_prob) <: JumpProblem
-    _prob = DiffEqJump.resetted_jump_problem(_prob,_seed)
+  if typeof(_prob) <: JumpProblem && alias_jumps
+    _prob = DiffEqJump.resetted_jump_problem(_prob,seed)
+  elseif seed !== 0
+    reset_jump_problem!(_prob,seed)
   end
 
   # Grab the deepcopied version for caching reasons.
