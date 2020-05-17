@@ -58,8 +58,30 @@ function DiffEqBase.__init(
   progress_message = ODE_DEFAULT_PROG_MESSAGE,
   userdata=nothing,
   initialize_integrator=true,
-  seed = UInt64(0), alias_u0=false, kwargs...) where recompile_flag
+  seed = UInt64(0), alias_u0=false, alias_jumps = Threads.threadid()==1,
+  kwargs...) where recompile_flag
 
+  prob = concrete_prob(_prob)
+
+  _seed = if iszero(seed)
+    if (!(typeof(prob) <: DiffEqBase.AbstractRODEProblem) || iszero(prob.seed))
+      seed_multiplier()*rand(UInt64)
+    else
+      prob.seed
+    end
+  else
+    seed
+  end
+
+  if typeof(_prob) <: JumpProblem
+    if alias_jumps
+      _prob = DiffEqJump.resetted_jump_problem(_prob,seed)
+    elseif seed !== 0
+      DiffEqJump.reset_jump_problem!(_prob,seed)
+    end
+  end
+
+  # Grab the deepcopied version for caching reasons.
   prob = concrete_prob(_prob)
 
   if typeof(prob.f)<:Tuple
@@ -250,18 +272,7 @@ function DiffEqBase.__init(
     randType = typeof(rand_prototype) # Strip units and type info
   end
 
-  _seed = if iszero(seed)
-    if (!(typeof(prob) <: DiffEqBase.AbstractRODEProblem) || iszero(prob.seed))
-      seed_multiplier()*rand(UInt64)
-    else
-      prob.seed
-    end
-  else
-    seed
-  end
-
   if typeof(_prob) <: JumpProblem
-    DiffEqJump.reset_jump_problem!(_prob,_seed)
     callbacks_internal = CallbackSet(callback,_prob.jump_callback)
   else
     callbacks_internal = CallbackSet(callback)
