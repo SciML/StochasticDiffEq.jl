@@ -201,10 +201,12 @@ end
       copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})
     end
   end
-  if !isnothing(integrator.W) && integrator.W.curt != integrator.t || !isnothing(integrator.P) && integrator.P.curt != integrator.t
+  if (!isnothing(integrator.W) && integrator.W.curt != integrator.t) || (!isnothing(integrator.P) && integrator.P.curt != integrator.t)
     accept_step!(integrator,false)
   end
-  save_noise!(integrator)
+  if integrator.W isa NoiseProcess && !integrator.W.save_everystep
+    save_noise!(integrator)
+  end
 end
 
 @inline function postamble!(integrator::SDEIntegrator)
