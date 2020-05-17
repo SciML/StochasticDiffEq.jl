@@ -1,4 +1,4 @@
-using StochasticDiffEq, Test, Random
+using StochasticDiffEq, Test, Random, DiffEqNoiseProcess
 using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
 using DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear, prob_sde_2Dlinear
 
