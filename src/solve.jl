@@ -289,19 +289,13 @@ function DiffEqBase.__init(
   if typeof(prob) <: DiffEqBase.AbstractRODEProblem && prob.noise === nothing
     rswm = isadaptive(alg) ? RSWM(adaptivealg=:RSwM3) : RSWM(adaptivealg=:RSwM1)
     if isinplace(prob)
-        _rng = typeof(prob.u0) <: Array{Float64} ? VectorizedRNG.local_rng(_seed) :
-                                        Xorshifts.Xoroshiro128Plus(_seed)
-      #if isadaptive(alg) || callback !== nothing
-        if alg_needs_extra_process(alg)
-          W = WienerProcess!(t,rand_prototype,rand_prototype,
-                             save_everystep=save_noise,
-                             rng = _rng)
-        else
-          W = WienerProcess!(t,rand_prototype,
-                             save_everystep=save_noise,
-                             rng = _rng)
-        end
-      #=
+      _rng = typeof(prob.u0) <: Array{Float64} && seed !== nothing ?
+                                            VectorizedRNG.local_rng() :
+                                            Xorshifts.Xoroshiro128Plus(_seed)
+      if alg_needs_extra_process(alg)
+        W = constructor(t,rand_prototype,rand_prototype,
+                           save_everystep=save_noise,
+                           rng = _rng)
       else
         if alg_needs_extra_process(alg)
           W = SimpleWienerProcess!(t,rand_prototype,rand_prototype,
