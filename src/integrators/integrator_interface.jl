@@ -69,9 +69,10 @@ jac_iter(integrator::SDEIntegrator) = jac_iter(integrator.cache)
 jac_iter(integrator::StochasticCompositeCache) = Iterators.flatten(jac_iter(c) for c in integrator.caches)
 
 @inline function add_tstop!(integrator::SDEIntegrator,t)
-  t < integrator.t && error("Tried to add a tstop that is behind the current time. This is strictly forbidden")
+  integrator.tdir * (t - integrator.t) < 0 && error("Tried to add a tstop that is behind the current time. This is strictly forbidden")
   push!(integrator.opts.tstops, integrator.tdir * t)
 end
+
 
 function DiffEqBase.add_saveat!(integrator::SDEIntegrator,t)
   integrator.tdir * (t - integrator.t) < 0 && error("Tried to add a saveat that is behind the current time. This is strictly forbidden")
