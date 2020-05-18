@@ -18,9 +18,9 @@ function DiffEqBase.__init(
   ts_init=eltype(concrete_prob(_prob).tspan)[],
   ks_init=nothing,
   recompile::Type{Val{recompile_flag}}=Val{true};
-  saveat = eltype(concrete_prob(_prob).tspan)[],
-  tstops = eltype(concrete_prob(_prob).tspan)[],
-  d_discontinuities= eltype(concrete_prob(_prob).tspan)[],
+  saveat = (),
+  tstops = (),
+  d_discontinuities= (),
   save_idxs = nothing,
   save_everystep = isempty(saveat),
   save_noise = save_everystep && (typeof(concrete_prob(_prob).f) <: Tuple ?
@@ -29,15 +29,15 @@ function DiffEqBase.__init(
   save_start = save_everystep || isempty(saveat) || typeof(saveat) <: Number ? true : concrete_prob(_prob).tspan[1] in saveat,
   save_end = save_everystep || isempty(saveat) || typeof(saveat) <: Number ? true : concrete_prob(_prob).tspan[2] in saveat,
   callback=nothing,
-  dense = save_everystep && isempty(saveat),
-  calck = (!isempty(setdiff(saveat,tstops)) || dense),
+  dense = false, # save_everystep && isempty(saveat),
+  calck = false, #(!isempty(setdiff(saveat,tstops)) || dense),
   dt = eltype(concrete_prob(_prob).tspan)(0),
   adaptive = isadaptive(alg),
-  gamma=9//10,
+  gamma= isadaptive(alg) ? 9//10 : 0,
   abstol=nothing,
   reltol=nothing,
   qmax=qmax_default(alg),qmin=qmin_default(alg),
-  qoldinit=1//10^4, fullnormalize=true,
+  qoldinit= isadaptive(alg) ? 1//10^4 : 0, fullnormalize=true,
   failfactor = 2,
   beta2=beta2_default(alg),
   beta1=beta1_default(alg,beta2),
@@ -135,7 +135,7 @@ function DiffEqBase.__init(
   uBottomEltype = recursive_bottom_eltype(u)
   uBottomEltypeNoUnits = recursive_unitless_bottom_eltype(u)
 
-  ks = Vector{uType}(undef, 0)
+  ks = ()
 
   uEltypeNoUnits = recursive_unitless_eltype(u)
   tTypeNoUnits   = typeof(one(tType))
@@ -146,7 +146,7 @@ function DiffEqBase.__init(
     elseif uBottomEltype <: Integer
       abstol_internal = real(oneunit(uBottomEltype)*1//10^2)
     else
-      abstol_internal = real.(oneunit.(u).*1//10^2)
+      abstol_internal = 0
     end
   else
     abstol_internal = real.(abstol)
@@ -158,7 +158,7 @@ function DiffEqBase.__init(
     elseif uBottomEltype <: Integer
       reltol_internal = real(oneunit(uBottomEltype)*1//10^2)
     else
-      reltol_internal = real.(oneunit.(u).*1//10^2)
+      reltol_internal = 0
     end
   else
     reltol_internal = real.(reltol)
@@ -215,7 +215,8 @@ function DiffEqBase.__init(
     timeseries = convert(Vector{typeof(u_initial)},timeseries_init)
   end
   ts = convert(Vector{tType},ts_init)
-  alg_choice = Int[]
+
+  alg_choice = typeof(alg) <: StochasticDiffEqCompositeAlgorithm ? Int[] : ()
 
   if !adaptive && save_everystep && tspan[2]-tspan[1] != Inf
     iszero(dt) ? steps = length(tstops) : steps = ceil(Int,internalnorm((tspan[2]-tspan[1])/dt,tspan[1]))
@@ -288,29 +289,53 @@ function DiffEqBase.__init(
   if typeof(prob) <: DiffEqBase.AbstractRODEProblem && prob.noise === nothing
     rswm = isadaptive(alg) ? RSWM(adaptivealg=:RSwM3) : RSWM(adaptivealg=:RSwM1)
     if isinplace(prob)
-      if alg_needs_extra_process(alg)
-        W = WienerProcess!(t,rand_prototype,rand_prototype,
-                           save_everystep=save_noise,
-                           rswm=rswm,
-                           rng = Xorshifts.Xoroshiro128Plus(_seed))
+      #if isadaptive(alg) || callback !== nothing
+        if alg_needs_extra_process(alg)
+          W = WienerProcess!(t,rand_prototype,rand_prototype,
+                             save_everystep=save_noise,
+                             rng = Xorshifts.Xoroshiro128Plus(_seed))
+        else
+          W = WienerProcess!(t,rand_prototype,
+                             save_everystep=save_noise,
+                             rng = Xorshifts.Xoroshiro128Plus(_seed))
+        end
+      #=
       else
-        W = WienerProcess!(t,rand_prototype,
-                           save_everystep=save_noise,
-                           rswm=rswm,
-                           rng = Xorshifts.Xoroshiro128Plus(_seed))
+        if alg_needs_extra_process(alg)
+          W = SimpleWienerProcess!(t,rand_prototype,rand_prototype,
+                             save_everystep=save_noise,
+                             rng = Xorshifts.Xoroshiro128Plus(_seed))
+        else
+          W = SimpleWienerProcess!(t,rand_prototype,
+                             save_everystep=save_noise,
+                             rng = Xorshifts.Xoroshiro128Plus(_seed))
+        end
       end
+      =#
     else
-      if alg_needs_extra_process(alg)
-        W = WienerProcess(t,rand_prototype,rand_prototype,
-                           save_everystep=save_noise,
-                           rswm=rswm,
-                           rng = Xorshifts.Xoroshiro128Plus(_seed))
+      #if isadaptive(alg) || callback !== nothing
+        if alg_needs_extra_process(alg)
+          W = WienerProcess(t,rand_prototype,rand_prototype,
+                             save_everystep=save_noise,
+                             rng = Xorshifts.Xoroshiro128Plus(_seed))
+        else
+          W = WienerProcess(t,rand_prototype,
+                             save_everystep=save_noise,
+                             rng = Xorshifts.Xoroshiro128Plus(_seed))
+        end
+      #=
       else
-        W = WienerProcess(t,rand_prototype,
-                           save_everystep=save_noise,
-                           rswm=rswm,
-                           rng = Xorshifts.Xoroshiro128Plus(_seed))
+        if alg_needs_extra_process(alg)
+          W = SimpleWienerProcess(t,rand_prototype,rand_prototype,
+                             save_everystep=save_noise,
+                             rng = Xorshifts.Xoroshiro128Plus(_seed))
+        else
+          W = SimpleWienerProcess(t,rand_prototype,
+                             save_everystep=save_noise,
+                             rng = Xorshifts.Xoroshiro128Plus(_seed))
+        end
       end
+      =#
     end
   elseif typeof(prob) <: DiffEqBase.AbstractRODEProblem
     W = prob.noise
