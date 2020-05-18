@@ -368,17 +368,17 @@ function DiffEqBase.__init(
       rate_constants = zeros(_prob.regular_jump.numjumps)
       _prob.regular_jump.rate(rate_constants,u./u,prob.p,tspan[1])
       P = CompoundPoissonProcess!(_prob.regular_jump.rate,t,jump_prototype,
-                                  computerates = !adaptive,
+                                  computerates = !alg_control_rate(alg) || !adaptive,
                                   save_everystep=save_noise,
                                   rng = Xorshifts.Xoroshiro128Plus(_seed))
-      adaptive && P.cache.rate(P.cache.currate,u,p,tspan[1])
+      alg_control_rate(alg) && adaptive && P.cache.rate(P.cache.currate,u,p,tspan[1])
     else
       rate_constants = _prob.regular_jump.rate(u./u,prob.p,tspan[1])
       P = CompoundPoissonProcess(_prob.regular_jump.rate,t,jump_prototype,
                                  save_everystep=save_noise,
-                                 computerates = !adaptive,
+                                 computerates = !alg_control_rate(alg) || !adaptive,
                                  rng = Xorshifts.Xoroshiro128Plus(_seed))
-      adaptive && (P.cache.currate = P.cache.rate(u,p,tspan[1]))
+      alg_control_rate(alg) && adaptive && (P.cache.currate = P.cache.rate(u,p,tspan[1]))
     end
 
   else

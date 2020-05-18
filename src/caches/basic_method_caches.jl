@@ -5,6 +5,7 @@ struct EMConstantCache <: StochasticDiffEqConstantCache end
   tmp::uType
   rtmp1::rateType
   rtmp2::rateNoiseType
+  newrate::jumpRate
 end
 
 alg_cache(alg::EM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}}) = EMConstantCache()
@@ -12,7 +13,12 @@ alg_cache(alg::EM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate
 function alg_cache(alg::EM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
   tmp = zero(u); rtmp1 = zero(rate_prototype);
   rtmp2 = zero(noise_rate_prototype)
-  EMCache(u,uprev,tmp,rtmp1,rtmp2)
+  if jump_rate_prototype !== nothing
+    newrate = zero(jump_rate_prototype)
+  else
+    newrate = nothing
+  end
+  EMCache(u,uprev,tmp,rtmp1,rtmp2,newrate,EEstcache)
 end
 
 struct SplitEMConstantCache <: StochasticDiffEqConstantCache end

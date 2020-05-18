@@ -91,6 +91,7 @@ alg_compatible(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlg
 
 alg_compatible(prob::JumpProblem,alg::StochasticDiffEqAlgorithm) = alg_compatible(prob.prob,alg) && prob.regular_jump === nothing
 alg_compatible(prob,alg::StochasticDiffEqAlgorithm) = false
+alg_compatible(prob::JumpProblem,alg::EM) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SRI) = is_diagonal_noise(prob)
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SRIW1) = is_diagonal_noise(prob)
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SRIW2) = is_diagonal_noise(prob)
@@ -218,3 +219,6 @@ function OrdinaryDiffEq.unwrap_alg(integrator::SDEIntegrator, is_stiff)
     return alg.algs[integrator.cache.current]
   end
 end
+
+alg_control_rate(::StochasticDiffEqAlgorithm) = false
+alg_control_rate(::TauLeaping) = true
