@@ -1,4 +1,4 @@
-using StochasticDiffEq, SparseArrays, Test
+using StochasticDiffEq, SparseArrays, Test, DiffEqNoiseProcess
 
 f(du,u,p,t) = (du.=1.01u)
 function g(du,u,p,t)
@@ -53,3 +53,13 @@ prob = SDEProblem(f,g,ones(2),(0.0,1.0),noise_rate_prototype=sprand(2,4,1.0))
 sol = solve(prob,EM(),dt=1/1000)
 
 @test length(sol.W[1]) == 4
+
+ff = (u,p,t) -> exp(t)
+W = NoiseFunction(0.0,ff)
+drift(u,p,t) = u
+vol(u,p,t) = u
+dt = 0.01
+tspan = (0.0,1.0)
+u0 = 0.0
+prob = SDEProblem(drift,vol,u0,(0.0,1.0), noise=W)
+sol = solve(prob,EM(),dt=0.1)
