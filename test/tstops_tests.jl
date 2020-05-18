@@ -21,3 +21,19 @@ sol = solve(prob,EM(),tstops = [0.33,0.80,1.0])
 sol = solve(prob,SRIW1(),tstops = [0.33])
 
 @test 0.33 ∈ sol.t
+
+
+# check reverse time and negative start times
+for (i, tdir) in enumerate([-1.; 1.])
+  @info i
+  prob2 = remake(prob_sde_linear, tspan=(tdir*1.0, 0.0))
+  integrator = init(prob2,SRIW1())
+  tstops = tdir .* [0,0.33,0.80,1]
+  for tstop in tstops
+    add_tstop!(integrator, tstop)
+  end
+  solve!(integrator)
+  for tstop in tstops
+    @test tstop ∈ integrator.sol.t
+  end
+end
