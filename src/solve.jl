@@ -339,7 +339,7 @@ function DiffEqBase.__init(
     end
   elseif typeof(prob) <: DiffEqBase.AbstractRODEProblem
     W = prob.noise
-    if W.reset
+    if hasfield(typeof(W),:t) && W.reset
       if W.t[end] != t
         reinit!(W,t)
       end
@@ -347,7 +347,7 @@ function DiffEqBase.__init(
       if typeof(W) <: NoiseProcess && W.reseed
         Random.seed!(W.rng,_seed)
       end
-    elseif W.t[end] != t
+    elseif hasfield(typeof(W),:t) && W.t[end] != t
       error("Starting time in the noise process is not the starting time of the simulation. The noise process should be re-initialized for repeated use")
     end
   else # Only a jump problem
