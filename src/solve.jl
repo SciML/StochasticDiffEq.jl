@@ -300,7 +300,7 @@ function DiffEqBase.__init(
                            rng = Xorshifts.Xoroshiro128Plus(_seed))
       end
     else
-      if isadaptive(alg)
+      if isadaptive(alg) || callback !== nothing
         if alg_needs_extra_process(alg)
           W = WienerProcess(t,rand_prototype,rand_prototype,
                              save_everystep=save_noise,
