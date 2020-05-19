@@ -90,11 +90,11 @@ sol2 = solve(prob2,RKMil_General(),dt=1/2^(8),adaptive=false)
 sol3 = solve(prob2,RKMil_General(),dt=1/2^(8))
 
 dts = (1/2) .^ (7:-1:2) #14->7 good plot
-test_dt = 1/2 ^ (8)
-sim5 = analyticless_test_convergence(dts,prob2,EM(),test_dt,trajectories=400)
-@test_broken abs(sim5.𝒪est[:final] - 0.5) < 0.2
-sim6 = analyticless_test_convergence(dts,prob2,RKMil_General(),test_dt,trajectories=300)
+test_dt = 1/2 ^ (14)
+sim5 = analyticless_test_convergence(dts,prob2,EM(),test_dt,trajectories=300, use_noise_grid=false)
+@test abs(sim5.𝒪est[:final] - 0.5) < 0.2
+sim6 = analyticless_test_convergence(dts,prob2,RKMil_General(),test_dt,trajectories=300, use_noise_grid=false)
 @test abs(sim6.𝒪est[:final] - 0.5) < 0.2
 
-sim7 = analyticless_test_convergence(dts,prob2,EulerHeun(),test_dt,trajectories=300)
-@test_broken abs(sim7.𝒪est[:final] - 0.5) < 0.2
+sim7 = analyticless_test_convergence(dts,prob2,EulerHeun(),test_dt,trajectories=300, use_noise_grid=false)
+@test abs(sim7.𝒪est[:final] - 0.5) < 0.2
