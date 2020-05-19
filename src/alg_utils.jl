@@ -7,6 +7,8 @@ delta_default(alg::SRIW1) = 1//6
 isadaptive(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = false
 isadaptive(alg::Union{StochasticDiffEqAdaptiveAlgorithm,StochasticDiffEqRODEAdaptiveAlgorithm,StochasticDiffEqJumpAdaptiveAlgorithm,StochasticDiffEqJumpDiffusionAdaptiveAlgorithm}) = true
 isadaptive(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = all(isadaptive.(alg.algs))
+isadaptive(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = isadaptive(alg)
+isadaptive(prob::JumpProblem,alg::ImplicitEM) = false
 
 # For whether an algorithm uses a priori dt estimates or utilizes an error estimate
 isaposteriori(alg) = true
@@ -88,9 +90,15 @@ alg_interpretation(alg::RKMil_General) = alg.interpretation
 alg_interpretation(alg::ImplicitRKMil{CS,AD,F,S,N,T2,Controller,interpretation}) where {CS,AD,F,S,N,T2,Controller,interpretation} = interpretation
 
 alg_compatible(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = true
-
-alg_compatible(prob::JumpProblem,alg::StochasticDiffEqAlgorithm) = alg_compatible(prob.prob,alg) && prob.regular_jump === nothing
 alg_compatible(prob,alg::StochasticDiffEqAlgorithm) = false
+
+function alg_compatible(prob::JumpProblem,alg::StochasticDiffEqAlgorithm)
+    alg_compatible(prob.prob,alg) && prob.regular_jump === nothing &&
+    typeof(prob.prob) <: DiffEqBase.AbstractSDEProblem
+end
+alg_compatible(prob::JumpProblem,alg::EM) = alg_compatible(prob.prob,alg)
+alg_compatible(prob::JumpProblem,alg::ImplicitEM) = alg_compatible(prob.prob,alg)
+
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SRI) = is_diagonal_noise(prob)
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SRIW1) = is_diagonal_noise(prob)
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SRIW2) = is_diagonal_noise(prob)
@@ -137,7 +145,9 @@ alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::IIF1M) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::IIF2M) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = max((alg_compatible(prob,a) for a in alg.algs)...)
 
-alg_compatible(prob::JumpProblem,alg::Union{StochasticDiffEqJumpAdaptiveAlgorithm,StochasticDiffEqJumpAlgorithm}) = true
+function alg_compatible(prob::JumpProblem,alg::Union{StochasticDiffEqJumpAdaptiveAlgorithm,StochasticDiffEqJumpAlgorithm})
+    prob.prob isa DiscreteProblem
+end
 
 alg_needs_extra_process(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = false
 alg_needs_extra_process(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = max((alg_needs_extra_process(a) for a in alg.algs)...)
@@ -218,3 +228,6 @@ function OrdinaryDiffEq.unwrap_alg(integrator::SDEIntegrator, is_stiff)
     return alg.algs[integrator.cache.current]
   end
 end
+
+alg_control_rate(::StochasticDiffEqAlgorithm) = false
+alg_control_rate(::TauLeaping) = true

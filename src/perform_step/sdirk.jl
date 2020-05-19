@@ -3,7 +3,7 @@
                                             ImplicitEulerHeunConstantCache,
                                             ImplicitRKMilConstantCache},
                                             f=integrator.f)
-  @unpack t,dt,uprev,u,p = integrator
+  @unpack t,dt,uprev,u,p,P,c = integrator
   @unpack nlsolver = cache
   alg = unwrap_alg(integrator, true)
   OrdinaryDiffEq.markfirststage!(nlsolver)
@@ -47,8 +47,8 @@
     z = dt*ftmp # linear extrapolation
   end
   nlsolver.z = z
-
   nlsolver.c = a
+
   if alg.symplectic
     # u = uprev + z then  u = (uprev+u)/2 = (uprev+uprev+z)/2 = uprev + z/2
     #u = uprev + z/2 + gtmp/2
@@ -57,6 +57,12 @@
     #u = uprev + dt*(1-theta)*ftmp + theta*z + gtmp
     tmp = uprev + dt*(1-theta)*ftmp + gtmp
   end
+
+  if P !== nothing
+      ctmp = c(uprev, p, t, P.dW, nothing)
+      tmp += ctmp
+  end
+
   nlsolver.tmp = tmp
   z = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
   OrdinaryDiffEq.nlsolvefail(nlsolver) && return nothing
@@ -98,7 +104,7 @@ end
                                             ImplicitEulerHeunCache,
                                             ImplicitRKMilCache},
                                f=integrator.f)
-  @unpack t,dt,uprev,u,p = integrator
+  @unpack t,dt,uprev,u,p,P,c = integrator
   @unpack gtmp,gtmp2,nlsolver = cache
   @unpack z,tmp = nlsolver
   @unpack k,dz = nlsolver.cache # alias to reduce memory
@@ -161,6 +167,10 @@ end
     end
   end
 
+  if P !== nothing
+    c(k, uprev, p, t, P.dW, nothing)
+  end
+
   ##############################################################################
 
   if alg.symplectic
@@ -172,10 +182,18 @@ end
   nlsolver.c = a
   if alg.symplectic
     #@.. u = uprev + z/2 + gtmp2/2
-    @.. tmp = uprev + gtmp2/2
+    if P !== nothing
+      @.. tmp = uprev + gtmp2/2 + k
+    else
+      @.. tmp = uprev + gtmp2/2
+    end
   else
     #@.. u = uprev + dt*(1-theta)*tmp + theta*z + gtmp2
-    @.. tmp = uprev + dt*(1-theta)*tmp + gtmp2
+    if P !== nothing
+      @.. tmp = uprev + dt*(1-theta)*tmp + gtmp2 + k
+    else
+      @.. tmp = uprev + dt*(1-theta)*tmp + gtmp2
+    end
   end
   z = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
   OrdinaryDiffEq.nlsolvefail(nlsolver) && return

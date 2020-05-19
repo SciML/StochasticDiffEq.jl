@@ -11,7 +11,11 @@ alg_cache(alg::EM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate
 
 function alg_cache(alg::EM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
   tmp = zero(u); rtmp1 = zero(rate_prototype);
-  rtmp2 = zero(noise_rate_prototype)
+  if noise_rate_prototype !== nothing
+    rtmp2 = zero(noise_rate_prototype)
+  else
+    rtmp2 = nothing
+  end
   EMCache(u,uprev,tmp,rtmp1,rtmp2)
 end
 

@@ -1,5 +1,5 @@
 @muladd function perform_step!(integrator,cache::EMConstantCache,f=integrator.f)
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,P,c,p = integrator
 
   K = uprev .+ dt .* integrator.f(uprev,p,t)
 
@@ -15,13 +15,18 @@
     noise = integrator.g(u_choice,p,t).*W.dW
   end
 
-  u = K + noise
+  if P !== nothing
+    tmp = c(uprev, p, t, P.dW, nothing)
+    u = K + noise + tmp
+  else
+    u = K + noise
+  end
   integrator.u = u
 end
 
 @muladd function perform_step!(integrator,cache::EMCache,f=integrator.f)
-  @unpack rtmp1,rtmp2 = cache
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack tmp,rtmp1,rtmp2 = cache
+  @unpack t,dt,uprev,u,W,P,c,p = integrator
   integrator.f(rtmp1,uprev,p,t)
 
   @.. u = uprev + dt * rtmp1
@@ -34,12 +39,24 @@ end
 
   integrator.g(rtmp2,u_choice,p,t)
 
+  if P !== nothing
+    c(tmp, uprev, p, t, P.dW, nothing)
+  end
+
   if is_diagonal_noise(integrator.sol.prob)
     @.. rtmp2 *= W.dW
-    @.. u += rtmp2
+    if P !== nothing
+      @.. u += rtmp2 + tmp
+    else
+      @.. u += rtmp2
+    end
   else
     mul!(rtmp1,rtmp2,W.dW)
-    @.. u += rtmp1
+    if P !== nothing
+      @.. u += rtmp1 + tmp
+    else
+      @.. u += rtmp1
+    end
   end
 end
 
