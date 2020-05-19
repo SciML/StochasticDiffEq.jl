@@ -36,6 +36,12 @@ function f_noncommute_analytic(u0,p,t,W)
   exp(tmp)*u0
 end
 
+function f_noncommute_analytic_stratonovich(u0,p,t,W)
+  tmp = A*t + sum(B[i]*W[i] for i in 1:m)
+  exp(tmp)*u0
+end
+
+
 ff_noncommute = SDEFunction(f_noncommute,g_noncommute,analytic=f_noncommute_analytic)
 
 prob = SDEProblem(ff_noncommute,g_noncommute,u0,(0.0,1.0),noise_rate_prototype=rand(4,m))
@@ -49,17 +55,24 @@ sim1 = test_convergence(dts,prob,EM(),trajectories=Int(1e2))
 sim2 = test_convergence(dts,prob,RKMilCommute(),trajectories=Int(1e2))
 @test abs(sim2.𝒪est[:final] - 1) < 0.2
 sim3 = test_convergence(dts,prob,RKMil_General(),trajectories=Int(1e2))
-@test abs(sim2.𝒪est[:final] - 1) < 0.2
+@test abs(sim3.𝒪est[:final] - 1) < 0.2
+
+ff_noncommute_stratonovich = SDEFunction(f_noncommute,g_noncommute,analytic=f_noncommute_analytic_stratonovich)
+prob_stratonovich = SDEProblem(ff_noncommute_stratonovich,g_noncommute,u0,(0.0,1.0),noise_rate_prototype=rand(4,m))
+
+sim4 = test_convergence(dts,prob_stratonovich,EulerHeun(),trajectories=Int(1e2))
+@test abs(sim4.𝒪est[:final] - 1.0) < 0.2
+
 
 d = 2; m = 4
 u0 = [2.0,2.0]
 α = 1/2
 
-function f_noncommute(du,u,p,t)
+function f_noncommute_2(du,u,p,t)
   du .= 0
 end
 
-function g_noncommute(du,u,p,t)
+function g_noncommute_2(du,u,p,t)
   du[1,1] = cos(α)*sin(u[1])
   du[2,1] = sin(α)*sin(u[1])
   du[1,2] = cos(α)*cos(u[1])
@@ -70,15 +83,15 @@ function g_noncommute(du,u,p,t)
   du[2,4] = cos(α)*cos(u[2])
 end
 
-prob = SDEProblem(f_noncommute,g_noncommute,u0,(0.0,1.0),noise_rate_prototype=rand(2,m))
+prob2 = SDEProblem(f_noncommute_2,g_noncommute_2,u0,(0.0,1.0),noise_rate_prototype=rand(2,m))
 
-sol1 = solve(prob,EM(),dt=1/2^(8))
-sol2 = solve(prob,RKMil_General(),dt=1/2^(8),adaptive=false)
-sol3 = solve(prob,RKMil_General(),dt=1/2^(8))
+sol1 = solve(prob2,EM(),dt=1/2^(8))
+sol2 = solve(prob2,RKMil_General(),dt=1/2^(8),adaptive=false)
+sol3 = solve(prob2,RKMil_General(),dt=1/2^(8))
 
 dts = (1/2) .^ (7:-1:2) #14->7 good plot
 test_dt = 1/2 ^ (8)
-sim1 = analyticless_test_convergence(dts,prob,EM(),test_dt,trajectories=400)
-@test abs(sim1.𝒪est[:final] - 0.5) < 0.2
-sim2 = analyticless_test_convergence(dts,prob,RKMil_General(),test_dt,trajectories=400)
-@test_broken abs(sim1.𝒪est[:final] - 1) < 0.2
+sim5 = analyticless_test_convergence(dts,prob2,EM(),test_dt,trajectories=400)
+@test_broken abs(sim5.𝒪est[:final] - 0.5) < 0.2
+sim6 = analyticless_test_convergence(dts,prob2,RKMil_General(),test_dt,trajectories=300)
+@test abs(sim6.𝒪est[:final] - 0.5) < 0.2
