@@ -7,7 +7,7 @@ delta_default(alg::SRIW1) = 1//6
 isadaptive(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = false
 isadaptive(alg::Union{StochasticDiffEqAdaptiveAlgorithm,StochasticDiffEqRODEAdaptiveAlgorithm,StochasticDiffEqJumpAdaptiveAlgorithm,StochasticDiffEqJumpDiffusionAdaptiveAlgorithm}) = true
 isadaptive(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = all(isadaptive.(alg.algs))
-isadaptive(prob,alg::StochasticDiffEqAlgorithm) = isadaptive(alg)
+isadaptive(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = isadaptive(alg)
 isadaptive(prob::JumpProblem,alg::ImplicitEM) = false
 
 # For whether an algorithm uses a priori dt estimates or utilizes an error estimate
