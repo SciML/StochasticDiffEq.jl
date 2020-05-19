@@ -95,3 +95,6 @@ sim5 = analyticless_test_convergence(dts,prob2,EM(),test_dt,trajectories=400)
 @test_broken abs(sim5.𝒪est[:final] - 0.5) < 0.2
 sim6 = analyticless_test_convergence(dts,prob2,RKMil_General(),test_dt,trajectories=300)
 @test abs(sim6.𝒪est[:final] - 0.5) < 0.2
+
+sim7 = analyticless_test_convergence(dts,prob2,EulerHeun(),test_dt,trajectories=300)
+@test_broken abs(sim7.𝒪est[:final] - 0.5) < 0.2
