@@ -194,7 +194,7 @@ end
 ImplicitEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           linsolve=DEFAULT_LINSOLVE,nlsolve=NLNewton(),
                           extrapolant=:constant,
-                          theta = 1/2,symplectic=false,
+                          theta = 1,symplectic=false,
                           new_jac_conv_bound = 1e-3,
                           controller = :Predictive) =
                           ImplicitEM{chunk_size,autodiff,
@@ -203,6 +203,9 @@ ImplicitEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           linsolve,nlsolve,diff_type,
                           symplectic ? 1/2 : theta,
                           extrapolant,new_jac_conv_bound,symplectic)
+
+STrapezoid(;kwargs...) = ImplicitEM(;theta=1/2,kwargs...)
+SImplicitMidpoint(;kwargs...) = ImplicitEM(;theta=1/2,symplectic=true,kwargs...)
 
 struct ImplicitEulerHeun{CS,AD,F,S,N,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}
   linsolve::F
@@ -216,7 +219,7 @@ end
 ImplicitEulerHeun(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           linsolve=DEFAULT_LINSOLVE,nlsolve=NLNewton(),
                           extrapolant=:constant,
-                          theta = 1/2,symplectic = false,
+                          theta = 1,symplectic = false,
                           new_jac_conv_bound = 1e-3,
                           controller = :Predictive) =
                           ImplicitEulerHeun{chunk_size,autodiff,
@@ -240,7 +243,7 @@ end
 ImplicitRKMil(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           linsolve=DEFAULT_LINSOLVE,nlsolve=NLNewton(),
                           extrapolant=:constant,
-                          theta = 1/2,symplectic = false,
+                          theta = 1,symplectic = false,
                           new_jac_conv_bound = 1e-3,
                           controller = :Predictive,interpretation=:Ito) =
                           ImplicitRKMil{chunk_size,autodiff,
