@@ -23,9 +23,13 @@ end
 
   # Accept or reject the step
   if integrator.iter > 0
-    if ((integrator.opts.adaptive && integrator.accept_step) || !integrator.opts.adaptive) && !integrator.force_stepfail
+    if ((integrator.opts.adaptive && integrator.accept_step) ||
+         !integrator.opts.adaptive || isaposteriori(integrator.alg)) &&
+         !integrator.force_stepfail
+
       integrator.success_iter += 1
       apply_step!(integrator)
+      
     elseif integrator.opts.adaptive && !integrator.accept_step
       if integrator.isout
         integrator.dtnew = integrator.dt*integrator.opts.qmin

@@ -23,6 +23,8 @@ jump_iipprob = JumpProblem(iip_prob,Direct(),rj)
 @time sol = solve(jump_iipprob,TauLeaping())
 @time sol = solve(jump_iipprob,SimpleTauLeaping();dt=1.0)
 @time sol = solve(jump_iipprob,TauLeaping();dt=1.0,adaptive=false)
+@time sol = solve(jump_iipprob,CaoTauLeaping();dt=1.0)
+@time sol = solve(jump_iipprob,CaoTauLeaping())
 
 N = 10_000
 sol1 = solve(EnsembleProblem(jump_iipprob),SimpleTauLeaping();dt=1.0,trajectories = N)

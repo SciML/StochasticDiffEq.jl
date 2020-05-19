@@ -12,6 +12,7 @@ isadaptive(prob::JumpProblem,alg::ImplicitEM) = false
 
 # For whether an algorithm uses a priori dt estimates or utilizes an error estimate
 isaposteriori(alg) = true
+isaposteriori(alg::CaoTauLeaping) = true
 
 alg_order(alg::EM) = 1//2
 alg_order(alg::LambaEM) = 1//2
@@ -68,6 +69,7 @@ alg_order(alg::DRI1) = 1//1
 alg_order(alg::RI1) = 1//1
 
 alg_order(alg::TauLeaping) = 1//1
+alg_order(alg::CaoTauLeaping) = 1//1
 
 alg_order(alg::SKenCarp) = 2//1
 alg_order(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = maximum(alg_order.(alg.algs))

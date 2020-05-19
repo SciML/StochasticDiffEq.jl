@@ -138,7 +138,7 @@ module StochasticDiffEq
   export ImplicitEM, ImplicitEulerHeun, ISSEM, ISSEulerHeun,
          ImplicitRKMil, STrapezoid, SImplicitMidpoint
 
-  export TauLeaping, CaoTaoLeaping
+  export TauLeaping, CaoTauLeaping
 
   export StochasticDiffEqRODEAlgorithm, StochasticDiffEqRODEAdaptiveAlgorithm,
          StochasticDiffEqRODECompositeAlgorithm
