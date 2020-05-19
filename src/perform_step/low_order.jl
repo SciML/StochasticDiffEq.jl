@@ -1,5 +1,5 @@
 @muladd function perform_step!(integrator,cache::EMConstantCache,f=integrator.f)
-  @unpack t,dt,uprev,u,W,P,p = integrator
+  @unpack t,dt,uprev,u,W,P,c,p = integrator
 
   K = uprev .+ dt .* integrator.f(uprev,p,t)
 
@@ -26,7 +26,7 @@ end
 
 @muladd function perform_step!(integrator,cache::EMCache,f=integrator.f)
   @unpack tmp,rtmp1,rtmp2 = cache
-  @unpack t,dt,uprev,u,W,P,p = integrator
+  @unpack t,dt,uprev,u,W,P,c,p = integrator
   integrator.f(rtmp1,uprev,p,t)
 
   @.. u = uprev + dt * rtmp1

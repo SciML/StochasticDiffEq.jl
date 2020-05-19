@@ -32,7 +32,7 @@ function DiffEqBase.__init(
   dense = false, # save_everystep && isempty(saveat),
   calck = false, #(!isempty(setdiff(saveat,tstops)) || dense),
   dt = eltype(concrete_prob(_prob).tspan)(0),
-  adaptive = isadaptive(alg),
+  adaptive = isadaptive(_prob,alg),
   gamma= isadaptive(alg) ? 9//10 : 0,
   abstol=nothing,
   reltol=nothing,
