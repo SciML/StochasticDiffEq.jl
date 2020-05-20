@@ -121,7 +121,7 @@ sim = test_convergence(dts,prob,SRI(),save_everystep=false,trajectories=Int(5e4)
 #@test abs(sim.𝒪est[:weak_l2]-2) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-2) < 0.3
 println("SRIW1")
-sim = test_convergence(dts,prob,SRIW1(),save_everystep=false,trajectories=Int(5e4))
+sim = test_convergence(dts,prob,SRIW1(),save_everystep=false,trajectories=Int(1e5))
 @test abs(sim.𝒪est[:weak_final]-2) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-2) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-2) < 0.3
