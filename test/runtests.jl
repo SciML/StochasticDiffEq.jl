@@ -67,7 +67,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
 
   if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence")
     @time @safetestset "OOP Weak Convergence Tests" begin include("weak_convergence/oop_weak.jl") end
-    @time @safetestset "IIP Weak Convergence Tests" begin include("weak_convergence/iip_weak.jl") end
+    #@time @safetestset "IIP Weak Convergence Tests" begin include("weak_convergence/iip_weak.jl") end
     #@time @safetestset "Multidimensional IIP Weak Convergence Tests" begin include("weak_convergence/multidim_iip_weak.jl") end
     @time @safetestset "Additive Weak Convergence Tests" begin include("weak_convergence/additive_weak.jl") end
     @time @safetestset "Roessler weak SRK Tests" begin include("weak_convergence/srk_weak_final.jl") end
