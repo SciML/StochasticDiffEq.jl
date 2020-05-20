@@ -6,8 +6,9 @@ Random.seed!(100)
 prob = prob_sde_stiffquadito
 prob = remake(prob;p=(1e5,2.))
 alg = AutoSOSRA2(SKenCarp(), maxstiffstep=5, maxnonstiffstep=2, stiffalgfirst=false)
+@test StochasticDiffEq.isadaptive(prob,alg)
 @test StochasticDiffEq.isadaptive(alg)
-@time sol = solve(prob, alg);
+@time sol = solve(prob, alg)
 @test typeof(alg.algs[sol.alg_choice[end]]) <: SKenCarp
 @test length(unique(sol.alg_choice)) == 2
 

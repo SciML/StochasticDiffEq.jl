@@ -24,3 +24,15 @@ end
 function step_reject_controller!(integrator,alg::TauLeaping)
     integrator.dtnew = integrator.opts.gamma * integrator.dt/integrator.EEst
 end
+
+function stepsize_controller!(integrator,alg::CaoTauLeaping)
+
+end
+
+function step_accept_controller!(integrator,alg::CaoTauLeaping)
+    integrator.dtnew = integrator.EEst # use EEst for the τ
+end
+
+function step_reject_controller!(integrator,alg::CaoTauLeaping)
+    error("CaoTauLeaping should never reject steps")
+end
