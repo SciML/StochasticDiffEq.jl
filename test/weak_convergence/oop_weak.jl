@@ -33,10 +33,12 @@ sim = test_convergence(dts,prob,SROCK1(),save_everystep=false,trajectories=Int(1
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
 println("RKMil_General")
+dts = 1 .//2 .^(10:-1:1) #14->7 good plot
 sim = test_convergence(dts,prob,SROCK2(),save_everystep=false,trajectories=Int(4e4))
 @test abs(sim.𝒪est[:weak_final]-1.5) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-2) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-2) < 0.3
+dts = 1 .//2 .^(9:-1:2) #14->7 good plot
 println("SROCKEM")
 sim = test_convergence(dts,prob,SROCKEM(strong_order_1=false),save_everystep=false,trajectories=Int(1e4))
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
