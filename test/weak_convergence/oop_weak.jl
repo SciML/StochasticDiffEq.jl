@@ -13,7 +13,7 @@ println("EM")
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
 println("SimplifiedEM")
-@time sim  = test_convergence(dts,prob,SimplifiedEM(),save_everystep=false,trajectories=Int(4e4))
+@time sim  = test_convergence(dts,prob,SimplifiedEM(),save_everystep=false,trajectories=Int(8e4))
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.35
@@ -48,7 +48,7 @@ sim = test_convergence(dts,prob,SROCKEM(),save_everystep=false,trajectories=Int(
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
 println("SKSROCK")
-sim = test_convergence(dts,prob,SKSROCK(),save_everystep=false,trajectories=Int(1e4))
+sim = test_convergence(dts,prob,SKSROCK(),save_everystep=false,trajectories=Int(4e4))
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3

@@ -14,7 +14,7 @@ sim  = test_convergence(dts,prob,EM(),save_everystep=false,trajectories=Int(1e4)
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
 println("SimplifiedEM")
-sim  = test_convergence(dts,prob,SimplifiedEM(),save_everystep=false,trajectories=Int(4e4),
+sim  = test_convergence(dts,prob,SimplifiedEM(),save_everystep=false,trajectories=Int(8e4),
                         weak_timeseries_errors=false)
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
@@ -32,7 +32,7 @@ sim = test_convergence(dts,prob,RKMil_General(),save_everystep=false,trajectorie
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
 println("RKMil_General")
-sim = test_convergence(dts,prob,SROCK1(),save_everystep=false,trajectories=Int(1e4),
+sim = test_convergence(dts,prob,SROCK1(),save_everystep=false,trajectories=Int(4e4),
                         weak_timeseries_errors=false)
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
