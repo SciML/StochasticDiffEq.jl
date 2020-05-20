@@ -11,7 +11,7 @@ isadaptive(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorit
 isadaptive(prob::JumpProblem,alg::ImplicitEM) = false
 
 # For whether an algorithm uses a priori dt estimates or utilizes an error estimate
-isaposteriori(alg) = true
+isaposteriori(alg) = false
 isaposteriori(alg::CaoTauLeaping) = true
 
 alg_order(alg::EM) = 1//2
