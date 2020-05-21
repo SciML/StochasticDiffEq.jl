@@ -13,11 +13,13 @@ println("EM")
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
 println("SimplifiedEM")
+dts = 1 .//2 .^(8:-1:2)
 @time sim  = test_convergence(dts,prob,SimplifiedEM(),save_everystep=false,trajectories=Int(5e4))
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.35
 println("RKMil")
+dts = 1 .//2 .^(7:-1:3)
 sim = test_convergence(dts,prob,RKMil(),save_everystep=false,trajectories=Int(1e4))
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
@@ -55,6 +57,7 @@ sim = test_convergence(dts,prob,SKSROCK(),save_everystep=false,trajectories=Int(
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
 println("SROCKC2")
+dts = 1 .//2 .^(8:-1:2)
 sim = test_convergence(dts,prob,SROCKC2(),save_everystep=false,trajectories=Int(1e4))
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-2) < 0.3
@@ -88,6 +91,7 @@ sim = test_convergence(dts,prob,SROCKC2(),save_everystep=false,trajectories=Int(
 # #@test abs(sim.𝒪est[:weak_l∞]-2) < 0.3
 
 println("WangLi3SMil_A")
+dts = 1 .//2 .^(7:-1:3)
 sim = test_convergence(dts,prob,WangLi3SMil_A(),save_everystep=false,trajectories=Int(1e4))
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
