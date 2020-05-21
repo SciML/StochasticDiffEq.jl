@@ -82,7 +82,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
   end
 
   if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence4")
-    @time @safetestset "OOP Weak Convergence Tests" begin include("weak_convergence/oop_weak.jl") end
+    #@time @safetestset "OOP Weak Convergence Tests" begin include("weak_convergence/oop_weak.jl") end
     #@time @safetestset "IIP Weak Convergence Tests" begin include("weak_convergence/iip_weak.jl") end
     @time @safetestset "Multidimensional IIP Weak Convergence Tests" begin include("weak_convergence/multidim_iip_weak.jl") end
     #@time @safetestset "Additive Weak Convergence Tests" begin include("weak_convergence/additive_weak.jl") end
@@ -90,7 +90,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
   end
 
   if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence5")
-    $@time @safetestset "OOP Weak Convergence Tests" begin include("weak_convergence/oop_weak.jl") end
+    #@time @safetestset "OOP Weak Convergence Tests" begin include("weak_convergence/oop_weak.jl") end
     #@time @safetestset "IIP Weak Convergence Tests" begin include("weak_convergence/iip_weak.jl") end
     #@time @safetestset "Multidimensional IIP Weak Convergence Tests" begin include("weak_convergence/multidim_iip_weak.jl") end
     #@time @safetestset "Additive Weak Convergence Tests" begin include("weak_convergence/additive_weak.jl") end
