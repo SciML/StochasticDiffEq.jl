@@ -5,7 +5,7 @@ importsdeproblems()
 using DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_additive
 Random.seed!(100)
 
-dts = 1 .//2 .^(9:-1:3) #14->7 good plot
+dts = 1 .//2 .^(8:-1:3) #14->7 good plot
 
 prob = prob_sde_additive
 println("EM")
