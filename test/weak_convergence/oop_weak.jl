@@ -59,7 +59,7 @@ sim = test_convergence(dts,prob,SKSROCK(),save_everystep=false,trajectories=Int(
 println("SROCKC2")
 dts = 1 .//2 .^(7:-1:2)
 sim = test_convergence(dts,prob,SROCKC2(),save_everystep=false,trajectories=Int(1e4))
-@test_broken abs(sim.𝒪est[:weak_final]-2) < 0.3
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-2) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-2) < 0.3
 
