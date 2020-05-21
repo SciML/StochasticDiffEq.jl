@@ -16,6 +16,8 @@ env:
   - GROUP=AlgConvergence
   - GROUP=AlgConvergence2
   - GROUP=AlgConvergence3
+  - GROUP=WeakConvergence1
+  - GROUP=WeakConvergence2
 #matrix:
 #  allow_failures:
 #    - julia: nightly

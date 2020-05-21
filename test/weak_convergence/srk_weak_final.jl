@@ -17,12 +17,12 @@ Random.seed!(100)
  Test Scalar SDEs (oop)
 """
 
-numtraj = 5e6 # in the paper they use 1e9
+numtraj = 1e4 # in the paper they use 1e9
 u₀ = 0.0
 f(u,p,t) = 1//2*u+sqrt(u^2+1)
 g(u,p,t) = sqrt(u^2+1)
 dts = 1 .//2 .^(4:-1:1)
-tspan = (0.0,2.0)
+tspan = (0.0,1.0) # 2.0 in paper
 prob = SDEProblem(f,g,u₀,tspan)
 
 h1(z) = z^3-6*z^2+8*z
@@ -76,12 +76,12 @@ println(m)
  Test Scalar SDEs (iip)
 """
 
-numtraj = 5e6
+numtraj = 1e4
 u₀ = [0.0]
 f1!(du,u,p,t) = @.(du = 1//2*u+sqrt(u^2 +1))
 g1!(du,u,p,t) = @.(du = sqrt(u^2 +1))
 dts = 1 .//2 .^(4:-1:1)
-tspan = (0.0,2.0)
+tspan = (0.0,1.0)
 prob = SDEProblem(f1!,g1!,u₀,tspan)
 
 h1(z) = z^3-6*z^2+8*z
@@ -111,7 +111,7 @@ println(m)
  Test non-commutative noise SDEs (iip)
 """
 
-numtraj = 1e6
+numtraj = 1e4
 u₀ = [1.0,1.0]
 function f2!(du,u,p,t)
   du[1] = -273//512*u[1]
@@ -124,7 +124,7 @@ function g2!(du,u,p,t)
   du[2,2] = 1//10*u[1]+1//16*u[2]
 end
 dts = 1 .//2 .^(3:-1:0)
-tspan = (0.0,10.0)
+tspan = (0.0,3.0)
 prob = SDEProblem(f2!,g2!,u₀,tspan,noise_rate_prototype=zeros(2,2))
 
 h2(z) = z^2 # but apply it only to u[1]
@@ -155,7 +155,7 @@ println(m)
  Test Diagonal noise SDEs (iip), SIAM Journal on Numerical Analysis, 47 (2009), pp. 1713–1738
 """
 
-numtraj = 1e6
+numtraj = 5e5
 u₀ = [0.1,0.1]
 function f3!(du,u,p,t)
   du[1] = 3//2*u[1]
