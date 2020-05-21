@@ -10,11 +10,14 @@ os:
 julia:
   - 1
 env:
+  - GROUP=Interface
+  - GROUP=Interface2
+  - GROUP=Interface3
+  - GROUP=AlgConvergence
+  - GROUP=AlgConvergence2
+  - GROUP=AlgConvergence3
   - GROUP=WeakConvergence1
   - GROUP=WeakConvergence2
-  - GROUP=WeakConvergence3
-  - GROUP=WeakConvergence4
-  - GROUP=WeakConvergence5
 #matrix:
 #  allow_failures:
 #    - julia: nightly
