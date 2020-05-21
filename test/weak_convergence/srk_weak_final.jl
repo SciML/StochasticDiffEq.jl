@@ -155,7 +155,7 @@ println(m)
  Test Diagonal noise SDEs (iip), SIAM Journal on Numerical Analysis, 47 (2009), pp. 1713–1738
 """
 
-numtraj = 1e5
+numtraj = 5e5
 u₀ = [0.1,0.1]
 function f3!(du,u,p,t)
   du[1] = 3//2*u[1]
