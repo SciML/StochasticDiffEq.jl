@@ -17,7 +17,7 @@ Random.seed!(100)
  Test Scalar SDEs (oop)
 """
 
-numtraj = 5e6 # in the paper they use 1e9
+numtraj = 1e5 # in the paper they use 1e9
 u₀ = 0.0
 f(u,p,t) = 1//2*u+sqrt(u^2+1)
 g(u,p,t) = sqrt(u^2+1)
