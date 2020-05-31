@@ -43,7 +43,7 @@ function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,intern
   if d₀ < T0(1//10^(5)) || d₁ < T1(1//10^(5))
     dt₀ = smalldt
   else
-    dt₀ = tType(0.01*(d₀/d₁))
+    dt₀ = tType((d₀/d₁)/100)
   end
   dt₀ = min(dt₀,tdir*dtmax)
   u₁ = u0 .+ tdir.*dt₀.*f₀
