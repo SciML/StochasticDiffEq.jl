@@ -29,7 +29,7 @@ end
 
       integrator.success_iter += 1
       apply_step!(integrator)
-      
+
     elseif integrator.opts.adaptive && !integrator.accept_step
       if integrator.isout
         integrator.dtnew = integrator.dt*integrator.opts.qmin
@@ -383,14 +383,14 @@ function iip_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
     islin = f isa Union{SDEFunction,SplitSDEFunction} && islinear(nf.f)
     if islin
       J = nf.f
-      W = WOperator(f.mass_matrix, dt, J, true)
+      W = WOperator{true}(f.mass_matrix, dt, J, u)
     else
       if ArrayInterface.isstructured(f.jac_prototype) || f.jac_prototype isa SparseMatrixCSC
         J = similar(f.jac_prototype)
         W = similar(J)
       elseif DiffEqBase.has_jac(f) && !DiffEqBase.has_invW(f) && f.jac_prototype !== nothing
         J = nothing
-        W = WOperator(f, dt, true)
+        W = WOperator{true}(f, u, dt)
       else
         J = false .* vec(u) .* vec(u)'
         W = similar(J)
@@ -412,7 +412,7 @@ function oop_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
     if !isa(J, DiffEqBase.AbstractDiffEqLinearOperator)
       J = DiffEqArrayOperator(J)
     end
-    W = WOperator(f.mass_matrix, dt, J, false)
+    W = WOperator{false}(f.mass_matrix, dt, J, u)
   else
     if u isa StaticArray
       # get a "fake" `J`
