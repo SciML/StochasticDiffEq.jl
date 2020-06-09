@@ -221,9 +221,9 @@ end
 @muladd function perform_step!(integrator,cache::SRIW1ConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
   sqrt3 = sqrt(3one(eltype(W.dW)))
-  chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
-  chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
-  chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
+  chi1 = @.. (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
+  chi2 = @.. (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
+  chi3 = @.. (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   fH01 = dt*integrator.f(uprev,p,t)
 
   g₁ = integrator.g(uprev,p,t)
