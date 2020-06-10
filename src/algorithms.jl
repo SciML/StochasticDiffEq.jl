@@ -161,6 +161,7 @@ struct RI1 <: StochasticDiffEqAlgorithm end
 struct RI3 <: StochasticDiffEqAlgorithm end
 struct RI5 <: StochasticDiffEqAlgorithm end
 struct RI6 <: StochasticDiffEqAlgorithm end
+struct RDI1WM <: StochasticDiffEqAlgorithm end
 struct RDI2WM <: StochasticDiffEqAlgorithm end
 struct RDI3WM <: StochasticDiffEqAlgorithm end
 struct RDI4WM <: StochasticDiffEqAlgorithm end

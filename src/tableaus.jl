@@ -851,6 +851,36 @@ function constructRI6(T=Float64,T2=Float64)
              1//1,-0.9674215661017014)
 end
 
+function constructRDI1WM(T=Float64,T2=Float64)
+  c₀ = [0;2//3]
+  c₁ = [0;0]
+  c₂ = [0;0]
+  A₀ = [0 0
+      2//3 0]
+  A₁ = [0 0
+        0 0]
+  A₂ = [0 0
+        0 0]
+  B₀ = [0 0
+        2//3 0]
+  B₁ = [0 0
+        0 0]
+  B₂ = [0 0
+        0 0]
+  α = [1//4;3//4]
+
+  β₁ = [1;0]
+  β₂ = [0;0]
+  β₃ = [0;0]
+  β₄ = [0;0]
+  RoesslerRI(map(T2,c₀),map(T2,c₁),map(T2,c₂),
+             map(T,A₀),map(T,A₁),map(T,A₂),
+             map(T,B₀),map(T,B₁),map(T,B₂),
+             map(T,α),map(T,β₁),map(T,β₂),
+             map(T,β₃),map(T,β₄),
+             1//1,-0.9674215661017014)
+end
+
 function constructRDI2WM(T=Float64,T2=Float64)
   c₀ = [0;1;0]
   c₁ = [0;2//3;2//3]
@@ -959,10 +989,16 @@ function constructRDI4WM(T=Float64,T2=Float64)
              1//1,-0.9674215661017014)
 end
 
-function checkRIOrder(RI;tol=1e-6)
+function checkRIOrder(RI;tol=1e-6,ps=2)
   @unpack c₀,c₁,c₂,A₀,A₁,A₂,B₀,B₁,B₂,α,β₁,β₂,β₃,β₄ = RI
   e = ones(size(α))
-  conditions = Vector{Bool}(undef, 59) # 9 conditions for first order, 59 in total
+  if ps == 2
+    conditions = Vector{Bool}(undef, 59) # 9 conditions for first order, 59 in total
+  elseif ps == 1
+    conditions = Vector{Bool}(undef, 9)
+  else
+    error("Only the conditions for first and second order weak convergence are implemented. Choose ps=1 or ps=2.")
+  end
   #first order weak sense
   conditions[1] = abs(dot(α,e)-1)<tol
   conditions[2] = abs(dot(β₄,e)-0)<tol
@@ -975,56 +1011,57 @@ function checkRIOrder(RI;tol=1e-6)
   conditions[9] = abs(dot(β₄,(B₂*e).^2)-0)<tol
 
   #second order weak sense
-  conditions[10] = abs(dot(α,(A₀*e))-0.5)<tol
-  conditions[11] = abs(dot(α,(B₀*e).^2)-0.5)<tol
-  conditions[12] = abs(dot(β₁,e)*dot(α,(B₀*e))-0.5)<tol
-  conditions[13] = abs(dot(β₁,e)*dot(β₁,(A₁*e))-0.5)<tol
-  conditions[14] = abs(dot(β₃,(A₂*e))-0)<tol
-  conditions[15] = abs(dot(β₂,(B₁*e))-1)<tol
-  conditions[16] = abs(dot(β₄,(B₂*e))-1)<tol
-  conditions[17] = abs(dot(β₁,e)*dot(β₁,(B₁*e).^2)-0.5)<tol
-  conditions[18] = abs(dot(β₁,e)*dot(β₃,(B₂*e).^2)-0.5)<tol
-  conditions[19] = abs(dot(β₁,B₁*(B₁*e))-0)<tol
-  conditions[20] = abs(dot(β₃,B₂*(B₁*e))-0)<tol
-  conditions[21] = abs(dot(β₃,B₂*(B₁*(B₁*e)))-0)<tol
-  conditions[22] = abs(dot(β₁,A₁*(B₀*e))-0)<tol
-  conditions[23] = abs(dot(β₃,A₂*(B₀*e))-0)<tol
-  conditions[24] = abs(dot(β₄,(A₂*e).^2)-0)<tol
-  conditions[25] = abs(dot(β₄,A₂*(A₀*e))-0)<tol
-  conditions[26] = abs(dot(α,B₀*(B₁*e))-0)<tol
-  conditions[27] = abs(dot(β₂,A₁*e)-0)<tol
-  conditions[28] = abs(dot(β₁,(A₁*e).*(B₁*e))-0)<tol
-  conditions[29] = abs(dot(β₃,(A₂*e).*(B₂*e))-0)<tol
-  conditions[30] = abs(dot(β₄,A₂*(B₀*e))-0)<tol
-  conditions[31] = abs(dot(β₂,A₁*(B₀*e))-0)<tol
-  conditions[32] = abs(dot(β₄,((B₂*e).^2).*(A₂*e))-0)<tol
-  conditions[33] = abs(dot(β₄,A₂*(B₀*e).^2)-0)<tol
-  conditions[34] = abs(dot(β₂,A₁*(B₀*e).^2)-0)<tol
-  conditions[35] = abs(dot(β₁,B₁*(A₁*e))-0)<tol
-  conditions[36] = abs(dot(β₃,B₂*(A₁*e))-0)<tol
-  conditions[37] = abs(dot(β₂,(B₁*e).^2)-0)<tol
-  conditions[38] = abs(dot(β₄,B₂*(B₁*e))-0)<tol
-  conditions[39] = abs(dot(β₂,B₁*(B₁*e))-0)<tol
-  conditions[40] = abs(dot(β₁,(B₁*e).^3)-0)<tol
-  conditions[41] = abs(dot(β₃,(B₂*e).^3)-0)<tol
-  conditions[42] = abs(dot(β₁,B₁*((B₁*e).^2))-0)<tol
-  conditions[43] = abs(dot(β₃,B₂*((B₁*e).^2))-0)<tol
-  conditions[44] = abs(dot(β₄,(B₂*e).^4)-0)<tol
-  conditions[45] = abs(dot(β₄,(B₂*(B₁*e)).^2)-0)<tol
-  conditions[46] = abs(dot(β₄,(B₂*e).*(B₂*(B₁*e)))-0)<tol
-  conditions[47] = abs(dot(α,(B₀*e).*(B₀*(B₁*e)))-0)<tol
-  conditions[48] = abs(dot(β₁,(A₁*(B₀*e)).*(B₁*e))-0)<tol
-  conditions[49] = abs(dot(β₃,(A₂*(B₀*e)).*(B₂*e))-0)<tol
-  conditions[50] = abs(dot(β₁,A₁*(B₀*(B₁*e)))-0)<tol
-  conditions[51] = abs(dot(β₃,A₂*(B₀*(B₁*e)))-0)<tol
-  conditions[52] = abs(dot(β₄,(B₂*(A₁*e)).*(B₂*e))-0)<tol
-  conditions[53] = abs(dot(β₁,B₁*(A₁*(B₀*e)))-0)<tol
-  conditions[54] = abs(dot(β₃,B₂*(A₁*(B₀*e)))-0)<tol
-  conditions[55] = abs(dot(β₁,(B₁*e).*(B₁*(B₁*e)))-0)<tol
-  conditions[56] = abs(dot(β₃,(B₂*e).*(B₂*(B₁*e)))-0)<tol
-  conditions[57] = abs(dot(β₁,B₁*(B₁*(B₁*e)))-0)<tol
-  conditions[58] = abs(dot(β₄,(B₂*e).*(B₂*((B₁*e).^2)))-0)<tol
-  conditions[59] = abs(dot(β₄,(B₂*e).*(B₂*(B₁*(B₁*e))))-0)<tol
-
+  if ps == 2
+    conditions[10] = abs(dot(α,(A₀*e))-0.5)<tol
+    conditions[11] = abs(dot(α,(B₀*e).^2)-0.5)<tol
+    conditions[12] = abs(dot(β₁,e)*dot(α,(B₀*e))-0.5)<tol
+    conditions[13] = abs(dot(β₁,e)*dot(β₁,(A₁*e))-0.5)<tol
+    conditions[14] = abs(dot(β₃,(A₂*e))-0)<tol
+    conditions[15] = abs(dot(β₂,(B₁*e))-1)<tol
+    conditions[16] = abs(dot(β₄,(B₂*e))-1)<tol
+    conditions[17] = abs(dot(β₁,e)*dot(β₁,(B₁*e).^2)-0.5)<tol
+    conditions[18] = abs(dot(β₁,e)*dot(β₃,(B₂*e).^2)-0.5)<tol
+    conditions[19] = abs(dot(β₁,B₁*(B₁*e))-0)<tol
+    conditions[20] = abs(dot(β₃,B₂*(B₁*e))-0)<tol
+    conditions[21] = abs(dot(β₃,B₂*(B₁*(B₁*e)))-0)<tol
+    conditions[22] = abs(dot(β₁,A₁*(B₀*e))-0)<tol
+    conditions[23] = abs(dot(β₃,A₂*(B₀*e))-0)<tol
+    conditions[24] = abs(dot(β₄,(A₂*e).^2)-0)<tol
+    conditions[25] = abs(dot(β₄,A₂*(A₀*e))-0)<tol
+    conditions[26] = abs(dot(α,B₀*(B₁*e))-0)<tol
+    conditions[27] = abs(dot(β₂,A₁*e)-0)<tol
+    conditions[28] = abs(dot(β₁,(A₁*e).*(B₁*e))-0)<tol
+    conditions[29] = abs(dot(β₃,(A₂*e).*(B₂*e))-0)<tol
+    conditions[30] = abs(dot(β₄,A₂*(B₀*e))-0)<tol
+    conditions[31] = abs(dot(β₂,A₁*(B₀*e))-0)<tol
+    conditions[32] = abs(dot(β₄,((B₂*e).^2).*(A₂*e))-0)<tol
+    conditions[33] = abs(dot(β₄,A₂*(B₀*e).^2)-0)<tol
+    conditions[34] = abs(dot(β₂,A₁*(B₀*e).^2)-0)<tol
+    conditions[35] = abs(dot(β₁,B₁*(A₁*e))-0)<tol
+    conditions[36] = abs(dot(β₃,B₂*(A₁*e))-0)<tol
+    conditions[37] = abs(dot(β₂,(B₁*e).^2)-0)<tol
+    conditions[38] = abs(dot(β₄,B₂*(B₁*e))-0)<tol
+    conditions[39] = abs(dot(β₂,B₁*(B₁*e))-0)<tol
+    conditions[40] = abs(dot(β₁,(B₁*e).^3)-0)<tol
+    conditions[41] = abs(dot(β₃,(B₂*e).^3)-0)<tol
+    conditions[42] = abs(dot(β₁,B₁*((B₁*e).^2))-0)<tol
+    conditions[43] = abs(dot(β₃,B₂*((B₁*e).^2))-0)<tol
+    conditions[44] = abs(dot(β₄,(B₂*e).^4)-0)<tol
+    conditions[45] = abs(dot(β₄,(B₂*(B₁*e)).^2)-0)<tol
+    conditions[46] = abs(dot(β₄,(B₂*e).*(B₂*(B₁*e)))-0)<tol
+    conditions[47] = abs(dot(α,(B₀*e).*(B₀*(B₁*e)))-0)<tol
+    conditions[48] = abs(dot(β₁,(A₁*(B₀*e)).*(B₁*e))-0)<tol
+    conditions[49] = abs(dot(β₃,(A₂*(B₀*e)).*(B₂*e))-0)<tol
+    conditions[50] = abs(dot(β₁,A₁*(B₀*(B₁*e)))-0)<tol
+    conditions[51] = abs(dot(β₃,A₂*(B₀*(B₁*e)))-0)<tol
+    conditions[52] = abs(dot(β₄,(B₂*(A₁*e)).*(B₂*e))-0)<tol
+    conditions[53] = abs(dot(β₁,B₁*(A₁*(B₀*e)))-0)<tol
+    conditions[54] = abs(dot(β₃,B₂*(A₁*(B₀*e)))-0)<tol
+    conditions[55] = abs(dot(β₁,(B₁*e).*(B₁*(B₁*e)))-0)<tol
+    conditions[56] = abs(dot(β₃,(B₂*e).*(B₂*(B₁*e)))-0)<tol
+    conditions[57] = abs(dot(β₁,B₁*(B₁*(B₁*e)))-0)<tol
+    conditions[58] = abs(dot(β₄,(B₂*e).*(B₂*((B₁*e).^2)))-0)<tol
+    conditions[59] = abs(dot(β₄,(B₂*e).*(B₂*(B₁*(B₁*e))))-0)<tol
+  end  
   return(conditions)
 end

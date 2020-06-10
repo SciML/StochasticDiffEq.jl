@@ -1,6 +1,6 @@
 """
  Tests for https://arxiv.org/abs/1303.5103 with test problems as in the paper.
- DRI1 + RI1
+ DRI1, RI1, RI3, RI5, RI6, RDI1WM, RDI2WM, RDI3WM, RDI4WM
 """
 
 
@@ -31,6 +31,8 @@ end
 """
  Test Scalar SDEs (oop)
 """
+
+@info "Scalar oop noise"
 
 numtraj = Int(2e5) # in the paper they use 1e9
 u₀ = 0.0
@@ -116,6 +118,19 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 
 println("RI6:", m)
 
+numtraj = Int(1e3)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
+_solutions = @time generate_weak_solutions(ensemble_prob, RDI1WM(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-1) < 0.3
+
+println("RDI1WM:", m)
+
 
 numtraj = Int(7e5)
 seed = 100
@@ -155,6 +170,7 @@ println("RDI4WM:", m)
  Test Scalar SDEs (iip)
 """
 
+@info "Scalar iip noise"
 
 u₀ = [0.0]
 f1!(du,u,p,t) = @.(du = 1//2*u+sqrt(u^2 +1))
@@ -238,6 +254,19 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 
 println("RI6:", m)
 
+numtraj = Int(1e3)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
+_solutions = @time generate_weak_solutions(ensemble_prob, RDI1WM(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-1) < 0.3
+
+println("RDI1WM:", m)
+
 numtraj = Int(7e5)
 seed = 100
 Random.seed!(seed)
@@ -276,6 +305,7 @@ println("RDI4WM:", m)
  Test non-commutative noise SDEs (iip)
 """
 
+@info "Non-commutative noise"
 
 u₀ = [1.0,1.0]
 function f2!(du,u,p,t)
@@ -361,6 +391,20 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 
 println("RI6:", m)
 
+
+numtraj = Int(1e3)
+seed = 10
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
+_solutions = @time generate_weak_solutions(ensemble_prob, RDI1WM(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-exp(-3.0)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-1) < 0.3
+
+println("RDI1WM:", m)
+
 numtraj = Int(1e5)
 seed = 10
 Random.seed!(seed)
@@ -393,6 +437,8 @@ println("RDI4WM:", m)
 """
  Test Diagonal noise SDEs (iip), SIAM Journal on Numerical Analysis, 47 (2009), pp. 1713–1738
 """
+
+@info "Diagonal noise"
 
 u₀ = [0.1,0.1]
 function f3!(du,u,p,t)
@@ -466,6 +512,20 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test -(m-2) < 0.45
 
 println("RI6:", m)
+
+
+numtraj = Int(1e3)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
+_solutions = @time generate_weak_solutions(ensemble_prob, RDI1WM(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-1) < 0.45
+
+println("RDI1WM:", m)
 
 
 numtraj = Int(1e5)

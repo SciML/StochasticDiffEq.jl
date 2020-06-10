@@ -289,3 +289,133 @@ end
   end
 
 end
+
+
+
+# Roessler SRK for first order weak approx
+@muladd function perform_step!(integrator,cache::RDI1WMConstantCache,f=integrator.f)
+  @unpack a021,b021,α1,α2,c02,beta11,NORMAL_ONESIX_QUANTILE = cache
+  @unpack t,dt,uprev,u,W,p = integrator
+
+  # define three-point distributed random variables
+  dW_scaled = W.dW / sqrt(dt)
+  _dW = map(x -> calc_threepoint_random(integrator, NORMAL_ONESIX_QUANTILE, x), dW_scaled)
+  chi1 = map(x -> (x^2-dt)/2, _dW) # diagonal of Ihat2
+  if !(typeof(W.dW) <: Number)
+    m = length(W.dW)
+    # define two-point distributed random variables
+    _dZ = map(x -> calc_twopoint_random(integrator, x),  W.dZ)
+    Ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
+    for k = 1:m
+      for l = 1:m
+        if k<l
+          Ihat2[k, l] = (_dW[k]*_dW[l]-integrator.sqdt*_dZ[k])/2
+        elseif l<k
+          Ihat2[k, l] = (_dW[k]*_dW[l]+integrator.sqdt*_dZ[l])/2
+        else k==l
+          Ihat2[k, k] = chi1[k]
+        end
+      end
+    end
+  end
+
+  # compute stage values
+  k1 = integrator.f(uprev,p,t)
+  g1 = integrator.g(uprev,p,t)
+
+  # H_i^(0), stage 1
+  # H01 = uprev
+  # H_i^(0), stage 2
+  if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
+    H02 = uprev + a021*k1*dt + b021*g1*_dW
+  else
+    H02 = uprev + a021*k1*dt + b021*g1.*_dW
+  end
+  k2 = integrator.f(H02,p,t+c02*dt)
+
+  # add stages together Eq. (3)
+  u = uprev + α1*k1*dt + α2*k2*dt
+
+  # add noise
+  if typeof(W.dW) <: Number
+    # lines 2 and 3
+    u += g1*(_dW*beta11)
+  else
+      if is_diagonal_noise(integrator.sol.prob)
+        u += g1.*_dW*beta11
+      else
+        # non-diag noise
+        for k=1:m
+          g1k = @view g1[:,k]
+          @.. u = u + g1k*_dW[k]*(beta11)
+        end
+      end
+  end
+
+  integrator.u = u
+
+end
+
+
+
+@muladd function perform_step!(integrator,cache::RDI1WMCache,f=integrator.f)
+  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack _dW,_dZ,chi1,Ihat2,tab,g1,k1,k2,H02,tmp1 = cache
+  @unpack a021,b021,α1,α2,c02,beta11,NORMAL_ONESIX_QUANTILE = cache.tab
+
+  m = length(W.dW)
+
+  if typeof(W.dW) <: Union{SArray,Number}
+    # tbd
+    _dW = map(x -> calc_threepoint_random(integrator, NORMAL_ONESIX_QUANTILE, x), W.dW / sqrt(dt))
+  else
+    # define three-point distributed random variables
+    @.. chi1 = W.dW / sqrt(dt)
+    calc_threepoint_random!(_dW, integrator, NORMAL_ONESIX_QUANTILE, chi1)
+    map!(x -> (x^2-dt)/2, chi1, _dW)
+
+    # define two-point distributed random variables
+    calc_twopoint_random!(_dZ,integrator,W.dZ)
+
+    for k = 1:m
+      for l = 1:m
+        if k<l
+          Ihat2[k, l] = (_dW[k]*_dW[l]-integrator.sqdt*_dZ[k])/2
+        elseif l<k
+          Ihat2[k, l] = (_dW[k]*_dW[l]+integrator.sqdt*_dZ[l])/2
+        else k==l
+          Ihat2[k, k] = chi1[k]
+        end
+      end
+    end
+  end
+
+  # compute stage values
+  integrator.f(k1,uprev,p,t)
+  integrator.g(g1,uprev,p,t)
+
+  # H_i^(0), stage 1
+  # H01 = uprev
+  # H_i^(0), stage 2
+  if is_diagonal_noise(integrator.sol.prob)
+    @.. H02 = uprev + a021*k1*dt + b021*g1*_dW
+  else
+    mul!(tmp1,g1,_dW)
+    @.. H02 = uprev + dt*a021*k1 + b021*tmp1
+  end
+
+  integrator.f(k2,H02,p,t+c02*dt)
+
+  # add stages together Eq. (3)
+  @.. u = uprev + α1*k1*dt + α2*k2*dt
+
+  # add noise
+  if is_diagonal_noise(integrator.sol.prob)
+      @.. u = u + g1*_dW*beta11
+  else
+    for k=1:m
+      g1k = @view g1[:,k]
+      @.. u = u + g1k*_dW[k]*beta11
+    end
+  end
+end

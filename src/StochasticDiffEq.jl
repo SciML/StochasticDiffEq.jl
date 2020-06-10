@@ -127,7 +127,7 @@ module StochasticDiffEq
          SROCK1, SROCK2, SROCKEM, SKSROCK, TangXiaoSROCK2, KomBurSROCK2, SROCKC2,
          WangLi3SMil_A, WangLi3SMil_B, WangLi3SMil_C, WangLi3SMil_D, WangLi3SMil_E, WangLi3SMil_F,
          AutoSOSRI2, AutoSOSRA2,
-         DRI1, RI1, RI3, RI5, RI6, RDI2WM, RDI3WM, RDI4WM
+         DRI1, RI1, RI3, RI5, RI6, RDI1WM, RDI2WM, RDI3WM, RDI4WM
 
   export EulerHeun, LambaEulerHeun
 
@@ -152,6 +152,6 @@ module StochasticDiffEq
 
   #Misc Tools
   export checkSRIOrder, checkSRAOrder,  checkRIOrder, constructSRIW1, constructSRA1, constructDRI1, constructRI1, constructRI3, constructRI5, constructRI6,
-        constructRDI2WM, constructRDI3WM, constructRDI4WM
+        constructRDI1WM, constructRDI2WM, constructRDI3WM, constructRDI4WM
 
 end # module

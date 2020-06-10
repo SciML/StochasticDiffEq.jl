@@ -879,3 +879,120 @@ function alg_cache(alg::RDI4WM,prob,u,ΔW,ΔZ,p,rate_prototype,
 
   DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
 end
+
+
+
+# Roessler SRK for first order weak approx
+struct RDI1WMConstantCache{T,T2} <: StochasticDiffEqConstantCache
+  # hard-coded version
+  a021::T
+
+  #a121::T
+
+  #a221::T
+
+  b021::T
+
+  #b121::T
+
+  #b221::T
+
+  α1::T
+  α2::T
+
+  c02::T2
+
+  #c11::T2
+  #c12::T2
+
+  #c21::T2
+  #c22::T2
+
+  beta11::T
+  #beta12::T
+
+  #beta21::T
+  #beta22::T
+
+  #beta31::T
+  #beta32::T
+
+  #beta41::T
+  #beta42::T
+
+  #quantile(Normal(),1/6)
+  NORMAL_ONESIX_QUANTILE::T
+end
+
+
+
+function RDI1WMConstantCache(::Type{T}, ::Type{T2}) where {T,T2}
+
+  a021 = convert(T, 2//3)
+
+  b021 = convert(T, 2//3)
+
+  α1 = convert(T, 1//4)
+  α2 = convert(T, 3//4)
+
+  c02 = convert(T2, 2//3)
+
+  beta11 = convert(T, 1)
+
+  NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
+
+  RDI1WMConstantCache(a021,b021,α1,α2,c02,beta11,NORMAL_ONESIX_QUANTILE)
+end
+
+
+function alg_cache(alg::RDI1WM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  RDI1WMConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+end
+
+
+@cache struct RDI1WMCache{uType,randType,MType1,tabType,rateNoiseType,rateType,possibleRateType} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+
+  _dW::randType
+  _dZ::randType
+  chi1::randType
+  Ihat2::MType1
+
+  tab::tabType
+
+  g1::rateNoiseType
+
+  k1::rateType
+  k2::rateType
+
+  H02::uType
+
+  tmp1::possibleRateType
+end
+
+
+function alg_cache(alg::RDI1WM,prob,u,ΔW,ΔZ,p,rate_prototype,
+                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
+                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  if typeof(ΔW) <: Union{SArray,Number}
+    _dW = copy(ΔW)
+    _dZ = copy(ΔW)
+    chi1 = copy(ΔW)
+  else
+    _dW = zero(ΔW)
+    _dZ = zero(ΔW)
+    chi1 = zero(ΔW)
+  end
+  m = length(ΔW)
+  Ihat2 = zeros(eltype(ΔW), m, m)
+  tab = RDI1WMConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+  g1 = zero(noise_rate_prototype)
+  k1 = zero(rate_prototype); k2 = zero(rate_prototype)
+
+  H02 = zero(u)
+
+  tmp1 = zero(rate_prototype)
+
+  RDI1WMCache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,k1,k2,H02,tmp1)
+end
