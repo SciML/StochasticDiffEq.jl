@@ -35,4 +35,16 @@ sim2 = test_convergence(dts,prob, DRI1(),trajectories=20)
 @test abs(sim2.𝒪est[:l∞]-3) <.1
 sim2 = test_convergence(dts,prob, RI1(),trajectories=20)
 @test abs(sim2.𝒪est[:l∞]-3) <.1
-
+sim2 = test_convergence(dts,prob, RI3(),trajectories=20)
+@test abs(sim2.𝒪est[:l∞]-3) <.1
+sim2 = test_convergence(dts,prob, RI5(),trajectories=20)
+@test abs(sim2.𝒪est[:l∞]-3) <.1
+sim2 = test_convergence(dts,prob, RI6(),trajectories=20)
+@test abs(sim2.𝒪est[:l∞]-2) <.1
+
+sim2 = test_convergence(dts,prob, RDI2WM(),trajectories=20)
+@test abs(sim2.𝒪est[:l∞]-2) <.1
+sim2 = test_convergence(dts,prob, RDI3WM(),trajectories=20)
+@test abs(sim2.𝒪est[:l∞]-3) <.1
+sim2 = test_convergence(dts,prob, RDI4WM(),trajectories=20)
+@test abs(sim2.𝒪est[:l∞]-3) <.1
