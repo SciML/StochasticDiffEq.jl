@@ -851,6 +851,114 @@ function constructRI6(T=Float64,T2=Float64)
              1//1,-0.9674215661017014)
 end
 
+function constructRDI2WM(T=Float64,T2=Float64)
+  c₀ = [0;1;0]
+  c₁ = [0;2//3;2//3]
+  c₂ = [0;0;0]
+  A₀ = [0 0 0
+      1 0 0
+      0 0 0]
+  A₁ = [0 0 0
+      2//3 0 0
+      2//3 0 0]
+  A₂ = [0 0 0
+      0 0 0
+      0 0 0]
+  B₀ = [0 0 0
+       1 0 0
+       0 0 0]
+  B₁ = [0 0 0
+       sqrt(2//3) 0 0
+       -sqrt(2//3) 0 0]
+  B₂ = [0 0 0
+       sqrt(2) 0 0
+       -sqrt(2) 0 0]
+  α = [1//2;1//2;0]
+
+  β₁ = [1//4;3//8;3//8]
+  β₂ = [0;sqrt(6)/4;-sqrt(6)/4]
+  β₃ = [-1//4;1//8;1//8]
+  β₄ = [0;sqrt(2)/4;-sqrt(2)/4]
+  RoesslerRI(map(T2,c₀),map(T2,c₁),map(T2,c₂),
+             map(T,A₀),map(T,A₁),map(T,A₂),
+             map(T,B₀),map(T,B₁),map(T,B₂),
+             map(T,α),map(T,β₁),map(T,β₂),
+             map(T,β₃),map(T,β₄),
+             1//1,-0.9674215661017014)
+end
+
+function constructRDI3WM(T=Float64,T2=Float64)
+  c₀ = [0;1//2;3//4]
+  c₁ = [0;2//3;2//3]
+  c₂ = [0;0;0]
+  A₀ = [0 0 0
+      1//2 0 0
+      0 3//4 0]
+  A₁ = [0 0 0
+      2//3 0 0
+      2//3 0 0]
+  A₂ = [0 0 0
+      0 0 0
+      0 0 0]
+  B₀ = [0 0 0
+       (9-2*sqrt(15))/14 0 0
+       (18+3*sqrt(15))/28 0 0]
+  B₁ = [0 0 0
+       sqrt(2//3) 0 0
+       -sqrt(2//3) 0 0]
+  B₂ = [0 0 0
+       sqrt(2) 0 0
+       -sqrt(2) 0 0]
+  α = [2//9;1//3;4//9]
+
+  β₁ = [1//4;3//8;3//8]
+  β₂ = [0;sqrt(6)/4;-sqrt(6)/4]
+  β₃ = [-1//4;1//8;1//8]
+  β₄ = [0;sqrt(2)/4;-sqrt(2)/4]
+  RoesslerRI(map(T2,c₀),map(T2,c₁),map(T2,c₂),
+             map(T,A₀),map(T,A₁),map(T,A₂),
+             map(T,B₀),map(T,B₁),map(T,B₂),
+             map(T,α),map(T,β₁),map(T,β₂),
+             map(T,β₃),map(T,β₄),
+             1//1,-0.9674215661017014)
+end
+
+function constructRDI4WM(T=Float64,T2=Float64)
+  c₀ = [0;1//2;1]
+  c₁ = [0;2//3;2//3]
+  c₂ = [0;0;0]
+  A₀ = [0 0 0
+      1//2 0 0
+      -1 2 0]
+  A₁ = [0 0 0
+      2//3 0 0
+      2//3 0 0]
+  A₂ = [0 0 0
+      0 0 0
+      0 0 0]
+  B₀ = [0 0 0
+       (6-sqrt(6))/10 0 0
+       (3+2*sqrt(6))/5 0 0]
+  B₁ = [0 0 0
+       sqrt(2//3) 0 0
+       -sqrt(2//3) 0 0]
+  B₂ = [0 0 0
+       sqrt(2) 0 0
+       -sqrt(2) 0 0]
+  α = [1//6;2//3;1//6]
+
+  β₁ = [1//4;3//8;3//8]
+  β₂ = [0;sqrt(6)/4;-sqrt(6)/4]
+  β₃ = [-1//4;1//8;1//8]
+  β₄ = [0;sqrt(2)/4;-sqrt(2)/4]
+  RoesslerRI(map(T2,c₀),map(T2,c₁),map(T2,c₂),
+             map(T,A₀),map(T,A₁),map(T,A₂),
+             map(T,B₀),map(T,B₁),map(T,B₂),
+             map(T,α),map(T,β₁),map(T,β₂),
+             map(T,β₃),map(T,β₄),
+             1//1,-0.9674215661017014)
+end
+
 function checkRIOrder(RI;tol=1e-6)
   @unpack c₀,c₁,c₂,A₀,A₁,A₂,B₀,B₁,B₂,α,β₁,β₂,β₃,β₄ = RI
   e = ones(size(α))

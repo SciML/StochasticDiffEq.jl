@@ -20,3 +20,12 @@ RI5_tab = constructRI5()
 
 RI6_tab = constructRI6()
 @test minimum(checkRIOrder(RI6_tab))
+
+RDI2WM_tab = constructRDI2WM()
+@test minimum(checkRIOrder(RDI2WM_tab))
+
+RDI3WM_tab = constructRDI3WM()
+@test minimum(checkRIOrder(RDI3WM_tab))
+
+RDI4WM_tab = constructRDI4WM()
+@test minimum(checkRIOrder(RDI4WM_tab))
