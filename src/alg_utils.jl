@@ -67,6 +67,9 @@ alg_order(alg::SOSRA2) = 2//1
 
 alg_order(alg::DRI1) = 1//1
 alg_order(alg::RI1) = 1//1
+alg_order(alg::RI3) = 1//1
+alg_order(alg::RI5) = 1//1
+alg_order(alg::RI6) = 1//1
 
 alg_order(alg::TauLeaping) = 1//1
 alg_order(alg::CaoTauLeaping) = 1//1
@@ -114,6 +117,9 @@ alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SOSRA) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SOSRA2) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::DRI1) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RI1) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RI3) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RI5) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RI6) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SKenCarp) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::EM) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::LambaEM) = true
@@ -167,6 +173,9 @@ alg_needs_extra_process(alg::SOSRA2) = true
 alg_needs_extra_process(alg::SKenCarp) = true
 alg_needs_extra_process(alg::DRI1) = true
 alg_needs_extra_process(alg::RI1) = true
+alg_needs_extra_process(alg::RI3) = true
+alg_needs_extra_process(alg::RI5) = true
+alg_needs_extra_process(alg::RI6) = true
 
 OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
 OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD

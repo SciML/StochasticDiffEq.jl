@@ -76,6 +76,46 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 
 println("RI1:", m)
 
+numtraj = Int(5e5)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
+_solutions = @time generate_weak_solutions(ensemble_prob, RI3(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("RI3:", m)
+
+numtraj = Int(5e5)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
+_solutions = @time generate_weak_solutions(ensemble_prob, RI5(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("RI5:", m)
+
+
+numtraj = Int(7e5)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
+_solutions = @time generate_weak_solutions(ensemble_prob, RI6(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("RI6:", m)
+
 
 """
  Test Scalar SDEs (iip)
@@ -123,6 +163,48 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test -(m-2) < 0.3
 
 println("RI1:", m)
+
+numtraj = Int(5e5)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
+_solutions = @time generate_weak_solutions(ensemble_prob, RI3(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("RI3:", m)
+
+numtraj = Int(5e5)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
+_solutions = @time generate_weak_solutions(ensemble_prob, RI5(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("RI5:", m)
+
+
+numtraj = Int(7e5)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
+_solutions = @time generate_weak_solutions(ensemble_prob, RI6(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("RI6:", m)
+
+
 
 """
  Test non-commutative noise SDEs (iip)
@@ -177,6 +259,42 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 
 println("RI1:", m)
 
+numtraj = Int(2e5)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+_solutions = @time generate_weak_solutions(ensemble_prob, RI3(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-exp(-3.0)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("RI3:", m)
+
+numtraj = Int(2e5)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+_solutions = @time generate_weak_solutions(ensemble_prob, RI5(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-exp(-3.0)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("RI5:", m)
+
+numtraj = Int(2e5)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+_solutions = @time generate_weak_solutions(ensemble_prob, RI6(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-exp(-3.0)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("RI6:", m)
+
 """
  Test Diagonal noise SDEs (iip), SIAM Journal on Numerical Analysis, 47 (2009), pp. 1713–1738
 """
@@ -210,7 +328,7 @@ _solutions = @time generate_weak_solutions(ensemble_prob, DRI1(), dts, numtraj, 
 
 errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.5
+@test -(m-2) < 0.3
 
 println("DRI1:", m)
 
@@ -219,6 +337,37 @@ _solutions = @time generate_weak_solutions(ensemble_prob, RI1(), dts, numtraj, e
 
 errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.5
+@test -(m-2) < 0.3
 
 println("RI1:", m)
+
+
+_solutions = @time generate_weak_solutions(ensemble_prob, RI3(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("RI3:", m)
+
+_solutions = @time generate_weak_solutions(ensemble_prob, RI5(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("RI5:", m)
+
+
+numtraj = Int(1e5)
+seed = 70
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
+_solutions = @time generate_weak_solutions(ensemble_prob, RI6(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.45
+
+println("RI6:", m)

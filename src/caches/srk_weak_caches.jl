@@ -179,6 +179,175 @@ function alg_cache(alg::RI1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype
 end
 
 
+function RI3ConstantCache(T::Type, T2::Type)
+  a021 = convert(T, 1)
+  a031 = convert(T, 1//4)
+  a032 = convert(T, 1//4)
+
+  a121 = convert(T, 1)
+  a131 = convert(T, 1)
+
+  b021 = convert(T, (3-2*sqrt(6))/5)
+  b031 = convert(T, (6+sqrt(6))/10)
+
+  b121 = convert(T, 1)
+  b131 = convert(T, -1)
+
+  b221 = convert(T, 1)
+  b222 = convert(T, 0)
+  b223 = convert(T, 0)
+  b231 = convert(T, -1)
+  b232 = convert(T, 0)
+  b233 = convert(T, 0)
+
+  α1 = convert(T, 1//6)
+  α2 = convert(T, 1//6)
+  α3 = convert(T, 2//3)
+
+  c02 = convert(T2, 1)
+  c03 = convert(T2, 1//2)
+
+  c12 = convert(T2, 1)
+  c13 = convert(T2, 1)
+
+  beta11 = convert(T, 1//2)
+  beta12 = convert(T, 1//4)
+  beta13 = convert(T, 1//4)
+
+  beta22 = convert(T, 1//2)
+  beta23 = convert(T, -1//2)
+
+  beta31 = convert(T, -1//2)
+  beta32 = convert(T, 1//4)
+  beta33 = convert(T, 1//4)
+
+  beta42 = convert(T, 1//2)
+  beta43 = convert(T, -1//2)
+
+  NORMAL_ONESIX_QUANTILE = convert(T,-0.9674215661017014)
+
+  DRI1ConstantCache(a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43,NORMAL_ONESIX_QUANTILE)
+end
+
+
+function alg_cache(alg::RI3,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  RI3ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+end
+
+
+function RI5ConstantCache(T::Type, T2::Type)
+  a021 = convert(T, 1)
+  a031 = convert(T, 25//144)
+  a032 = convert(T, 35//144)
+
+  a121 = convert(T, 1//4)
+  a131 = convert(T, 1//4)
+
+  b021 = convert(T, 1//3)
+  b031 = convert(T, -5//6)
+
+  b121 = convert(T, 1//2)
+  b131 = convert(T, -1//2)
+
+  b221 = convert(T, 1)
+  b222 = convert(T, 0)
+  b223 = convert(T, 0)
+  b231 = convert(T, -1)
+  b232 = convert(T, 0)
+  b233 = convert(T, 0)
+
+  α1 = convert(T, 1//10)
+  α2 = convert(T, 3//14)
+  α3 = convert(T, 24//35)
+
+  c02 = convert(T2, 1)
+  c03 = convert(T2, 5//12)
+
+  c12 = convert(T2, 1//4)
+  c13 = convert(T2, 1//4)
+
+  beta11 = convert(T, 1)
+  beta12 = convert(T, -1)
+  beta13 = convert(T, -1)
+
+  beta22 = convert(T, 1)
+  beta23 = convert(T, -1)
+
+  beta31 = convert(T, 1//2)
+  beta32 = convert(T, -1//4)
+  beta33 = convert(T, -1//4)
+
+  beta42 = convert(T, 1//2)
+  beta43 = convert(T, -1//2)
+
+  NORMAL_ONESIX_QUANTILE = convert(T,-0.9674215661017014)
+
+  DRI1ConstantCache(a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43,NORMAL_ONESIX_QUANTILE)
+end
+
+
+function alg_cache(alg::RI5,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  RI5ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+end
+
+
+function RI6ConstantCache(T::Type, T2::Type)
+  a021 = convert(T, 1)
+  a031 = convert(T, 0)
+  a032 = convert(T, 0)
+
+  a121 = convert(T, 1)
+  a131 = convert(T, 1)
+
+  b021 = convert(T, 1)
+  b031 = convert(T, 0)
+
+  b121 = convert(T, 1)
+  b131 = convert(T, -1)
+
+  b221 = convert(T, 1)
+  b222 = convert(T, 0)
+  b223 = convert(T, 0)
+  b231 = convert(T, -1)
+  b232 = convert(T, 0)
+  b233 = convert(T, 0)
+
+  α1 = convert(T, 1//2)
+  α2 = convert(T, 1//2)
+  α3 = convert(T, 0)
+
+  c02 = convert(T2, 1)
+  c03 = convert(T2, 0)
+
+  c12 = convert(T2, 1)
+  c13 = convert(T2, 1)
+
+  beta11 = convert(T, 1//2)
+  beta12 = convert(T, 1//4)
+  beta13 = convert(T, 1//4)
+
+  beta22 = convert(T, 1//2)
+  beta23 = convert(T, -1//2)
+
+  beta31 = convert(T, -1//2)
+  beta32 = convert(T, 1//4)
+  beta33 = convert(T, 1//4)
+
+  beta42 = convert(T, 1//2)
+  beta43 = convert(T, -1//2)
+
+  NORMAL_ONESIX_QUANTILE = convert(T,-0.9674215661017014)
+
+  DRI1ConstantCache(a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43,NORMAL_ONESIX_QUANTILE)
+end
+
+
+function alg_cache(alg::RI6,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  RI6ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+end
+
+
+
 @cache struct DRI1Cache{uType,randType,MType1,tabType,rateNoiseType,rateType,possibleRateType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
@@ -267,6 +436,132 @@ function alg_cache(alg::RI1,prob,u,ΔW,ΔZ,p,rate_prototype,
   m = length(ΔW)
   Ihat2 = zeros(eltype(ΔW), m, m)
   tab = RI1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+  g1 = zero(noise_rate_prototype)
+  g2 = [zero(noise_rate_prototype) for k=1:m]
+  g3 = [zero(noise_rate_prototype) for k=1:m]
+  k1 = zero(rate_prototype); k2 = zero(rate_prototype); k3 = zero(rate_prototype)
+
+  H02 = zero(u)
+  H03 = zero(u)
+  H12 = Vector{typeof(u)}()
+  H13 = Vector{typeof(u)}()
+  H22 = Vector{typeof(u)}()
+  H23 = Vector{typeof(u)}()
+
+  for k=1:m
+    push!(H12,zero(u))
+    push!(H13,zero(u))
+    push!(H22,zero(u))
+    push!(H23,zero(u))
+  end
+
+  tmp1 = zero(rate_prototype)
+  tmpg = zero(noise_rate_prototype)
+
+  DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
+end
+
+
+
+function alg_cache(alg::RI3,prob,u,ΔW,ΔZ,p,rate_prototype,
+                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
+                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  if typeof(ΔW) <: Union{SArray,Number}
+    _dW = copy(ΔW)
+    _dZ = copy(ΔW)
+    chi1 = copy(ΔW)
+  else
+    _dW = zero(ΔW)
+    _dZ = zero(ΔW)
+    chi1 = zero(ΔW)
+  end
+  m = length(ΔW)
+  Ihat2 = zeros(eltype(ΔW), m, m)
+  tab = RI3ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+  g1 = zero(noise_rate_prototype)
+  g2 = [zero(noise_rate_prototype) for k=1:m]
+  g3 = [zero(noise_rate_prototype) for k=1:m]
+  k1 = zero(rate_prototype); k2 = zero(rate_prototype); k3 = zero(rate_prototype)
+
+  H02 = zero(u)
+  H03 = zero(u)
+  H12 = Vector{typeof(u)}()
+  H13 = Vector{typeof(u)}()
+  H22 = Vector{typeof(u)}()
+  H23 = Vector{typeof(u)}()
+
+  for k=1:m
+    push!(H12,zero(u))
+    push!(H13,zero(u))
+    push!(H22,zero(u))
+    push!(H23,zero(u))
+  end
+
+  tmp1 = zero(rate_prototype)
+  tmpg = zero(noise_rate_prototype)
+
+  DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
+end
+
+
+
+function alg_cache(alg::RI5,prob,u,ΔW,ΔZ,p,rate_prototype,
+                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
+                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  if typeof(ΔW) <: Union{SArray,Number}
+    _dW = copy(ΔW)
+    _dZ = copy(ΔW)
+    chi1 = copy(ΔW)
+  else
+    _dW = zero(ΔW)
+    _dZ = zero(ΔW)
+    chi1 = zero(ΔW)
+  end
+  m = length(ΔW)
+  Ihat2 = zeros(eltype(ΔW), m, m)
+  tab = RI5ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+  g1 = zero(noise_rate_prototype)
+  g2 = [zero(noise_rate_prototype) for k=1:m]
+  g3 = [zero(noise_rate_prototype) for k=1:m]
+  k1 = zero(rate_prototype); k2 = zero(rate_prototype); k3 = zero(rate_prototype)
+
+  H02 = zero(u)
+  H03 = zero(u)
+  H12 = Vector{typeof(u)}()
+  H13 = Vector{typeof(u)}()
+  H22 = Vector{typeof(u)}()
+  H23 = Vector{typeof(u)}()
+
+  for k=1:m
+    push!(H12,zero(u))
+    push!(H13,zero(u))
+    push!(H22,zero(u))
+    push!(H23,zero(u))
+  end
+
+  tmp1 = zero(rate_prototype)
+  tmpg = zero(noise_rate_prototype)
+
+  DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
+end
+
+
+
+function alg_cache(alg::RI6,prob,u,ΔW,ΔZ,p,rate_prototype,
+                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
+                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  if typeof(ΔW) <: Union{SArray,Number}
+    _dW = copy(ΔW)
+    _dZ = copy(ΔW)
+    chi1 = copy(ΔW)
+  else
+    _dW = zero(ΔW)
+    _dZ = zero(ΔW)
+    chi1 = zero(ΔW)
+  end
+  m = length(ΔW)
+  Ihat2 = zeros(eltype(ΔW), m, m)
+  tab = RI6ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
   g1 = zero(noise_rate_prototype)
   g2 = [zero(noise_rate_prototype) for k=1:m]
   g3 = [zero(noise_rate_prototype) for k=1:m]
