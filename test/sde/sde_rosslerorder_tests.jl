@@ -32,3 +32,9 @@ RDI3WM_tab = constructRDI3WM()
 
 RDI4WM_tab = constructRDI4WM()
 @test minimum(checkRIOrder(RDI4WM_tab))
+
+RS1_tab = constructRS1()
+@test minimum(checkRSOrder(RS1_tab))
+
+RS2_tab = constructRS2()
+@test minimum(checkRSOrder(RS2_tab))
