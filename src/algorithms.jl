@@ -38,12 +38,24 @@ struct LambaEulerHeun <: StochasticDiffEqAdaptiveAlgorithm end
 
 struct SimplifiedEM <: StochasticDiffEqAlgorithm end
 
+"""
+Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
+Springer. Berlin Heidelberg (2011)
+"""
 struct RKMil{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
 RKMil(;interpretation=:Ito) = RKMil{interpretation}()
 
+"""
+Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
+Springer. Berlin Heidelberg (2011)
+"""
 struct RKMilCommute{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
 RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
 
+"""
+Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
+Springer. Berlin Heidelberg (2011)
+"""
 struct RKMil_General{T<:IteratedIntegralApprox} <: StochasticDiffEqAdaptiveAlgorithm
   interpretation::Symbol
   ii_approx::T
@@ -131,23 +143,62 @@ PCEuler(ggprime; theta=1/2, eta=1/2) = PCEuler(theta,eta,ggprime)
 
 # Rossler
 
+"""
+Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
+Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
+DOI:10.1137/09076636X
+"""
 struct SRA{TabType} <: StochasticDiffEqAdaptiveAlgorithm
   tableau::TabType
 end
 SRA(;tableau=constructSRA1()) = SRA(tableau)
 
+"""
+Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
+Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
+DOI:10.1137/09076636X
+"""
 struct SRI{TabType} <: StochasticDiffEqAdaptiveAlgorithm
   tableau::TabType
   error_terms::Int
 end
 SRI(;tableau=constructSRIW1(),error_terms=4) = SRI(tableau,error_terms)
 
+"""
+Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
+Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
+DOI:10.1137/09076636X
+"""
 struct SRIW1 <: StochasticDiffEqAdaptiveAlgorithm end
+
+"""
+Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
+Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
+DOI:10.1137/09076636X
+"""
 struct SRIW2 <: StochasticDiffEqAdaptiveAlgorithm end
 struct SOSRI <: StochasticDiffEqAdaptiveAlgorithm end
 struct SOSRI2 <: StochasticDiffEqAdaptiveAlgorithm end
+
+"""
+Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
+Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
+DOI:10.1137/09076636X
+"""
 struct SRA1 <: StochasticDiffEqAdaptiveAlgorithm end
+
+"""
+Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
+Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
+DOI:10.1137/09076636X
+"""
 struct SRA2 <: StochasticDiffEqAdaptiveAlgorithm end
+
+"""
+Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
+Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
+DOI:10.1137/09076636X
+"""
 struct SRA3 <: StochasticDiffEqAdaptiveAlgorithm end
 struct SOSRA <: StochasticDiffEqAdaptiveAlgorithm end
 struct SOSRA2 <: StochasticDiffEqAdaptiveAlgorithm end
