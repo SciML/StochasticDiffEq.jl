@@ -207,15 +207,15 @@ struct SOSRA2 <: StochasticDiffEqAdaptiveAlgorithm end
 
 # Rossler second order for weak approx.
 
-struct DRI1 <: StochasticDiffEqAlgorithm end
-struct RI1 <: StochasticDiffEqAlgorithm end
-struct RI3 <: StochasticDiffEqAlgorithm end
-struct RI5 <: StochasticDiffEqAlgorithm end
-struct RI6 <: StochasticDiffEqAlgorithm end
+struct DRI1 <: StochasticDiffEqAdaptiveAlgorithm end
+struct RI1 <: StochasticDiffEqAdaptiveAlgorithm end
+struct RI3 <: StochasticDiffEqAdaptiveAlgorithm end
+struct RI5 <: StochasticDiffEqAdaptiveAlgorithm end
+struct RI6 <: StochasticDiffEqAdaptiveAlgorithm end
 struct RDI1WM <: StochasticDiffEqAlgorithm end
-struct RDI2WM <: StochasticDiffEqAlgorithm end
-struct RDI3WM <: StochasticDiffEqAlgorithm end
-struct RDI4WM <: StochasticDiffEqAlgorithm end
+struct RDI2WM <: StochasticDiffEqAdaptiveAlgorithm end
+struct RDI3WM <: StochasticDiffEqAdaptiveAlgorithm end
+struct RDI4WM <: StochasticDiffEqAdaptiveAlgorithm end
 
 # Stratonovich sense
 

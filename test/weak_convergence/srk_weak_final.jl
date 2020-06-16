@@ -16,7 +16,9 @@ using Random
 function generate_weak_solutions(prob, alg, dts, numtraj; ensemblealg=EnsembleThreads())
   sols = []
   for i in 1:length(dts)
-    sol = solve(prob,alg;ensemblealg=ensemblealg,dt=dts[i],save_start=false,save_everystep=false,weak_timeseries_errors=false,weak_dense_errors=false,trajectories=Int(numtraj))
+    sol = solve(prob,alg;ensemblealg=ensemblealg,dt=dts[i],adaptive=false,
+      save_start=false,save_everystep=false,weak_timeseries_errors=false,weak_dense_errors=false,
+      trajectories=Int(numtraj))
     println(i)
     push!(sols,sol)
   end

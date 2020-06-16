@@ -514,9 +514,10 @@ function alg_cache(alg::RDI4WM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_protot
   RDI4WMConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
-@cache struct DRI1Cache{uType,randType,MType1,tabType,rateNoiseType,rateType,possibleRateType} <: StochasticDiffEqMutableCache
+@cache struct DRI1Cache{uType,randType,MType1,tabType,rateNoiseType,rateType,possibleRateType,resType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
+  uhat::uType
 
   _dW::randType
   _dZ::randType
@@ -542,6 +543,11 @@ end
 
   tmp1::possibleRateType
   tmpg::rateNoiseType
+
+  Eprev::resType
+  E₁::resType
+  E₂::resType
+  resids::resType
 
 end
 
@@ -583,7 +589,20 @@ function alg_cache(alg::DRI1,prob,u,ΔW,ΔZ,p,rate_prototype,
   tmp1 = zero(rate_prototype)
   tmpg = zero(noise_rate_prototype)
 
-  DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
+  uhat = copy(uprev)
+  if isadaptive(alg)
+    Eprev=sum(zero(u), dims=2)
+    E₁=zero(Eprev)
+    E₂=zero(Eprev)
+    resids=zero(Eprev)
+  else
+    Eprev=nothing
+    E₁=nothing
+    E₂=nothing
+    resids=nothing
+  end
+
+  DRI1Cache(u,uprev,uhat,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,Eprev,E₁,E₂,resids)
 end
 
 
@@ -624,7 +643,20 @@ function alg_cache(alg::RI1,prob,u,ΔW,ΔZ,p,rate_prototype,
   tmp1 = zero(rate_prototype)
   tmpg = zero(noise_rate_prototype)
 
-  DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
+  uhat = copy(uprev)
+  if isadaptive(alg)
+    Eprev=sum(zero(u), dims=2)
+    E₁=zero(Eprev)
+    E₂=zero(Eprev)
+    resids=zero(Eprev)
+  else
+    Eprev=nothing
+    E₁=nothing
+    E₂=nothing
+    resids=nothing
+  end
+
+  DRI1Cache(u,uprev,uhat,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,Eprev,E₁,E₂,resids)
 end
 
 
@@ -666,7 +698,20 @@ function alg_cache(alg::RI3,prob,u,ΔW,ΔZ,p,rate_prototype,
   tmp1 = zero(rate_prototype)
   tmpg = zero(noise_rate_prototype)
 
-  DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
+  uhat = copy(uprev)
+  if isadaptive(alg)
+    Eprev=sum(zero(u), dims=2)
+    E₁=zero(Eprev)
+    E₂=zero(Eprev)
+    resids=zero(Eprev)
+  else
+    Eprev=nothing
+    E₁=nothing
+    E₂=nothing
+    resids=nothing
+  end
+
+  DRI1Cache(u,uprev,uhat,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,Eprev,E₁,E₂,resids)
 end
 
 
@@ -708,7 +753,20 @@ function alg_cache(alg::RI5,prob,u,ΔW,ΔZ,p,rate_prototype,
   tmp1 = zero(rate_prototype)
   tmpg = zero(noise_rate_prototype)
 
-  DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
+  uhat = copy(uprev)
+  if isadaptive(alg)
+    Eprev=sum(zero(u), dims=2)
+    E₁=zero(Eprev)
+    E₂=zero(Eprev)
+    resids=zero(Eprev)
+  else
+    Eprev=nothing
+    E₁=nothing
+    E₂=nothing
+    resids=nothing
+  end
+
+  DRI1Cache(u,uprev,uhat,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,Eprev,E₁,E₂,resids)
 end
 
 
@@ -750,7 +808,20 @@ function alg_cache(alg::RI6,prob,u,ΔW,ΔZ,p,rate_prototype,
   tmp1 = zero(rate_prototype)
   tmpg = zero(noise_rate_prototype)
 
-  DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
+  uhat = copy(uprev)
+  if isadaptive(alg)
+    Eprev=sum(zero(u), dims=2)
+    E₁=zero(Eprev)
+    E₂=zero(Eprev)
+    resids=zero(Eprev)
+  else
+    Eprev=nothing
+    E₁=nothing
+    E₂=nothing
+    resids=nothing
+  end
+
+  DRI1Cache(u,uprev,uhat,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,Eprev,E₁,E₂,resids)
 end
 
 
@@ -791,7 +862,20 @@ function alg_cache(alg::RDI2WM,prob,u,ΔW,ΔZ,p,rate_prototype,
   tmp1 = zero(rate_prototype)
   tmpg = zero(noise_rate_prototype)
 
-  DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
+  uhat = copy(uprev)
+  if isadaptive(alg)
+    Eprev=sum(zero(u), dims=2)
+    E₁=zero(Eprev)
+    E₂=zero(Eprev)
+    resids=zero(Eprev)
+  else
+    Eprev=nothing
+    E₁=nothing
+    E₂=nothing
+    resids=nothing
+  end
+
+  DRI1Cache(u,uprev,uhat,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,Eprev,E₁,E₂,resids)
 end
 
 
@@ -834,7 +918,20 @@ function alg_cache(alg::RDI3WM,prob,u,ΔW,ΔZ,p,rate_prototype,
   tmp1 = zero(rate_prototype)
   tmpg = zero(noise_rate_prototype)
 
-  DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
+  uhat = copy(uprev)
+  if isadaptive(alg)
+    Eprev=sum(zero(u), dims=2)
+    E₁=zero(Eprev)
+    E₂=zero(Eprev)
+    resids=zero(Eprev)
+  else
+    Eprev=nothing
+    E₁=nothing
+    E₂=nothing
+    resids=nothing
+  end
+
+  DRI1Cache(u,uprev,uhat,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,Eprev,E₁,E₂,resids)
 end
 
 
@@ -877,7 +974,20 @@ function alg_cache(alg::RDI4WM,prob,u,ΔW,ΔZ,p,rate_prototype,
   tmp1 = zero(rate_prototype)
   tmpg = zero(noise_rate_prototype)
 
-  DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
+  uhat = copy(uprev)
+  if isadaptive(alg)
+    Eprev=sum(zero(u), dims=2)
+    E₁=zero(Eprev)
+    E₂=zero(Eprev)
+    resids=zero(Eprev)
+  else
+    Eprev=nothing
+    E₁=nothing
+    E₂=nothing
+    resids=nothing
+  end
+
+  DRI1Cache(u,uprev,uhat,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,Eprev,E₁,E₂,resids)
 end
 
 
