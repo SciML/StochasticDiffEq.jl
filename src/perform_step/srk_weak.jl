@@ -431,33 +431,37 @@ end
   # define three-point distributed random variables
   dW_scaled = W.dW / sqrt(dt)
   _dW = map(x -> calc_threepoint_random(integrator, NORMAL_ONESIX_QUANTILE, x), dW_scaled)
-  if !(typeof(W.dW) <: Number)
-    m = length(W.dW)
-    # define two-point distributed random variables
-    _dZ = map(x -> calc_twopoint_random(integrator, x),  W.dZ)
-    Ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
-    for k = 1:m
-      for l = 1:k-1
-        Ihat2[k, l] = _dW[k]*_dZ[l]
-        Ihat2[l, k] = -_dW[k]*_dZ[l]
-      end
-    end
-  end
-
+  # if !(typeof(W.dW) <: Number)
+  #   m = length(W.dW)
+  #   # define two-point distributed random variables
+  #   _dZ = map(x -> calc_twopoint_random(integrator, x),  W.dZ)
+  #   Ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
+  #   for k = 1:m
+  #     for l = 1:k-1
+  #       Ihat2[k, l] = _dW[k]*_dZ[l]
+  #       Ihat2[l, k] = -_dW[k]*_dZ[l]
+  #     end
+  #   end
+  # end
+  #@show _dW, dt, t, sqrt(3*dt)
   # compute stage values
   k1 = integrator.f(uprev,p,t)
   g1 = integrator.g(uprev,p,t)
+
+  #@show k1, g1
 
   # H_1^(0)
   # H01 = uprev
   # H_2^(0)
   H02 = uprev + a021*k1*dt
+  #@show H02
 
   # H_1^(k)
   # H11 = uprev
   # H_2^(k), stage 2
   if typeof(W.dW) <: Number
     H12 = uprev + b121*g1*_dW
+    #@show H12
   # elseif is_diagonal_noise(integrator.sol.prob)
   #   H12 = Vector{typeof(uprev)}[uprev .+ b121*g1[k]*_dW[k] for k=1:m]
   # else
@@ -466,6 +470,7 @@ end
 
   if typeof(W.dW) <: Number
     g2 = integrator.g(H12,p,t)
+    #@show g2
   # else
   #   g2 = [integrator.g(H12[k],p,t) for k=1:m]
   end
@@ -473,6 +478,7 @@ end
   # H_3^(k)
   if typeof(W.dW) <: Number
     H13 = uprev + a131*k1*dt + b131*g1*_dW + b132*g2*_dW
+    #@show H13
   # else
   #   H13 = [zero(typeof(uprev)) for k=1:m]
   #   for k=1:m
@@ -497,12 +503,14 @@ end
 
   if typeof(W.dW) <: Number
     g3 = integrator.g(H13,p,t+c13*dt)
+    #@show g3
   # else
   #   g3 = [integrator.g(H13[k],p,t+c13*dt) for k=1:m]
   end
   # H_3^(k)
   if typeof(W.dW) <: Number
     H14 = uprev + a141*k1*dt + b141*g1*_dW + b142*g2*_dW + b143*g3*_dW
+    #@show H14
   # else
   #   H14 = [zero(typeof(uprev)) for k=1:m]
   #   for k=1:m
@@ -528,18 +536,21 @@ end
   if typeof(W.dW) <: Number
     #@show c14
     g4 = integrator.g(H14,p,t+c14*dt)
+    #@show g4
   # else
   #   g4 = [integrator.g(H14[k],p,t+c14*dt) for k=1:m]
   end
 
   # H_3^(0) (requires H_2^(k))
   k2 = integrator.f(H02,p,t+c02*dt)
+  #@show k2
   H03 = uprev + a032*k2*dt + a031*k1*dt
 
   if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
     H03 += b031*g1*_dW
     if typeof(W.dW) <: Number
       H03 += b032*g2*_dW
+      #@show H03
     # else
     #   for k=1:m
     #     H03 += b032*g2[k][:,k]*_dW[k]
@@ -553,6 +564,7 @@ end
   end
 
   k3 = integrator.f(H03,p,t+c03*dt)
+  #@show k3
 
   # H_4^(0)
   # H04 = uprev; k4 = integrator.f(uprev,p,t+0*dt) = k1
@@ -585,7 +597,7 @@ end
   # H24 = uprev
 
   # add stages together Eq. (5.1)
-  u = uprev + α1*k1*dt + α2*k2*dt + α3*k3*dt + α4*k1*dt
+  u = uprev + (α1*k1 + α2*k2 + α3*k3 + α4*k1)*dt
 
   # add noise
   if typeof(W.dW) <: Number
@@ -618,5 +630,11 @@ end
   end
 
   integrator.u = u
+  #@show u
 
+  # @show α1+α2+α3+α4 == 1
+  # @show beta11+beta12+beta13+beta14 ==1
+  # @show beta22+beta23 == 0
+  # @show beta12*b121 + beta13*(b131+b132) + beta14*(b141+b142+b143) == 1/2
+  #println("")
 end
