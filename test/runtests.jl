@@ -45,6 +45,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
     @time @safetestset "Multiple Dimension Linear Adaptive Test" begin include("adaptive/sde_twodimlinearadaptive_tests.jl") end
     @time @safetestset "Autostepsize Test" begin include("adaptive/sde_autostepsize_test.jl") end
     @time @safetestset "Additive Lorenz Attractor Test" begin include("adaptive/sde_lorenzattractor_tests.jl") end
+    @time @safetestset "Weak adaptive Test" begin include("adaptive/sde_weak_adaptive.jl") end
   end
 
   if !is_APPVEYOR && (GROUP == "All" || GROUP == "AlgConvergence")
