@@ -152,8 +152,32 @@
       end
   end
 
-  # Test EM scheme:
-  # integrator.u = uprev + 1*k1*dt + 1*g1*_dW
+  if integrator.opts.adaptive && (typeof(W.dW) <: Number || is_diagonal_noise(integrator.sol.prob) || m==1)
+
+    # schemes with lower convergence order
+    if c03!=0.0
+      # scheme has det. conv. order 3 and we look for det. conv. order 2 scheme
+      rat = c02/c03
+      δ₁ = integrator.opts.delta*(rat-1)
+      δ₂ = -integrator.opts.delta*rat
+      uhat = uprev + ((α1+δ₁)*k1 + (α2+integrator.opts.delta)*k2 + (α3+δ₂)*k3)*dt
+    else
+      # check against EM
+      uhat = uprev + k1*dt
+    end
+    if is_diagonal_noise(integrator.sol.prob)
+      uhat += g1 .* _dW
+    else
+      uhat += g1 * _dW
+    end
+
+    Eprev = Statistics.mean(uprev,dims=2)
+    E₁ = Statistics.mean(u,dims=2)
+    E₂ = Statistics.mean(uhat,dims=2)
+
+    resids = calculate_residuals(E₁-E₂,Eprev,E₁,integrator.opts.abstol,integrator.opts.reltol,integrator.opts.internalnorm,t)
+    integrator.EEst = integrator.opts.internalnorm(resids, t)
+  end
 
   integrator.u = u
 
@@ -163,7 +187,7 @@ end
 
 @muladd function perform_step!(integrator,cache::DRI1Cache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
-  @unpack _dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg = cache
+  @unpack _dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,uhat,Eprev,E₁,E₂,resids = cache
   @unpack a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43,NORMAL_ONESIX_QUANTILE = cache.tab
 
   m = length(W.dW)
@@ -286,6 +310,36 @@ end
       integrator.g(tmpg,H23[k],p,t)
       @.. u = u + tmpgk*_dW[k]*beta33 + tmpgk*integrator.sqdt*beta43
     end
+  end
+
+  if integrator.opts.adaptive && (typeof(W.dW) <: Number || is_diagonal_noise(integrator.sol.prob) || m==1)
+
+    # schemes with lower convergence order
+    if c03!=0.0
+      # scheme has det. conv. order 3 and we look for det. conv. order 2 scheme
+      rat = c02/c03
+      δ₁ = integrator.opts.delta*(rat-1)
+      δ₂ = -integrator.opts.delta*rat
+      @.. uhat = uprev + ((α1+δ₁)*k1 + (α2+integrator.opts.delta)*k2 + (α3+δ₂)*k3)*dt
+    else
+      # check against EM
+      @.. uhat = uprev + k1*dt
+    end
+    if is_diagonal_noise(integrator.sol.prob)
+      @.. uhat = uhat + g1 .* _dW
+    else
+      @.. uhat = uhat + g1 * _dW
+    end
+
+    Statistics.mean!(Eprev,uprev)
+    Statistics.mean!(E₁,u)
+    Statistics.mean!(E₂,uhat)
+
+    @.. E₂ = E₁-E₂
+
+    calculate_residuals!(resids, E₂, Eprev, E₁, integrator.opts.abstol,
+                                integrator.opts.reltol,integrator.opts.internalnorm, t)
+    integrator.EEst = integrator.opts.internalnorm(resids, t)
   end
 
 end
