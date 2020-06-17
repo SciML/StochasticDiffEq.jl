@@ -171,11 +171,7 @@
       uhat += g1 * _dW
     end
 
-    Eprev = Statistics.mean(uprev,dims=2)
-    E₁ = Statistics.mean(u,dims=2)
-    E₂ = Statistics.mean(uhat,dims=2)
-
-    resids = calculate_residuals(E₁-E₂,Eprev,E₁,integrator.opts.abstol,integrator.opts.reltol,integrator.opts.internalnorm,t)
+    resids = calculate_residuals(u-uhat,uprev,u,integrator.opts.abstol,integrator.opts.reltol,integrator.opts.internalnorm,t)
     integrator.EEst = integrator.opts.internalnorm(resids, t)
   end
 
@@ -187,7 +183,7 @@ end
 
 @muladd function perform_step!(integrator,cache::DRI1Cache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
-  @unpack _dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,uhat,Eprev,E₁,E₂,resids = cache
+  @unpack _dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,uhat,tmp,resids = cache
   @unpack a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43,NORMAL_ONESIX_QUANTILE = cache.tab
 
   m = length(W.dW)
@@ -330,15 +326,11 @@ end
     else
       @.. uhat = uhat + g1 * _dW
     end
+    @.. tmp = u-uhat
 
-    Statistics.mean!(Eprev,uprev)
-    Statistics.mean!(E₁,u)
-    Statistics.mean!(E₂,uhat)
-
-    @.. E₂ = E₁-E₂
-
-    calculate_residuals!(resids, E₂, Eprev, E₁, integrator.opts.abstol,
+    calculate_residuals!(resids, tmp, uprev, uhat, integrator.opts.abstol,
                                 integrator.opts.reltol,integrator.opts.internalnorm, t)
+
     integrator.EEst = integrator.opts.internalnorm(resids, t)
   end
 
