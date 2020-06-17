@@ -425,146 +425,132 @@ end
 # Stratonovich sense
 
 @muladd function perform_step!(integrator,cache::RSConstantCache,f=integrator.f)
-  @unpack a021,a031,a032,a131,a141,b031,b032,b121,b131,b132,b141,b142,b143,b221,b231,α1,α2,α3,α4,c02,c03,c13,c14,beta11,beta12,beta13,beta14,beta22,beta23,NORMAL_ONESIX_QUANTILE = cache
+  @unpack a021,a031,a032,a131,a141,b031,b032,b121,b131,b132,b141,b142,b143,b221,b231,b331,b332,b341,b342,α1,α2,α3,α4,c02,c03,c13,c14,beta11,beta12,beta13,beta14,beta22,beta23,NORMAL_ONESIX_QUANTILE = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
   # define three-point distributed random variables
   dW_scaled = W.dW / sqrt(dt)
   _dW = map(x -> calc_threepoint_random(integrator, NORMAL_ONESIX_QUANTILE, x), dW_scaled)
-  # if !(typeof(W.dW) <: Number)
-  #   m = length(W.dW)
-  #   # define two-point distributed random variables
-  #   _dZ = map(x -> calc_twopoint_random(integrator, x),  W.dZ)
-  #   Ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
-  #   for k = 1:m
-  #     for l = 1:k-1
-  #       Ihat2[k, l] = _dW[k]*_dZ[l]
-  #       Ihat2[l, k] = -_dW[k]*_dZ[l]
-  #     end
-  #   end
-  # end
-  #@show _dW, dt, t, sqrt(3*dt)
+  if !(typeof(W.dW) <: Number)
+    m = length(W.dW)
+    # define two-point distributed random variables
+    _dZ = map(x -> calc_twopoint_random(integrator, x),  W.dZ)
+    Ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
+    for k = 1:m
+      for l = 1:k-1
+        Ihat2[k, l] = _dW[k]*_dZ[l]
+        Ihat2[l, k] = -_dW[k]*_dZ[l]
+      end
+    end
+  end
   # compute stage values
   k1 = integrator.f(uprev,p,t)
   g1 = integrator.g(uprev,p,t)
-
-  #@show k1, g1
 
   # H_1^(0)
   # H01 = uprev
   # H_2^(0)
   H02 = uprev + a021*k1*dt
-  #@show H02
 
   # H_1^(k)
   # H11 = uprev
   # H_2^(k), stage 2
   if typeof(W.dW) <: Number
     H12 = uprev + b121*g1*_dW
-    #@show H12
-  # elseif is_diagonal_noise(integrator.sol.prob)
-  #   H12 = Vector{typeof(uprev)}[uprev .+ b121*g1[k]*_dW[k] for k=1:m]
-  # else
-  #   H12 = Vector{typeof(uprev)}[uprev .+ b121*g1[:,k]*_dW[k] for k=1:m]
+  elseif is_diagonal_noise(integrator.sol.prob)
+    H12 = Vector{typeof(uprev)}[uprev .+ b121*g1[k]*_dW[k] for k=1:m]
+  else
+    H12 = Vector{typeof(uprev)}[uprev .+ b121*g1[:,k]*_dW[k] for k=1:m]
   end
 
   if typeof(W.dW) <: Number
     g2 = integrator.g(H12,p,t)
-    #@show g2
-  # else
-  #   g2 = [integrator.g(H12[k],p,t) for k=1:m]
+  else
+    g2 = [integrator.g(H12[k],p,t) for k=1:m]
   end
 
   # H_3^(k)
   if typeof(W.dW) <: Number
     H13 = uprev + a131*k1*dt + b131*g1*_dW + b132*g2*_dW
-    #@show H13
-  # else
-  #   H13 = [zero(typeof(uprev)) for k=1:m]
-  #   for k=1:m
-  #     H13[k] += uprev .+ a131*k1*dt
-  #     if is_diagonal_noise(integrator.sol.prob)
-  #       H13[k] += b131*g1[k]*_dW[k] .+ b132*g2[k]*_dW[k]
-  #       for l=1:m
-  #         if l!=k
-  #           H13[k] += b331*g1[l]*_dW[l] .+ b332*g2[l]*_dW[l]
-  #         end
-  #       end
-  #     else
-  #       H13 += b131*g1[:,k]*_dW[k] .+ b132*g2[:,k]*_dW[k]
-  #       for l=1:m
-  #         if l!=k
-  #           H13[k] += b331*g1[:,l]*_dW[l] .+ b332*g2[:,l]*_dW[l]
-  #         end
-  #       end
-  #     end
-  #   end
+  else
+    H13 = [zero(typeof(uprev)) for k=1:m]
+    for k=1:m
+      H13[k] += uprev .+ a131*k1*dt
+      if is_diagonal_noise(integrator.sol.prob)
+        H13[k] += b131*g1[k]*_dW[k] .+ b132*g2[k]*_dW[k]
+        for l=1:m
+          if l!=k
+            H13[k] += b331*g1[l]*_dW[l] .+ b332*g2[l][l]*_dW[l]
+          end
+        end
+      else
+        H13 += b131*g1[:,k]*_dW[k] .+ b132*g2[k][:,k]*_dW[k]
+        for l=1:m
+          if l!=k
+            H13[k] += b331*g1[:,l]*_dW[l] .+ b332*g2[l][:,l]*_dW[l]
+          end
+        end
+      end
+    end
   end
 
   if typeof(W.dW) <: Number
     g3 = integrator.g(H13,p,t+c13*dt)
-    #@show g3
-  # else
-  #   g3 = [integrator.g(H13[k],p,t+c13*dt) for k=1:m]
+  else
+    g3 = [integrator.g(H13[k],p,t+c13*dt) for k=1:m]
   end
   # H_3^(k)
   if typeof(W.dW) <: Number
     H14 = uprev + a141*k1*dt + b141*g1*_dW + b142*g2*_dW + b143*g3*_dW
-    #@show H14
-  # else
-  #   H14 = [zero(typeof(uprev)) for k=1:m]
-  #   for k=1:m
-  #     H14[k] += uprev .+ a141*k1*dt
-  #     if is_diagonal_noise(integrator.sol.prob)
-  #       H14[k] += b141*g1[k]*_dW[k] .+ b142*g2[k]*_dW[k] .+ b143*g3[k]*_dW[k]
-  #       for l=1:m
-  #         if l!=k
-  #           H14[k] += b341*g1[l]*_dW[l] .+ b342*g2[l]*_dW[l]
-  #         end
-  #       end
-  #     else
-  #       H14 += b141*g1[:,k]*_dW[k] .+ b142*g2[:,k]*_dW[k] .+ b143*g3[:,k]*_dW[k]
-  #       for l=1:m
-  #         if l!=k
-  #           H14[k] += b341*g1[:,l]*_dW[l] .+ b342*g2[:,l]*_dW[l]
-  #         end
-  #       end
-  #     end
-  #   end
+  else
+    H14 = [zero(typeof(uprev)) for k=1:m]
+    for k=1:m
+      H14[k] += uprev .+ a141*k1*dt
+      if is_diagonal_noise(integrator.sol.prob)
+        H14[k] += b141*g1[k]*_dW[k] .+ b142*g2[k]*_dW[k] .+ b143*g3[k]*_dW[k]
+        for l=1:m
+          if l!=k
+            H14[k] += b341*g1[l]*_dW[l] .+ b342*g2[l][l]*_dW[l]
+          end
+        end
+      else
+        H14 += b141*g1[:,k]*_dW[k] .+ b142*g2[k][:,k]*_dW[k] .+ b143*g3[k][:,k]*_dW[k]
+        for l=1:m
+          if l!=k
+            H14[k] += b341*g1[:,l]*_dW[l] .+ b342*g2[l][:,l]*_dW[l]
+          end
+        end
+      end
+    end
   end
 
   if typeof(W.dW) <: Number
-    #@show c14
     g4 = integrator.g(H14,p,t+c14*dt)
-    #@show g4
-  # else
-  #   g4 = [integrator.g(H14[k],p,t+c14*dt) for k=1:m]
+  else
+    g4 = [integrator.g(H14[k],p,t+c14*dt) for k=1:m]
   end
 
   # H_3^(0) (requires H_2^(k))
   k2 = integrator.f(H02,p,t+c02*dt)
-  #@show k2
   H03 = uprev + a032*k2*dt + a031*k1*dt
 
   if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
     H03 += b031*g1*_dW
     if typeof(W.dW) <: Number
       H03 += b032*g2*_dW
-      #@show H03
-    # else
-    #   for k=1:m
-    #     H03 += b032*g2[k][:,k]*_dW[k]
-    #   end
+    else
+      for k=1:m
+        H03 += b032*g2[k][:,k]*_dW[k]
+      end
     end
-  # else
-  #   H03 += b031*g1.*_dW
-  #   for k=1:m
-  #     H03 += b032*g2[k][k]*_dW[k]
-  #   end
+  else
+    H03 += b031*g1.*_dW
+    for k=1:m
+      H03 += b032*g2[k][k]*_dW[k]
+    end
   end
 
   k3 = integrator.f(H03,p,t+c03*dt)
-  #@show k3
 
   # H_4^(0)
   # H04 = uprev; k4 = integrator.f(uprev,p,t+0*dt) = k1
@@ -574,25 +560,25 @@ end
   # H21 = uprev
   # H^_2^(k) # H^_3^(k)
 
-  # if !(typeof(W.dW) <: Number)
-  #   H22 = [uprev for k=1:m]
-  #   H23 = [uprev for k=1:m]
-  #   # add inbounds for speed if working properly
-  #   for k=1:m
-  #     for l=1:m
-  #       if k == l
-  #         continue
-  #       end
-  #       if is_diagonal_noise(integrator.sol.prob)
-  #         @.. H22[k] += b221*g1[l]*Ihat2[k,l]/integrator.sqdt
-  #         @.. H23[k] += b231*g1[l]*Ihat2[k,l]/integrator.sqdt
-  #       else
-  #         H22[k] += b221*g1[:,l]*Ihat2[k,l]/integrator.sqdt
-  #         H23[k] += b231*g1[:,l]*Ihat2[k,l]/integrator.sqdt
-  #       end
-  #     end
-  #   end
-  # end
+  if !(typeof(W.dW) <: Number)
+    H22 = [uprev for k=1:m]
+    H23 = [uprev for k=1:m]
+    # add inbounds for speed if working properly
+    for k=1:m
+      for l=1:m
+        if k == l
+          continue
+        end
+        if is_diagonal_noise(integrator.sol.prob)
+          @.. H22[k] += b221*g1[l]*Ihat2[k,l]/integrator.sqdt
+          @.. H23[k] += b231*g1[l]*Ihat2[k,l]/integrator.sqdt
+        else
+          H22[k] += b221*g1[:,l]*Ihat2[k,l]/integrator.sqdt
+          H23[k] += b231*g1[:,l]*Ihat2[k,l]/integrator.sqdt
+        end
+      end
+    end
+  end
   # H^_4^(k)
   # H24 = uprev
 
@@ -601,40 +587,233 @@ end
 
   # add noise
   if typeof(W.dW) <: Number
-    #@show α1,α2,α3,α4,beta11, beta12, beta13, beta14
     u += (g1*beta11+g2*beta12+g3*beta13+g4*beta14)*_dW # beta2 terms are zero by construction
-  # else
-  #     if is_diagonal_noise(integrator.sol.prob)
-  #       u += g1.*_dW*beta11
-  #       for k=1:m
-  #         u[k] += (g2[k][k]*beta12+g3[k][k]*beta13+g4[k][k]*beta14)*_dW[k]
-  #         tmpg = integrator.g(H22[k],p,t)
-  #         u[k] = u[k] + tmpg[k]*beta22*integrator.sqdt
-  #         tmpg = integrator.g(H23[k],p,t)
-  #         u[k] = u[k] + tmpg[k]*beta23*integrator.sqdt
-  #       end
-  #     else
-  #       # non-diag noise
-  #       for k=1:m
-  #         g1k = @view g1[:,k]
-  #         g2k = @view g2[k][:,k]
-  #         g3k = @view g3[k][:,k]
-  #         g4k = @view g4[k][:,k]
-  #         @.. u = u + (g1k*beta11 + g2k*beta12 + g3k*beta13 + g4k*beta14)*_dW[k]
-  #         tmpg = integrator.g(H22[k],p,t)
-  #         @.. u = u + tmpg*beta22*integrator.sqdt
-  #         tmpg = integrator.g(H23[k],p,t)
-  #         @.. u = u + tmpg*beta23*integrator.sqdt
-  #       end
-  #     end
+  else
+      if is_diagonal_noise(integrator.sol.prob)
+        u += g1.*_dW*beta11
+        for k=1:m
+          u[k] += (g2[k][k]*beta12+g3[k][k]*beta13+g4[k][k]*beta14)*_dW[k]
+          tmpg = integrator.g(H22[k],p,t)
+          u[k] = u[k] + tmpg[k]*beta22*integrator.sqdt
+          tmpg = integrator.g(H23[k],p,t)
+          u[k] = u[k] + tmpg[k]*beta23*integrator.sqdt
+        end
+      else
+        # non-diag noise
+        for k=1:m
+          g1k = @view g1[:,k]
+          g2k = @view g2[k][:,k]
+          g3k = @view g3[k][:,k]
+          g4k = @view g4[k][:,k]
+          @.. u = u + (g1k*beta11 + g2k*beta12 + g3k*beta13 + g4k*beta14)*_dW[k]
+          tmpg = integrator.g(H22[k],p,t)
+          @.. u = u + tmpg*beta22*integrator.sqdt
+          tmpg = integrator.g(H23[k],p,t)
+          @.. u = u + tmpg*beta23*integrator.sqdt
+        end
+      end
   end
 
   integrator.u = u
-  #@show u
+end
 
-  # @show α1+α2+α3+α4 == 1
-  # @show beta11+beta12+beta13+beta14 ==1
-  # @show beta22+beta23 == 0
-  # @show beta12*b121 + beta13*(b131+b132) + beta14*(b141+b142+b143) == 1/2
-  #println("")
+
+@muladd function perform_step!(integrator,cache::RSCache,f=integrator.f)
+  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack _dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,g4,k1,k2,k3,H02,H03,H12,H13,H14,H22,H23,tmp1,tmpg = cache
+  @unpack a021,a031,a032,a131,a141,b031,b032,b121,b131,b132,b141,b142,b143,b221,b231,b331,b332,b341,b342,α1,α2,α3,α4,c02,c03,c13,c14,beta11,beta12,beta13,beta14,beta22,beta23,NORMAL_ONESIX_QUANTILE = cache.tab
+
+  m = length(W.dW)
+
+  if typeof(W.dW) <: Union{SArray,Number}
+    # tbd
+    _dW = map(x -> calc_threepoint_random(integrator, NORMAL_ONESIX_QUANTILE, x), W.dW / sqrt(dt))
+  else
+    # define three-point distributed random variables
+    @.. chi1 = W.dW / sqrt(dt)
+    calc_threepoint_random!(_dW, integrator, NORMAL_ONESIX_QUANTILE, chi1)
+    map!(x -> (x^2-dt)/2, chi1, _dW)
+
+    # define two-point distributed random variables
+    calc_twopoint_random!(_dZ,integrator,W.dZ)
+
+    for k = 1:m
+      for l = 1:k-1
+        Ihat2[k, l] = _dW[k]*_dZ[l]
+        Ihat2[l, k] = -_dW[k]*_dZ[l]
+      end
+    end
+  end
+
+  # compute stage values
+  integrator.f(k1,uprev,p,t)
+  integrator.g(g1,uprev,p,t)
+
+  # H_1^(0)
+  # H01 = uprev
+  # H_2^(0)
+  @.. H02 = uprev + a021*k1*dt
+
+  # H_1^(k)
+  # H11 = uprev
+  # H_2^(k), stage 2
+
+  if is_diagonal_noise(integrator.sol.prob)
+    for k=1:m
+      @.. H12[k] = uprev + b121*g1[k]*_dW[k]
+    end
+  else
+    for k=1:m
+      g1k = @view g1[:,k]
+      @.. H12[k] = uprev .+ b121*g1k*_dW[k]
+    end
+  end
+
+
+  for k=1:m
+    integrator.g(g2[k],H12[k],p,t)
+  end
+
+  # H_3^(k)
+  for k=1:m
+    @.. H13[k] = uprev+a131*k1*dt
+    if is_diagonal_noise(integrator.sol.prob)
+      @.. H13[k] = H13[k] + b131*g1[k]*_dW[k] + b132*g2[k]*_dW[k]
+      for l=1:m
+        if l!=k
+          @.. H13[k] = H13[k] + b331*g1[l]*_dW[l] + b332*g2[l]*_dW[l]
+        end
+      end
+    else
+      g1k = @view g1[:,k]
+      g2k = @view g2[k][:,k]
+      @.. H13[k] = H13[k] + b131*g1k*_dW[k] + b132*g2k*_dW[k]
+      for l=1:m
+        if l!=k
+          g1l = @view g1[:,l]
+          g2l = @view g2[l][:,l]
+          @.. H13[k] = H13[k] + b331*g1l*_dW[l] + b332*g2l*_dW[l]
+        end
+      end
+    end
+  end
+
+
+  for k=1:m
+    integrator.g(g3[k],H13[k],p,t+c13*dt)
+  end
+
+  # H_3^(k)
+  for k=1:m
+    @.. H14[k] = uprev + a141*k1*dt
+    if is_diagonal_noise(integrator.sol.prob)
+      @.. H14[k] = H14[k] + b141*g1[k]*_dW[k] + b142*g2[k]*_dW[k] + b143*g3[k]*_dW[k]
+      for l=1:m
+        if l!=k
+          @.. H14[k] = H14[k] + b341*g1[l]*_dW[l] .+ b342*g2[l]*_dW[l]
+        end
+      end
+    else
+      g1k = @view g1[:,k]
+      g2k = @view g2[k][:,k]
+      g3k = @view g3[k][:,k]
+
+      @.. H14[k] = H14[k] + b141*g1k*_dW[k] + b142*g2k*_dW[k] + b143*g3k*_dW[k]
+      for l=1:m
+        if l!=k
+          g1l = @view g1[:,l]
+          g2l = @view g2[l][:,l]
+          @.. H14[k] = H14[k] + b341*g1l*_dW[l] + b342*g2l*_dW[l]
+        end
+      end
+    end
+  end
+
+  for k=1:m
+    integrator.g(g4[k],H14[k],p,t+c14*dt)
+  end
+
+  # H_3^(0) (requires H_2^(k))
+  integrator.f(k2,H02,p,t+c02*dt)
+  @.. H03 = uprev + a032*k2*dt + a031*k1*dt
+
+  if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
+    mul!(tmp1,g1,_dW)
+    @.. H03 = H03 + b031*tmp1
+    for k=1:m
+      g2k = @view g2[k][:,k]
+      @.. H03 = H03 +  b032*g2k*_dW[k]
+    end
+  else
+    @.. H03 = H03 + b031*g1*_dW
+    for k=1:m
+      @.. H03 = H03 + b032*g2[k][k]*_dW[k]
+    end
+  end
+
+  integrator.f(k3,H03,p,t+c03*dt)
+
+  # H_4^(0)
+  # H04 = uprev; k4 = integrator.f(uprev,p,t+0*dt) = k1
+
+
+  # H^_1^(k)
+  # H21 = uprev
+  # H^_2^(k) # H^_3^(k)
+
+  if (!(typeof(W.dW) <: Number) || (m!=1))
+    for k=1:m
+     H22[k] = uprev
+     H23[k] = uprev
+    end
+    for k=1:m
+      for l=1:m
+        if k == l
+          continue
+        end
+        if is_diagonal_noise(integrator.sol.prob)
+          @.. H22[k] = H22[k] + b221*g1[l]*Ihat2[k,l]/integrator.sqdt
+          @.. H23[k] = H23[k] + b231*g1[l]*Ihat2[k,l]/integrator.sqdt
+        else
+          g1l = @view g1[:,l]
+          @.. H22[k] = H22[k] + b221*g1l*Ihat2[k,l]/integrator.sqdt
+          @.. H23[k] = H23[k] + b231*g1l*Ihat2[k,l]/integrator.sqdt
+        end
+      end
+    end
+  end
+  # H^_4^(k)
+  # H24 = uprev
+
+  # add stages together Eq. (5.1)
+  @.. u = uprev + (α1*k1 + α2*k2 + α3*k3 + α4*k1)*dt
+
+  # add noise
+
+  if is_diagonal_noise(integrator.sol.prob)
+    @.. u = u + g1*_dW*beta11
+    for k=1:m
+      u[k] = u[k] + (g2[k][k]*beta12+g3[k][k]*beta13+g4[k][k]*beta14)*_dW[k]
+      if m != 1
+        integrator.g(tmpg,H22[k],p,t)
+        u[k] = u[k] + tmpg[k]*beta22*integrator.sqdt
+        integrator.g(tmpg,H23[k],p,t)
+        u[k] = u[k] + tmpg[k]*beta23*integrator.sqdt
+      end
+    end
+  else
+    # non-diag noise
+    for k=1:m
+      g1k = @view g1[:,k]
+      g2k = @view g2[k][:,k]
+      g3k = @view g3[k][:,k]
+      g4k = @view g4[k][:,k]
+      tmpgk = @view tmpg[:,k]
+      @.. u = u + (g1k*beta11 + g2k*beta12 + g3k*beta13 + g4k*beta14)*_dW[k]
+      integrator.g(tmpg,H22[k],p,t)
+      @.. u = u + tmpgk*beta22*integrator.sqdt
+      integrator.g(tmpg,H23[k],p,t)
+      @.. u = u + tmpgk*beta23*integrator.sqdt
+    end
+  end
 end
