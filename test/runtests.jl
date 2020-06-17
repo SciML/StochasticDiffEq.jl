@@ -45,7 +45,6 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
     @time @safetestset "Multiple Dimension Linear Adaptive Test" begin include("adaptive/sde_twodimlinearadaptive_tests.jl") end
     @time @safetestset "Autostepsize Test" begin include("adaptive/sde_autostepsize_test.jl") end
     @time @safetestset "Additive Lorenz Attractor Test" begin include("adaptive/sde_lorenzattractor_tests.jl") end
-    @time @safetestset "Weak adaptive Test" begin include("adaptive/sde_weak_adaptive.jl") end
   end
 
   if !is_APPVEYOR && (GROUP == "All" || GROUP == "AlgConvergence")
@@ -79,4 +78,13 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
   if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence3")
     @time @safetestset "Roessler weak SRK Tests" begin include("weak_convergence/srk_weak_final.jl") end
   end
+
+  if !is_APPVEYOR && GROUP == "WeakConvergence"
+    using Pkg
+    Pkg.activate("gpu")
+    Pkg.develop(PackageSpec(path=joinpath(pwd(), "..")))
+    Pkg.instantiate()
+    @time @safetestset "Weak adaptive step size Brusselator " begin include("gpu/sde_weak_brusselator_adaptive.jl") end
+end
+
 end
