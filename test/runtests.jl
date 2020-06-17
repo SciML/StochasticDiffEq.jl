@@ -90,6 +90,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
     Pkg.develop(PackageSpec(path=joinpath(pwd(), "..")))
     Pkg.instantiate()
     @time @safetestset "Weak adaptive step size Brusselator " begin include("gpu/sde_weak_brusselator_adaptive.jl") end
+    @time @safetestset "Weak adaptive" begin include("gpu/sde_weak_adaptive.jl") end
 end
 
 end
