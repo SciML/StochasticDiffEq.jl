@@ -22,7 +22,7 @@ module StochasticDiffEq
 
   using Logging, SparseArrays
 
-  using LinearAlgebra, Random, FillArrays, Statistics
+  using LinearAlgebra, Random, FillArrays
 
   import ForwardDiff.Dual
 

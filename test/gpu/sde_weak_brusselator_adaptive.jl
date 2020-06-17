@@ -1,7 +1,6 @@
 using DiffEqGPU, StochasticDiffEq, Test, DiffEqNoiseProcess
-# using CuArrays
+using CuArrays
 using Random
-
 
 function brusselator_f!(du,u,p,t)
  @inbounds begin
@@ -46,13 +45,12 @@ ensembleprob = EnsembleProblem(prob, prob_func = prob_func)
 #Performance check with nvvp
 # CUDAnative.CUDAdrv.@profile
 # check either on CPU with EnsembleCPUArray() or on GPU with EnsembleGPUArray()
-#sol = @time solve(ensembleprob,SOSRI(),EnsembleCPUArray(),trajectories=numtraj)
-sol = @time solve(ensembleprob,DRI1(),adaptive=false,dt=0.01,EnsembleCPUArray(),trajectories=numtraj)
-sol = solve(ensembleprob,DRI1(),EnsembleCPUArray(),trajectories=numtraj)
+sol = @time solve(ensembleprob,DRI1(),EnsembleCPUArray(),trajectories=numtraj)
+sol = @time solve(ensembleprob,DRI1(),EnsembleGPUArray(),trajectories=numtraj)
 
 
 
-#using Plots; plotly()  # or gr()
+# using Plots; plotly()  # or gr()
 # using Plots; plot(sol,linealpha=0.6,color=:blue,vars=(0,1),title="Phase Space Plot")
 # plot!(sol,linealpha=0.6,color=:red,vars=(0,2),title="Phase Space Plot")
 # plot(sol,linealpha=0.6,color=:grey, vars=(1,2),title="Phase Space Plot")
@@ -74,10 +72,10 @@ sol = solve(ensembleprob,DRI1(),EnsembleCPUArray(),trajectories=numtraj)
 #   push!(dts,tmp2-tmp1)
 #   tmp1 = tmp2
 # end
-#
+# #
 # plot(x1,x2)
-# plot(dts)
-
+# plt = plot(dts)
+# savefig(plt, "chosen_timesteps.png")
 
 
 
