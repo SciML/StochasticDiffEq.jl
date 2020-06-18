@@ -75,6 +75,9 @@ alg_order(alg::RDI2WM) = 1//1
 alg_order(alg::RDI3WM) = 1//1
 alg_order(alg::RDI4WM) = 1//1
 
+alg_order(alg::RS1) = 1//1
+alg_order(alg::RS2) = 1//1
+
 alg_order(alg::TauLeaping) = 1//1
 alg_order(alg::CaoTauLeaping) = 1//1
 
@@ -97,6 +100,9 @@ alg_interpretation(alg::SROCK1{interpretation}) where {interpretation} = interpr
 alg_interpretation(alg::RKMilCommute{interpretation}) where {interpretation} = interpretation
 alg_interpretation(alg::RKMil_General) = alg.interpretation
 alg_interpretation(alg::ImplicitRKMil{CS,AD,F,S,N,T2,Controller,interpretation}) where {CS,AD,F,S,N,T2,Controller,interpretation} = interpretation
+
+alg_interpretation(alg::RS1) = :Stratonovich
+alg_interpretation(alg::RS2) = :Stratonovich
 
 alg_compatible(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = true
 alg_compatible(prob,alg::StochasticDiffEqAlgorithm) = false
@@ -128,6 +134,8 @@ alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RDI1WM) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RDI2WM) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RDI3WM) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RDI4WM) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RS1) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RS2) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SKenCarp) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::EM) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::LambaEM) = true
@@ -188,6 +196,8 @@ alg_needs_extra_process(alg::RDI1WM) = true
 alg_needs_extra_process(alg::RDI2WM) = true
 alg_needs_extra_process(alg::RDI3WM) = true
 alg_needs_extra_process(alg::RDI4WM) = true
+alg_needs_extra_process(alg::RS1) = true
+alg_needs_extra_process(alg::RS2) = true
 
 OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
 OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
