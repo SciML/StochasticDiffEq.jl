@@ -152,6 +152,10 @@ module StochasticDiffEq
   export solve, init, solve!, step!
 
   #Misc Tools
-  export checkSRIOrder, checkSRAOrder,  checkRIOrder, checkRSOrder, constructSRIW1, constructSRA1, constructDRI1, constructRI1, constructRI3, constructRI5, constructRI6, constructRDI1WM, constructRDI2WM, constructRDI3WM, constructRDI4WM, constructRS1, constructRS2
+  export checkSRIOrder, checkSRAOrder,  checkRIOrder, checkRSOrder,
+         constructSRIW1, constructSRA1,
+         constructDRI1, constructRI1, constructRI3, constructRI5, constructRI6,
+         constructRDI1WM, constructRDI2WM, constructRDI3WM, constructRDI4WM,
+         constructRS1, constructRS2
 
 end # module
