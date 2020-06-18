@@ -217,6 +217,11 @@ struct RDI2WM <: StochasticDiffEqAdaptiveAlgorithm end
 struct RDI3WM <: StochasticDiffEqAdaptiveAlgorithm end
 struct RDI4WM <: StochasticDiffEqAdaptiveAlgorithm end
 
+# Stratonovich sense
+
+struct RS1 <: StochasticDiffEqAlgorithm end
+struct RS2 <: StochasticDiffEqAlgorithm end
+
 ################################################################################
 
 # IIF

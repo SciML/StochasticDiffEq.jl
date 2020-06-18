@@ -1032,3 +1032,291 @@ function alg_cache(alg::RDI1WM,prob,u,ΔW,ΔZ,p,rate_prototype,
 
   RDI1WMCache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,k1,k2,H02,tmp1)
 end
+
+
+
+# Stratonovich sense
+
+struct RSConstantCache{T,T2} <: StochasticDiffEqConstantCache
+  # hard-coded version
+  a021::T
+  a031::T
+  a032::T
+
+  a131::T
+  a141::T
+
+  b031::T
+  b032::T
+
+  b121::T
+  b131::T
+  b132::T
+  b141::T
+  b142::T
+  b143::T
+
+  b221::T
+  b231::T
+
+  b331::T
+  b332::T
+  b341::T
+  b342::T
+
+
+  α1::T
+  α2::T
+  α3::T
+  α4::T
+
+  c02::T2
+  c03::T2
+
+  c13::T2
+  c14::T2
+
+  beta11::T
+  beta12::T
+  beta13::T
+  beta14::T
+
+  beta22::T
+  beta23::T
+
+  #quantile(Normal(),1/6)
+  NORMAL_ONESIX_QUANTILE::T
+end
+
+
+function RS1ConstantCache(T::Type, T2::Type)
+  a021 = convert(T, 0)
+  a031 = convert(T, 1)
+  a032 = convert(T, 0)
+
+  a131 = convert(T, 1)
+  a141 = convert(T, 1)
+
+  b031 = convert(T, 1//4)
+  b032 = convert(T, 3//4)
+
+  b121 = convert(T, 2//3)
+  b131 = convert(T, 1//12)
+  b132 = convert(T, 1//4)
+  b141 = convert(T, -5//4)
+  b142 = convert(T, 1//4)
+  b143 = convert(T, 2)
+
+  b221 = convert(T, 1)
+  b231 = convert(T, -1)
+
+  b331 =  convert(T, 1//4)
+  b332 =  convert(T, 3//4)
+  b341 =  convert(T, 1//4)
+  b342 =  convert(T, 3//4)
+
+  α1 = convert(T, 0)
+  α2 = convert(T, 0)
+  α3 = convert(T, 1//2)
+  α4 = convert(T, 1//2)
+
+  c02 = convert(T2, 0)
+  c03 = convert(T2, 1)
+
+  c13 = convert(T2, 1)
+  c14 = convert(T2, 1)
+
+  beta11 = convert(T, 1//8)
+  beta12 = convert(T, 3//8)
+  beta13 = convert(T, 3//8)
+  beta14 = convert(T, 1//8)
+
+  beta22 = convert(T, -1//4)
+  beta23 = convert(T, 1//4)
+
+  NORMAL_ONESIX_QUANTILE = convert(T,-0.9674215661017014)
+
+  RSConstantCache(a021,a031,a032,a131,a141,b031,b032,b121,b131,b132,b141,b142,b143,b221,b231,b331,b332,b341,b342,α1,α2,α3,α4,c02,c03,c13,c14,beta11,beta12,beta13,beta14,beta22,beta23,NORMAL_ONESIX_QUANTILE)
+end
+
+
+function alg_cache(alg::RS1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  RS1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+end
+
+
+function RS2ConstantCache(T::Type, T2::Type)
+  a021 = convert(T, 2//3)
+  a031 = convert(T, 1//6)
+  a032 = convert(T, 1//2)
+
+  a131 = convert(T, 1)
+  a141 = convert(T, 1)
+
+  b031 = convert(T, 1//4)
+  b032 = convert(T, 3//4)
+
+  b121 = convert(T, 2//3)
+  b131 = convert(T, 1//12)
+  b132 = convert(T, 1//4)
+  b141 = convert(T, -5//4)
+  b142 = convert(T, 1//4)
+  b143 = convert(T, 2)
+
+  b221 = convert(T, 1)
+  b231 = convert(T, -1)
+
+  b331 =  convert(T, 1//4)
+  b332 =  convert(T, 3//4)
+  b341 =  convert(T, 1//4)
+  b342 =  convert(T, 3//4)
+
+  α1 = convert(T, 1//4)
+  α2 = convert(T, 1//4)
+  α3 = convert(T, 1//2)
+  α4 = convert(T, 0)
+
+  c02 = convert(T2, 2//3)
+  c03 = convert(T2, 2//3)
+
+  c13 = convert(T2, 1)
+  c14 = convert(T2, 1)
+
+  beta11 = convert(T, 1//8)
+  beta12 = convert(T, 3//8)
+  beta13 = convert(T, 3//8)
+  beta14 = convert(T, 1//8)
+
+  beta22 = convert(T, -1//4)
+  beta23 = convert(T, 1//4)
+
+  NORMAL_ONESIX_QUANTILE = convert(T,-0.9674215661017014)
+
+  RSConstantCache(a021,a031,a032,a131,a141,b031,b032,b121,b131,b132,b141,b142,b143,b221,b231,b331,b332,b341,b342,α1,α2,α3,α4,c02,c03,c13,c14,beta11,beta12,beta13,beta14,beta22,beta23,NORMAL_ONESIX_QUANTILE)
+end
+
+
+function alg_cache(alg::RS2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  RS2ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+end
+
+
+@cache struct RSCache{uType,randType,MType1,tabType,rateNoiseType,rateType,possibleRateType} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+
+  _dW::randType
+  _dZ::randType
+  chi1::randType
+  Ihat2::MType1
+
+  tab::tabType
+
+  g1::rateNoiseType
+  g2::Vector{rateNoiseType}
+  g3::Vector{rateNoiseType}
+  g4::Vector{rateNoiseType}
+
+  k1::rateType
+  k2::rateType
+  k3::rateType
+
+  H02::uType
+  H03::uType
+  H12::Vector{uType}
+  H13::Vector{uType}
+  H14::Vector{uType}
+  H22::Vector{uType}
+  H23::Vector{uType}
+
+  tmp1::possibleRateType
+  tmpg::rateNoiseType
+
+end
+
+function alg_cache(alg::RS1,prob,u,ΔW,ΔZ,p,rate_prototype,
+                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
+                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  if typeof(ΔW) <: Union{SArray,Number}
+    _dW = copy(ΔW)
+    _dZ = copy(ΔW)
+    chi1 = copy(ΔW)
+  else
+    _dW = zero(ΔW)
+    _dZ = zero(ΔW)
+    chi1 = zero(ΔW)
+  end
+  m = length(ΔW)
+  Ihat2 = zeros(eltype(ΔW), m, m)
+  tab = RS1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+  g1 = zero(noise_rate_prototype)
+  g2 = [zero(noise_rate_prototype) for k=1:m]
+  g3 = [zero(noise_rate_prototype) for k=1:m]
+  g4 = [zero(noise_rate_prototype) for k=1:m]
+  k1 = zero(rate_prototype); k2 = zero(rate_prototype); k3 = zero(rate_prototype)
+
+  H02 = zero(u)
+  H03 = zero(u)
+  H12 = Vector{typeof(u)}()
+  H13 = Vector{typeof(u)}()
+  H14 = Vector{typeof(u)}()
+  H22 = Vector{typeof(u)}()
+  H23 = Vector{typeof(u)}()
+
+  for k=1:m
+    push!(H12,zero(u))
+    push!(H13,zero(u))
+    push!(H14,zero(u))
+    push!(H22,zero(u))
+    push!(H23,zero(u))
+  end
+
+  tmp1 = zero(rate_prototype)
+  tmpg = zero(noise_rate_prototype)
+
+  RSCache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,g4,k1,k2,k3,H02,H03,H12,H13,H14,H22,H23,tmp1,tmpg)
+end
+
+
+function alg_cache(alg::RS2,prob,u,ΔW,ΔZ,p,rate_prototype,
+                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
+                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  if typeof(ΔW) <: Union{SArray,Number}
+    _dW = copy(ΔW)
+    _dZ = copy(ΔW)
+    chi1 = copy(ΔW)
+  else
+    _dW = zero(ΔW)
+    _dZ = zero(ΔW)
+    chi1 = zero(ΔW)
+  end
+  m = length(ΔW)
+  Ihat2 = zeros(eltype(ΔW), m, m)
+  tab = RS2ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+  g1 = zero(noise_rate_prototype)
+  g2 = [zero(noise_rate_prototype) for k=1:m]
+  g3 = [zero(noise_rate_prototype) for k=1:m]
+  g4 = [zero(noise_rate_prototype) for k=1:m]
+  k1 = zero(rate_prototype); k2 = zero(rate_prototype); k3 = zero(rate_prototype)
+
+  H02 = zero(u)
+  H03 = zero(u)
+  H12 = Vector{typeof(u)}()
+  H13 = Vector{typeof(u)}()
+  H14 = Vector{typeof(u)}()
+  H22 = Vector{typeof(u)}()
+  H23 = Vector{typeof(u)}()
+
+  for k=1:m
+    push!(H12,zero(u))
+    push!(H13,zero(u))
+    push!(H14,zero(u))
+    push!(H22,zero(u))
+    push!(H23,zero(u))
+  end
+
+  tmp1 = zero(rate_prototype)
+  tmpg = zero(noise_rate_prototype)
+
+  RSCache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,g4,k1,k2,k3,H02,H03,H12,H13,H14,H22,H23,tmp1,tmpg)
+end

@@ -50,3 +50,8 @@ sim2 = test_convergence(dts,prob, RDI3WM(),trajectories=20)
 @test abs(sim2.𝒪est[:l∞]-3) <.1
 sim2 = test_convergence(dts,prob, RDI4WM(),trajectories=20)
 @test abs(sim2.𝒪est[:l∞]-3) <.1
+
+sim2 = test_convergence(dts,prob, RS1(),trajectories=20)
+@test abs(sim2.𝒪est[:l∞]-2) <.1
+sim2 = test_convergence(dts,prob, RS2(),trajectories=20)
+@test abs(sim2.𝒪est[:l∞]-3) <.1
