@@ -84,7 +84,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
       @time @safetestset "Weak Stratonovich Tests" begin include("weak_convergence/weak_strat.jl") end
   end
 
-  if !is_APPVEYOR && GROUP == "WeakConvergence"
+  if !is_APPVEYOR && GROUP == "WeakAdaptive"
     using Pkg
     Pkg.activate("gpu")
     Pkg.develop(PackageSpec(path=joinpath(pwd(), "..")))
