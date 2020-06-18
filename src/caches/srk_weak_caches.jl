@@ -1284,3 +1284,21 @@ function alg_cache(alg::RS2,prob,u,ΔW,ΔZ,p,rate_prototype,
 
   RSCache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,g4,k1,k2,k3,H02,H03,H12,H13,H14,H22,H23,tmp1,tmpg)
 end
+
+
+
+# PL1WM
+struct PL1WMConstantCache{T} <: StochasticDiffEqConstantCache
+  #quantile(Normal(),1/6)
+  NORMAL_ONESIX_QUANTILE::T
+end
+
+function PL1WMConstantCache(T::Type)
+  NORMAL_ONESIX_QUANTILE = convert(T,-0.9674215661017014)
+
+  PL1WMConstantCache(NORMAL_ONESIX_QUANTILE)
+end
+
+function alg_cache(alg::PL1WM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  PL1WMConstantCache(real(uBottomEltypeNoUnits))
+end

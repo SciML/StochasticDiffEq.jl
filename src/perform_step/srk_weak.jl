@@ -817,3 +817,96 @@ end
     end
   end
 end
+
+
+# PL1WM
+@muladd function perform_step!(integrator,cache::PL1WMConstantCache,f=integrator.f)
+  @unpack NORMAL_ONESIX_QUANTILE = cache
+  @unpack t,dt,uprev,u,W,p = integrator
+
+  # define three-point distributed random variables
+  dW_scaled = W.dW / integrator.sqdt
+  _dW = map(x -> calc_threepoint_random(integrator, NORMAL_ONESIX_QUANTILE, x), dW_scaled)
+  if !(typeof(W.dW) <: Number)
+    m = length(W.dW)
+    # define two-point distributed random variables
+    _dZ = map(x -> calc_twopoint_random(integrator, x),  W.dZ)
+    Ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
+    for k = 1:m
+      Ihat2[k, k] = -dt
+      for l = 1:k-1
+        Ihat2[k, l] = _dZ[l*k]
+        Ihat2[l, k] = -Ihat2[k, l]
+      end
+    end
+  end
+  # compute stage values
+  k1 = integrator.f(uprev,p,t)
+  g1 = integrator.g(uprev,p,t)
+
+  # Y, Yp, Ym
+  if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
+    Y = uprev + k1*dt + g1*_dW
+    if typeof(W.dW) <: Number
+      Yp = uprev + k1*dt + g1*integrator.sqdt
+      Ym = uprev + k1*dt - g1*integrator.sqdt
+    else
+      Yp = Vector{typeof(uprev)}[uprev .+ k1*dt .+ g1[:,k]*integrator.sqdt for k=1:m]
+      Ym = Vector{typeof(uprev)}[uprev .+ k1*dt .- g1[:,k]*integrator.sqdt for k=1:m]
+    end
+  else
+    Y = uprev + k1*dt + g1.*_dW
+    Yp = Vector{typeof(uprev)}[uprev .+ k1*dt .+ g1[k]*integrator.sqdt for k=1:m]
+    Ym = Vector{typeof(uprev)}[uprev .+ k1*dt .- g1[k]*integrator.sqdt for k=1:m]
+  end
+
+  k2 = integrator.f(Y,p,t)
+
+  # add stages together (Ch 15.1 Eq.(1.3))
+  u = uprev + 1//2*(k1+k2)*dt
+
+  # add noise
+  if typeof(W.dW) <: Number
+    g2p = integrator.g(Yp,p,t)
+    g2m = integrator.g(Ym,p,t)
+    u += 1//4*(g2p+g2m+2*g1)*_dW + 1//4*(g2p-g2m)*(_dW^2-dt)/integrator.sqdt #(1.1)
+  else
+    if is_diagonal_noise(integrator.sol.prob)
+      for k=1:m
+        tmpg1 = integrator.g(Yp[k],p,t)
+        tmpg2 = integrator.g(Ym[k],p,t)
+        u += 1//4*(tmpg1[k]+tmpg2[k]+2*g1[k])*_dW[k]
+        u += 1//4*(tmpg1[k]-tmpg2[k])*(_dW[k]^2 - dt)/integrator.sqdt
+        for l=1:m
+          Ulp = uprev + g1[l]*integrator.sqdt
+          Ulm = uprev - g1[l]*integrator.sqdt
+
+          tmpg1 = integrator.g(Ulp,p,t)
+          tmpg2 = integrator.g(Ulm,p,t)
+          u += 1//4*(tmpg1[k]+tmpg2[k]+2*g1[k])*_dW[k]
+          u += 1//4*(tmpg1[k]-tmpg2[k])*(_dW[k]*_dW[l] + Ihat2[l,k])/integrator.sqdt
+        end
+      end
+      else
+        # non-diag noise
+        for k=1:m
+          tmpg1 = integrator.g(Yp[k],p,t)
+          tmpg2 = integrator.g(Ym[k],p,t)
+
+          u += 1//4*(tmpg1[:,k]+tmpg2[:,k]+2*g1[:,k])*_dW[k]
+          u += 1//4*(tmpg1[:,k]-tmpg2[:,k])*(_dW[k]^2 - dt)/integrator.sqdt
+          for l=1:m
+            Ulp = uprev + g1[:,l]*integrator.sqdt
+            Ulm = uprev - g1[:,l]*integrator.sqdt
+
+            tmpg1 = integrator.g(Ulp,p,t)
+            tmpg2 = integrator.g(Ulm,p,t)
+            u += 1//4*(tmpg1[:,k]+tmpg2[:,k]+2*g1[k])*_dW[k]
+            u += 1//4*(tmpg1[:,k]-tmpg2[:,k])*(_dW[k]*_dW[l] + Ihat2[l,k])/integrator.sqdt
+          end
+        end
+      end
+  end
+
+  integrator.u = u
+end

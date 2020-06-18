@@ -219,8 +219,19 @@ struct RDI4WM <: StochasticDiffEqAlgorithm end
 
 # Stratonovich sense
 
+"""
+Rößler A., Second order Runge-Kutta methods for Stratonovich Stochastic Differential
+Equations, BIT Numerical Mathematics (2007) 47: pp. 657–680
+DOI: 10.1007/s10543-007-0130-3
+"""
 struct RS1 <: StochasticDiffEqAlgorithm end
 struct RS2 <: StochasticDiffEqAlgorithm end
+
+"""
+Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
+Springer. Berlin Heidelberg (2011)
+"""
+struct PL1WM <: StochasticDiffEqAlgorithm end
 
 ################################################################################
 

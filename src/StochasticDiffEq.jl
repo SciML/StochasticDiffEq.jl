@@ -128,7 +128,8 @@ module StochasticDiffEq
          WangLi3SMil_A, WangLi3SMil_B, WangLi3SMil_C, WangLi3SMil_D, WangLi3SMil_E, WangLi3SMil_F,
          AutoSOSRI2, AutoSOSRA2,
          DRI1, RI1, RI3, RI5, RI6, RDI1WM, RDI2WM, RDI3WM, RDI4WM,
-         RS1, RS2
+         RS1, RS2,
+         PL1WM
 
   export EulerHeun, LambaEulerHeun
 
