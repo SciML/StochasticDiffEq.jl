@@ -14,3 +14,4 @@ test-weak:
   extends: .base
   variables:
     GROUP: WeakConvergence
+    GROUP: WeakAdaptive
