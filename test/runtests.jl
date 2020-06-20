@@ -78,12 +78,13 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
   if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence3")
     @time @safetestset "Roessler weak SRK Tests" begin include("weak_convergence/srk_weak_final.jl") end
   end
-  
+
   if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence4")
       @time @safetestset "Weak Stratonovich Tests" begin include("weak_convergence/weak_strat.jl") end
   end
 
   if !is_APPVEYOR && GROUP == "WeakAdaptive"
+    import Pkg; Pkg.add("Pkg")
     using Pkg
     Pkg.activate("gpu")
     Pkg.develop(PackageSpec(path=joinpath(pwd(), "..")))
