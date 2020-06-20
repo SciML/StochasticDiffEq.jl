@@ -1,18 +1,32 @@
 using StochasticDiffEq, Test, Random
 using DiffEqGPU
 using CuArrays
-import Statistics # for mean values of trajectories
-import LinearAlgebra # for the normn
 
-function weak_error(prob, alg, numtraj, expected_value;abstol=1,reltol=0,ensemblealg=EnsembleCPUArray())
-  sol = solve(prob,alg;ensemblealg=ensemblealg,dt=0.0625f0, abstol=abstol,reltol=reltol,
-      save_start=false,save_everystep=false,weak_timeseries_errors=false,weak_dense_errors=false,
-      trajectories=Int(numtraj))
-  return LinearAlgebra.norm(Statistics.mean(sol.u)-expected_value)
+function weak_error(prob,alg,numtraj,f_true,trange;abstol=1,reltol=0,ensemblealg=EnsembleCPUArray())
+  sol = @time solve(prob,DRI1(),ensemblealg,
+    dt=0.01f0,adaptive=true,abstol=abstol,reltol=reltol,
+    trajectories=numtraj,batch_size=Int(10),
+    saveat = trange
+    )
+  computed_exp = (sol.u/numtraj)[1,:]
+  true_exp = f_true.(trange)
+  return sum((computed_exp-true_exp).^2)/length(trange)
 end
 
+
+
 function prob_func(prob, i, repeat)
+    #(i%50000 == 0) && @show i
     remake(prob,seed=seeds[i])
+end
+
+function reduction(u,batch,I)
+  u.+sum(batch),false
+end
+
+function output_func(sol,i)
+  #h1(asinh(sol[end][1])),false
+  h1.(asinh.(sol)),false
 end
 
 # prob 1
@@ -34,52 +48,76 @@ function g1!(du,u,p,t)
  nothing
 end
 
+
+f_true1(t) = t^3-3*t^2+2*t
+
 prob1 = SDEProblem(f1!,g1!,u₀,tspan)
 ensemble_prob1 = EnsembleProblem(prob1;
-        output_func = (sol,i) -> (h1(asinh(sol[end][1])),false),
-        prob_func = prob_func
+        output_func = output_func,
+        prob_func = prob_func,
+        reduction = reduction,
+        u_init=Vector{eltype(prob1.u0)}([0.0])
         )
 
-probs = Vector{EnsembleProblem}(undef, 1)
-probs[1] = ensemble_prob1
 
+# prob 2
+u₀ = [0.1f0,0.1f0]
+function f2!(du,u,p,t)
+  @inbounds begin
+    du[1] = 3//2*u[1]
+    du[2] = 3//2*u[2]
+  end
+  nothing
+end
+function g2!(du,u,p,t)
+  @inbounds begin
+    du[1] = 1//10*u[1]
+    du[2] = 1//10*u[1]
+  end
+  nothing
+end
+
+f_true2(t) = 1//10*exp(3//2*t) #1//100*exp(301//100*t)
+
+h2(z) = z #z^2
+
+prob2 = SDEProblem(f2!,g2!,u₀,tspan)
+ensemble_prob2 = EnsembleProblem(prob2;
+        output_func = (sol,i) -> (h2.(sol),false),
+        prob_func = prob_func,
+        reduction = reduction,
+        u_init=Vector{eltype(prob2.u0)}([0.0, 0.0])
+        )
+
+
+
+tsave = 0.0f0:0.05f0:2f0
+
+
+
+probs = Vector{EnsembleProblem}(undef, 2)
+probs[1] = ensemble_prob1
+probs[2] = ensemble_prob2
+
+ftrue = Vector{}(undef, 2)
+ftrue[1] = f_true1
+ftrue[2] = f_true2
 
 numtraj = Int(1e5)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
+for i in 1:2
+  @show i
 
-
-for i in 1:1
-  err1 = weak_error(probs[i],DRI1(),numtraj,0.0f0,abstol=1,reltol=0)
+  err1 = weak_error(probs[i],DRI1(),numtraj,ftrue[i],tsave,abstol=1,reltol=1)
   @show err1
-  err2 = weak_error(probs[i],DRI1(),numtraj,0.0f0,abstol=1e-1,reltol=0)
+  err2 = weak_error(probs[i],DRI1(),numtraj,ftrue[i],tsave,abstol=1e-1,reltol=1e-1)
   @show err2
-  err3 = weak_error(probs[i],DRI1(),numtraj,0.0f0,abstol=1e-2,reltol=0)
+  err3 = weak_error(probs[i],DRI1(),numtraj,ftrue[i],tsave,abstol=1e-2,reltol=1e-2)
   @show err3
   @test err1 > err2
   @test err2 > err3
+  println("")
 end
-
-
-
-
-tsave = 0.0f0:0.05f0:2f0
-ensemble_test = EnsembleProblem(prob1;
-        prob_func = prob_func
-        )
-sol = solve(ensemble_test,DRI1();ensemblealg=EnsembleCPUArray(),dt=0.001f0,#adaptive=false,
-    abstol=1e-2,reltol=0,trajectories=Int(numtraj),saveat=tsave)
-
-
-
-fsol = h1.(asinh.(sol))
-computed_exp = Statistics.mean(fsol, dims=3)[1,:,1]
-var = Statistics.std(fsol, dims=3)[1,:,1]/sqrt(numtraj)
-true_exp = tsave.^3-3*tsave.^2+2*tsave
-#
-# using Plots; plt=plot(Array(tsave),true_exp, label="true", xaxis="time t",yaxis="E(X(t))", title="dt=0.001 adaptive", lw=3.0)
-# plot!(Array(tsave), computed_exp, ribbon = var, label="DRI1")
-# #
-# savefig(plt, "adaptive-1e-2.png")
