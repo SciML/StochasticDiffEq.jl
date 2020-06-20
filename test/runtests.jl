@@ -85,6 +85,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
   end
 
   if !is_APPVEYOR && GROUP == "WeakAdaptive"
+    import Pkg; Pkg.add("Pkg")
     using Pkg
     Pkg.activate("gpu")
     Pkg.develop(PackageSpec(path=joinpath(pwd(), "..")))
