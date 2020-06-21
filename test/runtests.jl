@@ -1,7 +1,7 @@
 using SafeTestsets
 using Pkg
 
-function activate_downstream_env()
+function activate_gpu_env()
     Pkg.activate("gpu")
     Pkg.develop(PackageSpec(path=dirname(@__DIR__)))
     Pkg.instantiate()
@@ -92,6 +92,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
   end
 
   if !is_APPVEYOR && GROUP == "WeakAdaptive"
+    activate_gpu_env()
     @time @safetestset "Weak adaptive step size Brusselator " begin include("gpu/sde_weak_brusselator_adaptive.jl") end
     @time @safetestset "Weak adaptive" begin include("gpu/sde_weak_adaptive.jl") end
 end
