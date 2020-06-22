@@ -31,35 +31,35 @@ end
 
 @info "Scalar oop noise"
 
-numtraj = Int(5e7) # in the paper they use 1e9
-u₀ = 0.0
-f(u,p,t) = 1//2*u+sqrt(u^2+1)
-g(u,p,t) = sqrt(u^2+1)
-dts = 1 .//2 .^(6:-1:1)
-tspan = (0.0,2.0) # 2.0 in paper
+# PC exercise 14.2.2
+numtraj = Int(1e4)
+u₀ = 0.1
+f(u,p,t) = p[1]*u
+g(u,p,t) = p[2]*u
+dts = 1 .//2 .^(6:-1:3)
+tspan = (0.0,1.0)
+p = [3//2,1//100]
 
-
-h1(z) = z^3-6*z^2+8*z
-#analytical_sol(t) = E(f(X(t))) = E(h1(arsinh(X(t))) = t^3-3*t^2+2*t
-#analytical_sol(2) = 0 and analytical_sol(1)=0
+h1(z) = z
+#analytical_sol(t) = E(f(X(t))) =
 
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
-prob = SDEProblem(f,g,u₀,tspan)
+prob = SDEProblem(f,g,u₀,tspan,p)
 ensemble_prob = EnsembleProblem(prob;
-        output_func = (sol,i) -> (h1(asinh(sol[end])),false),
+        output_func = (sol,i) -> (h1(sol[end]),false),
         prob_func = prob_func
         )
 _solutions = @time generate_weak_solutions(ensemble_prob, PL1WM(), dts, numtraj, ensemblealg=EnsembleThreads())
 
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
+errors =  [LinearAlgebra.norm(Statistics.mean(sol.u) - u₀*exp(1.0*(p[1]))) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test -(m-2) < 0.3
 
 using Plots; convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
-
+savefig(convergence_plot, "PL1WM-scalar.png")
 println("PL1WM:", m)
 
 
@@ -70,22 +70,22 @@ println("PL1WM:", m)
 
 @info "Scalar iip noise"
 
-u₀ = [0.0]
-f1!(du,u,p,t) = @.(du = 1//2*u+sqrt(u^2 +1))
-g1!(du,u,p,t) = @.(du = sqrt(u^2 +1))
-dts = 1 .//2 .^(4:-1:1)
-tspan = (0.0,2.0)
+u₀ = [0.1]
+f1!(du,u,p,t) =  (du[1] = p[1]*u[1])
+g1!(du,u,p,t) =  (du[1] = p[2]*u[1])
+dts = 1 .//2 .^(6:-1:3)
+tspan = (0.0,1.0)
+p = [3//2,1//100]
 
-h1(z) = z^3-6*z^2+8*z
 
-prob = SDEProblem(f1!,g1!,u₀,tspan)
+prob = SDEProblem(f1!,g1!,u₀,tspan,p)
 ensemble_prob = EnsembleProblem(prob;
-        output_func = (sol,i) -> (h1(asinh(sol[end][1])),false),
+        output_func = (sol,i) -> (h1(sol[end][1]),false),
         prob_func = prob_func
         )
 
 
-numtraj = Int(2e5)
+numtraj = Int(1e4)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -93,11 +93,11 @@ seeds = rand(UInt, numtraj)
 
 _solutions = @time generate_weak_solutions(ensemble_prob, PL1WM(), dts, numtraj, ensemblealg=EnsembleThreads())
 
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
+errors =  [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]))) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test -(m-2) < 0.3
 
-println("DRI1:", m)
+println("PL1WM:", m)
 
 
 

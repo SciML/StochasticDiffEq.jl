@@ -1302,3 +1302,69 @@ end
 function alg_cache(alg::PL1WM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   PL1WMConstantCache(real(uBottomEltypeNoUnits))
 end
+
+
+@cache struct PL1WMCache{uType,randType,MType1,tabType,rateNoiseType,rateType,possibleRateType} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+
+  _dW::randType
+  _dZ::randType
+  chi1::randType
+  Ihat2::MType1
+
+  tab::tabType
+
+  g1::rateNoiseType
+
+  k1::rateType
+  k2::rateType
+
+  Y::uType
+  Yp::Vector{uType}
+  Ym::Vector{uType}
+
+  tmp1::possibleRateType
+  tmpg1::rateNoiseType
+  tmpg2::rateNoiseType
+  Ulp::uType
+  Ulm::uType
+end
+
+function alg_cache(alg::PL1WM,prob,u,ΔW,ΔZ,p,rate_prototype,
+                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
+                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  if typeof(ΔW) <: Union{SArray,Number}
+    _dW = copy(ΔW)
+    _dZ = copy(ΔW)
+    chi1 = copy(ΔW)
+  else
+    _dW = zero(ΔW)
+    _dZ = zero(ΔW)
+    chi1 = zero(ΔW)
+  end
+  m = length(ΔW)
+  Ihat2 = zeros(eltype(ΔW), m, m)
+  tab = PL1WMConstantCache(real(uBottomEltypeNoUnits))
+  g1 = zero(noise_rate_prototype)
+
+  k1 = zero(rate_prototype); k2 = zero(rate_prototype);
+
+  Y = zero(u)
+  Yp = Vector{typeof(u)}()
+  Ym = Vector{typeof(u)}()
+
+  for k=1:m
+    push!(Yp,zero(u))
+    push!(Ym,zero(u))
+  end
+
+  tmp1 = zero(rate_prototype)
+  tmpg1 = zero(noise_rate_prototype)
+  tmpg2 = zero(noise_rate_prototype)
+
+  Ulp = zero(u)
+  Ulm = zero(u)
+
+  PL1WMCache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,k1,k2,Y,Yp,Ym,tmp1,tmpg1,tmpg2,Ulp,Ulm)
+end

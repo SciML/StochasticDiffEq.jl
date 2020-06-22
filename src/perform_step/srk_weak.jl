@@ -824,19 +824,20 @@ end
   @unpack NORMAL_ONESIX_QUANTILE = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
+  m = length(W.dW)
   # define three-point distributed random variables
   dW_scaled = W.dW / integrator.sqdt
   _dW = map(x -> calc_threepoint_random(integrator, NORMAL_ONESIX_QUANTILE, x), dW_scaled)
+  chi1 = map(x -> (x^2-dt)/4, _dW)
   if !(typeof(W.dW) <: Number)
-    m = length(W.dW)
     # define two-point distributed random variables
     _dZ = map(x -> calc_twopoint_random(integrator, x),  W.dZ)
     Ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
     for k = 1:m
       Ihat2[k, k] = -dt
       for l = 1:k-1
-        Ihat2[k, l] = _dZ[l*k]
-        Ihat2[l, k] = -Ihat2[k, l]
+        Ihat2[k, l] = _dZ[Int(1+1//2*(k-3)*k+l)]
+      	Ihat2[l, k] = -Ihat2[k, l]
       end
     end
   end
@@ -856,8 +857,12 @@ end
     end
   else
     Y = uprev + k1*dt + g1.*_dW
-    Yp = Vector{typeof(uprev)}[uprev .+ k1*dt .+ g1[k]*integrator.sqdt for k=1:m]
-    Ym = Vector{typeof(uprev)}[uprev .+ k1*dt .- g1[k]*integrator.sqdt for k=1:m]
+    Yp = Vector{typeof(uprev)}(undef,m)
+    Ym = Vector{typeof(uprev)}(undef,m)
+    for k=1:m
+      Yp[k] = uprev .+ k1*dt .+ g1[k]*integrator.sqdt
+      Ym[k] = uprev .+ k1*dt .- g1[k]*integrator.sqdt
+    end
   end
 
   k2 = integrator.f(Y,p,t)
@@ -894,14 +899,14 @@ end
           tmpg2 = integrator.g(Ym[k],p,t)
 
           u += 1//4*(tmpg1[:,k]+tmpg2[:,k]+2*g1[:,k])*_dW[k]
-          u += 1//4*(tmpg1[:,k]-tmpg2[:,k])*(_dW[k]^2 - dt)/integrator.sqdt
+          u += (tmpg1[:,k]-tmpg2[:,k])*(chi1[k])/integrator.sqdt
           for l=1:m
             Ulp = uprev + g1[:,l]*integrator.sqdt
             Ulm = uprev - g1[:,l]*integrator.sqdt
 
             tmpg1 = integrator.g(Ulp,p,t)
             tmpg2 = integrator.g(Ulm,p,t)
-            u += 1//4*(tmpg1[:,k]+tmpg2[:,k]+2*g1[k])*_dW[k]
+            u += 1//4*(tmpg1[:,k]+tmpg2[:,k]+2*g1[:,k])*_dW[k]
             u += 1//4*(tmpg1[:,k]-tmpg2[:,k])*(_dW[k]*_dW[l] + Ihat2[l,k])/integrator.sqdt
           end
         end
@@ -909,4 +914,107 @@ end
   end
 
   integrator.u = u
+end
+
+
+@muladd function perform_step!(integrator,cache::PL1WMCache,f=integrator.f)
+  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack _dW,_dZ,chi1,Ihat2,tab,g1,k1,k2,Y,Yp,Ym,tmpg1,tmpg2,Ulp,Ulm = cache
+  @unpack NORMAL_ONESIX_QUANTILE = cache.tab
+
+  m = length(W.dW)
+  # define three-point distributed random variables
+  @.. chi1 = W.dW / integrator.sqdt
+  calc_threepoint_random!(_dW, integrator, NORMAL_ONESIX_QUANTILE, chi1)
+  map!(x -> (x^2-dt)/4, chi1, _dW)
+  if !(typeof(W.dW) <: Number) || m > 1
+    # define two-point distributed random variables
+    calc_twopoint_random!(_dZ,integrator,W.dZ)
+    for k = 1:m
+      Ihat2[k, k] = -dt
+      for l = 1:k-1
+        Ihat2[k, l] = _dZ[Int(1+1//2*(k-3)*k+l)]
+      	Ihat2[l, k] = -Ihat2[k, l]
+      end
+    end
+  end
+  # compute stage values
+  integrator.f(k1,uprev,p,t)
+  integrator.g(g1,uprev,p,t)
+
+  # Y, Yp, Ym
+  if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
+    mul!(tmp1,g1,_dW)
+    @.. Y = uprev + k1*dt + tmp1
+    if typeof(W.dW) <: Number
+      @.. Yp = uprev + k1*dt + g1*integrator.sqdt
+      @.. Ym = uprev + k1*dt - g1*integrator.sqdt
+    else
+      for k=1:m
+        g1k = @view g1[:,k]
+        @.. Yp[k] = uprev + k1*dt + g1k*integrator.sqdt
+        @.. Ym[k] = uprev + k1*dt - g1k*integrator.sqdt
+      end
+    end
+  else
+    @.. Y = uprev + k1*dt + g1*_dW
+    for k=1:m
+      @.. Yp[k] = uprev + k1*dt + g1[k]*integrator.sqdt
+      @.. Ym[k] = uprev + k1*dt - g1[k]*integrator.sqdt
+    end
+  end
+
+  integrator.f(k2,Y,p,t)
+
+  # add stages together (Ch 15.1 Eq.(1.3))
+  @.. u = uprev + 1//2*(k1+k2)*dt
+
+  # add noise
+  if typeof(W.dW) <: Number
+    integrator.g(tmpg1,Yp,p,t)
+    integrator.g(tmpg2,Ym,p,t)
+    @.. u = u + 1//4*(tmpg1+tmpg2+2*g1)*_dW + 1//4*(tmpg1-tmpg2)*chi1[k]/integrator.sqdt #(1.1)
+  else
+    if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
+      for k=1:m
+        integrator.g(tmpg1,Yp[k],p,t)
+        integrator.g(tmpg2,Ym[k],p,t)
+        @.. u = u + 1//4*(tmpg1[k]+tmpg2[k]+2*g1[k])*_dW[k]
+        @.. u = u + (tmpg1[k]-tmpg2[k])*chi1[k]/integrator.sqdt
+        for l=1:m
+          @.. Ulp = uprev + g1[l]*integrator.sqdt
+          @.. Ulm = uprev - g1[l]*integrator.sqdt
+
+          integrator.g(tmpg1,Ulp,p,t)
+          integrator.g(tmpg2,Ulm,p,t)
+          @.. u = u + 1//4*(tmpg1[k]+tmpg2[k]+2*g1[k])*_dW[k]
+          @.. u = u + 1//4*(tmpg1[k]-tmpg2[k])*(_dW[k]*_dW[l] + Ihat2[l,k])/integrator.sqdt
+        end
+      end
+      else
+        # non-diag noise
+        for k=1:m
+          integrator.g(tmpg1,Yp[k],p,t)
+          integrator.g(tmpg2,Ym[k],p,t)
+          tmpg1k = @view tmpg1[:,k]
+          tmpg2k = @view tmpg2[:,k]
+          g1k = @view g1[:,k]
+          @.. u = u + 1//4*(tmpg1k+tmpg2k+2*g1k)*_dW[k]
+          u += 1//4*(tmpg1k-tmpg2k)*chi1[k]/integrator.sqdt
+          for l=1:m
+            g1l = @view g1[:,l]
+            @.. Ulp = uprev + g1l*integrator.sqdt
+            @.. Ulm = uprev - g1l*integrator.sqdt
+
+            integrator.g(tmpg1,Ulp,p,t)
+            integrator.g(tmpg2,Ulm,p,t)
+            tmpg1k = @view tmpg1[:,k]
+            tmpg2k = @view tmpg2[:,k]
+            u += 1//4*(tmpg1k+tmpg2k+2*g1k)*_dW[k]
+            u += 1//4*(tmpg1k-tmpg2k)*(_dW[k]*_dW[l] + Ihat2[l,k])/integrator.sqdt
+          end
+        end
+      end
+  end
+
 end

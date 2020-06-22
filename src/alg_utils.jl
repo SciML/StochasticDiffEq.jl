@@ -201,6 +201,7 @@ alg_needs_extra_process(alg::RDI3WM) = true
 alg_needs_extra_process(alg::RDI4WM) = true
 alg_needs_extra_process(alg::RS1) = true
 alg_needs_extra_process(alg::RS2) = true
+alg_needs_extra_process(alg::PL1WM) = true
 
 OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
 OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
