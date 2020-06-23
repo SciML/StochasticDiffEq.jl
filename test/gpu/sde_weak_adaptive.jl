@@ -2,7 +2,7 @@ using StochasticDiffEq, Test, Random
 using DiffEqGPU
 using CuArrays
 
-function weak_error(prob,alg,numtraj,f_true,trange;abstol=1,reltol=0,ensemblealg=EnsembleCPUArray())
+function weak_error(prob,alg,numtraj,f_true,trange;abstol=1,reltol=0,ensemblealg=EnsembleGPUArray())
   sol = @time solve(prob,DRI1(),ensemblealg,
     dt=0.01f0,adaptive=true,abstol=abstol,reltol=reltol,
     trajectories=numtraj,batch_size=Int(10),
