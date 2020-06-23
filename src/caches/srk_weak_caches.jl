@@ -1304,12 +1304,12 @@ function alg_cache(alg::PL1WM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototy
 end
 
 
-@cache struct PL1WMCache{uType,randType,MType1,tabType,rateNoiseType,rateType,possibleRateType} <: StochasticDiffEqMutableCache
+@cache struct PL1WMCache{uType,randType,rand2Type,MType1,tabType,rateNoiseType,rateType,possibleRateType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
 
   _dW::randType
-  _dZ::randType
+  _dZ::rand2Type
   chi1::randType
   Ihat2::MType1
 
@@ -1336,11 +1336,11 @@ function alg_cache(alg::PL1WM,prob,u,ΔW,ΔZ,p,rate_prototype,
                    uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
   if typeof(ΔW) <: Union{SArray,Number}
     _dW = copy(ΔW)
-    _dZ = copy(ΔW)
+    _dZ = copy(ΔZ)
     chi1 = copy(ΔW)
   else
     _dW = zero(ΔW)
-    _dZ = zero(ΔW)
+    _dZ = zero(ΔZ)
     chi1 = zero(ΔW)
   end
   m = length(ΔW)

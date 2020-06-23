@@ -54,14 +54,13 @@ ensemble_prob = EnsembleProblem(prob;
         )
 _solutions = @time generate_weak_solutions(ensemble_prob, PL1WM(), dts, numtraj, ensemblealg=EnsembleThreads())
 
-errors =  [LinearAlgebra.norm(Statistics.mean(sol.u) - u₀*exp(1.0*(p[1]))) for sol in _solutions]
+errors =  [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]))) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test -(m-2) < 0.3
 
-using Plots; convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
-savefig(convergence_plot, "PL1WM-scalar.png")
+#using Plots; convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
+#savefig(convergence_plot, "PL1WM-scalar.png")
 println("PL1WM:", m)
-
 
 
 """
@@ -99,37 +98,50 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 
 println("PL1WM:", m)
 
-
-
 """
  Test non-commutative noise SDEs (iip)
 """
 
 @info "Non-commutative noise"
 
-u₀ = [1.0,1.0]
+u₀ = [1/8,1/8,1/1,1/8]
 function f2!(du,u,p,t)
-  du[1] = -273//512*u[1]
-  du[2] = -1//160*u[1]-(-785//512+sqrt(2)/8)*u[2]
+  du[1] = 243//154*u[1] - 27//77*u[2] + 23//154*u[3] - 65//154*u[4]
+  du[2] = 27//77*u[1] - 243//154*u[2] + 65//154*u[3] - 23//154*u[4]
+  du[3] = 5//154*u[1] - 61//154*u[2] + 162//77*u[3] - 36//77*u[4]
+  du[4] = 61//154*u[1] - 5//154*u[2] + 36//77*u[3] - 162//77*u[4]
 end
 function g2!(du,u,p,t)
-  du[1,1] = 1//4*u[1]
-  du[1,2] = 1//16*u[1]
-  du[2,1] = (1-2*sqrt(2))/4*u[1]
-  du[2,2] = 1//10*u[1]+1//16*u[2]
+  du[1,1] = 1//9*sqrt(u[2]^2+u[3]^2+2//23)*1//13
+  du[1,2] = 1//8*sqrt(u[4]^2+u[1]^2+1//11)*1//14
+  du[1,3] = p[1]*1//12*sqrt(u[1]^2+u[2]^2+1//9)*1//6
+  du[1,4] = p[1]*1//14*sqrt(u[3]^2+u[4]^2+3//29)*1//8
+  du[2,1] = 1//9*sqrt(u[2]^2+u[3]^2+2//23)*1//14
+  du[2,2] = 1//8*sqrt(u[4]^2+u[1]^2+1//11)*1//16
+  du[2,3] = p[1]*1//12*sqrt(u[1]^2+u[2]^2+1//9)*1//5
+  du[2,4] = p[1]*1//14*sqrt(u[3]^2+u[4]^2+3//29)*1//9
+  du[3,1] = 1//9*sqrt(u[2]^2+u[3]^2+2//23)*1//13
+  du[3,2] = 1//8*sqrt(u[4]^2+u[1]^2+1//11)*1//16
+  du[3,3] = p[1]*1//12*sqrt(u[1]^2+u[2]^2+1//9)*1//5
+  du[3,4] = p[1]*1//14*sqrt(u[3]^2+u[4]^2+3//29)*1//8
+  du[4,1] = 1//9*sqrt(u[2]^2+u[3]^2+2//23)*1//15
+  du[4,2] = 1//8*sqrt(u[4]^2+u[1]^2+1//11)*1//12
+  du[4,3] = p[1]*1//12*sqrt(u[1]^2+u[2]^2+1//9)*1//6
+  du[4,4] = p[1]*1//14*sqrt(u[3]^2+u[4]^2+3//29)*1//9
 end
-dts = 1 .//2 .^(3:-1:0)
-tspan = (0.0,3.0)
+dts = 1 .//2 .^(6:-1:1)
+tspan = (0.0,1.0)
+p = [1]
+h2(z) = z
+# solution: E(X^i) = 1/8 exp(2*T), for i=1,2,4; E(X^3) = exp(2*T)
 
-h2(z) = z^2 # but apply it only to u[1]
-
-prob = SDEProblem(f2!,g2!,u₀,tspan,noise_rate_prototype=zeros(2,2))
+prob = SDEProblem(f2!,g2!,u₀,tspan,p,noise_rate_prototype=zeros(4,4))
 ensemble_prob = EnsembleProblem(prob;
         output_func = (sol,i) -> (h2(sol[end][1]),false),
         prob_func = prob_func
         )
 
-numtraj = Int(1e5)
+numtraj = Int(1e4)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -137,11 +149,11 @@ seeds = rand(UInt, numtraj)
 
 _solutions = @time generate_weak_solutions(ensemble_prob, PL1WM(), dts, numtraj, ensemblealg=EnsembleThreads())
 
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-exp(-3.0)) for sol in _solutions]
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-u₀[1]*exp(2*1.0)) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
+@test -(m-2) < 0.33
 
-println("DRI1:", m)
+println("PL1WM:", m)
 
 
 
@@ -182,4 +194,4 @@ errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for so
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test -(m-2) < 0.3
 
-println("DRI1:", m)
+println("PL1WM:", m)

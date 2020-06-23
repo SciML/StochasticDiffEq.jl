@@ -874,22 +874,24 @@ end
   if typeof(W.dW) <: Number
     g2p = integrator.g(Yp,p,t)
     g2m = integrator.g(Ym,p,t)
-    u += 1//4*(g2p+g2m+2*g1)*_dW + 1//4*(g2p-g2m)*(_dW^2-dt)/integrator.sqdt #(1.1)
+    u += 1//4*(g2p+g2m+2*g1)*_dW + (g2p-g2m)*chi1/integrator.sqdt #(1.1)
   else
     if is_diagonal_noise(integrator.sol.prob)
       for k=1:m
         tmpg1 = integrator.g(Yp[k],p,t)
         tmpg2 = integrator.g(Ym[k],p,t)
-        u += 1//4*(tmpg1[k]+tmpg2[k]+2*g1[k])*_dW[k]
-        u += 1//4*(tmpg1[k]-tmpg2[k])*(_dW[k]^2 - dt)/integrator.sqdt
+        @.. u += 1//4*(tmpg1[k]+tmpg2[k]+2*g1[k])*_dW[k]
+        @.. u += (tmpg1[k]-tmpg2[k])*chi1[k]/integrator.sqdt
         for l=1:m
-          Ulp = uprev + g1[l]*integrator.sqdt
-          Ulm = uprev - g1[l]*integrator.sqdt
+          if l!=k
+            Ulp = @.. uprev + g1[l]*integrator.sqdt
+            Ulm = @.. uprev - g1[l]*integrator.sqdt
 
-          tmpg1 = integrator.g(Ulp,p,t)
-          tmpg2 = integrator.g(Ulm,p,t)
-          u += 1//4*(tmpg1[k]+tmpg2[k]+2*g1[k])*_dW[k]
-          u += 1//4*(tmpg1[k]-tmpg2[k])*(_dW[k]*_dW[l] + Ihat2[l,k])/integrator.sqdt
+            tmpg1 = integrator.g(Ulp,p,t)
+            tmpg2 = integrator.g(Ulm,p,t)
+            @.. u += 1//4*(tmpg1[k]+tmpg2[k]-2*g1[k])*_dW[k]
+            @.. u += 1//4*(tmpg1[k]-tmpg2[k])*(_dW[k]*_dW[l] + Ihat2[l,k])/integrator.sqdt
+          end
         end
       end
       else
@@ -899,27 +901,28 @@ end
           tmpg2 = integrator.g(Ym[k],p,t)
 
           u += 1//4*(tmpg1[:,k]+tmpg2[:,k]+2*g1[:,k])*_dW[k]
-          u += (tmpg1[:,k]-tmpg2[:,k])*(chi1[k])/integrator.sqdt
+          u += (tmpg1[:,k]-tmpg2[:,k])*chi1[k]/integrator.sqdt
           for l=1:m
-            Ulp = uprev + g1[:,l]*integrator.sqdt
-            Ulm = uprev - g1[:,l]*integrator.sqdt
+            if l!=k
+              Ulp = uprev + g1[:,l]*integrator.sqdt
+              Ulm = uprev - g1[:,l]*integrator.sqdt
 
-            tmpg1 = integrator.g(Ulp,p,t)
-            tmpg2 = integrator.g(Ulm,p,t)
-            u += 1//4*(tmpg1[:,k]+tmpg2[:,k]+2*g1[:,k])*_dW[k]
-            u += 1//4*(tmpg1[:,k]-tmpg2[:,k])*(_dW[k]*_dW[l] + Ihat2[l,k])/integrator.sqdt
+              tmpg1 = integrator.g(Ulp,p,t)
+              tmpg2 = integrator.g(Ulm,p,t)
+              u += 1//4*(tmpg1[:,k]+tmpg2[:,k]-2*g1[:,k])*_dW[k]
+              u += 1//4*(tmpg1[:,k]-tmpg2[:,k])*(_dW[k]*_dW[l] + Ihat2[l,k])/integrator.sqdt
+            end
           end
         end
       end
   end
-
   integrator.u = u
 end
 
 
 @muladd function perform_step!(integrator,cache::PL1WMCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
-  @unpack _dW,_dZ,chi1,Ihat2,tab,g1,k1,k2,Y,Yp,Ym,tmpg1,tmpg2,Ulp,Ulm = cache
+  @unpack _dW,_dZ,chi1,Ihat2,tab,g1,k1,k2,Y,Yp,Ym,tmp1,tmpg1,tmpg2,Ulp,Ulm = cache
   @unpack NORMAL_ONESIX_QUANTILE = cache.tab
 
   m = length(W.dW)
@@ -976,32 +979,17 @@ end
     @.. u = u + 1//4*(tmpg1+tmpg2+2*g1)*_dW + 1//4*(tmpg1-tmpg2)*chi1[k]/integrator.sqdt #(1.1)
   else
     if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
+      # non-diag noise
       for k=1:m
         integrator.g(tmpg1,Yp[k],p,t)
         integrator.g(tmpg2,Ym[k],p,t)
-        @.. u = u + 1//4*(tmpg1[k]+tmpg2[k]+2*g1[k])*_dW[k]
-        @.. u = u + (tmpg1[k]-tmpg2[k])*chi1[k]/integrator.sqdt
+        tmpg1k = @view tmpg1[:,k]
+        tmpg2k = @view tmpg2[:,k]
+        g1k = @view g1[:,k]
+        @.. u = u + 1//4*(tmpg1k+tmpg2k+2*g1k)*_dW[k]
+        @.. u = u + (tmpg1k-tmpg2k)*chi1[k]/integrator.sqdt
         for l=1:m
-          @.. Ulp = uprev + g1[l]*integrator.sqdt
-          @.. Ulm = uprev - g1[l]*integrator.sqdt
-
-          integrator.g(tmpg1,Ulp,p,t)
-          integrator.g(tmpg2,Ulm,p,t)
-          @.. u = u + 1//4*(tmpg1[k]+tmpg2[k]+2*g1[k])*_dW[k]
-          @.. u = u + 1//4*(tmpg1[k]-tmpg2[k])*(_dW[k]*_dW[l] + Ihat2[l,k])/integrator.sqdt
-        end
-      end
-      else
-        # non-diag noise
-        for k=1:m
-          integrator.g(tmpg1,Yp[k],p,t)
-          integrator.g(tmpg2,Ym[k],p,t)
-          tmpg1k = @view tmpg1[:,k]
-          tmpg2k = @view tmpg2[:,k]
-          g1k = @view g1[:,k]
-          @.. u = u + 1//4*(tmpg1k+tmpg2k+2*g1k)*_dW[k]
-          u += 1//4*(tmpg1k-tmpg2k)*chi1[k]/integrator.sqdt
-          for l=1:m
+          if l !=k
             g1l = @view g1[:,l]
             @.. Ulp = uprev + g1l*integrator.sqdt
             @.. Ulm = uprev - g1l*integrator.sqdt
@@ -1010,11 +998,29 @@ end
             integrator.g(tmpg2,Ulm,p,t)
             tmpg1k = @view tmpg1[:,k]
             tmpg2k = @view tmpg2[:,k]
-            u += 1//4*(tmpg1k+tmpg2k+2*g1k)*_dW[k]
+            u += 1//4*(tmpg1k+tmpg2k-2*g1k)*_dW[k]
             u += 1//4*(tmpg1k-tmpg2k)*(_dW[k]*_dW[l] + Ihat2[l,k])/integrator.sqdt
           end
         end
       end
-  end
+    else
+      for k=1:m
+        integrator.g(tmpg1,Yp[k],p,t)
+        integrator.g(tmpg2,Ym[k],p,t)
+        @.. u = u + 1//4*(tmpg1[k]+tmpg2[k]+2*g1[k])*_dW[k]
+        @.. u = u + (tmpg1[k]-tmpg2[k])*chi1[k]/integrator.sqdt
+        for l=1:m
+          if l !=k
+            @.. Ulp = uprev + g1[l]*integrator.sqdt
+            @.. Ulm = uprev - g1[l]*integrator.sqdt
 
+            integrator.g(tmpg1,Ulp,p,t)
+            integrator.g(tmpg2,Ulm,p,t)
+            @.. u = u + 1//4*(tmpg1[k]+tmpg2[k]-2*g1[k])*_dW[k]
+            @.. u = u + 1//4*(tmpg1[k]-tmpg2[k])*(_dW[k]*_dW[l] + Ihat2[l,k])/integrator.sqdt
+          end
+        end
+      end
+    end
+  end
 end
