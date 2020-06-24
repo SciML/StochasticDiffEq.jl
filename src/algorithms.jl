@@ -315,6 +315,8 @@ Springer. Berlin Heidelberg (2011)
 """
 struct PL1WMA <: StochasticDiffEqAlgorithm end
 
+struct NON <: StochasticDiffEqAlgorithm end
+
 ################################################################################
 
 # IIF

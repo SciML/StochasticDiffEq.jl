@@ -129,7 +129,8 @@ module StochasticDiffEq
          AutoSOSRI2, AutoSOSRA2,
          DRI1, DRI1NM, RI1, RI3, RI5, RI6, RDI1WM, RDI2WM, RDI3WM, RDI4WM,
          RS1, RS2,
-         PL1WM, PL1WMA
+         PL1WM, PL1WMA,
+         NON
 
   export EulerHeun, LambaEulerHeun
 
@@ -154,9 +155,11 @@ module StochasticDiffEq
 
   #Misc Tools
   export checkSRIOrder, checkSRAOrder,  checkRIOrder, checkRSOrder,
+         checkNONOrder,
          constructSRIW1, constructSRA1,
          constructDRI1, constructRI1, constructRI3, constructRI5, constructRI6,
          constructRDI1WM, constructRDI2WM, constructRDI3WM, constructRDI4WM,
-         constructRS1, constructRS2
+         constructRS1, constructRS2,
+         constructNON
 
 end # module
