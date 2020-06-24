@@ -20,7 +20,6 @@ function generate_weak_solutions(prob, alg, dts, numtraj; ensemblealg=EnsembleTh
   return sols
 end
 
-
 function prob_func(prob, i, repeat)
     remake(prob,seed=seeds[i])
 end
