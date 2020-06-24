@@ -225,6 +225,8 @@ struct RS2 <: StochasticDiffEqAlgorithm end
 struct PL1WM <: StochasticDiffEqAlgorithm end
 struct PL1WMA <: StochasticDiffEqAlgorithm end
 
+struct NON <: StochasticDiffEqAlgorithm end
+
 ################################################################################
 
 # IIF

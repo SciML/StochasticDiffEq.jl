@@ -1257,3 +1257,140 @@ function checkRSOrder(RS;tol=1e-6,ps=2)
   end
   return(conditions)
 end
+
+"""
+NON
+
+Holds the Butcher tableau for Komori's NON method. (second weak order in Stratonovich sense)
+"""
+
+
+
+
+struct KomoriNON{T} <: Tableau
+  c0::Vector{T}
+  cj::Vector{T}
+  cjl::Vector{T}
+  clj::Vector{T}
+
+  α00::Matrix{T}
+  α0j::Matrix{T}
+  αj0::Matrix{T}
+  αjj::Matrix{T}
+  αjl::Matrix{T}
+
+  αjljj::Matrix{T}
+  αljjl::Matrix{T}
+
+  order::Rational{Int}
+  quantile::T
+end
+
+
+
+function constructNON(T=Float64)
+  c0 = [1//6;1//3;1//3;1//6]
+  cj = [1//8;3//8;3//8;1//8]
+  cjl = [0;1//2;-1//2;0]
+  clj = [0;-1//2;1//2;0]
+
+  α00 = [0 0 0 0
+        1//2 0 0 0
+        0 1//2 0 0
+        0 0 1 0]
+
+  α0j = [0 0 0 0
+        1 0 0 0
+        -9//8 9//8 0 0
+        1 0 0 0]
+
+  αj0 = [0 0 0 0
+        2 0 0 0
+        0 0 0 0
+        -2 0 0 0]
+
+  αjj = [0 0 0 0
+        2//3 0 0 0
+        1//12 1//4 0 0
+        -5//4 1//4 2 0]
+
+  αjl = [0 0 0 0
+        0 0 0 0
+        1//4 3//4 0 0
+        1//4 3//4 0 0]
+
+  αjljj = [0 0 0 0
+           0 0 0 0
+           1 0 0 0
+           0 0 0 0]
+
+  αljjl = [0 0 0 0
+          -1//2 0 0 0
+           1//2 0 0 0
+           0 0 0 0]
+
+  KomoriNON(map(T,c0),map(T,cj),map(T,cjl),
+             map(T,clj),map(T,α00),map(T,α0j),
+             map(T,αj0),map(T,αjj),map(T,αjl),map(T,αjljj),map(T,αljjl),
+             1//1,-0.9674215661017014)
+end
+
+
+
+
+function checkNONOrder(NON;tol=1e-6)
+  @unpack c0,cj,cjl,clj,α00,α0j,αj0,αjj,αjl,αjljj,αljjl = NON
+  e = ones(size(c0))
+
+  conditions = Vector{Bool}(undef, 44) # 38 conditions for second order, 6 extra conditions for fourth deterministic order, 44 in total
+  conditions[1] = abs(dot(c0,e)-1)<tol
+  conditions[2] = abs(dot(cj,e)-1)<tol
+  conditions[3] = abs(dot(cj,αjj*e)-1/2)<tol
+  conditions[4] = abs(dot(cj,α0j*e)-1/2)<tol
+  conditions[5] = abs(dot(cj,αj0*e)-1/2)<tol
+  conditions[6] = abs(dot(c0,α00*e)-1/2)<tol
+  conditions[7] = abs(dot(cj,αjj*(αj0*e))-1/4)<tol
+
+  conditions[8] = abs(dot(c0,α0j*(αjj*e))-1/4)<tol
+  conditions[9] = abs(dot(cj,αj0*(α0j*e))-0)<tol
+  conditions[10] = abs(dot(c0,(α0j*e).^2)-1/2)<tol
+  conditions[11] = abs(dot(cj,(αj0*e).*(αjj*e))-1/4)<tol
+  conditions[12] = abs(dot(cj,αjj*αjj*(αjj*e))-1/24)<tol
+
+  conditions[13] = abs(dot(cj,αjj*(αjj*e).^2)-1/12)<tol
+  conditions[14] = abs(dot(cj.*(αjj*e),αjj*(αjj*e))-1/8)<tol
+  conditions[15] = abs(dot(cj,(αjj*e).^3)-1/4)<tol
+  conditions[16] = abs(dot(cj,αjj*(αjj*e))-1/6)<tol
+  conditions[17] = abs(dot(cj,(αjj*e).^2)-1/3)<tol
+  conditions[18] = abs(dot(cj,(αjl*e))-1/2)<tol
+  conditions[19] = abs(dot(cj.*(αjl*e),αjl*(αjl*e))-0)<tol
+  conditions[20] = abs(dot(cj,(αjl*e).^2)-1/2)<tol
+  conditions[21] = abs(dot(cj,αjj*αjl*(αjj*e))-1/8)<tol
+  conditions[22] = abs(dot(cj,αjl*αjl*(αjl*e))-0)<tol
+  conditions[23] = abs(dot(cj,αjl*αjj*(αjl*e))-0)<tol
+  conditions[24] = abs(dot(cj,αjj*(αjl*e).^2)-1/4)<tol
+  conditions[25] = abs(dot(cj,αjl*((αjj*e).*(αjl*e)))-0)<tol
+  conditions[26] = abs(dot(cj.*(αjj*e),αjl*(αjj*e))-1/8)<tol
+  conditions[27] = abs(dot(cj.*(αjl*e),αjj*(αjl*e))-1/4)<tol
+  conditions[28] = abs(dot(cj.*(αjj*e),(αjl*e).^2)-1/4)<tol
+  conditions[29] = abs(dot(cj,αjj*(αjl*e))-1/4)<tol
+  conditions[30] = abs(dot(cj,αjl*(αjj*e))-1/4)<tol
+  conditions[31] = abs(dot(cj,αjl*(αjl*e))-0)<tol
+  conditions[32] = abs(dot(cj,(αjj*e).*(αjl*e))-1/4)<tol
+  conditions[33] = abs(dot(clj,e)-0)<tol
+  conditions[34] = abs(dot(cjl,e)-0)<tol
+  conditions[35] = abs(dot(clj,αljjl*e)-1/2)<tol
+  conditions[36] = abs(dot(cjl,αjljj*e)+1/2)<tol
+  conditions[37] = abs(dot(clj.*(αljjl*e),αljjl*(αjljj*e))-0)<tol
+  conditions[38] = abs(dot(clj,(αljjl*e).^2)-0)<tol
+
+  # deterministic fourth order
+  conditions[39] = abs(dot(c0,α00*α00*(α00*e))-1/24)<tol
+  conditions[40] = abs(dot(c0,α00*(α00*e).^2)-1/12)<tol
+  conditions[41] = abs(dot(c0.*(α00*e),α00*(α00*e))-1/8)<tol
+  conditions[42] = abs(dot(c0,(α00*e).^3)-1/4)<tol
+  conditions[43] = abs(dot(c0,α00*(α00*e))-1/6)<tol
+  conditions[44] = abs(dot(c0,(α00*e).^2)-1/3)<tol
+
+  return(conditions)
+end
