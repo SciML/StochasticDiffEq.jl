@@ -76,7 +76,7 @@ function DiffEqBase.__init(
   if typeof(_prob) <: JumpProblem
     if alias_jumps
       _prob = DiffEqJump.resetted_jump_problem(_prob, _seed)
-    elseif _seed !== 0  
+    elseif _seed !== 0
       DiffEqJump.reset_jump_problem!(_prob, _seed)
     end
   end
@@ -291,9 +291,18 @@ function DiffEqBase.__init(
     if isinplace(prob)
       #if isadaptive(alg) || callback !== nothing
         if alg_needs_extra_process(alg)
-          W = WienerProcess!(t,rand_prototype,rand_prototype,
+          if alg===PL1WM()
+            m = length(rand_prototype)
+            rand_prototype2 = similar(rand_prototype,Int(m*(m-1)/2))
+            rand_prototype2 .= false
+            W = WienerProcess!(t,rand_prototype,rand_prototype2,
                              save_everystep=save_noise,
                              rng = Xorshifts.Xoroshiro128Plus(_seed))
+          else
+            W = WienerProcess!(t,rand_prototype,rand_prototype,
+                             save_everystep=save_noise,
+                             rng = Xorshifts.Xoroshiro128Plus(_seed))
+          end
         else
           W = WienerProcess!(t,rand_prototype,
                              save_everystep=save_noise,
@@ -315,9 +324,22 @@ function DiffEqBase.__init(
     else
       #if isadaptive(alg) || callback !== nothing
         if alg_needs_extra_process(alg)
-          W = WienerProcess(t,rand_prototype,rand_prototype,
+          if alg===PL1WM()
+            m = length(rand_prototype)
+            if typeof(rand_prototype) <: Number
+              rand_prototype2 = nothing
+            else
+              rand_prototype2 = similar(rand_prototype,Int(m*(m-1)/2))
+              rand_prototype2 .= false
+            end
+            W = WienerProcess(t,rand_prototype,rand_prototype2,
                              save_everystep=save_noise,
                              rng = Xorshifts.Xoroshiro128Plus(_seed))
+          else
+            W = WienerProcess(t,rand_prototype,rand_prototype,
+                             save_everystep=save_noise,
+                             rng = Xorshifts.Xoroshiro128Plus(_seed))
+          end
         else
           W = WienerProcess(t,rand_prototype,
                              save_everystep=save_noise,
