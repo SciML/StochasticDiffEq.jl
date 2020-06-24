@@ -79,6 +79,7 @@ alg_order(alg::RS1) = 1//1
 alg_order(alg::RS2) = 1//1
 
 alg_order(alg::PL1WM) = 1//1
+alg_order(alg::PL1WMA) = 1//1
 
 alg_order(alg::TauLeaping) = 1//1
 alg_order(alg::CaoTauLeaping) = 1//1
@@ -139,6 +140,7 @@ alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RDI4WM) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RS1) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RS2) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::PL1WM) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::PL1WMA) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SKenCarp) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::EM) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::LambaEM) = true

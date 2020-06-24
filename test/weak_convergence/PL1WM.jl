@@ -195,3 +195,56 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test -(m-2) < 0.3
 
 println("PL1WM:", m)
+
+
+
+"""
+ Test Additive noise SDEs Kloeden & Platen Exercise 14.4.1
+"""
+
+numtraj = Int(1e3)
+u₀ = 0.1
+fadd(u,p,t) = p[1]*u
+gadd(u,p,t) = p[2]
+dts = 1 .//2 .^(4:-1:0)
+tspan = (0.0,1.0)
+p = [2//2,1//100]
+
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
+prob = SDEProblem(fadd,gadd,u₀,tspan,p)
+ensemble_prob = EnsembleProblem(prob;
+        output_func = (sol,i) -> (sol[end],false),
+        prob_func = prob_func
+        )
+_solutions = @time generate_weak_solutions(ensemble_prob, PL1WM(), dts, numtraj, ensemblealg=EnsembleThreads())
+_solutions1 = @time generate_weak_solutions(ensemble_prob, PL1WMA(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors =  [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]))) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+@test minimum(_solutions .≈ _solutions1)
+
+println("PL1WM:", m)
+
+#inplace
+
+u₀ = [0.1]
+fadd!(du,u,p,t) = @.(du = p[1]*u)
+gadd!(du,u,p,t) = @.(du = p[2])
+
+
+prob = SDEProblem(fadd!,gadd!,u₀,tspan,p)
+ensemble_prob = EnsembleProblem(prob;
+        output_func = (sol,i) -> (sol[end],false),
+        prob_func = prob_func
+        )
+_solutions = @time generate_weak_solutions(ensemble_prob, PL1WM(), dts, numtraj, ensemblealg=EnsembleThreads())
+_solutions1 = @time generate_weak_solutions(ensemble_prob, PL1WMA(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors =  [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]))) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+@test minimum(_solutions .≈ _solutions1)

@@ -1024,3 +1024,68 @@ end
     end
   end
 end
+
+
+
+
+# PL1WM
+@muladd function perform_step!(integrator,cache::PL1WMAConstantCache,f=integrator.f)
+  @unpack NORMAL_ONESIX_QUANTILE = cache
+  @unpack t,dt,uprev,u,W,p = integrator
+
+  # define three-point distributed random variables
+  dW_scaled = W.dW / integrator.sqdt
+  _dW = map(x -> calc_threepoint_random(integrator, NORMAL_ONESIX_QUANTILE, x), dW_scaled)
+
+  # compute stage values
+  k1 = integrator.f(uprev,p,t)
+  g1 = integrator.g(uprev,p,t)
+
+  # Y
+  if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
+    tmp1 = g1*_dW
+  else
+    tmp1 = g1.*_dW
+  end
+  Y = uprev + k1*dt + tmp1
+
+  k2 = integrator.f(Y,p,t)
+
+  # add stages together (Ch 15.1 Eq.(1.4))
+  u = uprev + 1//2*(k1+k2)*dt + tmp1
+
+  integrator.u = u
+end
+
+
+
+@muladd function perform_step!(integrator,cache::PL1WMACache,f=integrator.f)
+  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack _dW,chi1,tab,g1,k1,k2,Y,tmp1 = cache
+  @unpack NORMAL_ONESIX_QUANTILE = cache.tab
+
+
+  # define three-point distributed random variables
+  @.. chi1 = W.dW / integrator.sqdt
+  calc_threepoint_random!(_dW, integrator, NORMAL_ONESIX_QUANTILE, chi1)
+
+  # compute stage values
+  integrator.f(k1,uprev,p,t)
+  integrator.g(g1,uprev,p,t)
+
+  # Y, Yp, Ym
+  if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
+    mul!(tmp1,g1,_dW)
+    @.. Y = uprev + k1*dt + tmp1
+
+  else
+    @.. tmp1 = g1*_dW
+    @.. Y = uprev + k1*dt + tmp1
+  end
+
+  integrator.f(k2,Y,p,t)
+
+  # add stages together (Ch 15.1 Eq.(1.4))
+  @.. u = uprev + 1//2*(k1+k2)*dt + tmp1
+
+end

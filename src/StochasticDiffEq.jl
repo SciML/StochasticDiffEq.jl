@@ -129,7 +129,7 @@ module StochasticDiffEq
          AutoSOSRI2, AutoSOSRA2,
          DRI1, RI1, RI3, RI5, RI6, RDI1WM, RDI2WM, RDI3WM, RDI4WM,
          RS1, RS2,
-         PL1WM
+         PL1WM, PL1WMA
 
   export EulerHeun, LambaEulerHeun
 

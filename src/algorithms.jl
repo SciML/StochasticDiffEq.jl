@@ -223,6 +223,7 @@ struct RS1 <: StochasticDiffEqAlgorithm end
 struct RS2 <: StochasticDiffEqAlgorithm end
 
 struct PL1WM <: StochasticDiffEqAlgorithm end
+struct PL1WMA <: StochasticDiffEqAlgorithm end
 
 ################################################################################
 
