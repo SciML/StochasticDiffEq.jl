@@ -2,7 +2,6 @@
  Tests for PL1WM
 """
 
-
 import Statistics # for mean values of trajectories
 import LinearAlgebra # for the normn
 using StochasticDiffEq
@@ -19,7 +18,6 @@ function generate_weak_solutions(prob, alg, dts, numtraj; ensemblealg=EnsembleTh
   end
   return sols
 end
-
 
 function prob_func(prob, i, repeat)
     remake(prob,seed=seeds[i])
