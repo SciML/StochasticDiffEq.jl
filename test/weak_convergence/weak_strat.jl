@@ -1,6 +1,8 @@
 """
  Tests for  https://link.springer.com/article/10.1007/s10543-007-0130-3 with test problems as in the paper.
  RS1, RS2
+ and for https://www.sciencedirect.com/science/article/pii/S0377042706003906
+ NON
 """
 
 

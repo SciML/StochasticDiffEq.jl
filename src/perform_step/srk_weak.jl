@@ -1237,3 +1237,73 @@ end
   @.. u = uprev + 1//2*(k1+k2)*dt + tmp1
 
 end
+
+
+
+
+# NON
+@muladd function perform_step!(integrator,cache::NONConstantCache,f=integrator.f)
+  @unpack c01,c02,c03,c04,cj1,cj2,cj3,cj4,cjl2,cjl3,clj2,clj3,a0021,a0032,a0043,aj021,aj041,a0j21,a0j31,a0j32,a0j41,ajj21,ajj31,ajj32,ajj41,ajj42,ajj43,ajl31,ajl32,ajl41,ajl42,ajljj31,aljjl21,ajljj31,NORMAL_ONESIX_QUANTILE = cache
+  @unpack t,dt,uprev,u,W,p = integrator
+
+  m = length(W.dW)
+
+  # define three-point distributed random variables
+  dW_scaled = W.dW / integrator.sqdt
+  _dW = map(x -> calc_threepoint_random(integrator, NORMAL_ONESIX_QUANTILE, x), dW_scaled)
+
+  if !(typeof(W.dW) <: Number)
+    # define two-point distributed random variables
+    _dZ = map(x -> calc_twopoint_random(integrator, x),  W.dZ)
+    Ihat2 = zeros(eltype(W.dZ), m, m)
+    for k = 1:m
+      Ihat2[k, k] = _dW[k]
+      for l = 1:k-1
+        Ihat2[k, l] = _dW[l]
+        Ihat2[l, k] = _dZ[k]
+      end
+    end
+  end
+  # compute stage values
+  # stage 1
+  k1 = integrator.f(uprev,p,t)
+  g1 = integrator.g(uprev,p,t)
+
+  # stage 2
+  Y200 = uprev + a0021*k1
+  Y2jj = Vector{typeof(uprev)}[uprev + aj021*k1 for j=1:m]
+  Y2jl = Matrix{typeof(uprev)}[uprev for j=1:m, l=1:m]
+  if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
+    if typeof(W.dW) <: Number
+      Y200 += a0j21*g1
+      @.. Y2jj = Y2jj + ajj21*g1
+    else
+      for j=1:m
+        @.. Y200 = Y200 + a0j21*g1[:,j]
+        @.. Y2jj[j] = Y2jj[j] + ajj21*g1[:,j]
+        for l=j+1:m
+          @.. Y2jl[j,l] = Y2jl[j,l] + aljjl21*g1[:,j]
+        end
+      end
+    end
+  else
+    for j=1:m
+      @.. Y200 = Y200 + a0j21*g1[j]
+      @.. Y2jj[j] = Y2jj[j] + ajj21*g1[j]
+      for l=j+1:m
+        @.. Y2jl[j,l] = Y2jl[j,l] + aljjl21*g1[j]
+      end
+    end
+  end
+  k2 = integrator.f(Y200,p,t)
+  g2 = [integrator.g(Y2jj[j],p,t) for j=1:m]
+  g2jl = [integrator.g(Y2jl[j],p,t) for j=1:m]
+
+  # stage 3
+  
+
+  # add stages together
+  u = uprev + (c01*k1+c02*k2+c03*k3+c04*k4)*dt
+
+  integrator.u = u
+end
