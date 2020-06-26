@@ -1473,7 +1473,7 @@ struct NONConstantCache{T} <: StochasticDiffEqConstantCache
   ajljj31::T
 
   aljjl21::T
-  ajljj31::T
+  aljjl31::T
 
   #quantile(Normal(),1/6)
   NORMAL_ONESIX_QUANTILE::T
@@ -1524,11 +1524,11 @@ function NONConstantCache(T::Type)
   ajljj31 = convert(T, 1)
 
   aljjl21 = convert(T, -1//2)
-  ajljj31 = convert(T, 1//2)
+  aljjl31 = convert(T, 1//2)
 
   NORMAL_ONESIX_QUANTILE = convert(T,-0.9674215661017014)
 
-  NONConstantCache(c01,c02,c03,c04,cj1,cj2,cj3,cj4,cjl2,cjl3,clj2,clj3,a0021,a0032,a0043,aj021,aj041,a0j21,a0j31,a0j32,a0j41,ajj21,ajj31,ajj32,ajj41,ajj42,ajj43,ajl31,ajl32,ajl41,ajl42,ajljj31,aljjl21,ajljj31,NORMAL_ONESIX_QUANTILE)
+  NONConstantCache(c01,c02,c03,c04,cj1,cj2,cj3,cj4,cjl2,cjl3,clj2,clj3,a0021,a0032,a0043,aj021,aj041,a0j21,a0j31,a0j32,a0j41,ajj21,ajj31,ajj32,ajj41,ajj42,ajj43,ajl31,ajl32,ajl41,ajl42,ajljj31,aljjl21,aljjl31,NORMAL_ONESIX_QUANTILE)
 end
 
 
