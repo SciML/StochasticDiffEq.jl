@@ -95,6 +95,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
     activate_gpu_env()
     @time @safetestset "Weak adaptive step size Brusselator " begin include("gpu/sde_weak_brusselator_adaptive.jl") end
     @time @safetestset "Weak adaptive" begin include("gpu/sde_weak_adaptive.jl") end
+  end
 end
 
 end
