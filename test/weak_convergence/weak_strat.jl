@@ -110,6 +110,27 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 
 println("RS2:", m)
 
+dts = 1 .//2 .^(5:-1:0)
+numtraj = Int(1e5)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
+prob = SDEProblem(f,g,u₀,tspan, p)
+ensemble_prob = EnsembleProblem(prob;
+        output_func = (sol,i) -> (h1(sol[end]),false),
+        prob_func = prob_func
+        )
+
+
+_solutions = @time generate_weak_solutions(ensemble_prob, NON(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]+0.5*p[2]^2))) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("NON:", m)
+
 """
  Test Scalar SDEs (iip)
 """
@@ -152,8 +173,27 @@ _solutions = @time generate_weak_solutions(ensemble_prob, RS2(), dts,
 errors = [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]+0.5*p[2]^2))) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test -(m-2) < 0.3
+
 println("RS1:", m)
 
+dts = 1 .//2 .^(5:-1:0)
+numtraj = Int(1e5)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
+prob = SDEProblem(f!,g!,[u₀],tspan, p)
+ensemble_prob = EnsembleProblem(prob;
+        output_func = (sol,i) -> (h1(sol[end]),false),
+        prob_func = prob_func
+        )
+_solutions = @time generate_weak_solutions(ensemble_prob, NON(), dts,
+  numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]+0.5*p[2]^2))) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+
+using Plots; convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
 """
  Test non-commutative noise SDEs (iip)
 """
