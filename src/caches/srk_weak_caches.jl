@@ -1641,3 +1641,82 @@ end
 function alg_cache(alg::NON,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   NONConstantCache(real(uBottomEltypeNoUnits))
 end
+
+
+
+
+
+@cache struct NONCache{uType,randType,MType1,tabType,rateNoiseType,rateType,possibleRateType} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+
+  _dW::randType
+  _dZ::randType
+  chi1::randType
+  Ihat2::MType1
+
+  tab::tabType
+
+  g1::rateNoiseType
+  g2::Vector{rateNoiseType}
+  g3::Vector{rateNoiseType}
+  g4::Vector{rateNoiseType}
+
+  k1::rateType
+  k2::rateType
+  k3::rateType
+  k4::rateType
+
+  Y200::uType
+  Y300::uType
+  Y400::uType
+  Y2jj::Vector{uType}
+  Y3jj::Vector{uType}
+  Y4jj::Vector{uType}
+
+  tmp1::possibleRateType
+  tmpg::rateNoiseType
+
+end
+
+
+function alg_cache(alg::NON,prob,u,ΔW,ΔZ,p,rate_prototype,
+                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
+                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  if typeof(ΔW) <: Union{SArray,Number}
+    _dW = copy(ΔW)
+    _dZ = copy(ΔW)
+    chi1 = copy(ΔW)
+  else
+    _dW = zero(ΔW)
+    _dZ = zero(ΔW)
+    chi1 = zero(ΔW)
+  end
+  m = length(ΔW)
+  Ihat2 = zeros(eltype(ΔW), m, m)
+  tab = NONConstantCache(real(uBottomEltypeNoUnits))
+  g1 = zero(noise_rate_prototype)
+  g2 = [zero(noise_rate_prototype) for k=1:m]
+  g3 = [zero(noise_rate_prototype) for k=1:m]
+  g4 = [zero(noise_rate_prototype) for k=1:m]
+  k1 = zero(rate_prototype); k2 = zero(rate_prototype); k3 = zero(rate_prototype); k4 = zero(rate_prototype)
+
+  Y200 = zero(u)
+  Y300 = zero(u)
+  Y400 = zero(u)
+  Y2jj = Vector{typeof(u)}()
+  Y3jj = Vector{typeof(u)}()
+  Y4jj = Vector{typeof(u)}()
+
+  for k=1:m
+    push!(Y2jj,zero(u))
+    push!(Y3jj,zero(u))
+    push!(Y4jj,zero(u))
+  end
+
+  tmp1 = zero(rate_prototype)
+  tmpg = zero(noise_rate_prototype)
+
+  NONCache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,g4,k1,k2,k3,k4,Y200,Y300,Y400,Y2jj,Y3jj,Y4jj,tmp1,tmpg)
+
+end
