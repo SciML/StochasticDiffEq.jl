@@ -193,7 +193,7 @@ _solutions = @time generate_weak_solutions(ensemble_prob, NON(), dts,
 errors = [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]+0.5*p[2]^2))) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 
-using Plots; convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
+
 """
  Test non-commutative noise SDEs (iip)
 """
@@ -249,6 +249,19 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 
 println("RS2:", m)
 
+numtraj = Int(1e6)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
+_solutions = @time generate_weak_solutions(ensemble_prob, NON(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(2)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("NON:", m)
+
 """
  Test Diagonal noise SDEs (iip)
 """
@@ -301,3 +314,19 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test -(m-2) < 0.3
 
 println("RS2:", m)
+
+
+numtraj = Int(5e6)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
+_solutions = @time generate_weak_solutions(ensemble_prob, NON(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("NON:", m)
+
+using Plots; convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
