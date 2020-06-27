@@ -193,7 +193,8 @@ end
     _dW = map(x -> calc_threepoint_random(integrator, NORMAL_ONESIX_QUANTILE, x), W.dW / sqrt(dt))
   else
     # define three-point distributed random variables
-    @.. chi1 = W.dW / sqrt(dt)
+    sqrtdt = sqrt(dt)
+    @.. chi1 = W.dW / sqrtdt
     calc_threepoint_random!(_dW, integrator, NORMAL_ONESIX_QUANTILE, chi1)
     map!(x -> (x^2-dt)/2, chi1, _dW)
 

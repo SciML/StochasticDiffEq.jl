@@ -2,7 +2,7 @@ using StochasticDiffEq, Test, Random
 using DiffEqGPU
 using CuArrays
 
-function weak_error(prob,alg,numtraj,f_true,trange;abstol=1,reltol=0,ensemblealg=EnsembleGPUArray())
+function weak_error(prob,alg,numtraj,f_true,trange;abstol=1,reltol=0,ensemblealg=EnsembleCPUArray())
   sol = @time solve(prob,DRI1(),ensemblealg,
     dt=0.01f0,adaptive=true,abstol=abstol,reltol=reltol,
     trajectories=numtraj,batch_size=Int(10),
@@ -121,3 +121,19 @@ for i in 1:2
   @test err2 > err3
   println("")
 end
+
+
+
+
+
+
+CuArrays.allowscalar(false)
+
+sol = @time solve(probs[1],DRI1(),EnsembleGPUArray(),
+  dt=0.01f0,adaptive=true,abstol=1,reltol=1,
+  trajectories=numtraj,batch_size=Int(10),
+  saveat = tsave
+  )
+computed_exp = (sol.u/numtraj)[1,:]
+true_exp = f_true1.(tsave)
+sum((computed_exp-true_exp).^2)/length(tsave)
