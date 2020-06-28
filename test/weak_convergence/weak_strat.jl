@@ -193,6 +193,7 @@ _solutions = @time generate_weak_solutions(ensemble_prob, NON(), dts,
 errors = [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]+0.5*p[2]^2))) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 
+println("NON:", m)
 
 """
  Test non-commutative noise SDEs (iip)
@@ -329,4 +330,5 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 
 println("NON:", m)
 
-using Plots; convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
+#using Plots; convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
+#savefig(convergence_plot, "NON_diagonal_noise.png")
