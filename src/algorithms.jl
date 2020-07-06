@@ -208,6 +208,7 @@ struct SOSRA2 <: StochasticDiffEqAdaptiveAlgorithm end
 # Rossler second order for weak approx.
 
 struct DRI1 <: StochasticDiffEqAdaptiveAlgorithm end
+struct DRI1NM <: StochasticDiffEqAdaptiveAlgorithm end
 struct RI1 <: StochasticDiffEqAdaptiveAlgorithm end
 struct RI3 <: StochasticDiffEqAdaptiveAlgorithm end
 struct RI5 <: StochasticDiffEqAdaptiveAlgorithm end
