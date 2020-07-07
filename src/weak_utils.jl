@@ -1,9 +1,11 @@
-@muladd function calc_twopoint_random!(_dW, integrator, dW)
-    @.. _dW = ifelse(sign(dW) > 0.0, integrator.sqdt, -integrator.sqdt)
+@muladd function calc_twopoint_random!(_dW, sqdt, dW)
+  @.. _dW = ifelse(sign(dW) > false, sqdt, -sqdt)
+  return nothing
 end
 
-@muladd function calc_twopoint_random(integrator, dW)
-  return sign(dW) > 0.0 ? integrator.sqdt : -integrator.sqdt
+
+@muladd function calc_twopoint_random(sqdt, dW)
+  return sign(dW) > 0.0 ? sqdt : -sqdt
 end
 
 

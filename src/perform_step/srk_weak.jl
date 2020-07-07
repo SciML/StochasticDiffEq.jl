@@ -10,7 +10,7 @@
   if !(typeof(W.dW) <: Number)
     m = length(W.dW)
     # define two-point distributed random variables
-    _dZ = map(x -> calc_twopoint_random(integrator, x),  W.dZ)
+    _dZ = map(x -> calc_twopoint_random(integrator.sqdt, x),  W.dZ)
     Ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
     for k = 1:m
       for l = 1:m
@@ -189,7 +189,7 @@ end
 
     # define two-point distributed random variables
     if m > 1
-      calc_twopoint_random!(_dZ,integrator,W.dZ)
+      calc_twopoint_random!(_dZ,integrator.sqdt,W.dZ)
       for k = 1:m
         for l = 1:m
           if k<l
@@ -447,7 +447,7 @@ end
   if !(typeof(W.dW) <: Number)
     m = length(W.dW)
     # define two-point distributed random variables
-    _dZ = map(x -> calc_twopoint_random(integrator, x),  W.dZ)
+    _dZ = map(x -> calc_twopoint_random(integrator.sqdt, x),  W.dZ)
     Ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
     for k = 1:m
       for l = 1:m
@@ -518,7 +518,7 @@ end
     map!(x -> (x^2-dt)/2, chi1, _dW)
 
     # define two-point distributed random variables
-    calc_twopoint_random!(_dZ,integrator,W.dZ)
+    calc_twopoint_random!(_dZ,integrator.sqdt,W.dZ)
 
     for k = 1:m
       for l = 1:m
@@ -577,7 +577,7 @@ end
   if !(typeof(W.dW) <: Number)
     m = length(W.dW)
     # define two-point distributed random variables
-    _dZ = map(x -> calc_twopoint_random(integrator, x),  W.dZ)
+    _dZ = map(x -> calc_twopoint_random(integrator.sqdt, x),  W.dZ)
     Ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
     for k = 1:m
       for l = 1:k-1
@@ -778,7 +778,7 @@ end
     map!(x -> (x^2-dt)/2, chi1, _dW)
 
     # define two-point distributed random variables
-    calc_twopoint_random!(_dZ,integrator,W.dZ)
+    calc_twopoint_random!(_dZ,integrator.sqdt,W.dZ)
 
     for k = 1:m
       for l = 1:k-1
@@ -974,7 +974,7 @@ end
   chi1 = map(x -> (x^2-dt)/4, _dW)
   if !(typeof(W.dW) <: Number)
     # define two-point distributed random variables
-    _dZ = map(x -> calc_twopoint_random(integrator, x),  W.dZ)
+    _dZ = map(x -> calc_twopoint_random(integrator.sqdt, x),  W.dZ)
     Ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
     for k = 1:m
       Ihat2[k, k] = -dt
@@ -1075,7 +1075,7 @@ end
   map!(x -> (x^2-dt)/4, chi1, _dW)
   if !(typeof(W.dW) <: Number) || m > 1
     # define two-point distributed random variables
-    calc_twopoint_random!(_dZ,integrator,W.dZ)
+    calc_twopoint_random!(_dZ,integrator.sqdt,W.dZ)
     for k = 1:m
       Ihat2[k, k] = -dt
       for l = 1:k-1
