@@ -208,6 +208,7 @@ end
   integrator.f(k1,uprev,p,t)
   integrator.g(g1,uprev,p,t)
 
+
   # H_i^(0), stage 1
   # H01 = uprev
   # H_i^(0), stage 2
@@ -253,11 +254,11 @@ end
       tmpg[k] = b231*g1[k]+b232*g2[k][k]+b233*g3[k][k]
       @.. H23[k] = uprev+tmpg*integrator.sqdt
     else
-      g1l = @view g1[:,l]
-      g2l = @view g2[l][:,l]
-      g3l = @view g3[l][:,l]
-      @.. H22[k] = uprev + (b221*g1l+b222*g2l+b223*g3l)*integrator.sqdt
-      @.. H23[k] = uprev + (b231*g1l+b232*g2l+b233*g3l)*integrator.sqdt
+      g1k = @view g1[:,k]
+      g2k = @view g2[k][:,k]
+      g3k = @view g3[k][:,k]
+      @.. H22[k] = uprev + (b221*g1k+b222*g2k+b223*g3k)*integrator.sqdt
+      @.. H23[k] = uprev + (b231*g1k+b232*g2k+b233*g3k)*integrator.sqdt
     end
   end
 
@@ -333,7 +334,7 @@ end
 
 @muladd function perform_step!(integrator,cache::DRI1NMCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
-  @unpack _dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,tmp1,tmpg,uhat,tmp,resids = cache
+  @unpack _dW, chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,tmp1,tmpg,uhat,tmp,resids = cache
   @unpack a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43,NORMAL_ONESIX_QUANTILE = cache.tab
 
   m = length(W.dW)
@@ -388,18 +389,6 @@ end
   # H^_i^(k), stages
   integrator.g(g2,H12,p,t+c12*dt)
   integrator.g(g3,H13,p,t+c13*dt)
-
-  # if m>1
-  #     H22 and H23 are not needed if non mixing and noise  == diagonal
-  #   if !is_diagonal_noise(integrator.sol.prob)
-  #     @.. tmpg =  b221*g1+b222*g2+b223*g3
-  #     mul!(tmp1,tmpg,integrator.sqdt)
-  #     @.. H22 = uprev + tmp1
-  #     @.. tmpg =  b231*g1+b232*g2+b233*g3
-  #     mul!(tmp1,tmpg,integrator.sqdt)
-  #     @.. H23 = uprev + tmp1
-  #   end
-  # end
 
   # add stages together Eq. (3)
   @.. u = uprev + α1*k1*dt + α2*k2*dt + α3*k3*dt

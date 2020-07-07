@@ -3,7 +3,7 @@ using DiffEqGPU
 using CuArrays
 
 function weak_error(prob,alg,numtraj,f_true,trange;abstol=1,reltol=0,ensemblealg=EnsembleCPUArray())
-  sol = @time solve(prob,DRI1(),ensemblealg,
+  sol = @time solve(prob,alg,ensemblealg,
     dt=0.01f0,adaptive=true,abstol=abstol,reltol=reltol,
     trajectories=numtraj,batch_size=Int(10),
     saveat = trange

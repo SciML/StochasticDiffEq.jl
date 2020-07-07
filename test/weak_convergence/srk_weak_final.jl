@@ -201,7 +201,14 @@ errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test -(m-2) < 0.3
 
-println("DRI1:", m)
+
+_solutions = @time generate_weak_solutions(ensemble_prob, DRI1NM(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("DRI1NM:", m)
 
 numtraj = Int(5e5)
 seed = 100
@@ -474,6 +481,15 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test -(m-2) < 0.3
 
 println("DRI1:", m)
+
+
+_solutions = @time generate_weak_solutions(ensemble_prob, DRI1NM(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("DRI1NM:", m)
 
 
 _solutions = @time generate_weak_solutions(ensemble_prob, RI1(), dts, numtraj, ensemblealg=EnsembleThreads())
