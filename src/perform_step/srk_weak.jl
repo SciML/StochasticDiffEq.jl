@@ -339,7 +339,7 @@ end
   @unpack a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43,NORMAL_ONESIX_QUANTILE = cache.tab
 
   m = length(W.dW)
-  sq3dt = sqrt(3*dt)dt
+  sq3dt = sqrt(3*dt)
   if typeof(W.dW) <: Union{SArray,Number}
     # tbd
     _dW = map(x -> calc_threepoint_random(sq3dt, NORMAL_ONESIX_QUANTILE, x), W.dW / sqrt(dt))
