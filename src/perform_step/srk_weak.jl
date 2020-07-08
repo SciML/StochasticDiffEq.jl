@@ -209,7 +209,6 @@ end
   integrator.f(k1,uprev,p,t)
   integrator.g(g1,uprev,p,t)
 
-
   # H_i^(0), stage 1
   # H01 = uprev
   # H_i^(0), stage 2
