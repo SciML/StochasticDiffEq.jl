@@ -5,7 +5,8 @@
 
   # define three-point distributed random variables
   dW_scaled = W.dW / sqrt(dt)
-  _dW = map(x -> calc_threepoint_random(integrator, NORMAL_ONESIX_QUANTILE, x), dW_scaled)
+  sq3dt = sqrt(3*dt)
+  _dW = map(x -> calc_threepoint_random(sq3dt, NORMAL_ONESIX_QUANTILE, x), dW_scaled)
   chi1 = map(x -> (x^2-dt)/2, _dW) # diagonal of Ihat2
   if !(typeof(W.dW) <: Number)
     m = length(W.dW)
@@ -176,15 +177,15 @@ end
   @unpack a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43,NORMAL_ONESIX_QUANTILE = cache.tab
 
   m = length(W.dW)
-
+  sq3dt = sqrt(3*dt)
   if typeof(W.dW) <: Union{SArray,Number}
     # tbd
-    _dW = map(x -> calc_threepoint_random(integrator, NORMAL_ONESIX_QUANTILE, x), W.dW / sqrt(dt))
+    _dW = map(x -> calc_threepoint_random(sq3dt, NORMAL_ONESIX_QUANTILE, x), W.dW / sqrt(dt))
   else
     # define three-point distributed random variables
     sqrtdt = sqrt(dt)
     @.. chi1 = W.dW / sqrtdt
-    calc_threepoint_random!(_dW, integrator, NORMAL_ONESIX_QUANTILE, chi1)
+    calc_threepoint_random!(_dW, sq3dt, NORMAL_ONESIX_QUANTILE, chi1)
     map!(x -> (x^2-dt)/2, chi1, _dW)
 
     # define two-point distributed random variables
@@ -338,15 +339,15 @@ end
   @unpack a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43,NORMAL_ONESIX_QUANTILE = cache.tab
 
   m = length(W.dW)
-
+  sq3dt = sqrt(3*dt)dt
   if typeof(W.dW) <: Union{SArray,Number}
     # tbd
-    _dW = map(x -> calc_threepoint_random(integrator, NORMAL_ONESIX_QUANTILE, x), W.dW / sqrt(dt))
+    _dW = map(x -> calc_threepoint_random(sq3dt, NORMAL_ONESIX_QUANTILE, x), W.dW / sqrt(dt))
   else
     # define three-point distributed random variables
     sqrtdt = sqrt(dt)
     @.. chi1 = W.dW / sqrtdt
-    calc_threepoint_random!(_dW, integrator, NORMAL_ONESIX_QUANTILE, chi1)
+    calc_threepoint_random!(_dW, sq3dt, NORMAL_ONESIX_QUANTILE, chi1)
     map!(x -> (x^2-dt)/2, chi1, _dW)
   end
 
@@ -442,7 +443,8 @@ end
 
   # define three-point distributed random variables
   dW_scaled = W.dW / sqrt(dt)
-  _dW = map(x -> calc_threepoint_random(integrator, NORMAL_ONESIX_QUANTILE, x), dW_scaled)
+  sq3dt = sqrt(3*dt)
+  _dW = map(x -> calc_threepoint_random(sq3dt, NORMAL_ONESIX_QUANTILE, x), dW_scaled)
   chi1 = map(x -> (x^2-dt)/2, _dW) # diagonal of Ihat2
   if !(typeof(W.dW) <: Number)
     m = length(W.dW)
@@ -507,14 +509,14 @@ end
   @unpack a021,b021,α1,α2,c02,beta11,NORMAL_ONESIX_QUANTILE = cache.tab
 
   m = length(W.dW)
-
+  sq3dt = sqrt(3*dt)
   if typeof(W.dW) <: Union{SArray,Number}
     # tbd
-    _dW = map(x -> calc_threepoint_random(integrator, NORMAL_ONESIX_QUANTILE, x), W.dW / sqrt(dt))
+    _dW = map(x -> calc_threepoint_random(sq3dt, NORMAL_ONESIX_QUANTILE, x), W.dW / sqrt(dt))
   else
     # define three-point distributed random variables
     @.. chi1 = W.dW / sqrt(dt)
-    calc_threepoint_random!(_dW, integrator, NORMAL_ONESIX_QUANTILE, chi1)
+    calc_threepoint_random!(_dW, sq3dt, NORMAL_ONESIX_QUANTILE, chi1)
     map!(x -> (x^2-dt)/2, chi1, _dW)
 
     # define two-point distributed random variables
@@ -573,7 +575,8 @@ end
 
   # define three-point distributed random variables
   dW_scaled = W.dW / sqrt(dt)
-  _dW = map(x -> calc_threepoint_random(integrator, NORMAL_ONESIX_QUANTILE, x), dW_scaled)
+  sq3dt = sqrt(3*dt)
+  _dW = map(x -> calc_threepoint_random(sq3dt, NORMAL_ONESIX_QUANTILE, x), dW_scaled)
   if !(typeof(W.dW) <: Number)
     m = length(W.dW)
     # define two-point distributed random variables
@@ -767,14 +770,14 @@ end
   @unpack a021,a031,a032,a131,a141,b031,b032,b121,b131,b132,b141,b142,b143,b221,b231,b331,b332,b341,b342,α1,α2,α3,α4,c02,c03,c13,c14,beta11,beta12,beta13,beta14,beta22,beta23,NORMAL_ONESIX_QUANTILE = cache.tab
 
   m = length(W.dW)
-
+  sq3dt = sqrt(3*dt)
   if typeof(W.dW) <: Union{SArray,Number}
     # tbd
-    _dW = map(x -> calc_threepoint_random(integrator, NORMAL_ONESIX_QUANTILE, x), W.dW / sqrt(dt))
+    _dW = map(x -> calc_threepoint_random(sq3dt, NORMAL_ONESIX_QUANTILE, x), W.dW / sqrt(dt))
   else
     # define three-point distributed random variables
     @.. chi1 = W.dW / sqrt(dt)
-    calc_threepoint_random!(_dW, integrator, NORMAL_ONESIX_QUANTILE, chi1)
+    calc_threepoint_random!(_dW, sq3dt, NORMAL_ONESIX_QUANTILE, chi1)
     map!(x -> (x^2-dt)/2, chi1, _dW)
 
     # define two-point distributed random variables
@@ -968,9 +971,10 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
 
   m = length(W.dW)
+  sq3dt = sqrt(3*dt)
   # define three-point distributed random variables
   dW_scaled = W.dW / integrator.sqdt
-  _dW = map(x -> calc_threepoint_random(integrator, NORMAL_ONESIX_QUANTILE, x), dW_scaled)
+  _dW = map(x -> calc_threepoint_random(sq3dt, NORMAL_ONESIX_QUANTILE, x), dW_scaled)
   chi1 = map(x -> (x^2-dt)/4, _dW)
   if !(typeof(W.dW) <: Number)
     # define two-point distributed random variables
@@ -1069,9 +1073,10 @@ end
   @unpack NORMAL_ONESIX_QUANTILE = cache.tab
 
   m = length(W.dW)
+  sq3dt = sqrt(3*dt)
   # define three-point distributed random variables
   @.. chi1 = W.dW / integrator.sqdt
-  calc_threepoint_random!(_dW, integrator, NORMAL_ONESIX_QUANTILE, chi1)
+  calc_threepoint_random!(_dW, sq3dt, NORMAL_ONESIX_QUANTILE, chi1)
   map!(x -> (x^2-dt)/4, chi1, _dW)
   if !(typeof(W.dW) <: Number) || m > 1
     # define two-point distributed random variables
@@ -1176,9 +1181,10 @@ end
   @unpack NORMAL_ONESIX_QUANTILE = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
+  sq3dt = sqrt(3*dt)
   # define three-point distributed random variables
   dW_scaled = W.dW / integrator.sqdt
-  _dW = map(x -> calc_threepoint_random(integrator, NORMAL_ONESIX_QUANTILE, x), dW_scaled)
+  _dW = map(x -> calc_threepoint_random(sq3dt, NORMAL_ONESIX_QUANTILE, x), dW_scaled)
 
   # compute stage values
   k1 = integrator.f(uprev,p,t)
@@ -1207,10 +1213,10 @@ end
   @unpack _dW,chi1,tab,g1,k1,k2,Y,tmp1 = cache
   @unpack NORMAL_ONESIX_QUANTILE = cache.tab
 
-
+  sq3dt = sqrt(3*dt)
   # define three-point distributed random variables
   @.. chi1 = W.dW / integrator.sqdt
-  calc_threepoint_random!(_dW, integrator, NORMAL_ONESIX_QUANTILE, chi1)
+  calc_threepoint_random!(_dW, sq3dt, NORMAL_ONESIX_QUANTILE, chi1)
 
   # compute stage values
   integrator.f(k1,uprev,p,t)
