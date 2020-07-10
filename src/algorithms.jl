@@ -36,6 +36,10 @@ LambaEM(split=true) = LambaEM{split}()
 
 struct LambaEulerHeun <: StochasticDiffEqAdaptiveAlgorithm end
 
+"""
+Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
+Springer. Berlin Heidelberg (2011)
+"""
 struct SimplifiedEM <: StochasticDiffEqAlgorithm end
 
 """
@@ -207,21 +211,94 @@ struct SOSRA2 <: StochasticDiffEqAdaptiveAlgorithm end
 
 # Rossler second order for weak approx.
 
+"""
+Debrabant, K. and Rößler A., Families of efficient second order Runge–Kutta methods
+for the weak approximation of Itô stochastic differential equations,
+Applied Numerical Mathematics 59, pp. 582–594 (2009)
+DOI:10.1016/j.apnum.2008.03.012
+"""
 struct DRI1 <: StochasticDiffEqAlgorithm end
+
+"""
+Rößler A., Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations,
+SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
+DOI:10.1137/060673308
+"""
 struct RI1 <: StochasticDiffEqAlgorithm end
+
+"""
+Rößler A., Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations,
+SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
+DOI:10.1137/060673308
+"""
 struct RI3 <: StochasticDiffEqAlgorithm end
+
+"""
+Rößler A., Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations,
+SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
+DOI:10.1137/060673308
+"""
 struct RI5 <: StochasticDiffEqAlgorithm end
+
+"""
+Rößler A., Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations,
+SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
+DOI:10.1137/060673308
+"""
 struct RI6 <: StochasticDiffEqAlgorithm end
+
+"""
+Debrabant, K. and Rößler A., Classification of Stochastic Runge–Kutta Methods for
+the Weak Approximation of Stochastic Differential Equations,
+Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
+DOI:10.1016/j.matcom.2007.04.016
+"""
 struct RDI1WM <: StochasticDiffEqAlgorithm end
+
+"""
+Debrabant, K. and Rößler A., Classification of Stochastic Runge–Kutta Methods for
+the Weak Approximation of Stochastic Differential Equations,
+Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
+DOI:10.1016/j.matcom.2007.04.016
+"""
 struct RDI2WM <: StochasticDiffEqAlgorithm end
+
+"""
+Debrabant, K. and Rößler A., Classification of Stochastic Runge–Kutta Methods for
+the Weak Approximation of Stochastic Differential Equations,
+Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
+DOI:10.1016/j.matcom.2007.04.016
+"""
 struct RDI3WM <: StochasticDiffEqAlgorithm end
+
+"""
+Debrabant, K. and Rößler A., Classification of Stochastic Runge–Kutta Methods for
+the Weak Approximation of Stochastic Differential Equations,
+Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
+DOI:10.1016/j.matcom.2007.04.016
+"""
 struct RDI4WM <: StochasticDiffEqAlgorithm end
 
 # Stratonovich sense
 
+"""
+Rößler A., Second order Runge–Kutta methods for Stratonovich stochastic differential
+equations, BIT Numerical Mathematics 47, pp. 657-680 (2007)
+DOI:10.1007/s10543-007-0130-3
+"""
 struct RS1 <: StochasticDiffEqAlgorithm end
+
+"""
+Rößler A., Second order Runge–Kutta methods for Stratonovich stochastic differential
+equations, BIT Numerical Mathematics 47, pp. 657-680 (2007)
+DOI:10.1007/s10543-007-0130-3
+"""
 struct RS2 <: StochasticDiffEqAlgorithm end
 
+"""
+Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
+Springer. Berlin Heidelberg (2011)
+"""
 struct PL1WM <: StochasticDiffEqAlgorithm end
 struct PL1WMA <: StochasticDiffEqAlgorithm end
 
