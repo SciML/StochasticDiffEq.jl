@@ -1,5 +1,5 @@
 using DiffEqGPU, StochasticDiffEq, Test, DiffEqNoiseProcess
-using CuArrays
+using CUDA
 using Random
 
 function brusselator_f!(du,u,p,t)
