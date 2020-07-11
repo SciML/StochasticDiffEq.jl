@@ -300,6 +300,11 @@ Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equatio
 Springer. Berlin Heidelberg (2011)
 """
 struct PL1WM <: StochasticDiffEqAlgorithm end
+
+"""
+Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
+Springer. Berlin Heidelberg (2011)
+"""
 struct PL1WMA <: StochasticDiffEqAlgorithm end
 
 ################################################################################
