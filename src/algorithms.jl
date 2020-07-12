@@ -217,35 +217,43 @@ for the weak approximation of Itô stochastic differential equations,
 Applied Numerical Mathematics 59, pp. 582–594 (2009)
 DOI:10.1016/j.apnum.2008.03.012
 """
-struct DRI1 <: StochasticDiffEqAlgorithm end
+struct DRI1 <: StochasticDiffEqAdaptiveAlgorithm end
+
+"""
+Debrabant, K. and Rößler A., Families of efficient second order Runge–Kutta methods
+for the weak approximation of Itô stochastic differential equations,
+Applied Numerical Mathematics 59, pp. 582–594 (2009)
+DOI:10.1016/j.apnum.2008.03.012
+"""
+struct DRI1NM <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
 Rößler A., Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations,
 SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
 DOI:10.1137/060673308
 """
-struct RI1 <: StochasticDiffEqAlgorithm end
+struct RI1 <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
 Rößler A., Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations,
 SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
 DOI:10.1137/060673308
 """
-struct RI3 <: StochasticDiffEqAlgorithm end
+struct RI3 <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
 Rößler A., Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations,
 SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
 DOI:10.1137/060673308
 """
-struct RI5 <: StochasticDiffEqAlgorithm end
+struct RI5 <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
 Rößler A., Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations,
 SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
 DOI:10.1137/060673308
 """
-struct RI6 <: StochasticDiffEqAlgorithm end
+struct RI6 <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
 Debrabant, K. and Rößler A., Classification of Stochastic Runge–Kutta Methods for
@@ -261,7 +269,7 @@ the Weak Approximation of Stochastic Differential Equations,
 Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
 DOI:10.1016/j.matcom.2007.04.016
 """
-struct RDI2WM <: StochasticDiffEqAlgorithm end
+struct RDI2WM <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
 Debrabant, K. and Rößler A., Classification of Stochastic Runge–Kutta Methods for
@@ -269,7 +277,7 @@ the Weak Approximation of Stochastic Differential Equations,
 Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
 DOI:10.1016/j.matcom.2007.04.016
 """
-struct RDI3WM <: StochasticDiffEqAlgorithm end
+struct RDI3WM <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
 Debrabant, K. and Rößler A., Classification of Stochastic Runge–Kutta Methods for
@@ -277,7 +285,7 @@ the Weak Approximation of Stochastic Differential Equations,
 Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
 DOI:10.1016/j.matcom.2007.04.016
 """
-struct RDI4WM <: StochasticDiffEqAlgorithm end
+struct RDI4WM <: StochasticDiffEqAdaptiveAlgorithm end
 
 # Stratonovich sense
 

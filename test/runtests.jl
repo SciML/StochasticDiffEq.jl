@@ -88,6 +88,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
   end
 
   if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence4")
+      @time @safetestset "Roessler weak SRK Tests" begin include("weak_convergence/srk_weak_final_non_diagonal.jl") end
       @time @safetestset "Weak Stratonovich Tests" begin include("weak_convergence/weak_strat.jl") end
   end
 
@@ -96,5 +97,5 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
     @time @safetestset "Weak adaptive step size Brusselator " begin include("gpu/sde_weak_brusselator_adaptive.jl") end
     @time @safetestset "Weak adaptive" begin include("gpu/sde_weak_adaptive.jl") end
   end
-  
+
 end
