@@ -127,7 +127,7 @@ end
 
   K = uprev .+ dt .* integrator.f(uprev,p,t)
 
-  _dW = map(x -> calc_twopoint_random(integrator, x),  W.dW)
+  _dW = map(x -> calc_twopoint_random(integrator.sqdt, x),  W.dW)
 
   if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
     noise = integrator.g(uprev,p,t)*_dW
@@ -150,9 +150,9 @@ end
   integrator.g(rtmp2,uprev,p,t)
 
   if typeof(W.dW) <: Union{SArray,Number}
-    _dW = map(x -> calc_twopoint_random(integrator, x),  W.dW)
+    _dW = map(x -> calc_twopoint_random(integrator.sqdt, x),  W.dW)
   else
-    calc_twopoint_random!(_dW, integrator, W.dW)
+    calc_twopoint_random!(_dW, integrator.sqdt, W.dW)
   end
 
   if is_diagonal_noise(integrator.sol.prob)

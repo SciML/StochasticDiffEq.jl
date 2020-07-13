@@ -66,6 +66,7 @@ alg_order(alg::SOSRA) = 2//1
 alg_order(alg::SOSRA2) = 2//1
 
 alg_order(alg::DRI1) = 1//1
+alg_order(alg::DRI1NM) = 1//1
 alg_order(alg::RI1) = 1//1
 alg_order(alg::RI3) = 1//1
 alg_order(alg::RI5) = 1//1
@@ -129,6 +130,7 @@ alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SRA3) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SOSRA) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SOSRA2) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::DRI1) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::DRI1NM) = is_diagonal_noise(prob)
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RI1) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RI3) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RI5) = true

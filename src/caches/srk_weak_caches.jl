@@ -517,6 +517,7 @@ end
 @cache struct DRI1Cache{uType,randType,MType1,tabType,rateNoiseType,rateType,possibleRateType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
+  uhat::uType
 
   _dW::randType
   _dZ::randType
@@ -542,6 +543,41 @@ end
 
   tmp1::possibleRateType
   tmpg::rateNoiseType
+
+  tmp::uType
+  resids::uType
+
+end
+
+@cache struct DRI1NMCache{uType,randType,MType1,tabType,rateNoiseType,rateType,possibleRateType} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+  uhat::uType
+
+  _dW::randType
+  chi1::randType
+  Ihat2::MType1
+
+  tab::tabType
+
+  g1::rateNoiseType
+  g2::rateNoiseType
+  g3::rateNoiseType
+
+  k1::rateType
+  k2::rateType
+  k3::rateType
+
+  H02::uType
+  H03::uType
+  H12::rateNoiseType
+  H13::rateNoiseType
+
+  tmp1::possibleRateType
+  tmpg::rateNoiseType
+
+  tmp::uType
+  resids::uType
 
 end
 
@@ -583,8 +619,50 @@ function alg_cache(alg::DRI1,prob,u,ΔW,ΔZ,p,rate_prototype,
   tmp1 = zero(rate_prototype)
   tmpg = zero(noise_rate_prototype)
 
-  DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
+  uhat = copy(uprev)
+  tmp = zero(u)
+  resids = zero(u)
+
+  DRI1Cache(u,uprev,uhat,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,tmp,resids)
 end
+
+
+function alg_cache(alg::DRI1NM,prob,u,ΔW,ΔZ,p,rate_prototype,
+                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
+                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+
+  if typeof(ΔW) <: Union{SArray,Number}
+    _dW = copy(ΔW)
+    chi1 = copy(ΔW)
+  else
+    _dW = zero(ΔW)
+    chi1 = zero(ΔW)
+  end
+  m = length(ΔW)
+  Ihat2 = zeros(eltype(ΔW), m, m)
+  tab = DRI1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+  g1 = zero(noise_rate_prototype)
+  g2 = zero(noise_rate_prototype)
+  g3 = zero(noise_rate_prototype)
+  k1 = zero(rate_prototype); k2 = zero(rate_prototype); k3 = zero(rate_prototype)
+
+  H02 = zero(u)
+  H03 = zero(u)
+  H12 = zero(noise_rate_prototype)
+  H13 = zero(noise_rate_prototype)
+  #H22 = zero(noise_rate_prototype)
+  #H23 = zero(noise_rate_prototype)
+
+  tmp1 = zero(rate_prototype)
+  tmpg = zero(noise_rate_prototype)
+
+  uhat = copy(uprev)
+  tmp = zero(u)
+  resids = zero(u)
+
+  DRI1NMCache(u,uprev,uhat,_dW,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,tmp1,tmpg,tmp,resids)
+end
+
 
 
 function alg_cache(alg::RI1,prob,u,ΔW,ΔZ,p,rate_prototype,
@@ -624,7 +702,11 @@ function alg_cache(alg::RI1,prob,u,ΔW,ΔZ,p,rate_prototype,
   tmp1 = zero(rate_prototype)
   tmpg = zero(noise_rate_prototype)
 
-  DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
+  uhat = copy(uprev)
+  tmp = zero(u)
+  resids = zero(u)
+
+  DRI1Cache(u,uprev,uhat,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,tmp,resids)
 end
 
 
@@ -666,7 +748,11 @@ function alg_cache(alg::RI3,prob,u,ΔW,ΔZ,p,rate_prototype,
   tmp1 = zero(rate_prototype)
   tmpg = zero(noise_rate_prototype)
 
-  DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
+  uhat = copy(uprev)
+  tmp = zero(u)
+  resids = zero(u)
+
+  DRI1Cache(u,uprev,uhat,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,tmp,resids)
 end
 
 
@@ -708,7 +794,11 @@ function alg_cache(alg::RI5,prob,u,ΔW,ΔZ,p,rate_prototype,
   tmp1 = zero(rate_prototype)
   tmpg = zero(noise_rate_prototype)
 
-  DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
+  uhat = copy(uprev)
+  tmp = zero(u)
+  resids = zero(u)
+
+  DRI1Cache(u,uprev,uhat,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,tmp,resids)
 end
 
 
@@ -750,7 +840,11 @@ function alg_cache(alg::RI6,prob,u,ΔW,ΔZ,p,rate_prototype,
   tmp1 = zero(rate_prototype)
   tmpg = zero(noise_rate_prototype)
 
-  DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
+  uhat = copy(uprev)
+  tmp = zero(u)
+  resids = zero(u)
+
+  DRI1Cache(u,uprev,uhat,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,tmp,resids)
 end
 
 
@@ -791,7 +885,11 @@ function alg_cache(alg::RDI2WM,prob,u,ΔW,ΔZ,p,rate_prototype,
   tmp1 = zero(rate_prototype)
   tmpg = zero(noise_rate_prototype)
 
-  DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
+  uhat = copy(uprev)
+  tmp = zero(u)
+  resids = zero(u)
+
+  DRI1Cache(u,uprev,uhat,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,tmp,resids)
 end
 
 
@@ -834,7 +932,11 @@ function alg_cache(alg::RDI3WM,prob,u,ΔW,ΔZ,p,rate_prototype,
   tmp1 = zero(rate_prototype)
   tmpg = zero(noise_rate_prototype)
 
-  DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
+  uhat = copy(uprev)
+  tmp = zero(u)
+  resids = zero(u)
+
+  DRI1Cache(u,uprev,uhat,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,tmp,resids)
 end
 
 
@@ -877,7 +979,11 @@ function alg_cache(alg::RDI4WM,prob,u,ΔW,ΔZ,p,rate_prototype,
   tmp1 = zero(rate_prototype)
   tmpg = zero(noise_rate_prototype)
 
-  DRI1Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg)
+  uhat = copy(uprev)
+  tmp = zero(u)
+  resids = zero(u)
+
+  DRI1Cache(u,uprev,uhat,_dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,tmp,resids)
 end
 
 

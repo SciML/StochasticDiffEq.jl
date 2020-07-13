@@ -221,7 +221,7 @@ function f3!(du,u,p,t)
 end
 function g3!(du,u,p,t)
   du[1] = 1//10*u[1]
-  du[2] = 1//10*u[1]
+  du[2] = 1//10*u[2]
 end
 dts = 1 .//2 .^(5:-1:1)
 tspan = (0.0,1.0)
