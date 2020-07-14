@@ -1646,7 +1646,7 @@ end
 
 
 
-@cache struct NONCache{uType,randType,MType1,tabType,rateNoiseType,rateType,possibleRateType} <: StochasticDiffEqMutableCache
+@cache struct NONCache{uType,randType,MType1,tabType,rateNoiseType,rateType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
 
@@ -1664,12 +1664,11 @@ end
   Y200::uType
   Y300::uType
   Y400::uType
-  Y1jj::rateNoiseType
-  Y2jj::rateNoiseType
-  Y3jj::rateNoiseType
-  Y4jj::rateNoiseType
+  Y1jajb::Array{uType}
+  Y2jajb::Array{uType}
+  Y3jajb::Array{uType}
+  Y4jajb::Array{uType}
 
-  tmp1::possibleRateType
   tmpu::uType
   #tmpg::rateNoiseType
 
@@ -1699,16 +1698,13 @@ function alg_cache(alg::NON,prob,u,ΔW,ΔZ,p,rate_prototype,
   Y200 = zero(u)
   Y300 = zero(u)
   Y400 = zero(u)
-  Y1jj = zero(noise_rate_prototype)
-  Y2jj = zero(noise_rate_prototype)
-  Y3jj = zero(noise_rate_prototype)
-  Y4jj = zero(noise_rate_prototype)
+  Y1jajb = [zero(u) for ja=1:m, jb=1:m]
+  Y2jajb = [zero(u) for ja=1:m, jb=1:m]
+  Y3jajb = [zero(u) for ja=1:m, jb=1:m]
+  Y4jajb = [zero(u) for ja=1:m, jb=1:m]
 
-
-  tmp1 = zero(rate_prototype)
   tmpu = zero(u)
-  #tmpg = zero(noise_rate_prototype)
 
-  NONCache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,gtmp,ktmp,Y100,Y200,Y300,Y400,Y1jj,Y2jj,Y3jj,Y4jj,tmp1,tmpu)
+  NONCache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,gtmp,ktmp,Y100,Y200,Y300,Y400,Y1jajb,Y2jajb,Y3jajb,Y4jajb,tmpu)
 
 end
