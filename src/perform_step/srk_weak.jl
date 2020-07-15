@@ -1237,3 +1237,467 @@ end
   @.. u = uprev + 1//2*(k1+k2)*dt + tmp1
 
 end
+
+
+
+
+# NON
+@muladd function perform_step!(integrator,cache::NONConstantCache,f=integrator.f)
+  @unpack c01,c02,c03,c04,cj1,cj2,cj3,cj4,cjl2,cjl3,clj2,clj3,a0021,a0032,a0043,aj021,aj041,a0j21,a0j31,a0j32,a0j41,ajj21,ajj31,ajj32,ajj41,ajj42,ajj43,ajl31,ajl32,ajl41,ajl42,ajljj31,aljjl21,aljjl31,NORMAL_ONESIX_QUANTILE = cache
+  @unpack t,dt,uprev,u,W,p = integrator
+
+  m = length(W.dW)
+  # define three-point distributed random variables
+  sq3dt = sqrt(3*dt)
+  dW_scaled = W.dW / integrator.sqdt
+  _dW = map(x -> calc_threepoint_random(sq3dt, NORMAL_ONESIX_QUANTILE, x), dW_scaled)
+
+  if !(typeof(W.dW) <: Number)
+    # define two-point distributed random variables
+    _dZ = map(x -> calc_twopoint_random(integrator.sqdt, x),  W.dZ)
+    Ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
+    for k = 1:m
+      Ihat2[k, k] = _dW[k]
+      for l = 1:k-1
+        Ihat2[k, l] = _dW[l]
+        Ihat2[l, k] = _dZ[k]
+      end
+    end
+  end
+
+  # compute stage values
+  # stage 1
+  ktmp = integrator.f(uprev,p,t)
+  gtmp = integrator.g(uprev,p,t)
+
+  Y100 = ktmp*dt
+  Y1jajb = [zero(u) for ja=1:m, jb=1:m]
+  Y2jajb = [zero(u) for ja=1:m, jb=1:m]
+  Y3jajb = [zero(u) for ja=1:m, jb=1:m]
+  Y4jajb = [zero(u) for ja=1:m, jb=1:m]
+  if typeof(W.dW) <: Number
+    Y1jajb = gtmp*_dW
+  else
+    for ja=1:m
+      for jb=1:m
+        if is_diagonal_noise(integrator.sol.prob)
+          tmpu = zero(integrator.u)
+          tmpu[jb] = gtmp[jb]
+          @.. Y1jajb[ja,jb] = Ihat2[ja,jb]*tmpu
+          if ja!=jb
+            @.. Y4jajb[ja,jb] = Ihat2[ja,jb]*tmpu
+          end
+        else
+          gtmpjb = @view gtmp[:,jb]
+          @.. Y1jajb[ja,jb] = Ihat2[ja,jb]*gtmpjb
+          if ja!=jb
+            @.. Y4jajb[ja,jb] = Ihat2[ja,jb]*gtmpjb
+          end
+        end
+      end
+    end
+  end
+
+  # stage 2
+  Y200 = uprev + a0021*Y100
+
+  if typeof(W.dW) <: Number
+    Y200 += a0j21*Y1jajb
+    Y2jajb = integrator.g(uprev + aj021*Y100 + ajj21*Y1jajb[1],p,t)*_dW
+  else
+    if !is_diagonal_noise(integrator.sol.prob)
+      for ja=1:m
+        Y200 += a0j21*Y1jajb[ja,ja]
+        for jb=1:m
+          if jb!=ja
+            if jb<ja
+              tmpu = uprev + aljjl21*Y1jajb[jb,ja]
+            else
+              tmpu = copy(uprev)
+            end
+          else
+            tmpu = uprev + aj021*Y100 + ajj21*Y1jajb[ja,ja]
+          end
+          gtmp = integrator.g(tmpu,p,t)
+          tmpjb = @view gtmp[:,jb]
+          @.. Y2jajb[ja,jb] = Ihat2[ja,jb]*tmpjb
+        end
+      end
+    else
+      for ja=1:m
+        Y200 += a0j21*Y1jajb[ja,ja]
+        for jb=1:m
+          if jb!=ja
+            if jb<ja
+              tmpu = uprev + aljjl21*Y1jajb[jb,ja]
+            else
+              tmpu = copy(uprev)
+            end
+          else
+            tmpu = uprev + aj021*Y100 + ajj21*Y1jajb[ja,ja]
+          end
+          gtmp = integrator.g(tmpu,p,t)
+          tmpu = zero(integrator.u)
+          tmpu[jb] = gtmp[jb]
+          @.. Y2jajb[ja,jb] = Ihat2[ja,jb]*tmpu
+        end
+      end
+    end
+  end
+  ktmp = integrator.f(Y200,p,t)
+  Y200 = ktmp*dt
+
+  # stage 3
+  Y300 = uprev + a0032*Y200
+  if typeof(W.dW) <: Number
+    Y300 += a0j31*Y1jajb + a0j32*Y2jajb
+    Y3jajb = integrator.g(uprev + ajj31*Y1jajb[1] + ajj32*Y2jajb[1],p,t)*_dW
+  else
+    if !is_diagonal_noise(integrator.sol.prob)
+      for ja=1:m
+        Y300 += a0j31*Y1jajb[ja,ja] + a0j32*Y2jajb[ja,ja]
+        for jb=1:m
+          if jb!=ja
+            if jb<ja
+              tmpu = uprev + aljjl31*Y1jajb[jb,ja]
+            else
+              tmpu = uprev + ajljj31*Y1jajb[ja,ja]
+            end
+          else
+            tmpu = uprev + ajj31*Y1jajb[ja,ja] + ajj32*Y2jajb[ja,ja]
+            for l=1:m
+              if l!=ja
+                tmpu += ajl31*Y1jajb[l,l] + ajl32*Y2jajb[l,l]
+              end
+            end
+          end
+          gtmp = integrator.g(tmpu,p,t)
+          tmpjb = @view gtmp[:,jb]
+          @.. Y3jajb[ja,jb] = Ihat2[ja,jb]*tmpjb
+        end
+      end
+    else
+      for ja=1:m
+        Y300 += a0j31*Y1jajb[ja,ja] + a0j32*Y2jajb[ja,ja]
+        for jb=1:m
+          if jb!=ja
+            if jb<ja
+              tmpu = uprev + aljjl31*Y1jajb[jb,ja]
+            else
+              tmpu = uprev + ajljj31*Y1jajb[ja,ja]
+            end
+          else
+            tmpu = uprev + ajj31*Y1jajb[ja,ja] + ajj32*Y2jajb[ja,ja]
+            for l=1:m
+              if l!=ja
+                tmpu += ajl31*Y1jajb[l,l] + ajl32*Y2jajb[l,l]
+              end
+            end
+          end
+          gtmp = integrator.g(tmpu,p,t)
+          tmpu = zero(integrator.u)
+          tmpu[jb] = gtmp[jb]
+          @.. Y3jajb[ja,jb] = Ihat2[ja,jb]*tmpu
+        end
+      end
+    end
+  end
+  ktmp = integrator.f(Y300,p,t)
+  Y300 = ktmp*dt
+
+  # stage 4
+  Y400 = uprev + a0043*Y300
+  if typeof(W.dW) <: Number
+    Y400 += a0j41*Y1jajb
+    Y4jajb = integrator.g(uprev + ajj41*Y1jajb[1] + ajj42*Y2jajb[1] + ajj43*Y3jajb[1],p,t)*_dW
+  else
+    if !is_diagonal_noise(integrator.sol.prob)
+      for ja=1:m
+        Y400 += a0j41*Y1jajb[ja,ja]
+        tmpu = uprev + ajj41*Y1jajb[ja,ja] + ajj42*Y2jajb[ja,ja] + ajj43*Y3jajb[ja,ja] + aj041*Y100
+        for l=1:m
+          if l!=ja
+            tmpu += ajl41*Y1jajb[l,l] + ajl42*Y2jajb[l,l]
+          end
+        end
+        gtmp = integrator.g(tmpu,p,t)
+        tmpjb = @view gtmp[:,ja]
+        @.. Y4jajb[ja,ja] = Ihat2[ja,ja]*tmpjb
+      end
+    else
+      for ja=1:m
+        Y400 += a0j41*Y1jajb[ja,ja]
+
+        tmpu = uprev + ajj41*Y1jajb[ja,ja] + ajj42*Y2jajb[ja,ja] + ajj43*Y3jajb[ja,ja] + aj041*Y100
+        for l=1:m
+          if l!=ja
+            tmpu += ajl41*Y1jajb[l,l] + ajl42*Y2jajb[l,l]
+          end
+        end
+        gtmp = integrator.g(tmpu,p,t)
+        tmpu = zero(integrator.u)
+        tmpu[ja] = gtmp[ja]
+        @.. Y4jajb[ja,ja] = Ihat2[ja,ja]*tmpu
+      end
+    end
+  end
+
+  ktmp = integrator.f(Y400,p,t)
+  Y400 = ktmp*dt
+
+  # add stages together
+  u = uprev + c01*Y100+c02*Y200+c03*Y300+c04*Y400
+  if typeof(W.dW) <: Number
+    # to be checked
+    u += cj1*Y1jajb + cj2*Y2jajb + cj3*Y3jajb + cj4*Y4jajb
+  else
+    if is_diagonal_noise(integrator.sol.prob)
+      for ja=1:m
+        u += cj1*Y1jajb[ja,ja] + cj2*Y2jajb[ja,ja] + cj3*Y3jajb[ja,ja] + cj4*Y4jajb[ja,ja]
+        for jb=1:m
+          if jb!=ja
+            if ja>jb
+              u += clj2 * Y2jajb[ja,jb] + clj3 * Y3jajb[ja,jb]
+            else
+              u += cjl2 * Y2jajb[ja,jb] + cjl3 * Y3jajb[ja,jb]
+            end
+          end
+        end
+      end
+    else
+      for ja=1:m
+        u += cj1*Y1jajb[ja,ja] + cj2*Y2jajb[ja,ja] + cj3*Y3jajb[ja,ja] + cj4*Y4jajb[ja,ja]
+        for jb=1:m
+          if jb!=ja
+            if ja>jb
+              u += clj2 * Y2jajb[ja,jb] + clj3 * Y3jajb[ja,jb]
+            else
+              u += cjl2 * Y2jajb[ja,jb] + cjl3 * Y3jajb[ja,jb]
+            end
+          end
+        end
+      end
+    end
+  end
+  integrator.u = u
+end
+
+
+@muladd function perform_step!(integrator,cache::NONCache,f=integrator.f)
+  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack _dW,_dZ,chi1,Ihat2,tab,gtmp,ktmp,Y100,Y200,Y300,Y400,Y1jajb,Y2jajb,Y3jajb,Y4jajb,tmpu = cache
+  @unpack c01,c02,c03,c04,cj1,cj2,cj3,cj4,cjl2,cjl3,clj2,clj3,a0021,a0032,a0043,aj021,aj041,a0j21,a0j31,a0j32,a0j41,ajj21,ajj31,ajj32,ajj41,ajj42,ajj43,ajl31,ajl32,ajl41,ajl42,ajljj31,aljjl21,aljjl31,NORMAL_ONESIX_QUANTILE = cache.tab
+
+  m = length(W.dW)
+  # define three-point distributed random variables
+  @.. chi1 = W.dW / integrator.sqdt
+  sq3dt = sqrt(3*dt)
+  calc_threepoint_random!(_dW, sq3dt, NORMAL_ONESIX_QUANTILE, chi1)
+
+  if !(typeof(W.dW) <: Number)
+    # define two-point distributed random variables
+    calc_twopoint_random!(_dZ,integrator.sqdt,W.dZ)
+    for k = 1:m
+      Ihat2[k, k] = _dW[k]
+      for l = 1:k-1
+        Ihat2[k, l] = _dW[l]
+        Ihat2[l, k] = _dZ[k]
+      end
+    end
+  end
+
+  # compute stage values
+  # stage 1
+  integrator.f(ktmp,uprev,p,t)
+  integrator.g(gtmp,uprev,p,t)
+
+  @.. Y100 = ktmp*dt
+  for ja=1:m
+    for jb=1:m
+      if is_diagonal_noise(integrator.sol.prob)
+        fill!(tmpu,zero(eltype(integrator.u)))
+        tmpu[jb] = gtmp[jb]
+        @.. Y1jajb[ja,jb] = Ihat2[ja,jb]*tmpu
+        if ja!=jb
+          @.. Y4jajb[ja,jb] = Ihat2[ja,jb]*tmpu
+        end
+      else
+        gtmpjb = @view gtmp[:,jb]
+        @.. Y1jajb[ja,jb] = Ihat2[ja,jb]*gtmpjb
+        if ja!=jb
+          @.. Y4jajb[ja,jb] = Ihat2[ja,jb]*gtmpjb
+        end
+      end
+    end
+  end
+
+  # stage 2
+  @.. Y200 = uprev + a0021*Y100
+
+  if !is_diagonal_noise(integrator.sol.prob)
+    for ja=1:m
+      @.. Y200 = Y200 + a0j21*Y1jajb[ja,ja]
+      for jb=1:m
+        if jb!=ja
+          if jb<ja
+            @.. tmpu = uprev + aljjl21*Y1jajb[jb,ja]
+          else
+            @.. tmpu = uprev
+          end
+        else
+          @.. tmpu = uprev + aj021*Y100 + ajj21*Y1jajb[ja,ja]
+        end
+        integrator.g(gtmp,tmpu,p,t)
+        tmpjb = @view gtmp[:,jb]
+        @.. Y2jajb[ja,jb] = Ihat2[ja,jb]*tmpjb
+        end
+    end
+  else
+    for ja=1:m
+      @.. Y200 = Y200 + a0j21*Y1jajb[ja,ja]
+      for jb=1:m
+        if jb!=ja
+          if jb<ja
+            @.. tmpu = uprev + aljjl21*Y1jajb[jb,ja]
+          else
+            @.. tmpu = uprev
+          end
+        else
+          @.. tmpu = uprev + aj021*Y100 + ajj21*Y1jajb[ja,ja]
+        end
+        integrator.g(gtmp,tmpu,p,t)
+        fill!(tmpu,zero(eltype(integrator.u)))
+        tmpu[jb] = gtmp[jb]
+        @.. Y2jajb[ja,jb] = Ihat2[ja,jb]*tmpu
+      end
+    end
+  end
+  integrator.f(ktmp,Y200,p,t)
+  @.. Y200 = ktmp*dt
+
+  # stage 3
+  @.. Y300 = uprev + a0032*Y200
+
+  if !is_diagonal_noise(integrator.sol.prob)
+      for ja=1:m
+        @.. Y300 = Y300 + a0j31*Y1jajb[ja,ja] + a0j32*Y2jajb[ja,ja]
+        for jb=1:m
+          if jb!=ja
+            if jb<ja
+              @.. tmpu = uprev + aljjl31*Y1jajb[jb,ja]
+            else
+              @.. tmpu = uprev + ajljj31*Y1jajb[ja,ja]
+            end
+          else
+            @.. tmpu = uprev + ajj31*Y1jajb[ja,ja] + ajj32*Y2jajb[ja,ja]
+            for l=1:m
+              if l!=ja
+                @.. tmpu = tmpu + ajl31*Y1jajb[l,l] + ajl32*Y2jajb[l,l]
+              end
+            end
+          end
+          integrator.g(gtmp,tmpu,p,t)
+          tmpjb = @view gtmp[:,jb]
+          @.. Y3jajb[ja,jb] = Ihat2[ja,jb]*tmpjb
+        end
+      end
+  else
+    for ja=1:m
+      @.. Y300 = Y300 + a0j31*Y1jajb[ja,ja] + a0j32*Y2jajb[ja,ja]
+      for jb=1:m
+        if jb!=ja
+          if jb<ja
+            @.. tmpu = uprev + aljjl31*Y1jajb[jb,ja]
+          else
+            @.. tmpu = uprev + ajljj31*Y1jajb[ja,ja]
+          end
+        else
+          @.. tmpu = uprev + ajj31*Y1jajb[ja,ja] + ajj32*Y2jajb[ja,ja]
+          for l=1:m
+            if l!=ja
+              @.. tmpu = tmpu + ajl31*Y1jajb[l,l] + ajl32*Y2jajb[l,l]
+            end
+          end
+        end
+        integrator.g(gtmp,tmpu,p,t)
+        fill!(tmpu,zero(eltype(integrator.u)))
+        tmpu[jb] = gtmp[jb]
+        @.. Y3jajb[ja,jb] = Ihat2[ja,jb]*tmpu
+      end
+    end
+  end
+
+  integrator.f(ktmp,Y300,p,t)
+  @.. Y300 = ktmp*dt
+
+  # stage 4
+  @.. Y400 = uprev + a0043*Y300
+
+  if !is_diagonal_noise(integrator.sol.prob)
+    for ja=1:m
+      @.. Y400 = Y400 + a0j41*Y1jajb[ja,ja]
+
+      @.. tmpu = uprev + ajj41*Y1jajb[ja,ja] + ajj42*Y2jajb[ja,ja] + ajj43*Y3jajb[ja,ja] + aj041*Y100
+      for l=1:m
+        if l!=ja
+          @.. tmpu = tmpu + ajl41*Y1jajb[l,l] + ajl42*Y2jajb[l,l]
+        end
+      end
+      integrator.g(gtmp,tmpu,p,t)
+      tmpjb = @view gtmp[:,ja]
+      @.. Y4jajb[ja,ja] = Ihat2[ja,ja]*tmpjb
+    end
+  else
+    for ja=1:m
+      @.. Y400 = Y400 + a0j41*Y1jajb[ja,ja]
+
+      @.. tmpu = uprev + ajj41*Y1jajb[ja,ja] + ajj42*Y2jajb[ja,ja] + ajj43*Y3jajb[ja,ja] + aj041*Y100
+      for l=1:m
+        if l!=ja
+          @.. tmpu = tmpu + ajl41*Y1jajb[l,l] + ajl42*Y2jajb[l,l]
+        end
+      end
+      integrator.g(gtmp,tmpu,p,t)
+      fill!(tmpu,zero(eltype(integrator.u)))
+      tmpu[ja] = gtmp[ja]
+      @.. Y4jajb[ja,ja] = Ihat2[ja,ja]*tmpu
+    end
+  end
+
+  integrator.f(ktmp,Y400,p,t)
+  @.. Y400 = ktmp*dt
+
+  # add stages together
+  @.. u = uprev + c01*Y100+c02*Y200+c03*Y300+c04*Y400
+  if typeof(W.dW) <: Number
+    @.. u = u + cj1*Y1jj + cj2*Y2jj + cj3*Y3jj + cj4*Y4jj
+  else
+    if is_diagonal_noise(integrator.sol.prob)
+      for ja=1:m
+        @.. u = u + cj1*Y1jajb[ja,ja] + cj2*Y2jajb[ja,ja] + cj3*Y3jajb[ja,ja] + cj4*Y4jajb[ja,ja]
+        for jb=1:m
+          if jb!=ja
+            if ja>jb
+              @.. u = u + clj2 * Y2jajb[ja,jb] + clj3 * Y3jajb[ja,jb]
+            else
+              @.. u = u + cjl2 * Y2jajb[ja,jb] + cjl3 * Y3jajb[ja,jb]
+            end
+          end
+        end
+      end
+    else
+      for ja=1:m
+        @.. u = u + cj1*Y1jajb[ja,ja] + cj2*Y2jajb[ja,ja] + cj3*Y3jajb[ja,ja] + cj4*Y4jajb[ja,ja]
+        for jb=1:m
+          if jb!=ja
+            if ja>jb
+              @.. u = u + clj2 * Y2jajb[ja,jb] + clj3 * Y3jajb[ja,jb]
+            else
+              @.. u = u + cjl2 * Y2jajb[ja,jb] + cjl3 * Y3jajb[ja,jb]
+            end
+          end
+        end
+      end
+    end
+  end
+end

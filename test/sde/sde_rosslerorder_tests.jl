@@ -38,3 +38,7 @@ RS1_tab = constructRS1()
 
 RS2_tab = constructRS2()
 @test minimum(checkRSOrder(RS2_tab))
+
+# Komori's NON
+NON_tab = constructNON()
+@test minimum(checkNONOrder(NON_tab))

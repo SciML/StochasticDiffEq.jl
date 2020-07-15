@@ -315,6 +315,14 @@ Springer. Berlin Heidelberg (2011)
 """
 struct PL1WMA <: StochasticDiffEqAlgorithm end
 
+"""
+Komori, Y., Weak second-order stochastic Runge–Kutta methods for non-commutative
+stochastic differential equations, Journal of Computational and Applied
+Mathematics 206, pp. 158 – 173 (2007)
+DOI:10.1016/j.cam.2006.06.006
+"""
+struct NON <: StochasticDiffEqAlgorithm end
+
 ################################################################################
 
 # IIF
