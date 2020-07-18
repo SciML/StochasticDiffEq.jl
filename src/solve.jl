@@ -104,7 +104,7 @@ function DiffEqBase.__init(
     error("The algorithm is not compatible with the chosen noise type. Please see the documentation on the solver methods")
   end
 
-  progress && @logmsg(-1,progress_name,_id=_id = :StochasticDiffEq,progress=0)
+  progress && @logmsg(LogLevel(-1),progress_name,_id=_id = :StochasticDiffEq,progress=0)
 
   tType = eltype(prob.tspan)
   noise = prob isa DiffEqBase.AbstractRODEProblem ? prob.noise : nothing
