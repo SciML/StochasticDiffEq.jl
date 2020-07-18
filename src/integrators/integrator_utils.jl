@@ -173,7 +173,7 @@ end
     handle_callbacks!(integrator)
   end
   if integrator.opts.progress && integrator.iter%integrator.opts.progress_steps==0
-    @logmsg(-1,
+    @logmsg(LogLevel(-1),
     integrator.opts.progress_name,
     _id = :StochasticDiffEq,
     message=integrator.opts.progress_message(integrator.dt,integrator.u,integrator.p,integrator.t),
@@ -218,7 +218,7 @@ end
   resize!(integrator.sol.t,integrator.saveiter)
   resize!(integrator.sol.u,integrator.saveiter)
   if integrator.opts.progress
-    @logmsg(-1,
+    @logmsg(LogLevel(-1),
     integrator.opts.progress_name,
     _id = :StochasticDiffEq,
     message=integrator.opts.progress_message(integrator.dt,integrator.u,integrator.p,integrator.t),
