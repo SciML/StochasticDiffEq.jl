@@ -150,7 +150,15 @@ end
       integrator.tprev = integrator.t
       if typeof(integrator.t)<:AbstractFloat && !isempty(integrator.opts.tstops)
         tstop = integrator.tdir * top(integrator.opts.tstops)
-        @fastmath abs(ttmp - tstop) < 10eps(integrator.t) ? (integrator.t = tstop) : (integrator.t = ttmp)
+        if @fastmath abs(ttmp - tstop) < 10eps(integrator.t)
+          integrator.t = tstop
+          integrator.W.curt = tstop
+          (integrator.P != nothing) && (integrator.P.curt = tstop)
+        else
+          integrator.t = ttmp
+          integrator.W.curt = ttmp
+          (integrator.P != nothing) && (integrator.P.curt = ttmp)
+        end
       else
         integrator.t = ttmp
       end
@@ -163,7 +171,15 @@ end
       tstop = integrator.tdir * top(integrator.opts.tstops)
       # For some reason 10eps(integrator.t) is slow here
       # TODO: Allow higher precision but profile
-      @fastmath abs(ttmp - tstop) < 10eps(max(integrator.t,tstop)) ? (integrator.t = tstop) : (integrator.t = ttmp)
+      if @fastmath abs(ttmp - tstop) < 10eps(max(integrator.t,tstop))
+        integrator.t = tstop
+        integrator.W.curt = tstop
+        (integrator.P != nothing) && (integrator.P.curt = tstop)
+      else
+        integrator.t = ttmp
+        integrator.W.curt = ttmp
+        (integrator.P != nothing) && (integrator.P.curt = ttmp)
+      end
     else
       integrator.t = ttmp
     end
@@ -204,9 +220,6 @@ end
     else
       copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})
     end
-  end
-  if (!isnothing(integrator.W) && integrator.W.curt != integrator.t) || (!isnothing(integrator.P) && integrator.P.curt != integrator.t)
-    accept_step!(integrator,false)
   end
   if integrator.W isa NoiseProcess && !integrator.W.save_everystep
     save_noise!(integrator)
