@@ -13,7 +13,7 @@ functionality should check out [DifferentialEquations.jl](https://github.com/Sci
 
 ## API
 
-StochasticDiffEq.jl is part of the JuliaDiffEq common interface, but can be used independently of DifferentialEquations.jl. The only requirement is that the user passes an StochasticDiffEq.jl algorithm to `solve`. For example, we can solve the [SDE tutorial from the docs](https://docs.sciml.ai/stable/tutorials/sde_example/) using the `SRIW1()` algorithm:
+StochasticDiffEq.jl is part of the JuliaDiffEq common interface, but can be used independently of DifferentialEquations.jl. The only requirement is that the user passes an StochasticDiffEq.jl algorithm to `solve`. For example, we can solve the [SDE tutorial from the docs](https://diffeq.sciml.ai/stable/tutorials/sde_example/) using the `SRIW1()` algorithm:
 
 ```julia
 using StochasticDiffEq
@@ -28,7 +28,7 @@ prob = SDEProblem(f,g,u₀,(0.0,1.0))
 sol =solve(prob,SRIW1())
 ```
 
-The options for `solve` are defined in the [common solver options page](https://docs.sciml.ai/stable/basics/common_solver_opts/) and are thoroughly explained in [the ODE tutorial](https://docs.sciml.ai/stable/tutorials/ode_example/).
+The options for `solve` are defined in the [common solver options page](https://diffeq.sciml.ai/stable/basics/common_solver_opts/) and are thoroughly explained in [the ODE tutorial](https://diffeq.sciml.ai/stable/tutorials/ode_example/).
 
 That example uses the out-of-place syntax `f(u,p,t)`, while the inplace syntax (more efficient for systems of equations) is shown in the Lorenz example:
 
@@ -68,7 +68,7 @@ end
 prob = SDEProblem(f,g,ones(2),(0.0,1.0),noise_rate_prototype=zeros(2,4))
 ```
 
-Colored noise can be set using [an `AbstractNoiseProcess`](https://docs.sciml.ai/stable/features/noise_process/). For example, we can set the underlying noise process to a `GeometricBrownian` via:
+Colored noise can be set using [an `AbstractNoiseProcess`](https://diffeq.sciml.ai/stable/features/noise_process/). For example, we can set the underlying noise process to a `GeometricBrownian` via:
 
 ```julia
 μ = 1.0
@@ -80,7 +80,7 @@ W = GeometricBrownianMotionProcess(μ,σ,0.0,1.0,1.0)
 prob = SDEProblem(f,g,u0,tspan,noise=W)
 ```
 
-StochasticDiffEq.jl also handles solving random ordinary differential equations. This is shown [in the RODE tutorial](https://docs.sciml.ai/stable/tutorials/rode_example/).
+StochasticDiffEq.jl also handles solving random ordinary differential equations. This is shown [in the RODE tutorial](https://diffeq.sciml.ai/stable/tutorials/rode_example/).
 
 ```julia
 using StochasticDiffEq
@@ -95,4 +95,4 @@ sol = solve(prob,RandomEM(),dt=1/100)
 
 ## Available Solvers
 
-For the list of available solvers, please refer to the [DifferentialEquations.jl SDE Solvers page](https://docs.sciml.ai/stable/solvers/sde_solve/) and the [RODE Solvers page](https://docs.sciml.ai/stable/solvers/rode_solve/).
+For the list of available solvers, please refer to the [DifferentialEquations.jl SDE Solvers page](https://diffeq.sciml.ai/stable/solvers/sde_solve/) and the [RODE Solvers page](https://diffeq.sciml.ai/stable/solvers/rode_solve/).
