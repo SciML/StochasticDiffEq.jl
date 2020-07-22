@@ -215,7 +215,8 @@ function get_iterated_I!(dt, dW, Wik::WikJGeneral_oop, C=1)
 
     WikJ *= 1//2
     𝑎ₚ = (π^2)/6
-    p = Int(floor((1/(C*π))*sqrt(M/(24*dt))*sqrt(m + 4*sum_dW²/dt) + 1))
+    p = Int(floor((1/(C*π))*sqrt(M/(12*dt))*sqrt(m + 4*sum_dW²/dt) + 1))
+    @show p
     Aᵢ = false .* vec(dW)   # Aᵢ is vector of aᵢ₀
     for r in 1:p
         𝑎ₚ -= (1/r^2)
@@ -328,19 +329,24 @@ function get_iterated_I!(dt, dW, Wik::WikJGeneral_iip, C=1)
 
     @.. WikJ *= 1//2
     𝑎ₚ = (π^2)/6
-    p = Int(floor((1/(C*π))*sqrt(M/(24*dt))*sqrt(m + 4*sum_dW²/dt) + 1))
+    p = Int(floor((1/(C*π))*sqrt(M/(12*dt))*sqrt(m + 4*sum_dW²/dt) + 1))
+    @show p
     Aᵢ .= false .* vec(dW)    # Aᵢ is vector of aᵢ₀
     for r in 1:p
         𝑎ₚ -= (1/r^2)
         var = sqrt(dt/(2*π*r))
         vec_ζ .= randn(m) .* var
         vec_η .= randn(m) .* var
+        @show vec_ζ, vec_η
         mul!(WikJ3, vec_ζ, vec_η')
         @.. WikJ += WikJ3 - WikJ3'
         @.. Aᵢ -= (2/sqrt(π*r))*vec_ζ
     end
+    @show Aᵢ, WikJ3
     mul!(WikJ3, dW, Aᵢ')
-    @.. WikJ -= 1//2*(WikJ3 - WikJ3')
-    @.. WikJ += (sqrt(𝑎ₚ)*dt/π)*WikJ2
+    @show WikJ3
+    @.. WikJ = WikJ - 1//2*(WikJ3 - WikJ3')
+    @show WikJ
+    @.. WikJ = WikJ + (sqrt(𝑎ₚ)*dt/π)*WikJ2
     return nothing
 end
