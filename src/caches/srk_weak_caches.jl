@@ -1781,6 +1781,45 @@ function alg_cache(alg::SIEA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototyp
   SIEAConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
+
+function SMEAConstantCache(::Type{T}, ::Type{T2}) where {T,T2}
+
+  α1 = convert(T, 0)
+  α2 = convert(T, 1//1)
+
+  γ1 = convert(T, 1//2)
+
+  λ1 = convert(T, 1//4)
+  λ2 = convert(T, -1//4)
+  λ3 = convert(T, 1//4)
+
+  µ1 = convert(T, 1//4)
+  µ2 = convert(T, 1//4)
+  µ3 = convert(T, -1//4)
+
+  µ0 = convert(T2, 1//2)
+  µbar0 = convert(T2, 1//1)
+
+  λ0 = convert(T, 1//2)
+  λbar0 = convert(T, 1//1)
+
+  ν1 = convert(T, (2-sqrt(6))/4)
+  ν2 = convert(T, sqrt(6)/12)
+
+  β2 = convert(T, 1//1)
+  β3 = convert(T, 0)
+
+  δ2 = convert(T, -1//1)
+  δ3 = convert(T, 0)
+
+  SIESMEConstantCache(α1,α2,γ1,λ1,λ2,λ3,µ1,µ2,µ3,µ0,µbar0,λ0,λbar0,ν1,ν2,β2,β3,δ2,δ3)
+end
+
+
+function alg_cache(alg::SMEA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  SMEAConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+end
+
 @cache struct SIESMECache{uType,randType,tabType,rateNoiseType,rateType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
@@ -1824,6 +1863,35 @@ function alg_cache(alg::SIEA,prob,u,ΔW,ΔZ,p,rate_prototype,
   tmpu = zero(u)
 
   tab = SIEAConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+
+  SIESMECache(u,uprev,W2,W3,tab,k0,k1,g0,g1,g2,tmpu)
+end
+
+
+
+function alg_cache(alg::SMEA,prob,u,ΔW,ΔZ,p,rate_prototype,
+                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
+                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+
+
+  if typeof(ΔW) <: Union{SArray,Number}
+    W2 = copy(ΔW)
+    W3 = copy(ΔW)
+  else
+    W2 = zero(ΔW)
+    W3 = zero(ΔW)
+  end
+
+  k0 = zero(u)
+  k1 = zero(u)
+
+  g0 = zero(noise_rate_prototype)
+  g1 = zero(noise_rate_prototype)
+  g2 = zero(noise_rate_prototype)
+
+  tmpu = zero(u)
+
+  tab = SMEAConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 
   SIESMECache(u,uprev,W2,W3,tab,k0,k1,g0,g1,g2,tmpu)
 end

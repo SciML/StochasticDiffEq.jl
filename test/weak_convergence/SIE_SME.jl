@@ -61,6 +61,12 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 println("SIEA:", m)
 
 
+_solutions = @time generate_weak_solutions(ensemble_prob, SMEA(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors =  [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]))) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
 """
  Test Scalar SDEs (iip)
 """
@@ -96,6 +102,14 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 
 println("SIEA:", m)
 
+
+_solutions = @time generate_weak_solutions(ensemble_prob, SMEA(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors =  [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]))) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("SMEA:", m)
 
 
 """
@@ -136,4 +150,12 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test -(m-2) < 0.3
 
 println("SIEA:", m)
-using Plots; convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
+
+
+_solutions = @time generate_weak_solutions(ensemble_prob, SMEA(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("SMEA:", m)
