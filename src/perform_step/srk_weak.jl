@@ -1701,3 +1701,41 @@ end
     end
   end
 end
+
+
+
+
+
+
+# SIE / SME
+@muladd function perform_step!(integrator,cache::SIEAConstantCache,f=integrator.f)
+  @unpack μ,α2 = cache
+  @unpack t,dt,uprev,u,W,p = integrator
+
+
+  # compute stage values
+  k0 = integrator.f(uprev,p,t)
+  g0 = integrator.g(uprev,p,t)
+
+  # k1, g1, g2
+  if is_diagonal_noise(integrator.sol.prob)
+    k1 = integrator.f(uprev + k0*dt + g0.*_dW, p, t + dt)
+    g1 = integrator.g(uprev + k0*dt + g0.*_dW, p, t + dt)
+    g2 = integrator.g(uprev + k0*dt + g0.*_dW, p, t + dt)
+
+  else
+    # typeof(W.dW) <: Number
+
+  end
+
+  # add stages together
+  u = uprev + 1//2*(k1+k2)*dt
+
+  # add noise
+  if typeof(W.dW) <: Number
+    u += 1//4*(g2p+g2m+2*g1)*_dW + (g2p-g2m)*chi1/integrator.sqdt #(1.1)
+  else
+
+  end
+  integrator.u = u
+end

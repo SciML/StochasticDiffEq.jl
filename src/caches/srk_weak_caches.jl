@@ -1708,3 +1708,43 @@ function alg_cache(alg::NON,prob,u,ΔW,ΔZ,p,rate_prototype,
   NONCache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,gtmp,ktmp,Y100,Y200,Y300,Y400,Y1jajb,Y2jajb,Y3jajb,Y4jajb,tmpu)
 
 end
+
+
+
+# SIE / SME methods
+struct SIEAConstantCache <: StochasticDiffEqConstantCache end
+
+function alg_cache(alg::SIEA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  SIEAConstantCache()
+end
+
+@cache struct SIEACache{uType,rateNoiseType,rateType,possibleRateType} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+
+  k0::rateType
+  k1::rateType
+
+  g0::rateNoiseType
+  g1::rateNoiseType
+  g2::rateNoiseType
+
+  tmp1::possibleRateType
+end
+
+function alg_cache(alg::SIEA,prob,u,ΔW,ΔZ,p,rate_prototype,
+                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
+                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+
+
+  k0 = zero(u)
+  k1 = zero(u)
+
+  g0 = zero(noise_rate_prototype)
+  g1 = zero(noise_rate_prototype)
+  g2 = zero(noise_rate_prototype)
+
+  tmp1 = zero(rate_prototype)
+
+  SIEACache(u,uprev,k0,k1,g0,g1,g2,tmp1)
+end
