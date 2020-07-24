@@ -67,6 +67,17 @@ errors =  [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]))) f
 m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test -(m-2) < 0.3
 
+println("SMEA:", m)
+
+
+_solutions = @time generate_weak_solutions(ensemble_prob, SIEB(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors =  [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]))) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("SIEB:", m)
+
 """
  Test Scalar SDEs (iip)
 """
@@ -111,6 +122,14 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 
 println("SMEA:", m)
 
+
+_solutions = @time generate_weak_solutions(ensemble_prob, SIEB(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors =  [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]))) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("SIEB:", m)
 
 """
  Test Diagonal noise SDEs (iip), SIAM Journal on Numerical Analysis, 47 (2009), pp. 1713–1738
@@ -159,3 +178,11 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test -(m-2) < 0.3
 
 println("SMEA:", m)
+
+_solutions = @time generate_weak_solutions(ensemble_prob, SIEB(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test -(m-2) < 0.3
+
+println("SIEB:", m)
