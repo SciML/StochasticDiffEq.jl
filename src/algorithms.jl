@@ -330,7 +330,28 @@ Tocino, A. and Vigo-Aguiar, J., Weak Second Order Conditions for Stochastic Rung
 Kutta Methods, SIAM Journal on Scientific Computing 24, pp. 507 - 523 (2002)
 DOI:10.1137/S1064827501387814
 """
-struct SIE_A <: StochasticDiffEqAlgorithm end
+struct SIEA <: StochasticDiffEqAlgorithm end
+
+"""
+Tocino, A. and Vigo-Aguiar, J., Weak Second Order Conditions for Stochastic Runge-
+Kutta Methods, SIAM Journal on Scientific Computing 24, pp. 507 - 523 (2002)
+DOI:10.1137/S1064827501387814
+"""
+struct SMEA <: StochasticDiffEqAlgorithm end
+
+"""
+Tocino, A. and Vigo-Aguiar, J., Weak Second Order Conditions for Stochastic Runge-
+Kutta Methods, SIAM Journal on Scientific Computing 24, pp. 507 - 523 (2002)
+DOI:10.1137/S1064827501387814
+"""
+struct SIEB <: StochasticDiffEqAlgorithm end
+
+"""
+Tocino, A. and Vigo-Aguiar, J., Weak Second Order Conditions for Stochastic Runge-
+Kutta Methods, SIAM Journal on Scientific Computing 24, pp. 507 - 523 (2002)
+DOI:10.1137/S1064827501387814
+"""
+struct SMEB <: StochasticDiffEqAlgorithm end
 
 
 ################################################################################

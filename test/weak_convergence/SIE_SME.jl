@@ -1,5 +1,5 @@
 """
- Tests for PL1WM
+ Tests for SIE and SME methods
 """
 
 import Statistics # for mean values of trajectories
@@ -30,7 +30,7 @@ end
 @info "Scalar oop noise"
 
 # PC exercise 14.2.2
-numtraj = Int(1e4)
+numtraj = Int(7e3)
 u₀ = 0.1
 f(u,p,t) = p[1]*u
 g(u,p,t) = p[2]*u
@@ -57,7 +57,7 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test -(m-2) < 0.3
 
 #using Plots; convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
-#savefig(convergence_plot, "PL1WM-scalar.png")
+#savefig(convergence_plot, " SIEA.png")
 println("SIEA:", m)
 
 
@@ -82,7 +82,7 @@ ensemble_prob = EnsembleProblem(prob;
         )
 
 
-numtraj = Int(1e4)
+numtraj = Int(7e3)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -113,7 +113,7 @@ function g3!(du,u,p,t)
   du[1] = 1//10*u[1]
   du[2] = 1//10*u[2]
 end
-dts = 1 .//2 .^(3:-1:0)
+dts = 1 .//2 .^(5:-1:1)
 tspan = (0.0,1.0)
 
 h3(z) = z^2 # == 1//10**exp(3//2*t) if h3(z) = z and  == 1//100**exp(301//100*t) if h3(z) = z^2 )
@@ -136,3 +136,4 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test -(m-2) < 0.3
 
 println("SIEA:", m)
+using Plots; convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)

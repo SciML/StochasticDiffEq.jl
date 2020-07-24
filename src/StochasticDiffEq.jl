@@ -130,8 +130,9 @@ module StochasticDiffEq
          DRI1, DRI1NM, RI1, RI3, RI5, RI6, RDI1WM, RDI2WM, RDI3WM, RDI4WM,
          RS1, RS2,
          PL1WM, PL1WMA,
-         NON,
-         SIEA
+         NON
+
+  export SIEA, SMEA, SIEB, SMEB    
 
   export EulerHeun, LambaEulerHeun
 

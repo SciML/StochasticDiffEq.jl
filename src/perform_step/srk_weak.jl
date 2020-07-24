@@ -1708,9 +1708,12 @@ end
 
 
 # SIE / SME
-@muladd function perform_step!(integrator,cache::SIEAConstantCache,f=integrator.f)
-  @unpack μ,α2 = cache
+@muladd function perform_step!(integrator,cache::SIESMEConstantCache,f=integrator.f)
+  @unpack α1,α2,γ1,λ1,λ2,λ3,µ1,µ2,µ3,µ0,µbar0,λ0,λbar0,ν1,ν2,β2,β3,δ2,δ3 = cache
   @unpack t,dt,uprev,u,W,p = integrator
+
+  W2 = @. (W.dW)^2/integrator.sqdt
+  W3 = @. ν2*(W.dW)^3/dt
 
 
   # compute stage values
@@ -1719,23 +1722,60 @@ end
 
   # k1, g1, g2
   if is_diagonal_noise(integrator.sol.prob)
-    k1 = integrator.f(uprev + k0*dt + g0.*_dW, p, t + dt)
-    g1 = integrator.g(uprev + k0*dt + g0.*_dW, p, t + dt)
-    g2 = integrator.g(uprev + k0*dt + g0.*_dW, p, t + dt)
+    k1 = integrator.f(uprev + λ0*k0*dt + ν1*g0.*W.dW + g0.*W3, p, t + µ0*dt)
+    g1 = integrator.g(uprev + λbar0*k0*dt + β2*g0*integrator.sqdt + β3*g0.*W2, p, t + µbar0*dt)
+    g2 = integrator.g(uprev + λbar0*k0*dt + δ2*g0*integrator.sqdt + δ3*g0.*W2, p, t + µbar0*dt)
 
   else
     # typeof(W.dW) <: Number
-
+    k1 = integrator.f(uprev + λ0*k0*dt + ν1*g0*W.dW + g0*W3, p, t + µ0*dt)
+    g1 = integrator.g(uprev + λbar0*k0*dt + β2*g0*integrator.sqdt + β3*g0*W2, p, t + µbar0*dt)
+    g2 = integrator.g(uprev + λbar0*k0*dt + δ2*g0*integrator.sqdt + δ3*g0*W2, p, t + µbar0*dt)
   end
 
   # add stages together
-  u = uprev + 1//2*(k1+k2)*dt
+  u = uprev + (α1*k0+α2*k1)*dt
 
   # add noise
   if typeof(W.dW) <: Number
-    u += 1//4*(g2p+g2m+2*g1)*_dW + (g2p-g2m)*chi1/integrator.sqdt #(1.1)
+    u += γ1*g0*W.dW + (λ1*W.dW + λ2*integrator.sqdt + λ3*W2)*g1 +  (µ1*W.dW + µ2*integrator.sqdt + µ3*W2)*g2
   else
-
+    u += @. γ1*g0*W.dW + (λ1*W.dW + λ2*integrator.sqdt + λ3*W2)*g1 +  (µ1*W.dW + µ2*integrator.sqdt + µ3*W2)*g2
   end
   integrator.u = u
+end
+
+
+
+# SIE / SME
+@muladd function perform_step!(integrator,cache::SIESMECache,f=integrator.f)
+  @unpack W2,W3,tab,k0,k1,g0,g1,g2,tmpu = cache
+  @unpack α1,α2,γ1,λ1,λ2,λ3,µ1,µ2,µ3,µ0,µbar0,λ0,λbar0,ν1,ν2,β2,β3,δ2,δ3 = cache.tab
+  @unpack t,dt,uprev,u,W,p = integrator
+
+  @. W2 = (W.dW)^2/integrator.sqdt
+  @. W3 = ν2*(W.dW)^3/dt
+
+
+  # compute stage values
+  integrator.f(k0,uprev,p,t)
+  integrator.g(g0,uprev,p,t)
+
+  # k1, g1, g2
+  if is_diagonal_noise(integrator.sol.prob)
+    @.. tmpu = uprev + λ0*k0*dt + ν1*g0*W.dW + g0*W3
+    integrator.f(k1, tmpu, p, t + µ0*dt)
+    @.. tmpu = uprev + λbar0*k0*dt + β2*g0*integrator.sqdt + β3*g0*W2
+    integrator.g(g1,tmpu, p, t + µbar0*dt)
+    @.. tmpu = uprev + λbar0*k0*dt + δ2*g0*integrator.sqdt + δ3*g0*W2
+    integrator.g(g2,tmpu, p, t + µbar0*dt)
+  end
+
+  # add stages together
+  @.. u = uprev + (α1*k0+α2*k1)*dt
+
+  # add noise
+  if is_diagonal_noise(integrator.sol.prob)
+     @. u = u + γ1*g0*W.dW + (λ1*W.dW + λ2*integrator.sqdt + λ3*W2)*g1 +  (µ1*W.dW + µ2*integrator.sqdt + µ3*W2)*g2
+  end
 end
