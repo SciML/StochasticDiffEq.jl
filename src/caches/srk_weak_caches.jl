@@ -1708,3 +1708,325 @@ function alg_cache(alg::NON,prob,u,ΔW,ΔZ,p,rate_prototype,
   NONCache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,gtmp,ktmp,Y100,Y200,Y300,Y400,Y1jajb,Y2jajb,Y3jajb,Y4jajb,tmpu)
 
 end
+
+
+
+# SIE / SME methods
+
+struct SIESMEConstantCache{T,T2} <: StochasticDiffEqConstantCache
+  α1::T
+  α2::T
+
+  γ1::T
+
+  λ1::T
+  λ2::T
+  λ3::T
+
+  µ1::T
+  µ2::T
+  µ3::T
+
+  µ0::T2
+  µbar0::T2
+
+  λ0::T
+  λbar0::T
+
+  ν1::T
+  ν2::T
+
+  β2::T
+  β3::T
+
+  δ2::T
+  δ3::T
+end
+
+function SIEAConstantCache(::Type{T}, ::Type{T2}) where {T,T2}
+
+  α1 = convert(T, 1//2)
+  α2 = convert(T, 1//2)
+
+  γ1 = convert(T, 1//2)
+
+  λ1 = convert(T, 1//4)
+  λ2 = convert(T, -1//4)
+  λ3 = convert(T, 1//4)
+
+  µ1 = convert(T, 1//4)
+  µ2 = convert(T, 1//4)
+  µ3 = convert(T, -1//4)
+
+  µ0 = convert(T2, 1//1)
+  µbar0 = convert(T2, 1//1)
+
+  λ0 = convert(T, 1//1)
+  λbar0 = convert(T, 1//1)
+
+  ν1 = convert(T, 1//1)
+  ν2 = convert(T, 0)
+
+  β2 = convert(T, 1//1)
+  β3 = convert(T, 0)
+
+  δ2 = convert(T, -1//1)
+  δ3 = convert(T, 0)
+
+  SIESMEConstantCache(α1,α2,γ1,λ1,λ2,λ3,µ1,µ2,µ3,µ0,µbar0,λ0,λbar0,ν1,ν2,β2,β3,δ2,δ3)
+end
+
+
+function alg_cache(alg::SIEA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  SIEAConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+end
+
+
+function SMEAConstantCache(::Type{T}, ::Type{T2}) where {T,T2}
+
+  α1 = convert(T, 0)
+  α2 = convert(T, 1//1)
+
+  γ1 = convert(T, 1//2)
+
+  λ1 = convert(T, 1//4)
+  λ2 = convert(T, -1//4)
+  λ3 = convert(T, 1//4)
+
+  µ1 = convert(T, 1//4)
+  µ2 = convert(T, 1//4)
+  µ3 = convert(T, -1//4)
+
+  µ0 = convert(T2, 1//2)
+  µbar0 = convert(T2, 1//1)
+
+  λ0 = convert(T, 1//2)
+  λbar0 = convert(T, 1//1)
+
+  ν1 = convert(T, (2-sqrt(6))/4)
+  ν2 = convert(T, sqrt(6)/12)
+
+  β2 = convert(T, 1//1)
+  β3 = convert(T, 0)
+
+  δ2 = convert(T, -1//1)
+  δ3 = convert(T, 0)
+
+  SIESMEConstantCache(α1,α2,γ1,λ1,λ2,λ3,µ1,µ2,µ3,µ0,µbar0,λ0,λbar0,ν1,ν2,β2,β3,δ2,δ3)
+end
+
+
+function alg_cache(alg::SMEA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  SMEAConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+end
+
+
+
+function SIEBConstantCache(::Type{T}, ::Type{T2}) where {T,T2}
+
+  α1 = convert(T, 1//2)
+  α2 = convert(T, 1//2)
+
+  γ1 = convert(T, -1//5)
+
+  λ1 = convert(T, 3//5)
+  λ2 = convert(T, 3//2)
+  λ3 = convert(T, -1//2)
+
+  µ1 = convert(T, 3//5)
+  µ2 = convert(T, -3//2)
+  µ3 = convert(T, 1//2)
+
+  µ0 = convert(T2, 1//1)
+  µbar0 = convert(T2, 5//12)
+
+  λ0 = convert(T, 1//1)
+  λbar0 = convert(T, 5//12)
+
+  ν1 = convert(T, 1//1)
+  ν2 = convert(T, 0)
+
+  β2 = convert(T, 0)
+  β3 = convert(T, -1//6)
+
+  δ2 = convert(T, 0)
+  δ3 = convert(T, 1//6)
+
+  SIESMEConstantCache(α1,α2,γ1,λ1,λ2,λ3,µ1,µ2,µ3,µ0,µbar0,λ0,λbar0,ν1,ν2,β2,β3,δ2,δ3)
+end
+
+
+function alg_cache(alg::SIEB,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  SIEBConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+end
+
+
+function SMEBConstantCache(::Type{T}, ::Type{T2}) where {T,T2}
+
+  α1 = convert(T, 0)
+  α2 = convert(T, 1//1)
+
+  γ1 = convert(T, -1//5)
+
+  λ1 = convert(T, 3//5)
+  λ2 = convert(T, 3//2)
+  λ3 = convert(T, -1//2)
+
+  µ1 = convert(T, 3//5)
+  µ2 = convert(T, -3//2)
+  µ3 = convert(T, 1//2)
+
+  µ0 = convert(T2, 1//2)
+  µbar0 = convert(T2, 5//12)
+
+  λ0 = convert(T, 1//2)
+  λbar0 = convert(T, 5//12)
+
+  ν1 = convert(T, (2-sqrt(6))/4)
+  ν2 = convert(T, sqrt(6)/12)
+
+  β2 = convert(T, 0)
+  β3 = convert(T, -1//6)
+
+  δ2 = convert(T, 0)
+  δ3 = convert(T, 1//6)
+
+  SIESMEConstantCache(α1,α2,γ1,λ1,λ2,λ3,µ1,µ2,µ3,µ0,µbar0,λ0,λbar0,ν1,ν2,β2,β3,δ2,δ3)
+end
+
+
+function alg_cache(alg::SMEB,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  SMEBConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+end
+
+@cache struct SIESMECache{uType,randType,tabType,rateNoiseType,rateType} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+
+  W2::randType
+  W3::randType
+
+  tab::tabType
+
+  k0::rateType
+  k1::rateType
+
+  g0::rateNoiseType
+  g1::rateNoiseType
+  g2::rateNoiseType
+
+  #tmp1::possibleRateType
+  tmpu::uType
+end
+
+function alg_cache(alg::SIEA,prob,u,ΔW,ΔZ,p,rate_prototype,
+                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
+                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+
+
+  if typeof(ΔW) <: Union{SArray,Number}
+    W2 = copy(ΔW)
+    W3 = copy(ΔW)
+  else
+    W2 = zero(ΔW)
+    W3 = zero(ΔW)
+  end
+
+  k0 = zero(u)
+  k1 = zero(u)
+
+  g0 = zero(noise_rate_prototype)
+  g1 = zero(noise_rate_prototype)
+  g2 = zero(noise_rate_prototype)
+
+  tmpu = zero(u)
+
+  tab = SIEAConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+
+  SIESMECache(u,uprev,W2,W3,tab,k0,k1,g0,g1,g2,tmpu)
+end
+
+
+
+function alg_cache(alg::SMEA,prob,u,ΔW,ΔZ,p,rate_prototype,
+                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
+                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+
+
+  if typeof(ΔW) <: Union{SArray,Number}
+    W2 = copy(ΔW)
+    W3 = copy(ΔW)
+  else
+    W2 = zero(ΔW)
+    W3 = zero(ΔW)
+  end
+
+  k0 = zero(u)
+  k1 = zero(u)
+
+  g0 = zero(noise_rate_prototype)
+  g1 = zero(noise_rate_prototype)
+  g2 = zero(noise_rate_prototype)
+
+  tmpu = zero(u)
+
+  tab = SMEAConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+
+  SIESMECache(u,uprev,W2,W3,tab,k0,k1,g0,g1,g2,tmpu)
+end
+
+
+function alg_cache(alg::SIEB,prob,u,ΔW,ΔZ,p,rate_prototype,
+                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
+                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+
+
+  if typeof(ΔW) <: Union{SArray,Number}
+    W2 = copy(ΔW)
+    W3 = copy(ΔW)
+  else
+    W2 = zero(ΔW)
+    W3 = zero(ΔW)
+  end
+
+  k0 = zero(u)
+  k1 = zero(u)
+
+  g0 = zero(noise_rate_prototype)
+  g1 = zero(noise_rate_prototype)
+  g2 = zero(noise_rate_prototype)
+
+  tmpu = zero(u)
+
+  tab = SIEBConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+
+  SIESMECache(u,uprev,W2,W3,tab,k0,k1,g0,g1,g2,tmpu)
+end
+
+
+function alg_cache(alg::SMEB,prob,u,ΔW,ΔZ,p,rate_prototype,
+                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
+                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+
+
+  if typeof(ΔW) <: Union{SArray,Number}
+    W2 = copy(ΔW)
+    W3 = copy(ΔW)
+  else
+    W2 = zero(ΔW)
+    W3 = zero(ΔW)
+  end
+
+  k0 = zero(u)
+  k1 = zero(u)
+
+  g0 = zero(noise_rate_prototype)
+  g1 = zero(noise_rate_prototype)
+  g2 = zero(noise_rate_prototype)
+
+  tmpu = zero(u)
+
+  tab = SMEBConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+
+  SIESMECache(u,uprev,W2,W3,tab,k0,k1,g0,g1,g2,tmpu)
+end

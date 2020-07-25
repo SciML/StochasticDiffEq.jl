@@ -132,6 +132,8 @@ module StochasticDiffEq
          PL1WM, PL1WMA,
          NON
 
+  export SIEA, SMEA, SIEB, SMEB    
+
   export EulerHeun, LambaEulerHeun
 
   export SimplifiedEM

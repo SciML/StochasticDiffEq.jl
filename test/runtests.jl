@@ -92,6 +92,10 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
       @time @safetestset "Weak Stratonovich Tests" begin include("weak_convergence/weak_strat.jl") end
   end
 
+  if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence5")
+    @time @safetestset "SIE SME weak Tests" begin include("weak_convergence/SIE_SME.jl") end
+  end
+
   if !is_APPVEYOR && GROUP == "WeakAdaptive"
     activate_gpu_env()
     @time @safetestset "Weak adaptive step size Brusselator " begin include("gpu/sde_weak_brusselator_adaptive.jl") end
