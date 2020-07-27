@@ -95,6 +95,20 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 
 println("NON:", m)
 
+numtraj = Int(1e5)
+seed = 10
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
+_solutions = @time generate_weak_solutions(ensemble_prob, COM(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]+0.5*p[2]^2))) for sol in _solutions]
+m = log(errors[end]/errors[2])/log(dts[end]/dts[2])
+@test abs(m-2) < 0.3
+
+println("COM:", m)
+
+
 """
  Test Scalar SDEs (iip)
 """
@@ -157,6 +171,20 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test abs(m-2) < 0.3
 
 println("NON:", m)
+
+numtraj = Int(1e5)
+seed = 10
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
+_solutions = @time generate_weak_solutions(ensemble_prob, COM(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]+0.5*p[2]^2))) for sol in _solutions]
+m = log(errors[end]/errors[2])/log(dts[end]/dts[2])
+@test abs(m-2) < 0.3
+
+println("COM:", m)
+
 
 """
  Test non-commutative noise SDEs (iip)
@@ -226,6 +254,19 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 
 println("NON:", m)
 
+numtraj = Int(5e5)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
+_solutions = @time generate_weak_solutions(ensemble_prob, COM(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(2)) for sol in _solutions]
+m = log(errors[end]/errors[2])/log(dts[end]/dts[2])
+@test abs(m-2) < 0.3 # tests are passing; problem might be not hard enough..
+
+println("COM:", m)
+
 
 """
  Test Diagonal noise SDEs (iip)
@@ -293,3 +334,17 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test abs(m-2) < 0.3
 
 println("NON:", m)
+
+
+numtraj = Int(6e4)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
+_solutions = @time generate_weak_solutions(ensemble_prob, COM(), dts, numtraj, ensemblealg=EnsembleThreads())
+
+errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
+@test abs(m-2) < 0.3
+
+println("COM:", m)

@@ -1798,29 +1798,28 @@ function alg_cache(alg::COM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype
 end
 
 
-@cache struct COMCache{uType,randType,MType1,tabType,rateNoiseType,rateType} <: StochasticDiffEqMutableCache
+@cache struct COMCache{uType,randType,tabType,rateNoiseType,rateType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
 
   _dW::randType
-  Ihat2::MType1
 
   tab::tabType
 
   gtmp::rateNoiseType
   ktmp::rateType
 
-  Y100::uType
-  Y200::uType
-  Y300::uType
-  Y400::uType
-  Y1jajb::Array{uType}
-  Y2jajb::Array{uType}
-  Y3jajb::Array{uType}
-  Y4jajb::Array{uType}
+  Y10::uType
+  Y20::uType
+  Y30::uType
+  Y40::uType
+  Y1j::rateNoiseType
+  Y2j::rateNoiseType
+  Y3j::rateNoiseType
+  Y4j::rateNoiseType
 
   tmpu::uType
-  #tmpg::rateNoiseType
+  tmpu2::uType
 end
 
 
@@ -1833,24 +1832,24 @@ function alg_cache(alg::COM,prob,u,ΔW,ΔZ,p,rate_prototype,
     _dW = zero(ΔW)
   end
   m = length(ΔW)
-  Ihat2 = zeros(eltype(ΔW), m, m)
   tab = COMConstantCache(real(uBottomEltypeNoUnits))
 
   gtmp = zero(noise_rate_prototype)
   ktmp = zero(rate_prototype)
 
-  Y100 = zero(u)
-  Y200 = zero(u)
-  Y300 = zero(u)
-  Y400 = zero(u)
-  Y1jajb = [zero(u) for ja=1:m, jb=1:m]
-  Y2jajb = [zero(u) for ja=1:m, jb=1:m]
-  Y3jajb = [zero(u) for ja=1:m, jb=1:m]
-  Y4jajb = [zero(u) for ja=1:m, jb=1:m]
+  Y10 = zero(u)
+  Y20 = zero(u)
+  Y30 = zero(u)
+  Y40 = zero(u)
+  Y1j = zero(noise_rate_prototype)
+  Y2j = zero(noise_rate_prototype)
+  Y3j = zero(noise_rate_prototype)
+  Y4j = zero(noise_rate_prototype)
 
   tmpu = zero(u)
+  tmpu2 = zero(u)
 
-  COMCache(u,uprev,_dW,Ihat2,tab,gtmp,ktmp,Y100,Y200,Y300,Y400,Y1jajb,Y2jajb,Y3jajb,Y4jajb,tmpu)
+  COMCache(u,uprev,_dW,tab,gtmp,ktmp,Y10,Y20,Y30,Y40,Y1j,Y2j,Y3j,Y4j,tmpu,tmpu2)
 end
 
 
