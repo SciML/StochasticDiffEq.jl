@@ -323,6 +323,14 @@ DOI:10.1016/j.cam.2006.06.006
 """
 struct NON <: StochasticDiffEqAlgorithm end
 
+"""
+Komori, Y., Weak order stochastic Runge–Kutta methods for commutative stochastic
+differential equations, Journal of Computational and Applied Mathematics 203,
+pp. 57 – 79 (2007)
+DOI:10.1016/j.cam.2006.03.010
+"""
+struct COM <: StochasticDiffEqAlgorithm end
+
 
 
 """
