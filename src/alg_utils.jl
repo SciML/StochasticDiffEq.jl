@@ -230,10 +230,10 @@ OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgo
 
 OrdinaryDiffEq.get_current_alg_autodiff(alg::StochasticDiffEqCompositeAlgorithm, cache) = OrdinaryDiffEq.alg_autodiff(alg.algs[cache.current])
 
-OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = CS
-OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = CS
-OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqJumpNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = CS
-OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = CS
+OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = Val(CS)
+OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = Val(CS)
+OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqJumpNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = Val(CS)
+OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = Val(CS)
 
 alg_mass_matrix_compatible(alg::StochasticDiffEqAlgorithm) = false
 
