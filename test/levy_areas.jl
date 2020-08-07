@@ -5,12 +5,14 @@ function true_general_function(dt,dW,C,m)
   # (1) Choose p
   sum_dW² = dot(dW,dW)
   M = div(m*(m-1),2)
-  p = Int(floor(sqrt(M/(12*dt))*sqrt(m + 4*sum_dW²/dt)/(C*π) + 1))
-
-  # initialze Gp from distribution N(0, I_M)
-  Gp₁ .= randn(M)
-
+  p = Int(floor(sqrt(M/(12*dt*C))*sqrt(m + 4*sum_dW²/dt)/π + 1)) #
   @show p
+  # Alternative choice of p which on average results in larger values:
+  p = Int(floor(sqrt(5*m*M/(12*dt*C))/π+1))
+  @show p
+  # initialze Gp from distribution N(0, I_M)
+  Gp₁ = randn(M)
+
 
   # compute J_{ij}^p
   Jp = 1//2 .* dW .* dW'
@@ -49,7 +51,7 @@ end
 seed = 10
 Random.seed!(seed)
 
-m = 2
+m = 5
 W = WienerProcess(0.0,zeros(m),nothing)
 
 dt = 0.1
