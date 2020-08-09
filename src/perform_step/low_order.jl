@@ -303,7 +303,7 @@ end
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
       WikJ = WikJ .- 1//2 .* dt
     else
-      WikJ -= 1//2 .* dt .* Eye{eltype(dW)}(length(dW))
+      WikJ -= 1//2 .* UniformScaling(dt)
     end
   end
 
@@ -372,7 +372,7 @@ end
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
       @.. WikJ -= 1//2*dt
     else
-      WikJ .-= 1//2 .* dt .* Eye{eltype(dW)}(length(dW))
+      WikJ -= 1//2 .* UniformScaling(dt)
     end
   end
 
