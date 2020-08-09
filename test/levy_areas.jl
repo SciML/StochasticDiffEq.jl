@@ -7,7 +7,7 @@ function true_general_function(dt,dW,C,m)
   p = Int(floor(sqrt(M/(12*dt*C))*sqrt(m + 4*sum_dW²/dt)/π + 1))
   # Alternative choice of p which on average results in larger values:
   #p = Int(floor(sqrt(5*m*M/(12*dt*C))/π+1))
-
+  #@show p
   # a_p below (22) for tail approx.
   ap = pi^2/6
   for r=1:p
@@ -51,7 +51,7 @@ function true_general_function(dt,dW,C,m)
   prefac = (dt/(2*π))*sqrt(ap)
   Atail = prefac*SqΣinf*Gp₁ # check influence of op3 here!!
 
-  @show Atail
+  #@show Atail
 
   # compute Atilde
   Ap = zeros(M)
@@ -92,9 +92,9 @@ function true_general_function(dt,dW,C,m)
   # compute J_{ij}^p
   Jp_com = vec(1//2 .* vec(dW) .* vec(dW)')
 
-  Jp =  Jp_com + op3*(Ap - Atail)
+  Jp =  Jp_com + op3*(Ap + Atail)
 
-  @show op3*Atail
+  #@show op3*Atail
 
   return reshape(Jp, (m, m)), reshape((op3*Ap), (m, m)), reshape(op3*Atail, (m, m))
 end
@@ -102,7 +102,7 @@ end
 seed = 10
 Random.seed!(seed)
 
-m = 2
+m = 10
 W = WienerProcess(0.0,zeros(m),nothing)
 
 dt = 0.1
@@ -162,5 +162,5 @@ Wikgeneraloop  = StochasticDiffEq.WikJGeneral_oop(W.dW)
 Random.seed!(seed)
 true_noncom = true_general_function(dt, W.dW, 1.0, m)
 
-@test Wikgeneral.WikJ == true_noncom[1]
-@test Wikgeneral.WikJ2 == -true_noncom[3]
+@test isapprox(Wikgeneral.WikJ, true_noncom[1], atol=1e-15)
+@test isapprox(Wikgeneral.WikJ2, true_noncom[3], atol=1e-15)
