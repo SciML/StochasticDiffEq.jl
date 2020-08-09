@@ -307,7 +307,7 @@ function get_iterated_I!(dt, dW, Wik::WikJGeneral_oop, C=1)
     end
 
     WikJ -= 1//2*(dW*Aᵢ' - Aᵢ*dW')
-    WikJ += convert(eltWikJ, sqrt(𝑎ₚ)*dt/π)*WikJ2
+    WikJ -= convert(eltWikJ, sqrt(𝑎ₚ)*dt/π)*WikJ2 #-= to agree with operator version from Wiktorssson
     WikJ
 end
 
@@ -421,7 +421,7 @@ function get_iterated_I!(dt, dW, Wik::WikJGeneral_iip, C=1)
     end
     mul!(WikJ3, dW, Aᵢ')
     @.. WikJ = WikJ - 1//2*(WikJ3 - WikJ3')
-    @.. WikJ2 *= (sqrt(𝑎ₚ)*dt/π)
+    @.. WikJ2 *= -(sqrt(𝑎ₚ)*dt/π) # minus sign needed to agree with operator version
     #@show WikJ, (sqrt(𝑎ₚ)*dt/π)*WikJ2
     @.. WikJ = WikJ + WikJ2
     return nothing
