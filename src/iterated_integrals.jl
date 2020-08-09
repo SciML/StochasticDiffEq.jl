@@ -1,3 +1,83 @@
+"""
+All stochastic iterated integrals are written in Stratonovich sense as indicated
+by the J.
+"""
+
+
+# Kloeden, Platen, Wright
+abstract type AbstractKPWJ end
+
+struct KPWJ_oop <: AbstractKPWJ end
+
+mutable struct KPWJ_iip{WikAType, WikJType, randType} <: AbstractKPWJ
+    WikA::WikAType
+    WikJ::WikJType
+    ζ::randType
+    η::randType
+    kronprod1::WikAType
+    kronprod2::WikAType
+end
+
+function KPWJ_iip(ΔW)
+    WikJ = false .* vec(ΔW) .* vec(ΔW)'
+    WikA = false .* vec(ΔW) .* vec(ΔW)'
+
+    ζ = zero(ΔW)
+    η = zero(ΔW)
+
+    kronprod1 = zero(WikA)
+    kronprod2 = zero(WikA)
+
+    KPWJ_iip(WikA,WikJ,ζ,η,kronprod1,kronprod2)
+end
+
+
+function get_iterated_I!(dt, dW, Wik::KPWJ_oop, n=100)
+    m  = length(dW)
+
+    WikJ = vec(dW) .* vec(dW)'
+    WikA = zero(WikJ)
+
+    for k in 1:n
+      ζ = randn(eltype(dW),m)
+      η = randn(eltype(dW),m)
+      kronprod1 = vec(ζ) .* vec(η+convert(eltype(dW),sqrt(2/dt))*dW)'
+      kronprod2 = vec(η+convert(eltype(dW),sqrt(2/dt))*dW) .* vec(ζ)'
+
+      WikA += (kronprod1 - kronprod2)/k
+    end
+
+    WikA *=  dt/(2*π)
+    WikJ = WikJ/2 + WikA  # Ito: (WikJ-UniformScaling(dt))/2 + WikA
+    return WikJ
+end
+
+
+function get_iterated_I!(dt, dW, Wik::KPWJ_iip, n=100)
+    m  = length(dW)
+    @unpack WikA,WikJ,ζ,η,kronprod1,kronprod2 = Wik
+
+    mul!(WikJ,vec(dW),vec(dW)')
+    fill!(WikA, zero(eltype(WikJ)))
+
+    for k in 1:n
+      randn!(ζ)
+      randn!(η)
+      mul!(kronprod1,vec(ζ),vec(η+convert(eltype(dW),sqrt(2/dt))*dW)')
+      mul!(kronprod2,vec(η+convert(eltype(dW),sqrt(2/dt))*dW),vec(ζ)')
+
+      @.. WikA = WikA + (kronprod1 - kronprod2)/k
+    end
+
+    @.. WikA = WikA*dt/(2*π)
+    @.. WikJ = WikJ/2 + WikA  # Ito: (WikJ-UniformScaling(dt))/2 + WikA
+    return nothing
+end
+
+
+
+# Wiktorssson Approximation
+
 abstract type AbstractWikJ end
 abstract type AbstractWikJDiagonal <: AbstractWikJ end
 abstract type AbstractWikJCommute <: AbstractWikJ end
