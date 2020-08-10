@@ -164,3 +164,15 @@ true_noncom = true_general_function(dt, W.dW, 1.0, m)
 
 @test isapprox(Wikgeneral.WikJ, true_noncom[1], atol=1e-15)
 @test isapprox(Wikgeneral.WikJ2, true_noncom[3], atol=1e-15)
+
+
+# Test the relations given in Wiktorsson Eq.(2.1)
+Aij = true_noncom[2]+true_noncom[3]
+Aii = [Aij[i, i] for i in 1:m]
+Jii = [true_noncom[1][i, i] for i in 1:m]
+
+@test isapprox(true_noncom[1] + true_noncom[1]', 2*true_commute)
+@test isapprox(true_noncom[1], true_commute + Aij)
+@test isapprox(Aij, -Aij', atol=1e-15)
+@test isapprox(Jii, 1//2 .* W.dW .* W.dW, atol=1e-15)
+@test isapprox(Aii, zeros(m), atol=1e-15)
