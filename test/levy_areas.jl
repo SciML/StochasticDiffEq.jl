@@ -176,3 +176,12 @@ Jii = [true_noncom[1][i, i] for i in 1:m]
 @test isapprox(Aij, -Aij', atol=1e-15)
 @test isapprox(Jii, 1//2 .* W.dW .* W.dW, atol=1e-15)
 @test isapprox(Aii, zeros(m), atol=1e-15)
+
+
+# .. for KPW scheme
+Aii = [KPWdiagiip.WikA[i, i] for i in 1:m]
+@test isapprox(KPWdiagiip.WikJ + KPWdiagiip.WikJ', 2*true_commute)
+@test isapprox(KPWdiagiip.WikJ, true_commute + KPWdiagiip.WikA)
+@test isapprox(KPWdiagiip.WikA, -KPWdiagiip.WikA', atol=1e-15)
+@test isapprox(KPWdiagonly, 1//2 .* W.dW .* W.dW, atol=1e-15)
+@test isapprox(Aii, zeros(m), atol=1e-15)
