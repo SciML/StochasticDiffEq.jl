@@ -95,6 +95,8 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 
 println("NON:", m)
 
+dts = 1 .//2 .^(4:-1:0)
+
 numtraj = Int(1e5)
 seed = 10
 Random.seed!(seed)
@@ -103,21 +105,21 @@ seeds = rand(UInt, numtraj)
 _solutions = @time generate_weak_solutions(ensemble_prob, COM(), dts, numtraj, ensemblealg=EnsembleThreads())
 
 errors = [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]+0.5*p[2]^2))) for sol in _solutions]
-m = log(errors[end]/errors[2])/log(dts[end]/dts[2])
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test abs(m-2) < 0.3
 
 println("COM:", m)
 
-
-numtraj = Int(1e5)
-seed = 10
+dts = 1 .//2 .^(5:-1:0)
+numtraj = Int(5e5)
+seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
 _solutions = @time generate_weak_solutions(ensemble_prob, NON2(), dts, numtraj, ensemblealg=EnsembleThreads())
 
 errors = [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]+0.5*p[2]^2))) for sol in _solutions]
-m = log(errors[end]/errors[2])/log(dts[end]/dts[2])
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test abs(m-2) < 0.3
 
 println("NON2:", m)
@@ -132,6 +134,7 @@ println("NON2:", m)
 f!(du,u,p,t) = du[1] = p[1]*u[1]
 g!(du,u,p,t) = du[1] = p[2]*u[1]
 
+numtraj = Int(1e5)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -186,6 +189,7 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 
 println("NON:", m)
 
+dts = 1 .//2 .^(4:-1:0)
 numtraj = Int(1e5)
 seed = 10
 Random.seed!(seed)
@@ -194,23 +198,25 @@ seeds = rand(UInt, numtraj)
 _solutions = @time generate_weak_solutions(ensemble_prob, COM(), dts, numtraj, ensemblealg=EnsembleThreads())
 
 errors = [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]+0.5*p[2]^2))) for sol in _solutions]
-m = log(errors[end]/errors[2])/log(dts[end]/dts[2])
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test abs(m-2) < 0.3
 
 println("COM:", m)
 
-numtraj = Int(1e5)
-seed = 10
+dts = 1 .//2 .^(5:-1:0)
+numtraj = Int(5e5)
+seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
 _solutions = @time generate_weak_solutions(ensemble_prob, NON2(), dts, numtraj, ensemblealg=EnsembleThreads())
 
 errors = [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]+0.5*p[2]^2))) for sol in _solutions]
-m = log(errors[end]/errors[2])/log(dts[end]/dts[2])
+m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test abs(m-2) < 0.3
 
 println("NON2:", m)
+
 
 """
  Test Diagonal noise SDEs (iip)
@@ -266,7 +272,7 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 println("RS2:", m)
 
 
-numtraj = Int(1e6)
+numtraj = Int(1e5)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -278,7 +284,6 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 @test abs(m-2) < 0.3
 
 println("NON:", m)
-
 
 numtraj = Int(6e4)
 seed = 100
@@ -294,7 +299,7 @@ m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
 println("COM:", m)
 
 
-numtraj = Int(6e4)
+numtraj = Int(1e5)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)

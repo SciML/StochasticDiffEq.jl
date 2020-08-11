@@ -2003,7 +2003,7 @@ end
   @unpack t,dt,uprev,u,W,p = integrator
 
   m = length(W.dW)
-  _dW = W.dW
+  #_dW = W.dW
 
   # define three-point distributed random variables
   sq3dt = sqrt(3*dt)
@@ -2014,10 +2014,10 @@ end
     # define two-point distributed random variables
     _dZ = map(x -> calc_twopoint_random(integrator.sqdt, x),  W.dZ)
     Ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
-    for k = 1:m
-      for l = 1:k-1
-        Ihat2[k, l] = _dW[l]*_dZ[k]/integrator.sqdt
-        Ihat2[l, k] = -_dW[k]*_dZ[l]/integrator.sqdt
+    for j = 1:m
+      for l = 1:j-1
+        Ihat2[j, l] = -_dZ[j]*_dW[l]/integrator.sqdt
+        Ihat2[l, j] = _dW[l]*_dZ[j]/integrator.sqdt
       end
     end
   end
@@ -2025,6 +2025,9 @@ end
   # stage 1
   ktmp = integrator.f(uprev,p,t)
   gtmp = integrator.g(uprev,p,t)
+
+  # store gtmp for stage values Y^(k(j)j)
+  gtmp1 = copy(gtmp)
 
   Y10 = ktmp*dt
 
@@ -2140,7 +2143,14 @@ end
     else
       for j = 1:m
         u += @. cj1*Y1j[:,j] + cj2*Y2j[:,j] + cj3*Y3j[:,j] + cj4*Y4j[:,j]
-        #add stage values for non-commutative processes
+        #add stage values for non-commutative processes, Y3^(k(j)j) and Y4^(k(j)j)
+        for k = 1:m
+          η2 = @view Ihat2[k,:]
+          tmp = gtmp1*η2/(4*γ)
+          Y3kj = integrator.sqdt*integrator.g(uprev + tmp,p,t)
+          Y4kj = integrator.sqdt*integrator.g(uprev - tmp,p,t)
+          u += @. γ*Y3kj[:,k] - γ*Y4kj[:,k]
+        end
       end
     end
   end
@@ -2148,7 +2158,7 @@ end
 end
 
 @muladd function perform_step!(integrator,cache::NON2Cache,f=integrator.f)
-  @unpack _dW,chi1,Ihat2,tab,gtmp,gtmp1,ktmp,Y10,Y20,Y30,Y40,Y1j,Y2j,Y3j,Y4j,tmpu,tmpu2 = cache
+  @unpack _dW,_dZ, chi1,Ihat2,tab,gtmp,gtmp1,ktmp,Y10,Y20,Y30,Y40,Y1j,Y2j,Y3j,Y4j,tmpu,tmpu2 = cache
   @unpack c01,c02,c03,c04,cj1,cj2,cj3,cj4,a0021,a0032,a0043,aj021,aj041,a0j21,a0j31,a0j32,a0j41,ajj21,ajj31,ajj32,ajj41,ajj42,ajj43,ajl31,ajl32,ajl41,ajl42,γ,NORMAL_ONESIX_QUANTILE = cache.tab
   @unpack t,dt,uprev,u,W,p = integrator
 
@@ -2163,10 +2173,10 @@ end
   if !(typeof(W.dW) <: Number)
     # define two-point distributed random variables
     calc_twopoint_random!(_dZ,integrator.sqdt,W.dZ)
-    for k = 1:m
-      for l = 1:k-1
-       Ihat2[k, l] = _dW[l]*_dZ[k]/integrator.sqdt
-       Ihat2[l, k] = -_dW[k]*_dZ[l]/integrator.sqdt
+    for j = 1:m
+      for l = 1:j-1
+        Ihat2[j, l] = -_dZ[j]*_dW[l]/integrator.sqdt
+        Ihat2[l, j] = _dW[l]*_dZ[j]/integrator.sqdt
       end
     end
   end
@@ -2175,6 +2185,8 @@ end
   # stage 1
   integrator.f(ktmp,uprev,p,t)
   integrator.g(gtmp,uprev,p,t)
+
+  copyto!(gtmp1, gtmp)
 
   @.. Y10 = ktmp*dt
 
@@ -2306,6 +2318,18 @@ end
       @.. u = u + cj1*Y1jj + cj2*Y2jj + cj3*Y3jj + cj4*Y4jj
 
       #add stage values for non-commutative processes
+      for k = 1:m
+        η2 = @view Ihat2[k,:]
+        gtmpk = @view gtmp[:,k]
+        mul!(tmpu2,gtmp1,η2)
+        @.. tmpu2 = tmpu2/(4*γ)
+        @.. tmpu = uprev + tmpu2
+        integrator.g(gtmp,tmpu,p,t)
+        @.. u = u + γ*integrator.sqdt*gtmpk
+        @.. tmpu = uprev - tmpu2
+        integrator.g(gtmp,tmpu,p,t)
+        @.. u = u - @. γ*integrator.sqdt*gtmpk
+      end
     end
   end
 end

@@ -1956,8 +1956,10 @@ end
   uprev::uType
 
   _dW::randType
+  _dZ::randType
   chi1::randType
   Ihat2::MType1
+
   tab::tabType
 
   gtmp::rateNoiseType
@@ -1992,7 +1994,7 @@ function alg_cache(alg::NON2,prob,u,ΔW,ΔZ,p,rate_prototype,
   end
   m = length(ΔW)
   Ihat2 = zeros(eltype(ΔW), m, m)
-  tab = COMConstantCache(real(uBottomEltypeNoUnits))
+  tab = NON2ConstantCache(real(uBottomEltypeNoUnits))
 
   gtmp = zero(noise_rate_prototype)
   gtmp1 = zero(noise_rate_prototype)
@@ -2010,7 +2012,7 @@ function alg_cache(alg::NON2,prob,u,ΔW,ΔZ,p,rate_prototype,
   tmpu = zero(u)
   tmpu2 = zero(u)
 
-  NON2Cache(u,uprev,_dW,chi1,Ihat2,tab,gtmp,gtmp1,ktmp,Y10,Y20,Y30,Y40,Y1j,Y2j,Y3j,Y4j,tmpu,tmpu2)
+  NON2Cache(u,uprev,_dW,_dZ,chi1,Ihat2,tab,gtmp,gtmp1,ktmp,Y10,Y20,Y30,Y40,Y1j,Y2j,Y3j,Y4j,tmpu,tmpu2)
 end
 
 
