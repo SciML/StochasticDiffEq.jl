@@ -84,6 +84,7 @@ alg_order(alg::PL1WMA) = 1//1
 
 alg_order(alg::NON) = 1//1
 alg_order(alg::COM) = 1//1
+alg_order(alg::NON2) = 1//1
 
 alg_order(alg::SIEA) = 1//1
 alg_order(alg::SMEA) = 1//1
@@ -119,6 +120,7 @@ alg_interpretation(alg::RS2) = :Stratonovich
 
 alg_interpretation(alg::NON) = :Stratonovich
 alg_interpretation(alg::COM) = :Stratonovich
+alg_interpretation(alg::NON2) = :Stratonovich
 
 alg_compatible(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = true
 alg_compatible(prob,alg::StochasticDiffEqAlgorithm) = false
@@ -157,6 +159,7 @@ alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::PL1WM) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::PL1WMA) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::NON) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::COM) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::NON2) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SIEA) = is_diagonal_noise(prob)
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SMEA) = is_diagonal_noise(prob)
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SIEB) = is_diagonal_noise(prob)
@@ -225,6 +228,7 @@ alg_needs_extra_process(alg::RS1) = true
 alg_needs_extra_process(alg::RS2) = true
 alg_needs_extra_process(alg::PL1WM) = true
 alg_needs_extra_process(alg::NON) = true
+alg_needs_extra_process(alg::NON2) = true
 
 OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
 OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD

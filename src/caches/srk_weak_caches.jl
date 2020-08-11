@@ -1853,6 +1853,172 @@ function alg_cache(alg::COM,prob,u,ΔW,ΔZ,p,rate_prototype,
 end
 
 
+# NON2
+struct NON2ConstantCache{T} <: StochasticDiffEqConstantCache
+  c01::T
+  c02::T
+  c03::T
+  c04::T
+
+  cj1::T
+  cj2::T
+  cj3::T
+  cj4::T
+
+  a0021::T
+  a0032::T
+  a0043::T
+
+  aj021::T
+  aj041::T
+
+  a0j21::T
+  a0j31::T
+  a0j32::T
+  a0j41::T
+
+  ajj21::T
+  ajj31::T
+  ajj32::T
+  ajj41::T
+  ajj42::T
+  ajj43::T
+
+  ajl31::T
+  ajl32::T
+  ajl41::T
+  ajl42::T
+
+
+  # for non-commuting terms
+  #ckj3::T
+  #ckj4::T
+  #akjjl32::T
+  #akjjl42::T
+  # are all expressed in terms of γ
+  γ::T
+
+  #quantile(Normal(),1/6)
+  NORMAL_ONESIX_QUANTILE::T
+end
+
+
+function NON2ConstantCache(T::Type)
+  c01 = convert(T, 1//6)
+  c02 = convert(T, 1//3)
+  c03 = convert(T, 1//3)
+  c04 = convert(T, 1//6)
+
+  cj1 = convert(T, 1//8)
+  cj2 = convert(T, 3//8)
+  cj3 = convert(T, 3//8)
+  cj4 = convert(T, 1//8)
+
+  a0021 = convert(T, 1//2)
+  a0032 = convert(T, 1//2)
+  a0043 = convert(T, 1)
+
+  aj021 = convert(T, 2)
+  aj041 = convert(T, -2)
+
+  a0j21 = convert(T, 1)
+  a0j31 = convert(T, -9//8)
+  a0j32 = convert(T, 9//8)
+  a0j41 = convert(T, 1)
+
+  ajj21 = convert(T, 2//3)
+  ajj31 = convert(T, 1//12)
+  ajj32 = convert(T, 1//4)
+  ajj41 = convert(T, -5//4)
+  ajj42 = convert(T, 1//4)
+  ajj43 = convert(T, 2)
+
+  ajl31 = convert(T, 1//4)
+  ajl32 = convert(T, 3//4)
+  ajl41 = convert(T, 1//4)
+  ajl42 = convert(T, 3//4)
+
+  γ = convert(T, 1)
+
+  NORMAL_ONESIX_QUANTILE = convert(T,-0.9674215661017014)
+
+  NON2ConstantCache(c01,c02,c03,c04,cj1,cj2,cj3,cj4,a0021,a0032,a0043,aj021,aj041,a0j21,a0j31,a0j32,a0j41,ajj21,ajj31,ajj32,ajj41,ajj42,ajj43,ajl31,ajl32,ajl41,ajl42,γ,NORMAL_ONESIX_QUANTILE)
+end
+
+
+function alg_cache(alg::NON2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+  NON2ConstantCache(real(uBottomEltypeNoUnits))
+end
+
+
+@cache struct NON2Cache{uType,randType,MType1,tabType,rateNoiseType,rateType} <: StochasticDiffEqMutableCache
+  u::uType
+  uprev::uType
+
+  _dW::randType
+  chi1::randType
+  Ihat2::MType1
+  tab::tabType
+
+  gtmp::rateNoiseType
+  gtmp1::rateNoiseType
+  ktmp::rateType
+
+  Y10::uType
+  Y20::uType
+  Y30::uType
+  Y40::uType
+  Y1j::rateNoiseType
+  Y2j::rateNoiseType
+  Y3j::rateNoiseType
+  Y4j::rateNoiseType
+
+  tmpu::uType
+  tmpu2::uType
+end
+
+
+function alg_cache(alg::NON2,prob,u,ΔW,ΔZ,p,rate_prototype,
+                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
+                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+  if typeof(ΔW) <: Union{SArray,Number}
+    _dW = copy(ΔW)
+    _dZ = copy(ΔW)
+    chi1 = copy(ΔW)
+  else
+    _dW = zero(ΔW)
+    _dZ = zero(ΔW)
+    chi1 = zero(ΔW)
+  end
+  m = length(ΔW)
+  Ihat2 = zeros(eltype(ΔW), m, m)
+  tab = COMConstantCache(real(uBottomEltypeNoUnits))
+
+  gtmp = zero(noise_rate_prototype)
+  gtmp1 = zero(noise_rate_prototype)
+  ktmp = zero(rate_prototype)
+
+  Y10 = zero(u)
+  Y20 = zero(u)
+  Y30 = zero(u)
+  Y40 = zero(u)
+  Y1j = zero(noise_rate_prototype)
+  Y2j = zero(noise_rate_prototype)
+  Y3j = zero(noise_rate_prototype)
+  Y4j = zero(noise_rate_prototype)
+
+  tmpu = zero(u)
+  tmpu2 = zero(u)
+
+  NON2Cache(u,uprev,_dW,chi1,Ihat2,tab,gtmp,gtmp1,ktmp,Y10,Y20,Y30,Y40,Y1j,Y2j,Y3j,Y4j,tmpu,tmpu2)
+end
+
+
+
+
+
+
+
 
 # SIE / SME methods
 

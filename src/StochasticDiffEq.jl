@@ -130,9 +130,9 @@ module StochasticDiffEq
          DRI1, DRI1NM, RI1, RI3, RI5, RI6, RDI1WM, RDI2WM, RDI3WM, RDI4WM,
          RS1, RS2,
          PL1WM, PL1WMA,
-         NON, COM
+         NON, COM, NON2
 
-  export SIEA, SMEA, SIEB, SMEB    
+  export SIEA, SMEA, SIEB, SMEB
 
   export EulerHeun, LambaEulerHeun
 
@@ -162,6 +162,6 @@ module StochasticDiffEq
          constructDRI1, constructRI1, constructRI3, constructRI5, constructRI6,
          constructRDI1WM, constructRDI2WM, constructRDI3WM, constructRDI4WM,
          constructRS1, constructRS2,
-         constructNON
+         constructNON, constructNON2
 
 end # module
