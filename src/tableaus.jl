@@ -1265,8 +1265,6 @@ Holds the Butcher tableau for Komori's NON method. (second weak order in Straton
 """
 
 
-
-
 struct KomoriNON{T} <: Tableau
   c0::Vector{T}
   cj::Vector{T}
@@ -1339,7 +1337,13 @@ end
 
 
 function checkNONOrder(NON;tol=1e-6)
-  @unpack c0,cj,cjl,clj,α00,α0j,αj0,αjj,αjl,αjljj,αljjl = NON
+  if typeof(NON) <: KomoriNON
+    @unpack c0,cj,cjl,clj,α00,α0j,αj0,αjj,αjl,αjljj,αljjl = NON
+  elseif typeof(NON) <: KomoriNON2
+    @unpack c0,cj,ckj,α00,α0j,αj0,αjj,αjl,αkjjl = NON
+  else
+    @unpack c0,cj,α00,α0j,αj0,αjj,αjl = NON
+  end
   e = ones(size(c0))
 
   conditions = Vector{Bool}(undef, 44) # 38 conditions for second order, 6 extra conditions for fourth deterministic order, 44 in total
@@ -1377,13 +1381,22 @@ function checkNONOrder(NON;tol=1e-6)
   conditions[30] = abs(dot(cj,αjl*(αjj*e))-1/4)<tol
   conditions[31] = abs(dot(cj,αjl*(αjl*e))-0)<tol
   conditions[32] = abs(dot(cj,(αjj*e).*(αjl*e))-1/4)<tol
-  conditions[33] = abs(dot(clj,e)-0)<tol
-  conditions[34] = abs(dot(cjl,e)-0)<tol
-  conditions[35] = abs(dot(clj,αljjl*e)-1/2)<tol
-  conditions[36] = abs(dot(cjl,αjljj*e)+1/2)<tol
-  conditions[37] = abs(dot(clj.*(αljjl*e),αljjl*(αjljj*e))-0)<tol
-  conditions[38] = abs(dot(clj,(αljjl*e).^2)-0)<tol
 
+  if typeof(NON) <: KomoriNON
+    conditions[33] = abs(dot(clj,e)-0)<tol
+    conditions[34] = abs(dot(cjl,e)-0)<tol
+    conditions[35] = abs(dot(clj,αljjl*e)-1/2)<tol
+    conditions[36] = abs(dot(cjl,αjljj*e)+1/2)<tol
+    conditions[37] = abs(dot(clj.*(αljjl*e),αljjl*(αjljj*e))-0)<tol
+    conditions[38] = abs(dot(clj,(αljjl*e).^2)-0)<tol
+  elseif typeof(NON) <: KomoriNON2
+    conditions[33] = abs(ckj[4]+ckj[3]-0)<tol
+    conditions[34] = abs(ckj[2]-0)<tol
+    conditions[35] = abs(αkjjl[4,3]-0)<tol
+    conditions[36] = true # we set alpha^(k(j),j,0,0) = 0
+    conditions[37] = abs(ckj[3]*αkjjl[3,2]^2 + ckj[4]*αkjjl[4,2]^2 - 0)<tol
+    conditions[38] = abs(ckj[3]*αkjjl[3,2] + ckj[4]*αkjjl[4,2] - 1/2)<tol
+  end
   # deterministic fourth order
   conditions[39] = abs(dot(c0,α00*α00*(α00*e))-1/24)<tol
   conditions[40] = abs(dot(c0,α00*(α00*e).^2)-1/12)<tol
@@ -1393,4 +1406,65 @@ function checkNONOrder(NON;tol=1e-6)
   conditions[44] = abs(dot(c0,(α00*e).^2)-1/3)<tol
 
   return(conditions)
+end
+
+
+struct KomoriNON2{T} <: Tableau
+  c0::Vector{T}
+  cj::Vector{T}
+  ckj::Vector{T}
+
+  α00::Matrix{T}
+  α0j::Matrix{T}
+  αj0::Matrix{T}
+  αjj::Matrix{T}
+  αjl::Matrix{T}
+  αkjjl::Matrix{T}
+
+  order::Rational{Int}
+  quantile::T
+end
+
+function constructNON2(T=Float64)
+  # gamme is a free parameter
+  γ =  1
+  c0 = [1//6;1//3;1//3;1//6]
+  cj = [1//8;3//8;3//8;1//8]
+  ckj = [0;0;γ;-γ]
+
+  α00 = [0 0 0 0
+        1//2 0 0 0
+        0 1//2 0 0
+        0 0 1 0]
+
+  α0j = [0 0 0 0
+        1 0 0 0
+        -9//8 9//8 0 0
+        1 0 0 0]
+
+  αj0 = [0 0 0 0
+        2 0 0 0
+        0 0 0 0
+        -2 0 0 0]
+
+  αjj = [0 0 0 0
+        2//3 0 0 0
+        1//12 1//4 0 0
+        -5//4 1//4 2 0]
+
+  αjl = [0 0 0 0
+        0 0 0 0
+        1//4 3//4 0 0
+        1//4 3//4 0 0]
+
+  αkjjl = [0 0 0 0
+           0 0 0 0
+           0 1/(4*γ) 0 0
+           0 -1/(4*γ) 0 0]
+
+
+  KomoriNON2(map(T,c0),map(T,cj),map(T,ckj),
+             map(T,α00),map(T,α0j),
+             map(T,αj0),map(T,αjj),map(T,αjl),map(T,αkjjl),
+             1//1,-0.9674215661017014)
 end

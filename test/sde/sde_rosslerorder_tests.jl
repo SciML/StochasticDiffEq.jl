@@ -42,3 +42,6 @@ RS2_tab = constructRS2()
 # Komori's NON
 NON_tab = constructNON()
 @test minimum(checkNONOrder(NON_tab))
+
+NON2_tab = constructNON2()
+@test minimum(checkNONOrder(NON2_tab))
