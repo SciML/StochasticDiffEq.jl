@@ -185,3 +185,43 @@ Aii = [KPWdiagiip.WikA[i, i] for i in 1:m]
 @test isapprox(KPWdiagiip.WikA, -KPWdiagiip.WikA', atol=1e-15)
 @test isapprox(KPWdiagonly, 1//2 .* W.dW .* W.dW, atol=1e-15)
 @test isapprox(Aii, zeros(m), atol=1e-15)
+
+
+
+# moment conditions
+# E1(I_{j1} I_{j2}) = Δ δ_{j1,j2}
+# E2(I_{j1, j2} I_{j1, j2}) = 1/2 Δ^2
+# E3(I_{j1} I_{j2} I_{j3, j4}) = {Δ^2 if j1=j2=j3=j4, 1/2 Δ^2 if j3!=j4 and j1=j3, j2=j4 or j1=j4, j2=j3, 0 otherwise}
+
+function moments!(tmp, E1, E2, E3, W, Wik, Δ, samples)
+  for _ in 1:samples
+    calculate_step!(W,Δ,nothing,nothing)
+    accept_step!(W,Δ,nothing,nothing)
+    mul!(tmp,vec(W.dW),vec(W.dW)')
+
+    StochasticDiffEq.get_iterated_I!(Δ, W.dW, Wik, nothing, 1)
+    @. E1 = E1 + tmp
+    @. E2 = E2 + Wik.WikJ * Wik.WikJ
+    @. E3 = E3 + tmp * Wik.WikJ
+  end
+  @. E1 = E1/samples
+  @. E2 = E2/samples
+  @. E3 = E3/samples
+
+  return nothing
+end
+
+
+samples = Int(1e5)
+E1 = false .* vec(W.dW) .* vec(W.dW)'
+E2 = zero(E1)
+E3 = zero(E1)
+tmp = zero(E1)
+# generate new random dW
+W = WienerProcess!(0.0,zeros(m),nothing)
+Wikmom = StochasticDiffEq.WikJGeneral_iip(W.dW)
+@time moments!(tmp, E1, E2, E3, W, Wikmom, dt, samples)
+
+@test maximum(abs.(E1 - dt*I)) < 1e-3
+@test maximum(abs.(E2- dt^2*(zero(E2).+1)/2)) < 4e-3
+@test maximum(abs.(E3 - dt^2*(one(E2).+1)/2)) < 6e-3
