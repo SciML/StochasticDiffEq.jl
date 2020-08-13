@@ -126,10 +126,10 @@ Wikdiagoop = StochasticDiffEq.WikJDiagonal_oop()
 
 KPWdiagiip = StochasticDiffEq.KPWJ_iip(W.dW)
 Random.seed!(seed)
-StochasticDiffEq.get_iterated_I!(dt, W.dW, KPWdiagiip, Int(1e3), 1)
+StochasticDiffEq.get_iterated_I!(dt, W.dW, KPWdiagiip, Int(1e3), 1, 1//1)
 KPWdiagoop = StochasticDiffEq.KPWJ_oop()
 Random.seed!(seed)
-@test isapprox(StochasticDiffEq.get_iterated_I(dt, W.dW, KPWdiagoop, Int(1e3), 1), KPWdiagiip.WikJ, atol=1e-14)
+@test isapprox(StochasticDiffEq.get_iterated_I(dt, W.dW, KPWdiagoop, Int(1e3), 1, 1//1), KPWdiagiip.WikJ, atol=1e-14)
 
 KPWdiagonly = [KPWdiagiip.WikJ[i, i] for i in 1:m]
 
@@ -181,7 +181,7 @@ Jii = [true_noncom[1][i, i] for i in 1:m]
 # .. for KPW scheme
 Aii = [KPWdiagiip.WikA[i, i] for i in 1:m]
 @test isapprox(KPWdiagiip.WikJ + KPWdiagiip.WikJ', 2*true_commute)
-@test isapprox(KPWdiagiip.WikJ, true_commute + KPWdiagiip.WikA)
+@test !isapprox(KPWdiagiip.WikJ, true_commute + KPWdiagiip.WikA) # ! because of correction with \mu term
 @test isapprox(KPWdiagiip.WikA, -KPWdiagiip.WikA', atol=1e-15)
 @test isapprox(KPWdiagonly, 1//2 .* W.dW .* W.dW, atol=1e-15)
 @test isapprox(Aii, zeros(m), atol=1e-15)
@@ -193,13 +193,13 @@ Aii = [KPWdiagiip.WikA[i, i] for i in 1:m]
 # E2(I_{j1, j2} I_{j1, j2}) = 1/2 Δ^2
 # E3(I_{j1} I_{j2} I_{j3, j4}) = {Δ^2 if j1=j2=j3=j4, 1/2 Δ^2 if j3!=j4 and j1=j3, j2=j4 or j1=j4, j2=j3, 0 otherwise}
 
-function moments!(tmp, E1, E2, E3, W, Wik, Δ, samples)
+function moments!(tmp, E1, E2, E3, W, Wik, Δ, samples, p=nothing)
   for _ in 1:samples
     calculate_step!(W,Δ,nothing,nothing)
     accept_step!(W,Δ,nothing,nothing)
     mul!(tmp,vec(W.dW),vec(W.dW)')
 
-    StochasticDiffEq.get_iterated_I!(Δ, W.dW, Wik, nothing, 1)
+    StochasticDiffEq.get_iterated_I!(Δ, W.dW, Wik, p, 1)
     @. E1 = E1 + tmp
     @. E2 = E2 + Wik.WikJ * Wik.WikJ
     @. E3 = E3 + tmp * Wik.WikJ
@@ -225,3 +225,116 @@ Wikmom = StochasticDiffEq.WikJGeneral_iip(W.dW)
 @test maximum(abs.(E1 - dt*I)) < 1e-3
 @test maximum(abs.(E2- dt^2*(zero(E2).+1)/2)) < 4e-3
 @test maximum(abs.(E3 - dt^2*(one(E2).+1)/2)) < 6e-3
+
+
+"""
+Problem 2.3.3 from
+Kloeden, P. E., Platen, E., & Schurz, H. Numerical solution of SDE through computer
+experiments. Springer Science & Business Media. (2012)
+"""
+
+Random.seed!(seed)
+dt = 1.0
+ps = [1,Int(1e2),Int(5e3),Int(1e4)]
+m = 2
+W2 = WienerProcess(0.0,zeros(m),nothing)
+calculate_step!(W2,dt,nothing,nothing)
+for i in 1:10
+  accept_step!(W2,dt,nothing,nothing)
+end
+
+function path_convergence(dt, ps, W, Wik)
+    sample_path = []
+    for (i, p) in enumerate(ps)
+      Random.seed!(seed)
+      @show p
+      StochasticDiffEq.get_iterated_I!(dt, W.dW, Wik, p, 1)
+      #@show Wik.WikJ
+      push!(sample_path,Wik.WikJ[1,2])
+    end
+    return sample_path
+end
+
+Wikpath = StochasticDiffEq.KPWJ_iip(W2.dW)
+path = path_convergence(dt, ps, W2, Wikpath)
+
+v = abs.(path .- path[end])
+@test sort(v, rev = true) == v
+
+
+"""
+Exercise 2.3.1 from
+Kloeden, P. E., Platen, E., & Schurz, H. Numerical solution of SDE through computer
+experiments. Springer Science & Business Media. (2012)
+"""
+
+
+mutable struct StatsJ{AType}
+  mean::Vector{AType}
+  var::Vector{AType}
+  meanold::Vector{AType}
+  varold::Vector{AType}
+  tmp::AType
+  x::AType
+end
+
+function StatsJ(u)
+  mean = Vector{typeof(u)}()
+  var = Vector{typeof(u)}()
+  meanold = Vector{typeof(u)}()
+  varold = Vector{typeof(u)}()
+
+  for k=1:2
+    push!(mean,zero(u))
+    push!(var,zero(u))
+    push!(meanold,zero(u))
+    push!(varold,zero(u))
+  end
+
+  tmp = zero(u)
+  x = zero(u)
+  StatsJ(mean,var,meanold,varold,tmp,x)
+end
+
+function Welford!(cache::StatsJ, W, Wik, Δ, samples, p=nothing)
+  for k in 1:2
+    fill!(cache.var[k], zero(eltype(cache.tmp)))
+  end
+  for i in 1:samples
+    calculate_step!(W,Δ,nothing,nothing)
+    accept_step!(W,Δ,nothing,nothing)
+    mul!(cache.tmp,1//2*vec(W.dW),vec(W.dW)')
+
+    StochasticDiffEq.get_iterated_I!(Δ, W.dW, Wik, p, 1)
+    for k in 1:2
+      if k==1
+        copyto!(cache.x,cache.tmp)
+      else
+        copyto!(cache.x,Wik.WikJ)
+      end
+      if i == 1
+        copyto!(cache.meanold[k], cache.x)
+      else
+        @. cache.mean[k] = cache.meanold[k] + (cache.x - cache.meanold[k]) / i
+        @. cache.var[k] = cache.varold[k] + (cache.x - cache.meanold[k]) * (cache.x - cache.mean[k])
+
+        copyto!(cache.meanold[k],cache.mean[k])
+        copyto!(cache.varold[k],cache.var[k])
+      end
+    end
+  end
+
+  for k in 1:2
+    @. cache.mean[k] = cache.mean[k]/samples
+    @. cache.var[k] = cache.var[k]/(samples-1)
+  end
+
+  return nothing
+end
+
+cache = StatsJ(false .* vec(W2.dW) .* vec(W2.dW)')
+@time Welford!(cache, W2, Wikpath, dt, Int(1e5), ps[2])
+
+@test maximum(abs.(cache.mean[1])) < 1e-5
+@test maximum(abs.(cache.mean[2])) < 1e-5
+@test maximum(abs.(cache.var[1]-cache.var[2])) > 1e-1

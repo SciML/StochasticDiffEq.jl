@@ -297,7 +297,7 @@ end
   Wik = cache.WikJ
   dW = W.dW
 
-  WikJ = get_iterated_I(dt, dW, Wik, integrator.alg.p, integrator.alg.c)
+  WikJ = get_iterated_I(dt, dW, Wik, integrator.alg.p, integrator.alg.c, alg_order(alg))
 
   if alg_interpretation(integrator.alg) == :Ito
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
@@ -361,7 +361,7 @@ end
   sqdt = integrator.sqdt
   Wik = cache.WikJ
 
-  get_iterated_I!(dt, dW, Wik, integrator.alg.p, integrator.alg.c)
+  get_iterated_I!(dt, dW, Wik, integrator.alg.p, integrator.alg.c, alg_order(alg))
   WikJ = Wik.WikJ
 
   integrator.f(du₁,uprev,p,t)

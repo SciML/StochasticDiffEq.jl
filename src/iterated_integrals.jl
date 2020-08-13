@@ -5,7 +5,11 @@ by the J.
 
 abstract type AbstractJ end
 
-# Kloeden, Platen, Wright
+"""
+Kloeden, P. E., Platen, E., & Wright, I. W., The approximation of multiple stochastic integrals.
+Stochastic analysis and applications, 10(4), pp. 431-441 (1992).
+DOI: 10.1080/07362999208809281
+"""
 abstract type AbstractKPWJ <: AbstractJ end
 
 struct KPWJ_oop <: AbstractKPWJ end
@@ -13,6 +17,7 @@ struct KPWJ_oop <: AbstractKPWJ end
 mutable struct KPWJ_iip{WikAType, WikJType, randType} <: AbstractKPWJ
   WikA::WikAType
   WikJ::WikJType
+  μ::randType
   ζ::randType
   η::randType
   kronprod1::WikAType
@@ -23,21 +28,33 @@ function KPWJ_iip(ΔW)
   WikJ = false .* vec(ΔW) .* vec(ΔW)'
   WikA = false .* vec(ΔW) .* vec(ΔW)'
 
+  μ = zero(ΔW)
   ζ = zero(ΔW)
   η = zero(ΔW)
 
   kronprod1 = zero(WikA)
   kronprod2 = zero(WikA)
 
-  KPWJ_iip(WikA,WikJ,ζ,η,kronprod1,kronprod2)
+  KPWJ_iip(WikA,WikJ,μ,ζ,η,kronprod1,kronprod2)
 end
 
 
-function get_iterated_I(dt, dW, Wik::KPWJ_oop, p=nothing, C=1)
+function get_iterated_I(dt, dW, Wik::KPWJ_oop, p=nothing, C=1, γ=1//1)
   m  = length(dW)
 
   WikJ = vec(dW) .* vec(dW)'
   WikA = zero(WikJ)
+
+  p==nothing && (p = Int(floor(C*dt^(1//1-2//1*γ)) + 1))
+
+  # Eq.(20)
+  ρp = (π^2)/6
+  for k in 1:p
+    ρp -= (1/k^2)
+  end
+  ρp = ρp/(2*π^2)
+
+  μ = randn(eltype(dW),m)
 
   for k in 1:p
     ζ = randn(eltype(dW),m)
@@ -49,18 +66,35 @@ function get_iterated_I(dt, dW, Wik::KPWJ_oop, p=nothing, C=1)
   end
 
   WikA *=  dt/(2*π)
-  WikJ = WikJ/2 + WikA  # Ito: (WikJ-UniformScaling(dt))/2 + WikA
+
+  kronprod1 = vec(μ) .* vec(dW)'
+  kronprod2 = vec(dW).* vec(μ)'
+
+  WikJ = WikJ/2 + WikA + sqrt(dt*ρp)*(kronprod1-kronprod2)  # Ito: (UniformScaling(dt))/2
   return WikJ
 end
 
 
-function get_iterated_I!(dt, dW, Wik::KPWJ_iip, p=nothing, C=1)
+function get_iterated_I!(dt, dW, Wik::KPWJ_iip, p=nothing, C=1, γ=1//1)
   m  = length(dW)
-  @unpack WikA,WikJ,ζ,η,kronprod1,kronprod2 = Wik
+  @unpack WikA,WikJ,μ,ζ,η,kronprod1,kronprod2 = Wik
 
   mul!(WikJ,vec(dW),vec(dW)')
   fill!(WikA, zero(eltype(WikJ)))
 
+  # Below Eq.(26): truncation
+  p==nothing && (p = Int(floor(C*dt^(1//1-2//1*γ)) + 1))
+
+  # Eq.(20)
+  ρp = (π^2)/6
+  for k in 1:p
+    ρp -= (1/k^2)
+  end
+  ρp = ρp/(2*π^2)
+
+  randn!(μ)
+
+  # Eq. (21)
   for k in 1:p
     randn!(ζ)
     randn!(η)
@@ -70,8 +104,12 @@ function get_iterated_I!(dt, dW, Wik::KPWJ_iip, p=nothing, C=1)
     @.. WikA = WikA + (kronprod1 - kronprod2)/k
   end
 
-  @.. WikA = WikA*dt/(2*π)
-  @.. WikJ = WikJ/2 + WikA  # Ito: (WikJ-UniformScaling(dt))/2 + WikA
+  @.. WikA = WikA*dt/(2*π) # check if factor of 2 is correct
+  mul!(kronprod1,vec(μ),vec(dW)')
+  mul!(kronprod2,vec(dW),vec(μ)')
+  #@show WikA, sqrt(dt*ρp)*(kronprod1-kronprod2) , WikA + sqrt(dt*ρp)*(kronprod1-kronprod2)
+  #@show sqrt(dt*ρp)
+  @.. WikJ = WikJ/2 + WikA + sqrt(dt*ρp)*(kronprod1-kronprod2) # Ito: -UniformScaling(dt))/2
   return nothing
 end
 
