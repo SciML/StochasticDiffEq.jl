@@ -212,12 +212,12 @@ function get_WikJ(ΔW,prob,alg)
   end
 end
 
-function get_iterated_I(dt, dW, Wik::WikJDiagonal_oop, p=nothing, C=1)
+function get_iterated_I(dt, dW, Wik::WikJDiagonal_oop, p=nothing, C=1, γ=1//1)
   WikJ = 1//2 .* dW .* dW
   WikJ
 end
 
-function get_iterated_I!(dt, dW, Wik::WikJDiagonal_iip, p=nothing, C=1)
+function get_iterated_I!(dt, dW, Wik::WikJDiagonal_iip, p=nothing, C=1, γ=1//1)
   @unpack WikJ = Wik
   if typeof(dW) <: Number
     Wik.WikJ = 1//2 .* dW .^ 2
@@ -227,12 +227,12 @@ function get_iterated_I!(dt, dW, Wik::WikJDiagonal_iip, p=nothing, C=1)
   return nothing
 end
 
-function get_iterated_I(dt, dW, Wik::WikJCommute_oop, p=nothing, C=1)
+function get_iterated_I(dt, dW, Wik::WikJCommute_oop, p=nothing, C=1, γ=1//1)
   WikJ = 1//2 .* vec(dW) .* vec(dW)'
   WikJ
 end
 
-function get_iterated_I!(dt, dW, Wik::WikJCommute_iip, p=nothing, C=1)
+function get_iterated_I!(dt, dW, Wik::WikJCommute_iip, p=nothing, C=1, γ=1//1)
   @unpack WikJ = Wik
   mul!(WikJ,vec(dW),vec(dW)')
   @.. WikJ *= 1//2
@@ -298,7 +298,7 @@ In the code we have
 ```
 
 """
-function get_iterated_I(dt, dW, Wik::WikJGeneral_oop, p=nothing, C=1)
+function get_iterated_I(dt, dW, Wik::WikJGeneral_oop, p=nothing, C=1, γ=1//1)
   @unpack m_seq = Wik
   m = length(dW)
   M = div(m*(m-1),2)
@@ -409,7 +409,7 @@ In the code we have
 ```
 
 """
-function get_iterated_I!(dt, dW, Wik::WikJGeneral_iip, p=nothing, C=1)
+function get_iterated_I!(dt, dW, Wik::WikJGeneral_iip, p=nothing, C=1, γ=1//1)
   @unpack WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp₁, Gp₂, Aᵢ = Wik
 
   m = length(dW)
