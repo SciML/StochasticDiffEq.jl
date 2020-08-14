@@ -39,7 +39,7 @@ function KPWJ_iip(ΔW)
 end
 
 
-function get_iterated_I(dt, dW, Wik::KPWJ_oop, p=nothing, C=1, γ=1//1)
+function get_iterated_I(dt, dW, dZ, Wik::KPWJ_oop, p=nothing, C=1, γ=1//1)
   m  = length(dW)
 
   WikJ = vec(dW) .* vec(dW)'
@@ -54,11 +54,21 @@ function get_iterated_I(dt, dW, Wik::KPWJ_oop, p=nothing, C=1, γ=1//1)
   end
   ρp = ρp/(2*π^2)
 
-  μ = randn(eltype(dW),m)
+  if dZ==nothing
+    μ = randn(eltype(dW),m)
+  else
+    μ = convert(eltype(dW),sqrt(1/dt))*dZ[1:m]
+  end
 
   for k in 1:p
-    ζ = randn(eltype(dW),m)
-    η = randn(eltype(dW),m)
+    if dZ==nothing
+      ζ = randn(eltype(dW),m)
+      η = randn(eltype(dW),m)
+    else
+      ζ = convert(eltype(dW),sqrt(1/dt))*(dZ[Int(m*(2*k-1)+1):Int(m*2*k)])
+      η = convert(eltype(dW),sqrt(1/dt))*(dZ[Int(m*2*k+1):Int(m*(2*k+1))])
+    end
+
     kronprod1 = vec(ζ) .* vec(η+convert(eltype(dW),sqrt(2/dt))*dW)'
     kronprod2 = vec(η+convert(eltype(dW),sqrt(2/dt))*dW) .* vec(ζ)'
 
@@ -75,7 +85,7 @@ function get_iterated_I(dt, dW, Wik::KPWJ_oop, p=nothing, C=1, γ=1//1)
 end
 
 
-function get_iterated_I!(dt, dW, Wik::KPWJ_iip, p=nothing, C=1, γ=1//1)
+function get_iterated_I!(dt, dW, dZ, Wik::KPWJ_iip, p=nothing, C=1, γ=1//1)
   m  = length(dW)
   @unpack WikA,WikJ,μ,ζ,η,kronprod1,kronprod2 = Wik
 
@@ -84,7 +94,7 @@ function get_iterated_I!(dt, dW, Wik::KPWJ_iip, p=nothing, C=1, γ=1//1)
 
   # Below Eq.(26): truncation
   p==nothing && (p = Int(floor(C*dt^(1//1-2//1*γ)) + 1))
-
+  #@show p, dZ
   # Eq.(20)
   ρp = (π^2)/6
   for k in 1:p
@@ -92,12 +102,21 @@ function get_iterated_I!(dt, dW, Wik::KPWJ_iip, p=nothing, C=1, γ=1//1)
   end
   ρp = ρp/(2*π^2)
 
-  randn!(μ)
+  if dZ==nothing
+    randn!(μ)
+  else
+    μ .= convert(eltype(dW),sqrt(1/dt))*@view(dZ[1:m])
+  end
 
   # Eq. (21)
   for k in 1:p
-    randn!(ζ)
-    randn!(η)
+    if dZ==nothing
+      randn!(ζ)
+      randn!(η)
+    else
+      ζ .= convert(eltype(dW),sqrt(1/dt))*@view(dZ[Int(m*(2*k-1)+1):Int(m*2*k)])
+      η .= convert(eltype(dW),sqrt(1/dt))*@view(dZ[Int(m*2*k+1):Int(m*(2*k+1))])
+    end
     mul!(kronprod1,vec(ζ),vec(η+convert(eltype(dW),sqrt(2/dt))*dW)')
     mul!(kronprod2,vec(η+convert(eltype(dW),sqrt(2/dt))*dW),vec(ζ)')
 
@@ -212,12 +231,12 @@ function get_WikJ(ΔW,prob,alg)
   end
 end
 
-function get_iterated_I(dt, dW, Wik::WikJDiagonal_oop, p=nothing, C=1, γ=1//1)
+function get_iterated_I(dt, dW, dZ, Wik::WikJDiagonal_oop, p=nothing, C=1, γ=1//1)
   WikJ = 1//2 .* dW .* dW
   WikJ
 end
 
-function get_iterated_I!(dt, dW, Wik::WikJDiagonal_iip, p=nothing, C=1, γ=1//1)
+function get_iterated_I!(dt, dW, dZ, Wik::WikJDiagonal_iip, p=nothing, C=1, γ=1//1)
   @unpack WikJ = Wik
   if typeof(dW) <: Number
     Wik.WikJ = 1//2 .* dW .^ 2
@@ -227,12 +246,12 @@ function get_iterated_I!(dt, dW, Wik::WikJDiagonal_iip, p=nothing, C=1, γ=1//1)
   return nothing
 end
 
-function get_iterated_I(dt, dW, Wik::WikJCommute_oop, p=nothing, C=1, γ=1//1)
+function get_iterated_I(dt, dW, dZ, Wik::WikJCommute_oop, p=nothing, C=1, γ=1//1)
   WikJ = 1//2 .* vec(dW) .* vec(dW)'
   WikJ
 end
 
-function get_iterated_I!(dt, dW, Wik::WikJCommute_iip, p=nothing, C=1, γ=1//1)
+function get_iterated_I!(dt, dW, dZ, Wik::WikJCommute_iip, p=nothing, C=1, γ=1//1)
   @unpack WikJ = Wik
   mul!(WikJ,vec(dW),vec(dW)')
   @.. WikJ *= 1//2
@@ -298,7 +317,7 @@ In the code we have
 ```
 
 """
-function get_iterated_I(dt, dW, Wik::WikJGeneral_oop, p=nothing, C=1, γ=1//1)
+function get_iterated_I(dt, dW, dZ, Wik::WikJGeneral_oop, p=nothing, C=1, γ=1//1)
   @unpack m_seq = Wik
   m = length(dW)
   M = div(m*(m-1),2)
@@ -409,7 +428,7 @@ In the code we have
 ```
 
 """
-function get_iterated_I!(dt, dW, Wik::WikJGeneral_iip, p=nothing, C=1, γ=1//1)
+function get_iterated_I!(dt, dW, dZ, Wik::WikJGeneral_iip, p=nothing, C=1, γ=1//1)
   @unpack WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp₁, Gp₂, Aᵢ = Wik
 
   m = length(dW)

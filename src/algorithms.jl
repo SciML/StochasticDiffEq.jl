@@ -66,7 +66,9 @@ struct RKMil_General{T<:IteratedIntegralApprox, TruncationType} <: StochasticDif
   c::Int
   p::TruncationType
 end
-function RKMil_General(;interpretation=:Ito, ii_approx=IIWiktorsson(), c=1, p=nothing)
+function RKMil_General(;interpretation=:Ito, ii_approx=IIWiktorsson(), c=1, p=nothing, dt=nothing)
+  γ = 1//1
+  p==true && (p = Int(floor(c*dt^(1//1-2//1*γ)) + 1))
   RKMil_General(interpretation, ii_approx, c, p)
 end
 

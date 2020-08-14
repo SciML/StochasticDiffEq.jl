@@ -117,19 +117,22 @@ end
 true_diag = 1//2 .* W.dW .* W.dW
 
 Wikdiag = StochasticDiffEq.WikJDiagonal_iip(W.dW)
-StochasticDiffEq.get_iterated_I!(dt, W.dW, Wikdiag, nothing, 1)
+StochasticDiffEq.get_iterated_I!(dt, W.dW, W.dZ, Wikdiag, nothing, 1)
 Wikdiagoop = StochasticDiffEq.WikJDiagonal_oop()
 
-@test StochasticDiffEq.get_iterated_I(dt, W.dW, Wikdiagoop, nothing, 1) == Wikdiag.WikJ
+@test StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, Wikdiagoop, nothing, 1) == Wikdiag.WikJ
 @test Wikdiag.WikJ == true_diag
 
 
 KPWdiagiip = StochasticDiffEq.KPWJ_iip(W.dW)
 Random.seed!(seed)
-StochasticDiffEq.get_iterated_I!(dt, W.dW, KPWdiagiip, Int(1e3), 1, 1//1)
+StochasticDiffEq.get_iterated_I!(dt, W.dW, W.dZ, KPWdiagiip, Int(1e3), 1, 1//1)
 KPWdiagoop = StochasticDiffEq.KPWJ_oop()
 Random.seed!(seed)
-@test isapprox(StochasticDiffEq.get_iterated_I(dt, W.dW, KPWdiagoop, Int(1e3), 1, 1//1), KPWdiagiip.WikJ, atol=1e-14)
+@test isapprox(StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, KPWdiagoop, Int(1e3), 1, 1//1), KPWdiagiip.WikJ, atol=1e-14)
+
+
+StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, KPWdiagoop, Int(1e3), 1, 1//1)
 
 KPWdiagonly = [KPWdiagiip.WikJ[i, i] for i in 1:m]
 
@@ -142,10 +145,10 @@ KPWdiagonly = [KPWdiagiip.WikJ[i, i] for i in 1:m]
 true_commute = 1//2 .* W.dW .* W.dW'
 
 Wikcommute = StochasticDiffEq.WikJCommute_iip(W.dW)
-StochasticDiffEq.get_iterated_I!(dt, W.dW, Wikcommute, nothing, 1)
+StochasticDiffEq.get_iterated_I!(dt, W.dW, W.dZ, Wikcommute, nothing, 1)
 Wikcommuteoop = StochasticDiffEq.WikJCommute_oop()
 
-@test StochasticDiffEq.get_iterated_I(dt, W.dW, Wikcommuteoop, nothing, 1) == Wikcommute.WikJ
+@test StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, Wikcommuteoop, nothing, 1) == Wikcommute.WikJ
 @test Wikcommute.WikJ == true_commute
 
 
@@ -153,11 +156,11 @@ Wikcommuteoop = StochasticDiffEq.WikJCommute_oop()
 
 Random.seed!(seed)
 Wikgeneral = StochasticDiffEq.WikJGeneral_iip(W.dW)
-StochasticDiffEq.get_iterated_I!(dt, W.dW, Wikgeneral, nothing, 1)
+StochasticDiffEq.get_iterated_I!(dt, W.dW, W.dZ, Wikgeneral, nothing, 1)
 
 Random.seed!(seed)
 Wikgeneraloop  = StochasticDiffEq.WikJGeneral_oop(W.dW)
-@test StochasticDiffEq.get_iterated_I(dt, W.dW, Wikgeneraloop, nothing, 1) == Wikgeneral.WikJ
+@test StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, Wikgeneraloop, nothing, 1) == Wikgeneral.WikJ
 
 Random.seed!(seed)
 true_noncom = true_general_function(dt, W.dW, 1.0, m)
@@ -199,7 +202,7 @@ function moments!(tmp, E1, E2, E3, W, Wik, Δ, samples, p=nothing)
     accept_step!(W,Δ,nothing,nothing)
     mul!(tmp,vec(W.dW),vec(W.dW)')
 
-    StochasticDiffEq.get_iterated_I!(Δ, W.dW, Wik, p, 1)
+    StochasticDiffEq.get_iterated_I!(Δ, W.dW, W.dZ, Wik, p, 1)
     @. E1 = E1 + tmp
     @. E2 = E2 + Wik.WikJ * Wik.WikJ
     @. E3 = E3 + tmp * Wik.WikJ
@@ -248,7 +251,7 @@ function path_convergence(dt, ps, W, Wik)
     for (i, p) in enumerate(ps)
       Random.seed!(seed)
       @show p
-      StochasticDiffEq.get_iterated_I!(dt, W.dW, Wik, p, 1)
+      StochasticDiffEq.get_iterated_I!(dt, W.dW, W.dZ, Wik, p, 1)
       #@show Wik.WikJ
       push!(sample_path,Wik.WikJ[1,2])
     end
@@ -305,7 +308,7 @@ function Welford!(cache::StatsJ, W, Wik, Δ, samples, p=nothing)
     accept_step!(W,Δ,nothing,nothing)
     mul!(cache.tmp,1//2*vec(W.dW),vec(W.dW)')
 
-    StochasticDiffEq.get_iterated_I!(Δ, W.dW, Wik, p, 1)
+    StochasticDiffEq.get_iterated_I!(Δ, W.dW, W.dZ, Wik, p, 1)
     for k in 1:2
       if k==1
         copyto!(cache.x,cache.tmp)

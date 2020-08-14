@@ -54,7 +54,7 @@ sim1 = test_convergence(dts,prob,EM(),trajectories=Int(1e2))
 @test abs(sim1.𝒪est[:final] - 0.5) < 0.2
 sim2 = test_convergence(dts,prob,RKMilCommute(),trajectories=Int(1e2))
 @test abs(sim2.𝒪est[:final] - 1) < 0.2
-sim3 = test_convergence(dts,prob,RKMil_General(p=1),trajectories=Int(1e2))
+sim3 = test_convergence(dts,prob,RKMil_General(p=2),trajectories=Int(1e2))
 @test abs(sim3.𝒪est[:final] - 1) < 0.2
 
 ff_noncommute_stratonovich = SDEFunction(f_noncommute,g_noncommute,analytic=f_noncommute_analytic_stratonovich)
@@ -89,14 +89,14 @@ p = [α]
 prob2 = SDEProblem(f_noncommute_2,g_noncommute_2,u0,(0.0,0.5),p,noise_rate_prototype=rand(2,m))
 
 sol1 = solve(prob2,EM(),dt=1/2^(8))
-sol2 = solve(prob2,RKMil_General(p=10),dt=1/2^(8),adaptive=false)
-sol3 = solve(prob2,RKMil_General(p=10),dt=1/2^(8))
+sol2 = solve(prob2,RKMil_General(p=true, dt=1/2^(7)),dt=1/2^(7),adaptive=false)
+sol3 = solve(prob2,RKMil_General(),dt=1/2^(7))
 
-dts = (1/2) .^ (5:-1:2) #14->7 good plot
-test_dt = 1/2 ^ (7)
+dts = (1/2) .^ (6:-1:2) #14->7 good plot
+test_dt = 1/2 ^ (10)
 sim5 = analyticless_test_convergence(dts,prob2,EM(),test_dt,trajectories=300, use_noise_grid=false)
 @test abs(sim5.𝒪est[:final] - 0.5) < 0.2
-sim6 = analyticless_test_convergence(dts,prob2,RKMil_General(),test_dt,trajectories=1000, use_noise_grid=false)
+sim6 = analyticless_test_convergence(dts,prob2,RKMil_General(p=true,dt=test_dt),test_dt,trajectories=300, use_noise_grid=false)
 @test_broken abs(sim6.𝒪est[:final] - 1.0) < 0.2
 @test abs(sim6.𝒪est[:weak_final] - 1.0) < 0.2
 sim7 = analyticless_test_convergence(dts,prob2,EulerHeun(),test_dt,trajectories=300, use_noise_grid=false)
