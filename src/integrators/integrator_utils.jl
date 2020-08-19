@@ -59,15 +59,15 @@ end
   @fastmath if !isempty(tstops)
     if integrator.opts.adaptive
       if integrator.tdir > 0
-        integrator.dt = min(abs(integrator.dt), abs(top(tstops) - integrator.t)) # step! to the end
+        integrator.dt = min(abs(integrator.dt), abs(first(tstops) - integrator.t)) # step! to the end
       else
-        integrator.dt = -min(abs(integrator.dt), abs(top(tstops) + integrator.t))
+        integrator.dt = -min(abs(integrator.dt), abs(first(tstops) + integrator.t))
       end
     elseif iszero(integrator.dtcache) && integrator.dtchangeable # Use integrator.opts.tstops
-      integrator.dt = integrator.tdir * abs(top(tstops) - integrator.tdir * integrator.t)
+      integrator.dt = integrator.tdir * abs(first(tstops) - integrator.tdir * integrator.t)
     elseif integrator.dtchangeable && !integrator.force_stepfail
       # always try to step! with dtcache, but lower if a tstops
-      integrator.dt = @fastmath integrator.tdir*min(abs(integrator.dtcache), abs(top(tstops) - integrator.tdir * integrator.t)) # step! to the end
+      integrator.dt = @fastmath integrator.tdir*min(abs(integrator.dtcache), abs(first(tstops) - integrator.tdir * integrator.t)) # step! to the end
     end
   end
 end
@@ -76,9 +76,9 @@ end
   tstops = integrator.opts.tstops
   if !isempty(tstops)
     if integrator.tdir > 0
-      integrator.dt = min(abs(integrator.dtnew),abs(top(tstops) - integrator.t)) # step! to the end
+      integrator.dt = min(abs(integrator.dtnew),abs(first(tstops) - integrator.t)) # step! to the end
     else
-      integrator.dt = -min(abs(integrator.dtnew),abs(top(tstops) + integrator.t))
+      integrator.dt = -min(abs(integrator.dtnew),abs(first(tstops) + integrator.t))
     end
   end
 end
@@ -90,7 +90,7 @@ last_step_failed(integrator::SDEIntegrator) =
   saved, savedexactly = false, false
   !integrator.opts.save_on && return saved, savedexactly
   tdir_t = integrator.tdir * integrator.t
-  while !isempty(integrator.opts.saveat) && top(integrator.opts.saveat) <= tdir_t # Perform saveat
+  while !isempty(integrator.opts.saveat) && first(integrator.opts.saveat) <= tdir_t # Perform saveat
     integrator.saveiter += 1; saved = true
     curt = integrator.tdir * pop!(integrator.opts.saveat)
     if curt!=integrator.t # If <t, interpolate
@@ -149,7 +149,7 @@ end
       integrator.last_stepfail = false
       integrator.tprev = integrator.t
       if typeof(integrator.t)<:AbstractFloat && !isempty(integrator.opts.tstops)
-        tstop = integrator.tdir * top(integrator.opts.tstops)
+        tstop = integrator.tdir * first(integrator.opts.tstops)
         @fastmath abs(ttmp - tstop) < 10eps(integrator.t) ? (integrator.t = tstop) : (integrator.t = ttmp)
       else
         integrator.t = ttmp
@@ -160,7 +160,7 @@ end
   else # Non adaptive
     integrator.tprev = integrator.t
     if typeof(integrator.t)<:AbstractFloat && !isempty(integrator.opts.tstops)
-      tstop = integrator.tdir * top(integrator.opts.tstops)
+      tstop = integrator.tdir * first(integrator.opts.tstops)
       # For some reason 10eps(integrator.t) is slow here
       # TODO: Allow higher precision but profile
       @fastmath abs(ttmp - tstop) < 10eps(max(integrator.t,tstop)) ? (integrator.t = tstop) : (integrator.t = ttmp)
@@ -291,7 +291,7 @@ end
   tstops = integrator.opts.tstops
   if !isempty(tstops)
     tdir_t = integrator.tdir * integrator.t
-    tdir_ts_top = top(tstops)
+    tdir_ts_top = first(tstops)
     if tdir_t == tdir_ts_top
       pop!(tstops)
       integrator.just_hit_tstop = true
