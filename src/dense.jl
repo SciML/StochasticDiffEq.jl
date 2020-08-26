@@ -103,44 +103,44 @@ sde_interpolation(tvals,ts,timeseries,ks)
 Get the value at tvals where the solution is known at the
 times ts (sorted), with values timeseries and derivatives ks
 """
-@inline function sde_interpolation(tvals,id,idxs,deriv,p,continuity::Symbol=:left)
+function sde_interpolation(tvals,id,idxs,deriv,p,continuity::Symbol=:left)
   @unpack ts,timeseries = id
-  tdir = sign(ts[end]-ts[1])
+  @inbounds tdir = sign(ts[end]-ts[1])
   idx = sortperm(tvals,rev=tdir<0)
-  tdir*tvals[idx[end]] > tdir*ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
-  tdir*tvals[idx[1]] < tdir*ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
-  i = 2 # Start the search thinking it's between ts[1] and ts[2]
+
   if typeof(idxs) <: Number
-    vals = Vector{eltype(first(timeseries))}(undef,length(tvals))
+    vals = Vector{eltype(first(timeseries))}(undef, length(tvals))
   elseif typeof(idxs) <: AbstractArray
-     vals = Vector{Array{eltype(first(timeseries)),ndims(idxs)}}(undef,length(tvals))
+    vals = Vector{Array{eltype(first(timeseries)),ndims(idxs)}}(undef, length(tvals))
   else
-    vals = Vector{eltype(timeseries)}(undef,length(tvals))
+    vals = Vector{eltype(timeseries)}(undef, length(tvals))
   end
+
+  # start the search thinking it's ts[1]-ts[2]
+  i₋ = 1
+  i₊ = 2
   @inbounds for j in idx
     t = tvals[j]
-    i = searchsortedfirst(@view(ts[i:end]),t,rev=tdir<0)+i-1 # It's in the interval ts[i-1] to ts[i]
-    if ts[i] == t
-      lasti = lastindex(ts)
-      k = continuity == :right && i+1 <= lasti && ts[i+1] == t ? i+1 : i
-      if idxs === nothing
-        vals[j] = timeseries[k]
-      else
-        vals[j] = timeseries[k][idxs]
-      end
-    elseif ts[i-1] == t # Can happen if it's the first value!
-      if idxs === nothing
-        vals[j] = timeseries[i-1]
-      else
-        vals[j] = timeseries[i-1][idxs]
-      end
+
+    if continuity === :left
+      # we have i₋ = i₊ = 1 if t = ts[1], i₊ = i₋ + 1 = lastindex(ts) if t > ts[end],
+      # and otherwise i₋ and i₊ satisfy ts[i₋] < t ≤ ts[i₊]
+      i₊ = min(lastindex(ts), OrdinaryDiffEq._searchsortedfirst(ts,t,i₊,tdir > 0))
+      i₋ = i₊ > 1 ? i₊ - 1 : i₊
     else
-      dt = ts[i] - ts[i-1]
-      Θ = (t-ts[i-1])/dt
-      vals[j] = sde_interpolant(Θ,dt,timeseries[i-1],timeseries[i],idxs,deriv)
+      # we have i₋ = i₊ - 1 = 1 if t < ts[1], i₊ = i₋ = lastindex(ts) if t = ts[end],
+      # and otherwise i₋ and i₊ satisfy ts[i₋] ≤ t < ts[i₊]
+      i₋ = max(1, OrdinaryDiffEq._searchsortedlast(ts,t,i₋,tdir > 0))
+      i₊ = i₋ < lastindex(ts) ? i₋ + 1 : i₋
     end
+
+    dt = ts[i₊] - ts[i₋]
+    Θ = iszero(dt) ? oneunit(t) / oneunit(dt) : (t-ts[i₋]) / dt
+
+    vals[j] = sde_interpolant(Θ,dt,timeseries[i₋],timeseries[i₊],idxs,deriv)
   end
-  DiffEqArray(vals,tvals)
+
+  DiffEqArray(vals, tvals)
 end
 
 """
@@ -149,93 +149,88 @@ sde_interpolation(tval::Number,ts,timeseries,ks)
 Get the value at tval where the solution is known at the
 times ts (sorted), with values timeseries and derivatives ks
 """
-@inline function sde_interpolation(tval::Number,id,idxs,deriv,p,continuity::Symbol=:left)
+function sde_interpolation(tval::Number,id,idxs,deriv,p,continuity::Symbol=:left)
   @unpack ts,timeseries = id
-  tdir = sign(ts[end]-ts[1])
-  tdir*tval > tdir*ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
-  tdir*tval < tdir*ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
-  @inbounds i = searchsortedfirst(ts,tval,rev=tdir<0) # It's in the interval ts[i-1] to ts[i]
-  @inbounds if ts[i] == tval
-    lasti = lastindex(ts)
-    k = continuity == :right && i+1 <= lasti && ts[i+1] == tval ? i+1 : i
-    if idxs === nothing
-      val = timeseries[k]
-    else
-      val = timeseries[k][idxs]
-    end
-  elseif ts[i-1] == tval # Can happen if it's the first value!
-    if idxs === nothing
-      val = timeseries[i-1]
-    else
-      val = timeseries[i-1][idxs]
-    end
+  @inbounds tdir = sign(ts[end]-ts[1])
+
+  if continuity === :left
+    # we have i₋ = i₊ = 1 if tval = ts[1], i₊ = i₋ + 1 = lastindex(ts) if tval > ts[end],
+    # and otherwise i₋ and i₊ satisfy ts[i₋] < tval ≤ ts[i₊]
+    i₊ = min(lastindex(ts), OrdinaryDiffEq._searchsortedfirst(ts,tval,2,tdir > 0))
+    i₋ = i₊ > 1 ? i₊ - 1 : i₊
   else
-    dt = ts[i] - ts[i-1]
-    Θ = (tval-ts[i-1])/dt
-    val = sde_interpolant(Θ,dt,timeseries[i-1],timeseries[i],idxs,deriv)
+    # we have i₋ = i₊ - 1 = 1 if tval < ts[1], i₊ = i₋ = lastindex(ts) if tval = ts[end],
+    # and otherwise i₋ and i₊ satisfy ts[i₋] ≤ tval < ts[i₊]
+    i₋ = max(1, OrdinaryDiffEq._searchsortedlast(ts,tval,1,tdir > 0))
+    i₊ = i₋ < lastindex(ts) ? i₋ + 1 : i₋
   end
+
+  @inbounds begin
+    dt = ts[i₊] - ts[i₋]
+    Θ = iszero(dt) ? oneunit(tval) / oneunit(dt) : (tval-ts[i₋]) / dt
+    val = sde_interpolant(Θ,dt,timeseries[i₋],timeseries[i₊],idxs,deriv)
+  end
+
   val
 end
 
-@inline function sde_interpolation!(out,tval::Number,id,idxs,deriv,p,continuity::Symbol=:left)
+function sde_interpolation!(out,tval::Number,id,idxs,deriv,p,continuity::Symbol=:left)
   @unpack ts,timeseries = id
-  tdir = sign(ts[end]-ts[1])
-  tdir*tval > tdir*ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
-  tdir*tval < tdir*ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
-  @inbounds i = searchsortedfirst(ts,tval,rev=tdir<0) # It's in the interval ts[i-1] to ts[i]
-  @inbounds if ts[i] == tval
-    lasti = lastindex(ts)
-    k = continuity == :right && i+1 <= lasti && ts[i+1] == tval ? i+1 : i
-    if idxs === nothing
-      copyto!(out,timeseries[k])
-    else
-      copyto!(out,timeseries[k][idxs])
-    end
-  elseif ts[i-1] == tval # Can happen if it's the first value!
-    if idxs === nothing
-      copyto!(out,timeseries[i-1])
-    else
-      copyto!(out,timeseries[i-1][idxs])
-    end
+  @inbounds tdir = sign(ts[end]-ts[1])
+
+  if continuity === :left
+    # we have i₋ = i₊ = 1 if tval = ts[1], i₊ = i₋ + 1 = lastindex(ts) if tval > ts[end],
+    # and otherwise i₋ and i₊ satisfy ts[i₋] < tval ≤ ts[i₊]
+    i₊ = min(lastindex(ts), OrdinaryDiffEq._searchsortedfirst(ts,tval,2,tdir > 0))
+    i₋ = i₊ > 1 ? i₊ - 1 : i₊
   else
-    dt = ts[i] - ts[i-1]
-    Θ = (tval-ts[i-1])/dt
-    sde_interpolant!(out,Θ,dt,timeseries[i-1],timeseries[i],idxs,deriv)
+    # we have i₋ = i₊ - 1 = 1 if tval < ts[1], i₊ = i₋ = lastindex(ts) if tval = ts[end],
+    # and otherwise i₋ and i₊ satisfy ts[i₋] ≤ tval < ts[i₊]
+    i₋ = max(1, OrdinaryDiffEq._searchsortedlast(ts,tval,1,tdir > 0))
+    i₊ = i₋ < lastindex(ts) ? i₋ + 1 : i₋
   end
+
+  @inbounds begin
+    dt = ts[i₊] - ts[i₋]
+    Θ = iszero(dt) ? oneunit(tval) / oneunit(dt) : (tval-ts[i₋]) / dt
+    sde_interpolant!(out,Θ,dt,timeseries[i₋],timeseries[i₊],idxs,deriv)
+  end
+
+  out
 end
 
-@inline function sde_interpolation!(vals,tvals,id,idxs,deriv,p,continuity::Symbol=:left)
+function sde_interpolation!(vals,tvals,id,idxs,deriv,p,continuity::Symbol=:left)
   @unpack ts,timeseries = id
-  tdir = sign(ts[end]-ts[1])
+  @inbounds tdir = sign(ts[end]-ts[1])
   idx = sortperm(tvals,rev=tdir<0)
-  tdir*tvals[idx[end]] > tdir*ts[end] && error("Solution interpolation cannot extrapolate past the final timepoint. Either solve on a longer timespan or use the local extrapolation from the integrator interface.")
-  tdir*tvals[idx[1]] < tdir*ts[1] && error("Solution interpolation cannot extrapolate before the first timepoint. Either start solving earlier or use the local extrapolation from the integrator interface.")
-  i = 2 # Start the search thinking it's between ts[1] and ts[2]
+
+  # start the search thinking it's in ts[1]-ts[2]
+  i₋ = 1
+  i₊ = 2
   @inbounds for j in idx
     t = tvals[j]
-    i = searchsortedfirst(@view(ts[i:end]),t,rev=tdir<0)+i-1 # It's in the interval ts[i-1] to ts[i]
-    if ts[i] == t
-      lasti = lastindex(ts)
-      k = continuity == :right && i+1 <= lasti && ts[i+1] == t ? i+1 : i
-      if idxs === nothing
-        vals[j] = timeseries[k]
-      else
-        vals[j] = timeseries[k][idxs]
-      end
-    elseif ts[i-1] == t # Can happen if it's the first value!
-      if idxs === nothing
-        vals[j] = timeseries[i-1]
-      else
-        vals[j] = timeseries[i-1][idxs]
-      end
+
+    if continuity === :left
+      # we have i₋ = i₊ = 1 if t = ts[1], i₊ = i₋ + 1 = lastindex(ts) if t > ts[end],
+      # and otherwise i₋ and i₊ satisfy ts[i₋] < t ≤ ts[i₊]
+      i₊ = min(lastindex(ts), OrdinaryDiffEq._searchsortedfirst(ts,t,i₊,tdir > 0))
+      i₋ = i₊ > 1 ? i₊ - 1 : i₊
     else
-      dt = ts[i] - ts[i-1]
-      Θ = (t-ts[i-1])/dt
-      if eltype(timeseries) <: AbstractArray
-        sde_interpolant!(vals[j],Θ,dt,timeseries[i-1],timeseries[i],idxs,deriv)
-      else
-        vals[j] = sde_interpolant(Θ,dt,timeseries[i-1],timeseries[i],idxs,deriv)
-      end
+      # we have i₋ = i₊ - 1 = 1 if t < ts[1], i₊ = i₋ = lastindex(ts) if t = ts[end],
+      # and otherwise i₋ and i₊ satisfy ts[i₋] ≤ t < ts[i₊]
+      i₋ = max(1, OrdinaryDiffEq._searchsortedlast(ts,t,i₋,tdir > 0))
+      i₊ = i₋ < lastindex(ts) ? i₋ + 1 : i₋
+    end
+
+    dt = ts[i₊] - ts[i₋]
+    Θ = iszero(dt) ? oneunit(t) / oneunit(dt) : (t-ts[i₋]) / dt
+
+    if eltype(timeseries) <: AbstractArray
+      sde_interpolant!(vals[j],Θ,dt,timeseries[i₋],timeseries[i₊],idxs,deriv)
+    else
+      vals[j] = sde_interpolant(Θ,dt,timeseries[i₋],timeseries[i₊],idxs,deriv)
     end
   end
+
+  vals
 end
