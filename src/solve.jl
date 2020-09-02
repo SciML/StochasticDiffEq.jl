@@ -117,6 +117,23 @@ function DiffEqBase.__init(
       error("Fixed timestep methods require a choice of dt or choosing the tstops")
   end
 
+  if alg isa StochasticCompositeAlgorithm && alg.choice_function isa AutoSwitch
+    auto = alg.choice_function
+    alg = StochasticCompositeAlgorithm(alg.algs,
+                             AutoSwitchCache(
+                                             0,
+                                             auto.nonstiffalg,
+                                             auto.stiffalg,
+                                             auto.stiffalgfirst,
+                                             auto.maxstiffstep,
+                                             auto.maxnonstiffstep,
+                                             auto.nonstifftol,
+                                             auto.stifftol,
+                                             auto.dtfac,
+                                             auto.stiffalgfirst,
+                                            ))
+  end
+
   f = prob.f
   p = prob.p
   g = prob isa DiffEqBase.AbstractSDEProblem ? prob.g : nothing
