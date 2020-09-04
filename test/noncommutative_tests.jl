@@ -96,7 +96,7 @@ dts = (1/2) .^ (6:-1:2) #14->7 good plot
 test_dt = 1/2 ^ (10)
 sim5 = analyticless_test_convergence(dts,prob2,EM(),test_dt,trajectories=300, use_noise_grid=false)
 @test abs(sim5.𝒪est[:final] - 0.5) < 0.2
-sim6 = analyticless_test_convergence(dts,prob2,RKMil_General(p=true,dt=test_dt),test_dt,trajectories=300, use_noise_grid=false)
+sim6 = analyticless_test_convergence(dts,prob2,RKMil_General(p=true,dt=test_dt),test_dt,trajectories=100, use_noise_grid=false)
 @test_broken abs(sim6.𝒪est[:final] - 1.0) < 0.2
 @test abs(sim6.𝒪est[:weak_final] - 1.0) < 0.2
 sim7 = analyticless_test_convergence(dts,prob2,EulerHeun(),test_dt,trajectories=300, use_noise_grid=false)
