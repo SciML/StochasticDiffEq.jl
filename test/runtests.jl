@@ -61,7 +61,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
 
   if !is_APPVEYOR && (GROUP == "All" || GROUP == "AlgConvergence2")
     @time @safetestset "IIF Convergence Tests" begin include("iif_methods.jl") end
-    @time @safetestset "Cummutative Noise Methods Tests" begin include("commutative_tests.jl") end
+    @time @safetestset "Commutative Noise Methods Tests" begin include("commutative_tests.jl") end
     @time @safetestset "Multivariate Geometric Tests" begin include("multivariate_geometric.jl") end
   end
 
