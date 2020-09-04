@@ -52,6 +52,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
     @time @safetestset "Multiple Dimension Linear Adaptive Test" begin include("adaptive/sde_twodimlinearadaptive_tests.jl") end
     @time @safetestset "Autostepsize Test" begin include("adaptive/sde_autostepsize_test.jl") end
     @time @safetestset "Additive Lorenz Attractor Test" begin include("adaptive/sde_lorenzattractor_tests.jl") end
+    @time @safetestset "Stochastic iterated integrals" begin include("levy_areas.jl") end
   end
 
   if !is_APPVEYOR && (GROUP == "All" || GROUP == "AlgConvergence")
@@ -60,7 +61,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
 
   if !is_APPVEYOR && (GROUP == "All" || GROUP == "AlgConvergence2")
     @time @safetestset "IIF Convergence Tests" begin include("iif_methods.jl") end
-    @time @safetestset "Cummutative Noise Methods Tests" begin include("commutative_tests.jl") end
+    @time @safetestset "Commutative Noise Methods Tests" begin include("commutative_tests.jl") end
     @time @safetestset "Multivariate Geometric Tests" begin include("multivariate_geometric.jl") end
   end
 

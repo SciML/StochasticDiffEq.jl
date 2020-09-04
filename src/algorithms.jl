@@ -60,13 +60,16 @@ RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
 Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
 Springer. Berlin Heidelberg (2011)
 """
-struct RKMil_General{T<:IteratedIntegralApprox} <: StochasticDiffEqAdaptiveAlgorithm
+struct RKMil_General{T<:IteratedIntegralApprox, TruncationType} <: StochasticDiffEqAdaptiveAlgorithm
   interpretation::Symbol
   ii_approx::T
   c::Int
+  p::TruncationType
 end
-function RKMil_General(;interpretation=:Ito, ii_approx=IIWiktorsson(), c = 1)
-  RKMil_General(interpretation, ii_approx, c)
+function RKMil_General(;interpretation=:Ito, ii_approx=IIWiktorsson(), c=1, p=nothing, dt=nothing)
+  γ = 1//1
+  p==true && (p = Int(floor(c*dt^(1//1-2//1*γ)) + 1))
+  RKMil_General(interpretation, ii_approx, c, p)
 end
 
 struct WangLi3SMil_A <: StochasticDiffEqAlgorithm end

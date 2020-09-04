@@ -203,6 +203,7 @@ end
 
 alg_needs_extra_process(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = false
 alg_needs_extra_process(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = max((alg_needs_extra_process(a) for a in alg.algs)...)
+alg_needs_extra_process(alg::RKMil_General) = true
 alg_needs_extra_process(alg::SRI) = true
 alg_needs_extra_process(alg::SRIW1) = true
 alg_needs_extra_process(alg::SRIW2) = true

@@ -297,13 +297,13 @@ end
   Wik = cache.WikJ
   dW = W.dW
 
-  WikJ = get_iterated_I!(dt, dW, Wik, integrator.alg.c)
+  WikJ = get_iterated_I(dt, dW, W.dZ, Wik, integrator.alg.p, integrator.alg.c, alg_order(integrator.alg))
 
   if alg_interpretation(integrator.alg) == :Ito
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
       WikJ = WikJ .- 1//2 .* dt
     else
-      WikJ -= 1//2 .* dt .* Eye{eltype(dW)}(length(dW))
+      WikJ -= 1//2 .* UniformScaling(dt)
     end
   end
 
@@ -360,7 +360,8 @@ end
   dW = W.dW;
   sqdt = integrator.sqdt
   Wik = cache.WikJ
-  get_iterated_I!(dt, dW, Wik, integrator.alg.c)
+
+  get_iterated_I!(dt, dW, W.dZ, Wik, integrator.alg.p, integrator.alg.c, alg_order(integrator.alg))
   WikJ = Wik.WikJ
 
   integrator.f(du₁,uprev,p,t)
@@ -372,7 +373,7 @@ end
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
       @.. WikJ -= 1//2*dt
     else
-      WikJ .-= 1//2 .* dt .* Eye{eltype(dW)}(length(dW))
+      WikJ -= 1//2 .* UniformScaling(dt)
     end
   end
 
@@ -413,6 +414,5 @@ end
                            integrator.opts.reltol, integrator.opts.internalnorm, t)
       integrator.EEst = integrator.opts.internalnorm(tmp,t)
   end
-
-  integrator.u = u
+  return nothing
 end
