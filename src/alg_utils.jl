@@ -38,7 +38,7 @@ alg_order(alg::RandomEM) = 1//2
 alg_order(alg::SimplifiedEM) = 1//2
 alg_order(alg::RKMil) = 1//1
 alg_order(alg::RKMilCommute) = 1//1
-alg_order(alg::RKMil_General) = 1//1
+alg_order(alg::RKMilGeneral) = 1//1
 
 # Generalised version of SROCK1, both Ito ans Stratonovich, will have strong order of 1//2
 # and weak order of 1 for Multidimensional Weiner process
@@ -112,7 +112,7 @@ alg_interpretation(alg::KomBurSROCK2) = :Stratonovich
 alg_interpretation(alg::RKMil{interpretation}) where {interpretation} = interpretation
 alg_interpretation(alg::SROCK1{interpretation}) where {interpretation} = interpretation
 alg_interpretation(alg::RKMilCommute{interpretation}) where {interpretation} = interpretation
-alg_interpretation(alg::RKMil_General) = alg.interpretation
+alg_interpretation(alg::RKMilGeneral) = alg.interpretation
 alg_interpretation(alg::ImplicitRKMil{CS,AD,F,S,N,T2,Controller,interpretation}) where {CS,AD,F,S,N,T2,Controller,interpretation} = interpretation
 
 alg_interpretation(alg::RS1) = :Stratonovich
@@ -192,7 +192,7 @@ alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::SimplifiedEM) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RKMil) = is_diagonal_noise(prob)
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::ImplicitRKMil) = is_diagonal_noise(prob)
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RKMilCommute) = true # No good check for commutative noise
-alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RKMil_General) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RKMilGeneral) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::IIF1M) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::IIF2M) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = max((alg_compatible(prob,a) for a in alg.algs)...)
@@ -203,7 +203,7 @@ end
 
 alg_needs_extra_process(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = false
 alg_needs_extra_process(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = max((alg_needs_extra_process(a) for a in alg.algs)...)
-alg_needs_extra_process(alg::RKMil_General) = true
+alg_needs_extra_process(alg::RKMilGeneral) = true
 alg_needs_extra_process(alg::SRI) = true
 alg_needs_extra_process(alg::SRIW1) = true
 alg_needs_extra_process(alg::SRIW2) = true

@@ -292,7 +292,7 @@ end
   end
 end
 
-@muladd function perform_step!(integrator,cache::RKMil_GeneralConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::RKMilGeneralConstantCache,f=integrator.f)
   @unpack t,dt,uprev,u,W,p = integrator
   Wik = cache.WikJ
   dW = W.dW
@@ -354,7 +354,7 @@ end
   integrator.u = u
 end
 
-@muladd function perform_step!(integrator,cache::RKMil_GeneralCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::RKMilGeneralCache,f=integrator.f)
   @unpack du₁, du₂, K, tmp, ggprime, L, mil_correction = cache
   @unpack t,dt,uprev,u,W,p = integrator
   dW = W.dW;

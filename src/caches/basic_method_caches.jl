@@ -145,11 +145,11 @@ function alg_cache(alg::RKMilCommute,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
   RKMilCommuteCache(u,uprev,du1,du2,K,gtmp,L,WikJ,Dg,mil_correction,Kj,Dgj,tmp)
 end
 
-struct RKMil_GeneralConstantCache{WikType} <: StochasticDiffEqConstantCache
+struct RKMilGeneralConstantCache{WikType} <: StochasticDiffEqConstantCache
   WikJ::WikType
 end
 
-@cache struct RKMil_GeneralCache{uType, rateType, rateNoiseType, WikType} <: StochasticDiffEqMutableCache
+@cache struct RKMilGeneralCache{uType, rateType, rateNoiseType, WikType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   tmp::uType
@@ -162,12 +162,12 @@ end
   WikJ::WikType
 end
 
-function alg_cache(alg::RKMil_General,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::RKMilGeneral,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   WikJ = get_WikJ(ΔW,prob,alg)
-  RKMil_GeneralConstantCache{typeof(WikJ)}(WikJ)
+  RKMilGeneralConstantCache{typeof(WikJ)}(WikJ)
 end
 
-function alg_cache(alg::RKMil_General,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
+function alg_cache(alg::RKMilGeneral,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}})
   tmp = zero(u)
   du₁ = zero(rate_prototype)
   du₂ = zero(rate_prototype)
@@ -176,5 +176,5 @@ function alg_cache(alg::RKMil_General,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate
   mil_correction = zero(u)
   ggprime = zero(noise_rate_prototype)
   WikJ = get_WikJ(ΔW,prob,alg)
-  RKMil_GeneralCache{typeof(u), typeof(rate_prototype), typeof(noise_rate_prototype), typeof(WikJ)}(u, uprev, tmp, du₁, du₂, K, L, mil_correction, ggprime, WikJ)
+  RKMilGeneralCache{typeof(u), typeof(rate_prototype), typeof(noise_rate_prototype), typeof(WikJ)}(u, uprev, tmp, du₁, du₂, K, L, mil_correction, ggprime, WikJ)
 end

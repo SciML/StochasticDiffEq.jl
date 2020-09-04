@@ -25,8 +25,8 @@ sim = test_convergence(dts,prob,RKMil(),save_everystep=false,trajectories=Int(1e
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
-println("RKMil_General")
-sim = test_convergence(dts,prob,RKMil_General(),save_everystep=false,trajectories=Int(1e4),
+println("RKMilGeneral")
+sim = test_convergence(dts,prob,RKMilGeneral(),save_everystep=false,trajectories=Int(1e4),
                         weak_timeseries_errors=false)
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3

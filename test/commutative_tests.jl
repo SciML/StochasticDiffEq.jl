@@ -35,8 +35,8 @@ ff_commute = SDEFunction(f_commute,σ,analytic=f_commute_analytic)
 prob = SDEProblem(ff_commute,σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,4))
 
 sol = solve(prob,RKMilCommute(),dt=1/2^(8))
-sol = solve(prob,RKMil_General(ii_approx=IICommutative()),dt=1/2^(8))
-sol = solve(prob,RKMil_General(p=2),dt=1/2^(10))
+sol = solve(prob,RKMilGeneral(ii_approx=IICommutative()),dt=1/2^(8))
+sol = solve(prob,RKMilGeneral(p=2),dt=1/2^(10))
 sol = solve(prob,EM(),dt=1/2^(10))
 
 dts = (1/2) .^ (10:-1:3) #14->7 good plot
@@ -46,8 +46,8 @@ sim2 = test_convergence(dts,prob,EM(),trajectories=Int(1e2))
 sim2 = test_convergence(dts,prob,RKMilCommute(),trajectories=Int(2e2))
 @test abs(sim2.𝒪est[:final] - 1.0) < 0.2
 
-sim2 = test_convergence(dts,prob,RKMil_General(ii_approx=IICommutative()),trajectories=Int(2e2))
+sim2 = test_convergence(dts,prob,RKMilGeneral(ii_approx=IICommutative()),trajectories=Int(2e2))
 @test abs(sim2.𝒪est[:final] - 1.0) < 0.2
 
-sim2 = test_convergence(dts,prob,RKMil_General(p=2),trajectories=Int(2e2))
+sim2 = test_convergence(dts,prob,RKMilGeneral(p=2),trajectories=Int(2e2))
 @test abs(sim2.𝒪est[:final] - 1.0) < 0.2

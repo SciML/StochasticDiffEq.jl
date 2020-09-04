@@ -26,7 +26,7 @@ sim  = test_convergence(dts,prob,ImplicitEulerHeun(symplectic=true),trajectories
 sim = test_convergence(dts,prob,RKMil(interpretation=:Stratonovich),trajectories=Int(5e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.2
 
-sim = test_convergence(dts,prob,RKMil_General(interpretation=:Stratonovich),trajectories=Int(5e2))
+sim = test_convergence(dts,prob,RKMilGeneral(interpretation=:Stratonovich),trajectories=Int(5e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.2
 
 sim  = test_convergence(dts,prob,ImplicitRKMil(interpretation=:Stratonovich),trajectories=Int(5e2))
@@ -65,7 +65,7 @@ println("RKMils")
 sim = test_convergence(dts,prob,RKMil(interpretation=:Stratonovich),trajectories=Int(1e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.2
 
-sim = test_convergence(dts,prob,RKMil_General(interpretation=:Stratonovich),trajectories=Int(1e2))
+sim = test_convergence(dts,prob,RKMilGeneral(interpretation=:Stratonovich),trajectories=Int(1e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.2
 
 sim  = test_convergence(dts,prob,ImplicitRKMil(interpretation=:Stratonovich),

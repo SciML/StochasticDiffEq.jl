@@ -315,7 +315,7 @@ function DiffEqBase.__init(
           W = WienerProcess!(t,rand_prototype,rand_prototype2,
                              save_everystep=save_noise,
                              rng = Xorshifts.Xoroshiro128Plus(_seed))
-        elseif typeof(alg) <: RKMil_General
+        elseif typeof(alg) <: RKMilGeneral
           m = length(rand_prototype)
           if alg.p != nothing
             rand_prototype2 = similar(rand_prototype,Int(m + alg.p*m*2))
@@ -363,7 +363,7 @@ function DiffEqBase.__init(
           W = WienerProcess(t,rand_prototype,rand_prototype2,
                              save_everystep=save_noise,
                              rng = Xorshifts.Xoroshiro128Plus(_seed))
-        elseif alg===RKMil_General()
+        elseif alg===RKMilGeneral()
           m = length(rand_prototype)
           if typeof(rand_prototype) <: Number || alg.p == nothing
             rand_prototype2 = nothing

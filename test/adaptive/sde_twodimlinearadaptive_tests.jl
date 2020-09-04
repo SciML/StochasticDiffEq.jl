@@ -12,10 +12,10 @@ sol1 =solve(prob,RKMil(),adaptive=true)
 err12 = sol1.errors[:final]
 @test err12 < err1
 
-sol1 =solve(prob,RKMil_General(),abstol=1,reltol=0,adaptive=true)
+sol1 =solve(prob,RKMilGeneral(),abstol=1,reltol=0,adaptive=true)
 err11 = sol1.errors[:final]
 
-sol1 =solve(prob,RKMil_General(),adaptive=true)
+sol1 =solve(prob,RKMilGeneral(),adaptive=true)
 err112 = sol1.errors[:final]
 @test err112 < err11
 

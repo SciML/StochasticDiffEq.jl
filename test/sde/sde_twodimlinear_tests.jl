@@ -10,7 +10,7 @@ sol = solve(prob,EM(),dt=1/2^(3))
 sol = solve(prob,LambaEM(),dt=1/2^(3))
 sol = solve(prob,LambaEulerHeun(),dt=1/2^(3))
 sol = solve(prob,RKMil(),dt=1/2^(3))
-sol = solve(prob,RKMil_General(),dt=1/2^(3))
+sol = solve(prob,RKMilGeneral(),dt=1/2^(3))
 sol = solve(prob,SRI(),dt=1/2^(3))
 sol = solve(prob,SRIW1(),dt=1/2^(3))
 sol = solve(prob,SRIW2(),dt=1/2^(3))
@@ -78,7 +78,7 @@ sim = test_convergence(dts,prob,ImplicitRKMil(nlsolve=StochasticDiffEq.NLFunctio
 sim2 = test_convergence(dts,prob,RKMil(),trajectories=1000)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 
-sim2 = test_convergence(dts,prob,RKMil_General(),trajectories=1000)
+sim2 = test_convergence(dts,prob,RKMilGeneral(),trajectories=1000)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 
 print(".")

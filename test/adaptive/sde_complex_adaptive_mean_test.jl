@@ -74,7 +74,7 @@ plot!(T, avg3)
 @test maximum(avg1-avg3) < 0.03
 
 
-#Adding Similar Tests for RKMil_General
+#Adding Similar Tests for RKMilGeneral
 # Simple averaging
 Ntraj = 1000
 avg1 = zeros(size(T)...)
@@ -88,20 +88,20 @@ let
     out1 = SavedValues(Float64,ComplexF64)
     scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
 
-    solve(prob1, RKMil_General(interpretation = :Stratonovich), dt=1e-4, callback=scb1, seed = i, adaptive = false)
+    solve(prob1, RKMilGeneral(interpretation = :Stratonovich), dt=1e-4, callback=scb1, seed = i, adaptive = false)
     avg1 .+= out1.saveval ./ Ntraj
 
     out1 = SavedValues(Float64,ComplexF64)
     scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
 
-    solve(prob1, RKMil_General(interpretation = :Stratonovich), tstops = T, callback=scb1,
+    solve(prob1, RKMilGeneral(interpretation = :Stratonovich), tstops = T, callback=scb1,
           save_everystep=false, save_start=false)
     avg2 .+= out1.saveval ./ Ntraj
 
     out1 = SavedValues(Float64,ComplexF64)
     scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
 
-    solve(prob2, RKMil_General(interpretation = :Stratonovich), tstops = T, callback=scb1,
+    solve(prob2, RKMilGeneral(interpretation = :Stratonovich), tstops = T, callback=scb1,
           save_everystep=false, save_start=false)
     avg3 .+= out1.saveval ./ Ntraj
   end

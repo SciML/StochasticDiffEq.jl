@@ -24,17 +24,17 @@ sim = test_convergence(dts,prob,RKMil(),save_everystep=false,trajectories=Int(1e
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
-println("RKMil_General")
-sim = test_convergence(dts,prob,RKMil_General(),save_everystep=false,trajectories=Int(1e4))
+println("RKMilGeneral")
+sim = test_convergence(dts,prob,RKMilGeneral(),save_everystep=false,trajectories=Int(1e4))
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
-println("RKMil_General")
+println("RKMilGeneral")
 sim = test_convergence(dts,prob,SROCK1(),save_everystep=false,trajectories=Int(1e4))
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
-println("RKMil_General")
+println("RKMilGeneral")
 dts = 1 .//2 .^(10:-1:1) #14->7 good plot
 sim = test_convergence(dts,prob,SROCK2(),save_everystep=false,trajectories=Int(4e4))
 @test abs(sim.𝒪est[:weak_final]-1.5) < 0.3

@@ -8,7 +8,7 @@ prob = prob_sde_linear
 println("Solve and Plot")
 sol = solve(prob,EM(),dt=1//2^(4))
 sol = solve(prob,RKMil(),dt=1//2^(4))
-sol = solve(prob,RKMil_General(),dt=1//2^(4))
+sol = solve(prob,RKMilGeneral(),dt=1//2^(4))
 sol = solve(prob,SRI(),dt=1//2^(4))
 sol = solve(prob,SRIW1(),dt=1//2^(4))
 trajectories = 100
@@ -20,7 +20,7 @@ sim = test_convergence(dts,prob,EM(),trajectories=trajectories)
 
 sim2 = test_convergence(dts,prob,RKMil(),trajectories=trajectories)
 
-sim21 = test_convergence(dts,prob,RKMil_General(),trajectories=trajectories)
+sim21 = test_convergence(dts,prob,RKMilGeneral(),trajectories=trajectories)
 
 sim3 = test_convergence(dts,prob,SRI(),trajectories=trajectories)
 
