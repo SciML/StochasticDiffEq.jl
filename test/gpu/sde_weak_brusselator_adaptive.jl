@@ -32,7 +32,7 @@ numtraj= 100
 seeds = rand(UInt, numtraj)
 W = WienerProcess(0.0,0.0,0.0)
 
-#CuArrays.allowscalar(false)
+CUDA.allowscalar(false)
 u0 = [-0.1f0,0.0f0]
 tspan = (0.0f0,100.0f0)
 p = [1.9f0,0.1f0]
@@ -113,7 +113,7 @@ sol = @time solve(ensembleprob,DRI1(),EnsembleCPUArray(),trajectories=numtraj)
 # seeds = rand(UInt, numtraj)
 # W = WienerProcess(0.0,0.0,0.0)
 #
-# #CuArrays.allowscalar(false)
+# #CUDA.allowscalar(false)
 # u0 = [-0.1f0,0.0f0]
 # tspan = (0.0f0,100.0f0)
 # p = [1.9f0,0.1f0]
