@@ -9,6 +9,7 @@ variables:
     - .test
   tags:
     - nvidia
+    - fastcpu
 
 test-weak:
   extends: .base
