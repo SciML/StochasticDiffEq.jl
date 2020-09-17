@@ -7,17 +7,8 @@ import LinearAlgebra # for the normn
 using StochasticDiffEq
 using Test
 using Random
+using DiffEqDevTools
 #using DiffEqGPU
-
-function generate_weak_solutions(prob, alg, dts, numtraj; ensemblealg=EnsembleThreads())
-  sols = []
-  for i in 1:length(dts)
-    sol = solve(prob,alg;ensemblealg=ensemblealg,dt=dts[i],save_start=false,save_everystep=false,weak_timeseries_errors=false,weak_dense_errors=false,trajectories=Int(numtraj))
-    println(i)
-    push!(sols,sol)
-  end
-  return sols
-end
 
 function prob_func(prob, i, repeat)
     remake(prob,seed=seeds[i])
@@ -50,15 +41,14 @@ ensemble_prob = EnsembleProblem(prob;
         output_func = (sol,i) -> (h1(sol[end]),false),
         prob_func = prob_func
         )
-_solutions = @time generate_weak_solutions(ensemble_prob, PL1WM(), dts, numtraj, ensemblealg=EnsembleThreads())
 
-errors =  [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]))) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-#using Plots; convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
-#savefig(convergence_plot, "PL1WM-scalar.png")
-println("PL1WM:", m)
+sim = test_convergence(dts,ensemble_prob,PL1WM(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=u₀.*exp(1.0*(p[1]))
+    )
+@test abs(sim.𝒪est[:weak_final]-2) < 0.34 # order is 2.34
+println("PL1WM:", sim.𝒪est[:weak_final])
 
 
 """
@@ -87,14 +77,13 @@ seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
-
-_solutions = @time generate_weak_solutions(ensemble_prob, PL1WM(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors =  [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]))) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-println("PL1WM:", m)
+sim = test_convergence(dts,ensemble_prob,PL1WM(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=u₀.*exp(1.0*(p[1]))
+    )
+@test abs(sim.𝒪est[:weak_final]-2) < 0.34 # order is 2.34
+println("PL1WM:", sim.𝒪est[:weak_final])
 
 """
  Test non-commutative noise SDEs (iip)
@@ -144,15 +133,13 @@ seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
-
-_solutions = @time generate_weak_solutions(ensemble_prob, PL1WM(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-u₀[1]*exp(2*1.0)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.33
-
-println("PL1WM:", m)
-
+sim = test_convergence(dts,ensemble_prob,PL1WM(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=u₀[1]*exp(2*1.0)
+    )
+@test abs(sim.𝒪est[:weak_final]-2) < 0.33 # order is 1.6748033428458136
+println("PL1WM:", sim.𝒪est[:weak_final])
 
 
 """
@@ -186,14 +173,13 @@ seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
-_solutions = @time generate_weak_solutions(ensemble_prob, PL1WM(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-println("PL1WM:", m)
-
+sim = test_convergence(dts,ensemble_prob,PL1WM(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=1//100*exp(301//100)
+    )
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+println("PL1WM:", sim.𝒪est[:weak_final])
 
 
 """
@@ -217,15 +203,26 @@ ensemble_prob = EnsembleProblem(prob;
         output_func = (sol,i) -> (sol[end],false),
         prob_func = prob_func
         )
-_solutions = @time generate_weak_solutions(ensemble_prob, PL1WM(), dts, numtraj, ensemblealg=EnsembleThreads())
-_solutions1 = @time generate_weak_solutions(ensemble_prob, PL1WMA(), dts, numtraj, ensemblealg=EnsembleThreads())
 
-errors =  [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]))) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-@test minimum(_solutions .≈ _solutions1)
+sim = test_convergence(dts,ensemble_prob,PL1WM(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=u₀.*exp(1.0*(p[1]))
+    )
 
-println("PL1WM:", m)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+println("PL1WM:", sim.𝒪est[:weak_final])
+
+sim1 = test_convergence(dts,ensemble_prob,PL1WMA(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=u₀.*exp(1.0*(p[1]))
+    )
+
+@test abs(sim1.𝒪est[:weak_final]-2) < 0.3
+println("PL1WMA:", sim1.𝒪est[:weak_final])
+
+@test minimum(sim.solutions .≈ sim1.solutions)
 
 #inplace
 
@@ -236,13 +233,27 @@ gadd!(du,u,p,t) = @.(du = p[2])
 
 prob = SDEProblem(fadd!,gadd!,u₀,tspan,p)
 ensemble_prob = EnsembleProblem(prob;
-        output_func = (sol,i) -> (sol[end],false),
+        output_func = (sol,i) -> (sol[end][1],false),
         prob_func = prob_func
         )
-_solutions = @time generate_weak_solutions(ensemble_prob, PL1WM(), dts, numtraj, ensemblealg=EnsembleThreads())
-_solutions1 = @time generate_weak_solutions(ensemble_prob, PL1WMA(), dts, numtraj, ensemblealg=EnsembleThreads())
 
-errors =  [LinearAlgebra.norm(Statistics.mean(sol.u) .- u₀.*exp(1.0*(p[1]))) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-@test minimum(_solutions .≈ _solutions1)
+
+sim = test_convergence(dts,ensemble_prob,PL1WM(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=u₀.*exp(1.0*(p[1]))
+)
+
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+println("PL1WM:", sim.𝒪est[:weak_final])
+
+sim1 = test_convergence(dts,ensemble_prob,PL1WMA(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=u₀.*exp(1.0*(p[1]))
+    )
+
+@test abs(sim1.𝒪est[:weak_final]-2) < 0.3
+println("PL1WMA:", sim1.𝒪est[:weak_final])
+
+@test minimum(sim.solutions .≈ sim1.solutions)

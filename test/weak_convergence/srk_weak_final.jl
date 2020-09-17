@@ -3,28 +3,13 @@
  DRI1, RI1, RI3, RI5, RI6, RDI1WM, RDI2WM, RDI3WM, RDI4WM
 """
 
-
 import Statistics # for mean values of trajectories
 import LinearAlgebra # for the normn
 using StochasticDiffEq
 using Test
 using Random
+using DiffEqDevTools
 #using DiffEqGPU
-
-#using Plots
-
-function generate_weak_solutions(prob, alg, dts, numtraj; ensemblealg=EnsembleThreads())
-  sols = []
-  for i in 1:length(dts)
-    sol = solve(prob,alg;ensemblealg=ensemblealg,dt=dts[i],adaptive=false,
-      save_start=false,save_everystep=false,weak_timeseries_errors=false,weak_dense_errors=false,
-      trajectories=Int(numtraj))
-    println(i)
-    push!(sols,sol)
-  end
-  return sols
-end
-
 
 function prob_func(prob, i, repeat)
     remake(prob,seed=seeds[i])
@@ -57,116 +42,111 @@ ensemble_prob = EnsembleProblem(prob;
         output_func = (sol,i) -> (h1(asinh(sol[end])),false),
         prob_func = prob_func
         )
-_solutions = @time generate_weak_solutions(ensemble_prob, DRI1(), dts, numtraj, ensemblealg=EnsembleThreads())
 
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
 
-#convergence_plot = plot(dts, errors, xaxis=:log, yaxis=:log)
-#savefig(convergence_plot, "DRI1-CPU-final-"*string(numtraj)*".pdf")
-println("DRI1:", m)
+sim = test_convergence(dts,ensemble_prob,DRI1(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=0.0
+)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+println("DRI1:", sim.𝒪est[:weak_final])
 
-numtraj = Int(5e5)
-seed = 100
-Random.seed!(seed)
-seeds = rand(UInt, numtraj)
-
-_solutions = @time generate_weak_solutions(ensemble_prob, RI1(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-println("RI1:", m)
 
 numtraj = Int(5e5)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
-_solutions = @time generate_weak_solutions(ensemble_prob, RI3(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-println("RI3:", m)
+sim = test_convergence(dts,ensemble_prob,RI1(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=0.0
+)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+println("RI1:", sim.𝒪est[:weak_final])
 
 numtraj = Int(5e5)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
-_solutions = @time generate_weak_solutions(ensemble_prob, RI5(), dts, numtraj, ensemblealg=EnsembleThreads())
+sim = test_convergence(dts,ensemble_prob,RI3(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=0.0
+)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+println("RI3:", sim.𝒪est[:weak_final])
 
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
+numtraj = Int(5e5)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
 
-println("RI5:", m)
-
+sim = test_convergence(dts,ensemble_prob,RI5(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=0.0
+)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+println("RI5:", sim.𝒪est[:weak_final])
 
 numtraj = Int(7e5)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
-_solutions = @time generate_weak_solutions(ensemble_prob, RI6(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-println("RI6:", m)
+sim = test_convergence(dts,ensemble_prob,RI6(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=0.0
+)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+println("RI6:", sim.𝒪est[:weak_final])
 
 numtraj = Int(1e3)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
-_solutions = @time generate_weak_solutions(ensemble_prob, RDI1WM(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-1) < 0.3
-
-println("RDI1WM:", m)
-
+sim = test_convergence(dts,ensemble_prob,RDI1WM(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=0.0
+)
+@test abs(sim.𝒪est[:weak_final]-1) < 0.3
+println("RDI1WM:", sim.𝒪est[:weak_final])
 
 numtraj = Int(7e5)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
-_solutions = @time generate_weak_solutions(ensemble_prob, RDI2WM(), dts, numtraj, ensemblealg=EnsembleThreads())
 
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
+sim = test_convergence(dts,ensemble_prob,RDI2WM(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=0.0
+)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+println("RDI2WM:", sim.𝒪est[:weak_final])
 
-println("RDI2WM:", m)
+sim = test_convergence(dts,ensemble_prob,RDI3WM(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=0.0
+)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+println("RDI3WM:", sim.𝒪est[:weak_final])
 
-_solutions = @time generate_weak_solutions(ensemble_prob, RDI3WM(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-numtraj = Int(3e5)
-seed = 100
-Random.seed!(seed)
-seeds = rand(UInt, numtraj)
-
-println("RDI3WM:", m)
-
-_solutions = @time generate_weak_solutions(ensemble_prob, RDI4WM(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-println("RDI4WM:", m)
+sim = test_convergence(dts,ensemble_prob,RDI4WM(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=0.0
+)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3 # order is 2.568 with 3e5 trajectories
+println("RDI4WM:", sim.𝒪est[:weak_final])
 
 """
  Test Scalar SDEs (iip)
@@ -195,120 +175,119 @@ Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
 
-_solutions = @time generate_weak_solutions(ensemble_prob, DRI1(), dts, numtraj, ensemblealg=EnsembleThreads())
+sim = test_convergence(dts,ensemble_prob,DRI1(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=0.0
+)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+println("DRI1:", sim.𝒪est[:weak_final])
 
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
 
-
-_solutions = @time generate_weak_solutions(ensemble_prob, DRI1NM(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-println("DRI1NM:", m)
-
-numtraj = Int(5e5)
-seed = 100
-Random.seed!(seed)
-seeds = rand(UInt, numtraj)
-
-_solutions = @time generate_weak_solutions(ensemble_prob, RI1(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-println("RI1:", m)
+sim = test_convergence(dts,ensemble_prob,DRI1NM(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=0.0
+)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+println("DRI1NM:", sim.𝒪est[:weak_final])
 
 numtraj = Int(5e5)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
-_solutions = @time generate_weak_solutions(ensemble_prob, RI3(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-println("RI3:", m)
+sim = test_convergence(dts,ensemble_prob,RI1(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=0.0
+)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+println("RI1:", sim.𝒪est[:weak_final])
 
 numtraj = Int(5e5)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
-_solutions = @time generate_weak_solutions(ensemble_prob, RI5(), dts, numtraj, ensemblealg=EnsembleThreads())
+sim = test_convergence(dts,ensemble_prob,RI3(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=0.0
+)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+println("RI3:", sim.𝒪est[:weak_final])
 
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
 
-println("RI5:", m)
+numtraj = Int(5e5)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
 
+sim = test_convergence(dts,ensemble_prob,RI5(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=0.0
+)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+println("RI5:", sim.𝒪est[:weak_final])
 
 numtraj = Int(7e5)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
-_solutions = @time generate_weak_solutions(ensemble_prob, RI6(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-println("RI6:", m)
+sim = test_convergence(dts,ensemble_prob,RI6(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=0.0
+)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+println("RI6:", sim.𝒪est[:weak_final])
 
 numtraj = Int(1e3)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
-_solutions = @time generate_weak_solutions(ensemble_prob, RDI1WM(), dts, numtraj, ensemblealg=EnsembleThreads())
+sim = test_convergence(dts,ensemble_prob,RDI1WM(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=0.0
+)
+@test abs(sim.𝒪est[:weak_final]-1) < 0.3
+println("RDI1WM:", sim.𝒪est[:weak_final])
 
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-1) < 0.3
-
-println("RDI1WM:", m)
 
 numtraj = Int(7e5)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
-_solutions = @time generate_weak_solutions(ensemble_prob, RDI2WM(), dts, numtraj, ensemblealg=EnsembleThreads())
+sim = test_convergence(dts,ensemble_prob,RDI2WM(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=0.0
+)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+println("RDI2WM:", sim.𝒪est[:weak_final])
 
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
+sim = test_convergence(dts,ensemble_prob,RDI3WM(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=0.0
+)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+println("RDI3WM:", sim.𝒪est[:weak_final])
 
-println("RDI2WM:", m)
+sim = test_convergence(dts,ensemble_prob,RDI4WM(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=0.0
+)
+@test -(sim.𝒪est[:weak_final]-2) < 0.3
+println("RDI4WM:", sim.𝒪est[:weak_final])
 
-numtraj = Int(3e5)
-seed = 100
-Random.seed!(seed)
-seeds = rand(UInt, numtraj)
-
-_solutions = @time generate_weak_solutions(ensemble_prob, RDI3WM(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-println("RDI3WM:", m)
-
-_solutions = @time generate_weak_solutions(ensemble_prob, RDI4WM(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-println("RDI4WM:", m)
 
 """
  Test Diagonal noise SDEs (iip), SIAM Journal on Numerical Analysis, 47 (2009), pp. 1713–1738
@@ -341,48 +320,46 @@ seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
-_solutions = @time generate_weak_solutions(ensemble_prob, DRI1(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-println("DRI1:", m)
-
-
-_solutions = @time generate_weak_solutions(ensemble_prob, DRI1NM(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-println("DRI1NM:", m)
+sim = test_convergence(dts,ensemble_prob,DRI1(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=1//100*exp(301//100)
+)
+@test -(sim.𝒪est[:weak_final]-2) < 0.3 # order is 2.91
+println("DRI1:", sim.𝒪est[:weak_final])
 
 
-_solutions = @time generate_weak_solutions(ensemble_prob, RI1(), dts, numtraj, ensemblealg=EnsembleThreads())
+sim = test_convergence(dts,ensemble_prob,DRI1NM(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=1//100*exp(301//100)
+)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3 # order is 2.91
+println("DRI1NM:", sim.𝒪est[:weak_final])
 
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
+sim = test_convergence(dts,ensemble_prob,RI1(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=1//100*exp(301//100)
+)
+@test -(sim.𝒪est[:weak_final]-2) < 0.3 # order is 3.05
+println("RI1:", sim.𝒪est[:weak_final])
 
-println("RI1:", m)
+sim = test_convergence(dts,ensemble_prob,RI3(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=1//100*exp(301//100)
+)
+@test -(sim.𝒪est[:weak_final]-2) < 0.3 # order is 2.77
+println("RI3:", sim.𝒪est[:weak_final])
 
-
-_solutions = @time generate_weak_solutions(ensemble_prob, RI3(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-println("RI3:", m)
-
-_solutions = @time generate_weak_solutions(ensemble_prob, RI5(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-println("RI5:", m)
+sim = test_convergence(dts,ensemble_prob,RI5(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=1//100*exp(301//100)
+)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+println("RI5:", sim.𝒪est[:weak_final])
 
 
 numtraj = Int(1e5)
@@ -390,13 +367,13 @@ seed = 70
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
-_solutions = @time generate_weak_solutions(ensemble_prob, RI6(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.45
-
-println("RI6:", m)
+sim = test_convergence(dts,ensemble_prob,RI6(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=1//100*exp(301//100)
+)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.45 # order is 1.55
+println("R6:", sim.𝒪est[:weak_final])
 
 
 numtraj = Int(1e3)
@@ -404,13 +381,13 @@ seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
-_solutions = @time generate_weak_solutions(ensemble_prob, RDI1WM(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-1) < 0.45
-
-println("RDI1WM:", m)
+sim = test_convergence(dts,ensemble_prob,RDI1WM(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=1//100*exp(301//100)
+)
+@test abs(sim.𝒪est[:weak_final]-1) < 0.45 # order is 1.44
+println("RDI1WM:", sim.𝒪est[:weak_final])
 
 
 numtraj = Int(1e5)
@@ -418,13 +395,13 @@ seed = 70
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
-_solutions = @time generate_weak_solutions(ensemble_prob, RDI2WM(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.45
-
-println("RDI2WM:", m)
+sim = test_convergence(dts,ensemble_prob,RDI2WM(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=1//100*exp(301//100)
+)
+@test abs(sim.𝒪est[:weak_final]-2) < 0.45 # order is 1.55
+println("RDI2WM:", sim.𝒪est[:weak_final])
 
 
 numtraj = Int(5e4)
@@ -432,18 +409,18 @@ seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
-_solutions = @time generate_weak_solutions(ensemble_prob, RDI3WM(), dts, numtraj, ensemblealg=EnsembleThreads())
+sim = test_convergence(dts,ensemble_prob,RDI3WM(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=1//100*exp(301//100)
+)
+@test -(sim.𝒪est[:weak_final]-2) < 0.3 # order is 2.84
+println("RDI3WM:", sim.𝒪est[:weak_final])
 
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-println("RDI3WM:", m)
-
-_solutions = @time generate_weak_solutions(ensemble_prob, RDI4WM(), dts, numtraj, ensemblealg=EnsembleThreads())
-
-errors = [LinearAlgebra.norm(Statistics.mean(sol.u)-1//100*exp(301//100)) for sol in _solutions]
-m = log(errors[end]/errors[1])/log(dts[end]/dts[1])
-@test -(m-2) < 0.3
-
-println("RDI4WM:", m)
+sim = test_convergence(dts,ensemble_prob,RDI4WM(),
+    save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
+    weak_timeseries_errors=false,weak_dense_errors=false,
+    expected_value=1//100*exp(301//100)
+)
+@test -(sim.𝒪est[:weak_final]-2) < 0.3 # order is 2.91
+println("RDI4WM:", sim.𝒪est[:weak_final])
