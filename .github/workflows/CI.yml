@@ -9,6 +9,20 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        group:
+          - Interface
+          - Interface2
+          - Interface3
+          - AlgConvergence
+          - AlgConvergence2
+          - AlgConvergence3
+          - WeakConvergence1
+          - WeakConvergence2
+          - WeakConvergence3
+          - WeakConvergence4
+          - WeakConvergence5
     steps:
       - uses: actions/checkout@v2
       - uses: julia-actions/setup-julia@v1
@@ -26,6 +40,8 @@ jobs:
             ${{ runner.os }}-
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
+        env:
+          GROUP: ${{ matrix.group }}
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v1
         with:
