@@ -1,7 +1,7 @@
 name = "StochasticDiffEq"
 uuid = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
 authors = ["Chris Rackauckas <accounts@chrisrackauckas.com>"]
-version = "6.26.0"
+version = "6.27.0"
 
 [deps]
 ArrayInterface = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
@@ -37,7 +37,7 @@ FiniteDiff = "2"
 ForwardDiff = "0.10.3"
 MuladdMacro = "0.2.1"
 NLsolve = "4"
-OrdinaryDiffEq = "5.38"
+OrdinaryDiffEq = "5.46"
 RandomNumbers = "1"
 RecursiveArrayTools = "2"
 Reexport = "0.2"
