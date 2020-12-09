@@ -211,10 +211,9 @@ function DiffEqBase.__init(
     noise_rate_prototype = nothing
   end
 
-  tstops_internal, saveat_internal, d_discontinuities_internal =
-    tstop_saveat_disc_handling(tstops, saveat, d_discontinuities, tspan)
-
-
+  tstops_internal = OrdinaryDiffEq.initialize_tstops(tType, tstops, d_discontinuities, tspan)
+  saveat_internal = OrdinaryDiffEq.initialize_saveat(tType, saveat, tspan)
+  d_discontinuities_internal = OrdinaryDiffEq.initialize_d_discontinuities(tType, d_discontinuities, tspan)
 
   ### Algorithm-specific defaults ###
   # if save_idxs === nothing
@@ -608,56 +607,6 @@ function handle_dt!(integrator)
   elseif integrator.opts.adaptive && integrator.dt > zero(integrator.dt) && integrator.tdir < 0
     integrator.dt *= integrator.tdir # Allow positive dt, but auto-convert
   end
-end
-
-function tstop_saveat_disc_handling(tstops, saveat, d_discontinuities, tspan)
-  t0, tf = tspan
-  tType = eltype(tspan)
-  tdir = sign(tf - t0)
-
-  tdir_t0 = tdir * t0
-  tdir_tf = tdir * tf
-
-  # time stops
-  tstops_internal = BinaryMinHeap{tType}()
-  if isempty(d_discontinuities) && isempty(tstops) # TODO: Specialize more
-    push!(tstops_internal, tdir_tf)
-  else
-    for t in tstops
-      tdir_t = tdir * t
-      tdir_t0 < tdir_t ≤ tdir_tf && push!(tstops_internal, tdir_t)
-    end
-
-    for t in d_discontinuities
-      tdir_t = tdir * t
-      tdir_t0 < tdir_t ≤ tdir_tf && push!(tstops_internal, tdir_t)
-    end
-
-    push!(tstops_internal, tdir_tf)
-  end
-
-  # saving time points
-  saveat_internal = BinaryMinHeap{tType}()
-  if typeof(saveat) <: Number
-    directional_saveat = tdir * abs(saveat)
-    for t in (t0 + directional_saveat):directional_saveat:tf
-      push!(saveat_internal, tdir * t)
-    end
-  elseif !isempty(saveat)
-    for t in saveat
-      tdir_t = tdir * t
-      tdir_t0 < tdir_t < tdir_tf && push!(saveat_internal, tdir_t)
-    end
-  end
-
-  # discontinuities
-  d_discontinuities_internal = BinaryMinHeap{tType}()
-  sizehint!(d_discontinuities_internal.valtree, length(d_discontinuities))
-  for t in d_discontinuities
-    push!(d_discontinuities_internal, tdir * t)
-  end
-
-  tstops_internal, saveat_internal, d_discontinuities_internal
 end
 
 function initialize_callbacks!(integrator, initialize_save = true)
