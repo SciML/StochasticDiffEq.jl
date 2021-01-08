@@ -9,6 +9,7 @@ steps:
     agents:
       queue: "juliagpu"
       cuda: "*"
+      fastcpu: "true"
     env:
       GROUP: 'WeakConvergence'
     timeout_in_minutes: 120
@@ -25,6 +26,7 @@ steps:
     agents:
       queue: "juliagpu"
       cuda: "*"
+      fastcpu: "true"
     env:
       GROUP: 'WeakAdaptive'
     timeout_in_minutes: 120
