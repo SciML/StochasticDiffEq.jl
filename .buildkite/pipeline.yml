@@ -9,14 +9,11 @@ steps:
     agents:
       queue: "juliagpu"
       cuda: "*"
+    env:
+      GROUP: 'WeakConvergence'
     timeout_in_minutes: 120
     # Don't run Buildkite if the commit message includes the text [skip tests]
     if: build.message !~ /\[skip tests\]/
-
-env:
-  GROUP: WeakConvergence
-  JULIA_PKG_SERVER: "" # it often struggles with our large artifacts
-  # SECRET_CODECOV_TOKEN: "..."
 
 steps:
   - label: "WeakAdaptive"
@@ -29,11 +26,12 @@ steps:
     agents:
       queue: "juliagpu"
       cuda: "*"
+    env:
+      GROUP: 'WeakAdaptive'
     timeout_in_minutes: 120
     # Don't run Buildkite if the commit message includes the text [skip tests]
     if: build.message !~ /\[skip tests\]/
 
 env:
-  GROUP: WeakAdaptive
   JULIA_PKG_SERVER: "" # it often struggles with our large artifacts
   # SECRET_CODECOV_TOKEN: "..."
