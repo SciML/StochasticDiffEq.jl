@@ -115,7 +115,7 @@ last_step_failed(integrator::SDEIntegrator) =
       end
     end
   end
-  if force_save || integrator.opts.save_everystep
+  if force_save || (integrator.opts.save_everystep && (isempty(integrator.sol.t) || (integrator.t !== integrator.sol.t[end])))
     integrator.saveiter += 1; saved, savedexactly = true, true
     if integrator.opts.save_idxs === nothing
       copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u)
