@@ -2,7 +2,7 @@
 
 [![Join the chat at https://gitter.im/JuliaDiffEq/Lobby](https://badges.gitter.im/JuliaDiffEq/Lobby.svg)](https://gitter.im/JuliaDiffEq/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://github.com/SciML/StochasticDiffEq.jl/workflows/CI/badge.svg)](https://github.com/SciML/StochasticDiffEq.jl/actions?query=workflow%3ACI)
-[![GitlabCI](https://gitlab.com/JuliaGPU/StochasticDiffEq.jl/badges/master/pipeline.svg)](https://gitlab.com/JuliaGPU/StochasticDiffEq.jl/pipelines)
+[![Build status](https://badge.buildkite.com/6fb92a51b843f3e8a3a278678fe513c86a6d0d86895847fc52.svg?branch=master)](https://buildkite.com/julialang/stochasticdiffeq-dot-jl)
 
 StochasticDiffEq.jl is a component package in the DifferentialEquations ecosystem. It holds the
 stochastic differential equations solvers and utilities. While completely independent
