@@ -65,7 +65,7 @@ function sde_determine_initdt(u0::uType,t::tType,tdir,dtmax,abstol,reltol,intern
   if max(d₁,d₂)<=T1(1//Int64(10)^(15))
     dt₁ = max(smalldt,dt₀*1//10^(3))
   else
-    dt₁ = tType(10.0^(-(2+log10(max(d₁,d₂)))/(order+.5)))
+    dt₁ = tType(10^(-(2+log10(max(d₁,d₂)))/(order+1//2)))
   end
   dt = tdir*max(dtmin, min(100dt₀,dt₁,tdir*dtmax))
 end
