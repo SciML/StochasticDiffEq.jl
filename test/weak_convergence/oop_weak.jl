@@ -2,7 +2,7 @@ using StochasticDiffEq, DiffEqDevTools, Test
 using Random
 using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems
 importsdeproblems()
-using DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear, prob_sde_2Dlinear
+using DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear
 Random.seed!(100)
 dts = 1 .//2 .^(7:-1:3) #14->7 good plot
 
@@ -24,17 +24,22 @@ sim = test_convergence(dts,prob,RKMil(),save_everystep=false,trajectories=Int(1e
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
+println("RKMilCommute")
+sim = test_convergence(dts,prob,RKMilCommute(),save_everystep=false,trajectories=Int(1e4))
+@test abs(sim.𝒪est[:weak_final]-1) < 0.3
+#@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
+#@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
 println("RKMilGeneral")
 sim = test_convergence(dts,prob,RKMilGeneral(),save_everystep=false,trajectories=Int(1e4))
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
-println("RKMilGeneral")
+println("SROCK1")
 sim = test_convergence(dts,prob,SROCK1(),save_everystep=false,trajectories=Int(1e4))
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
-println("RKMilGeneral")
+println("SROCK2")
 dts = 1 .//2 .^(10:-1:1) #14->7 good plot
 sim = test_convergence(dts,prob,SROCK2(),save_everystep=false,trajectories=Int(4e4))
 @test abs(sim.𝒪est[:weak_final]-1.5) < 0.3

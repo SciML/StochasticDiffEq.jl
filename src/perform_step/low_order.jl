@@ -246,12 +246,70 @@ end
   end
 end
 
+@muladd function perform_step!(integrator,cache::RKMilCommuteConstantCache,f=integrator.f)
+  @unpack t,dt,uprev,u,W,p = integrator
+  dW = W.dW; sqdt = integrator.sqdt
+
+  ggprime_norm = 0.0
+
+  mil_correction = zero(u)
+  if alg_interpretation(integrator.alg) == :Ito
+    if typeof(dW) <: Number
+      WikJ = 0.5 .* ((dW) .* (dW)'  .- dt)
+    else
+      WikJ = 0.5 .* (vec(dW) .* vec(dW)'  .- dt .* Eye{eltype(W.dW)}(length(W.dW)))
+    end
+  else
+    if typeof(dW) <: Number
+      WikJ = 0.5 * dW .* dW'
+    else
+      WikJ = 0.5 .* vec(dW) .* vec(dW)'
+    end
+  end
+
+  du1 = integrator.f(uprev,p,t)
+  L = integrator.g(uprev,p,t)
+
+  K = uprev + dt*du1
+  for j = 1:length(dW)
+    if typeof(dW) <: Number
+      Kj = K + sqdt*L
+    else
+      Kj = K + sqdt*@view(L[:,j])
+    end
+    gtmp = integrator.g(Kj,p,t)
+    Dgj = (gtmp - L)/sqdt
+    if integrator.opts.adaptive
+        ggprime_norm += integrator.opts.internalnorm(Dgj,t)
+    end
+    if typeof(dW) <: Number
+      tmp = Dgj*WikJ
+    else
+      tmp = Dgj*@view(WikJ[:,j])
+    end
+    mil_correction += tmp
+  end
+  tmp = L*dW
+  u = uprev + dt*du1 + tmp + mil_correction
+
+  if integrator.opts.adaptive
+      En = integrator.opts.internalnorm(dW,t)^3*ggprime_norm^2 / 6
+      du2 = integrator.f(K,p,t+dt)
+      tmp = integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2,t) + En
+
+      tmp = calculate_residuals(tmp, uprev, u, integrator.opts.abstol,
+                           integrator.opts.reltol, integrator.opts.internalnorm, t)
+      integrator.EEst = integrator.opts.internalnorm(tmp,t)
+
+  end
+  integrator.u = u
+end
+
 @muladd function perform_step!(integrator,cache::RKMilCommuteCache,f=integrator.f)
   @unpack du1,du2,K,gtmp,L = cache
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack WikJ,mil_correction,Kj,Dgj,tmp = cache
   dW = W.dW; sqdt = integrator.sqdt
-  f = integrator.f; g = integrator.g
 
   ggprime_norm = 0.0
 
@@ -269,7 +327,7 @@ end
   for j = 1:length(dW)
     @.. Kj = K + sqdt*@view(L[:,j]) # This works too
     #Kj .= uprev .+ sqdt*L[:,j]
-    g(gtmp,Kj,p,t)
+    integrator.g(gtmp,Kj,p,t)
     @.. Dgj = (gtmp - L)/sqdt
     if integrator.opts.adaptive
         ggprime_norm += integrator.opts.internalnorm(Dgj,t)
