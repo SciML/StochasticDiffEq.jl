@@ -226,7 +226,7 @@ function get_WikJ(ΔW,prob,alg)
     elseif alg.ii_approx isa IICommutative
       return WikJCommute_oop()
     else
-      return KPWJ_oop #WikJGeneral_oop(ΔW)
+      return KPWJ_oop() #WikJGeneral_oop(ΔW)
     end
   end
 end
