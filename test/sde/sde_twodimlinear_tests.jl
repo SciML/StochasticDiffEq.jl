@@ -109,6 +109,7 @@ print(".")
 
 eigen_est = (integrator) -> integrator.eigen_est = 10.0
 for Alg in [SROCK1, SROCK2], alg in [Alg(), Alg(eigen_est=eigen_est)]
+  local sim2
   sim2 = test_convergence(dts,prob,alg,trajectories=100)
   @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 end
