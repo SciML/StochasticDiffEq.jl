@@ -231,6 +231,22 @@ function get_WikJ(ΔW,prob,alg)
   end
 end
 
+function get_WikJ(ΔW,prob,alg::RKMilCommute)
+  if isinplace(prob)
+    if typeof(ΔW) <: Number || is_diagonal_noise(prob)
+      return WikJDiagonal_iip(ΔW)
+    else
+      return WikJCommute_iip(ΔW)
+    end
+  else
+    if typeof(ΔW) <: Number || is_diagonal_noise(prob)
+      return WikJDiagonal_oop()
+    else
+      return WikJCommute_oop()
+    end
+  end
+end
+
 function get_iterated_I(dt, dW, dZ, Wik::WikJDiagonal_oop, p=nothing, C=1, γ=1//1)
   WikJ = 1//2 .* dW .* dW
   WikJ
