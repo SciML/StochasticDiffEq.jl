@@ -52,9 +52,10 @@ sim = test_convergence(dts,prob,SROCK1(),save_everystep=false,trajectories=Int(4
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
 println("SROCK2")
+Random.seed!(2)
 sim = test_convergence(dts,prob,SROCK2(),save_everystep=false,trajectories=Int(1e5),
                         weak_timeseries_errors=false)
-@test abs(sim.𝒪est[:weak_final]-1.5) < 0.31
+@test abs(sim.𝒪est[:weak_final]-1.5) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-2) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-2) < 0.3
 println("SROCKEM")
@@ -76,7 +77,7 @@ sim = test_convergence(dts,prob,SKSROCK(),save_everystep=false,trajectories=Int(
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
 println("SROCKC2")
-#Random.seed!(1)
+Random.seed!(3)
 sim = test_convergence(dts,prob,SROCKC2(),save_everystep=false,trajectories=Int(5e5),
                         weak_timeseries_errors=false)
 @test abs(sim.𝒪est[:weak_final]-2) < 0.35

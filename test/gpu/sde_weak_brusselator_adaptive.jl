@@ -45,7 +45,7 @@ ensembleprob = EnsembleProblem(prob, prob_func = prob_func)
 #Performance check with nvvp
 # CUDAnative.CUDAdrv.@profile
 # check either on CPU with EnsembleCPUArray() or on GPU with EnsembleGPUArray()
-sol = @time solve(ensembleprob,DRI1(),EnsembleCPUArray(),trajectories=numtraj)
+@test_nowarn sol = @time solve(ensembleprob,DRI1(),EnsembleCPUArray(),trajectories=numtraj)
 #sol = @time solve(ensembleprob,DRI1(),EnsembleGPUArray(),trajectories=numtraj)
 
 
