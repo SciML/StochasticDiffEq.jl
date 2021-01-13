@@ -7,9 +7,7 @@ steps:
       # - JuliaCI/julia-coverage#v0.3:
       #     codecov: true
     agents:
-      queue: "juliagpu"
-      cuda: "*"
-      fastcpu: "true"
+      queue: "julia"
     env:
       GROUP: 'WeakConvergence'
     timeout_in_minutes: 240
