@@ -74,28 +74,29 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
   end
 
   if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence1")
-    @time @safetestset "OOP Weak Convergence Tests" begin include("weak_convergence/oop_weak.jl") end
-    @time @safetestset "Additive Weak Convergence Tests" begin include("weak_convergence/additive_weak.jl") end
-    @time @safetestset "IIP Weak Convergence Tests" begin include("weak_convergence/iip_weak.jl") end
-  end
-
-  if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence2")
     @time @safetestset "Multidimensional IIP Weak Convergence Tests" begin include("weak_convergence/multidim_iip_weak.jl") end
     @time @safetestset "Platen's PL1WM weak second order" begin include("weak_convergence/PL1WM.jl") end
   end
 
-  if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence3")
+  if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence2")
     @time @safetestset "Roessler weak SRK Tests" begin include("weak_convergence/srk_weak_final.jl") end
   end
 
-  if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence4")
+  if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence3")
     @time @safetestset "Roessler weak SRK (non-diagonal) Tests" begin include("weak_convergence/srk_weak_final_non_diagonal.jl") end
     @time @safetestset "Weak Stratonovich Tests" begin include("weak_convergence/weak_strat.jl") end
   end
 
-  if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence5")
+  if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence4")
     @time @safetestset "Weak Stratonovich (non-diagonal) Tests" begin include("weak_convergence/weak_strat_non_diagonal.jl") end
     @time @safetestset "SIE SME weak Tests" begin include("weak_convergence/SIE_SME.jl") end
+  end
+
+  if !is_APPVEYOR && GROUP == "WeakConvergence"
+    #activate_gpu_env()
+    @time @safetestset "OOP Weak Convergence Tests" begin include("weak_convergence/oop_weak.jl") end
+    @time @safetestset "Additive Weak Convergence Tests" begin include("weak_convergence/additive_weak.jl") end
+    @time @safetestset "IIP Weak Convergence Tests" begin include("weak_convergence/iip_weak.jl") end
   end
 
   if !is_APPVEYOR && GROUP == "WeakAdaptive"
