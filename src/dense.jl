@@ -136,7 +136,6 @@ function sde_interpolation(tvals,id,idxs,deriv,p,continuity::Symbol=:left)
 
   if tdir<0
     permute!(vals,idx)
-    permute!(tvals,idx)
   end
 
   DiffEqArray(vals, tvals)
