@@ -246,39 +246,118 @@ end
   end
 end
 
+@muladd function perform_step!(integrator,cache::RKMilCommuteConstantCache,f=integrator.f)
+  @unpack t,dt,uprev,u,W,p = integrator
+  dW = W.dW; sqdt = integrator.sqdt
+  Wik = cache.WikJ
+
+  ggprime_norm = 0.0
+
+  WikJ = get_iterated_I(dt, dW, W.dZ, Wik)
+
+  mil_correction = zero(u)
+  if alg_interpretation(integrator.alg) == :Ito
+    if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+      WikJ = WikJ .- 1//2 .* dt
+    else
+      WikJ -= 1//2 .* UniformScaling(dt)
+    end
+  end
+
+  du1 = integrator.f(uprev,p,t)
+  L = integrator.g(uprev,p,t)
+
+  K = uprev + dt*du1
+
+  if is_diagonal_noise(integrator.sol.prob)
+    tmp = (alg_interpretation(integrator.alg) == :Ito ? K : uprev) .+ integrator.sqdt .* L
+    gtmp = integrator.g(tmp,p,t)
+    Dgj = (gtmp - L)/sqdt
+    ggprime_norm = integrator.opts.internalnorm(Dgj,t)
+    u = @.. K + L*dW + Dgj*WikJ
+  else
+    for j = 1:length(dW)
+      if typeof(dW) <: Number
+        Kj = K + sqdt*L
+      else
+        Kj = K + sqdt*@view(L[:,j])
+      end
+      gtmp = integrator.g(Kj,p,t)
+      Dgj = (gtmp - L)/sqdt
+      if integrator.opts.adaptive
+        ggprime_norm += integrator.opts.internalnorm(Dgj,t)
+      end
+      if typeof(dW) <: Number
+        tmp = Dgj*WikJ
+      else
+        tmp = Dgj*@view(WikJ[:,j])
+      end
+      mil_correction += tmp
+    end
+    tmp = L*dW
+    u = uprev + dt*du1 + tmp + mil_correction
+  end
+  if integrator.opts.adaptive
+      En = integrator.opts.internalnorm(dW,t)^3*ggprime_norm^2 / 6
+      du2 = integrator.f(K,p,t+dt)
+      tmp = integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2,t) + En
+
+      tmp = calculate_residuals(tmp, uprev, u, integrator.opts.abstol,
+                           integrator.opts.reltol, integrator.opts.internalnorm, t)
+      integrator.EEst = integrator.opts.internalnorm(tmp,t)
+
+  end
+  integrator.u = u
+end
+
 @muladd function perform_step!(integrator,cache::RKMilCommuteCache,f=integrator.f)
   @unpack du1,du2,K,gtmp,L = cache
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack WikJ,mil_correction,Kj,Dgj,tmp = cache
   dW = W.dW; sqdt = integrator.sqdt
-  f = integrator.f; g = integrator.g
 
   ggprime_norm = 0.0
 
+  Wik = cache.WikJ
+
+  get_iterated_I!(dt, dW, W.dZ, Wik)
+  WikJ = Wik.WikJ
+
   @.. mil_correction = zero(u)
   if alg_interpretation(integrator.alg) == :Ito
-    WikJ .= 0.5 .* (vec(dW) .* vec(dW)'  .- dt .* Eye{eltype(W.dW)}(length(W.dW)))
-  else
-    WikJ .= 0.5 .* vec(dW) .* vec(dW)'
+    if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+      @.. WikJ -= 1//2*dt
+    else
+      WikJ -= 1//2 .* UniformScaling(dt)
+    end
   end
 
   integrator.f(du1,uprev,p,t)
   integrator.g(L,uprev,p,t)
 
   @.. K = uprev + dt*du1
-  for j = 1:length(dW)
-    @.. Kj = K + sqdt*@view(L[:,j]) # This works too
-    #Kj .= uprev .+ sqdt*L[:,j]
-    g(gtmp,Kj,p,t)
+
+  if is_diagonal_noise(integrator.sol.prob)
+    tmp .= (alg_interpretation(integrator.alg) == :Ito ? K : uprev) .+ integrator.sqdt .* L
+    integrator.g(gtmp,tmp,p,t)
     @.. Dgj = (gtmp - L)/sqdt
-    if integrator.opts.adaptive
-        ggprime_norm += integrator.opts.internalnorm(Dgj,t)
+    ggprime_norm = integrator.opts.internalnorm(Dgj,t)
+    @.. u = K + L*dW + Dgj*WikJ
+  else
+    for j = 1:length(dW)
+      @.. Kj = K + sqdt*@view(L[:,j]) # This works too
+      #Kj .= uprev .+ sqdt*L[:,j]
+      integrator.g(gtmp,Kj,p,t)
+      @.. Dgj = (gtmp - L)/sqdt
+      if integrator.opts.adaptive
+          ggprime_norm += integrator.opts.internalnorm(Dgj,t)
+      end
+      mul!(tmp,Dgj,@view(WikJ[:,j]))
+      mil_correction .+= tmp
     end
-    mul!(tmp,Dgj,@view(WikJ[:,j]))
-    mil_correction .+= tmp
+    mul!(tmp,L,dW)
+    @.. u .= uprev + dt*du1 + tmp + mil_correction
   end
-  mul!(tmp,L,dW)
-  @.. u .= uprev + dt*du1 + tmp + mil_correction
 
   if integrator.opts.adaptive
       En = integrator.opts.internalnorm(W.dW,t)^3*ggprime_norm^2 / 6

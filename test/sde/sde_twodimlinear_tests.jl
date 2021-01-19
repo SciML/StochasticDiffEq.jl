@@ -10,6 +10,7 @@ sol = solve(prob,EM(),dt=1/2^(3))
 sol = solve(prob,LambaEM(),dt=1/2^(3))
 sol = solve(prob,LambaEulerHeun(),dt=1/2^(3))
 sol = solve(prob,RKMil(),dt=1/2^(3))
+sol = solve(prob,RKMilCommute(),dt=1/2^(3))
 sol = solve(prob,RKMilGeneral(),dt=1/2^(3))
 sol = solve(prob,SRI(),dt=1/2^(3))
 sol = solve(prob,SRIW1(),dt=1/2^(3))
@@ -78,6 +79,9 @@ sim = test_convergence(dts,prob,ImplicitRKMil(nlsolve=StochasticDiffEq.NLFunctio
 sim2 = test_convergence(dts,prob,RKMil(),trajectories=1000)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 
+sim2 = test_convergence(dts,prob,RKMilCommute(),trajectories=1000)
+@test abs(sim2.𝒪est[:l∞]-1) < 0.2
+
 sim2 = test_convergence(dts,prob,RKMilGeneral(),trajectories=1000)
 @test abs(sim2.𝒪est[:l∞]-1) < 0.2
 
@@ -103,10 +107,13 @@ sim2 = test_convergence(dts,prob,WangLi3SMil_F(),trajectories=100)
 
 print(".")
 
+Random.seed!(100)
 eigen_est = (integrator) -> integrator.eigen_est = 10.0
 for Alg in [SROCK1, SROCK2], alg in [Alg(), Alg(eigen_est=eigen_est)]
-  sim2 = test_convergence(dts,prob,alg,trajectories=100)
+  local sim2
+  sim2 = test_convergence(dts,prob,alg,trajectories=150)
   @test abs(sim2.𝒪est[:l∞]-1) < 0.2
+  @show sim2.𝒪est[:l∞]
 end
 
 sim2 = test_convergence(dts,prob,SROCKEM(strong_order_1=false),trajectories=100)

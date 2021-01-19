@@ -2,7 +2,7 @@ using StochasticDiffEq, DiffEqDevTools, Test
 using Random
 using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems
 importsdeproblems()
-using DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear, prob_sde_2Dlinear
+using DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear
 Random.seed!(100)
 dts = 1 .//2 .^(7:-1:3) #14->7 good plot
 
@@ -13,14 +13,17 @@ println("EM")
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
 println("SimplifiedEM")
-dts = 1 .//2 .^(8:-1:2)
-@time sim  = test_convergence(dts,prob,SimplifiedEM(),save_everystep=false,trajectories=Int(5e4))
+@time sim  = test_convergence(dts,prob,SimplifiedEM(),save_everystep=false,trajectories=Int(1e5))
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.35
 println("RKMil")
-dts = 1 .//2 .^(7:-1:3)
 sim = test_convergence(dts,prob,RKMil(),save_everystep=false,trajectories=Int(1e4))
+@test abs(sim.𝒪est[:weak_final]-1) < 0.3
+#@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
+#@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
+println("RKMilCommute")
+sim = test_convergence(dts,prob,RKMilCommute(),save_everystep=false,trajectories=Int(1e4))
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
@@ -29,14 +32,14 @@ sim = test_convergence(dts,prob,RKMilGeneral(),save_everystep=false,trajectories
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
-println("RKMilGeneral")
+println("SROCK1")
 sim = test_convergence(dts,prob,SROCK1(),save_everystep=false,trajectories=Int(1e4))
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
-println("RKMilGeneral")
-dts = 1 .//2 .^(10:-1:1) #14->7 good plot
-sim = test_convergence(dts,prob,SROCK2(),save_everystep=false,trajectories=Int(4e4))
+println("SROCK2")
+dts = 1 .//2 .^(8:-1:1) #14->7 good plot
+sim = test_convergence(dts,prob,SROCK2(),save_everystep=false,trajectories=Int(5e4))
 @test abs(sim.𝒪est[:weak_final]-1.5) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-2) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-2) < 0.3
@@ -57,9 +60,9 @@ sim = test_convergence(dts,prob,SKSROCK(),save_everystep=false,trajectories=Int(
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
 println("SROCKC2")
-dts = 1 .//2 .^(7:-1:2)
-sim = test_convergence(dts,prob,SROCKC2(),save_everystep=false,trajectories=Int(1e4))
-@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+@time sim = test_convergence(dts,prob,SROCKC2(),save_everystep=false,trajectories=Int(1e6))
+@show sim.𝒪est[:weak_final]
+@test abs(sim.𝒪est[:weak_final]-2) < 0.35
 #@test abs(sim.𝒪est[:weak_l2]-2) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-2) < 0.3
 

@@ -226,7 +226,23 @@ function get_WikJ(ΔW,prob,alg)
     elseif alg.ii_approx isa IICommutative
       return WikJCommute_oop()
     else
-      return KPWJ_oop #WikJGeneral_oop(ΔW)
+      return KPWJ_oop() #WikJGeneral_oop(ΔW)
+    end
+  end
+end
+
+function get_WikJ(ΔW,prob,alg::RKMilCommute)
+  if isinplace(prob)
+    if typeof(ΔW) <: Number || is_diagonal_noise(prob)
+      return WikJDiagonal_iip(ΔW)
+    else
+      return WikJCommute_iip(ΔW)
+    end
+  else
+    if typeof(ΔW) <: Number || is_diagonal_noise(prob)
+      return WikJDiagonal_oop()
+    else
+      return WikJCommute_oop()
     end
   end
 end

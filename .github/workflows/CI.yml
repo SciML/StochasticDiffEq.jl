@@ -22,7 +22,6 @@ jobs:
           - WeakConvergence2
           - WeakConvergence3
           - WeakConvergence4
-          - WeakConvergence5
     steps:
       - uses: actions/checkout@v2
       - uses: julia-actions/setup-julia@v1

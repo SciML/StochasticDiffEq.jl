@@ -8,11 +8,10 @@ steps:
       #     codecov: true
     agents:
       queue: "juliagpu"
-      cuda: "*"
       fastcpu: "true"
     env:
       GROUP: 'WeakConvergence'
-    timeout_in_minutes: 120
+    timeout_in_minutes: 480
     # Don't run Buildkite if the commit message includes the text [skip tests]
     if: build.message !~ /\[skip tests\]/
 
@@ -29,7 +28,7 @@ steps:
       fastcpu: "true"
     env:
       GROUP: 'WeakAdaptive'
-    timeout_in_minutes: 120
+    timeout_in_minutes: 240
     # Don't run Buildkite if the commit message includes the text [skip tests]
     if: build.message !~ /\[skip tests\]/
 
