@@ -134,6 +134,11 @@ function sde_interpolation(tvals,id,idxs,deriv,p,continuity::Symbol=:left)
     end
   end
 
+  if tdir<0
+    reverse!(vals)
+    reverse!(tvals)
+  end
+
   DiffEqArray(vals, tvals)
 end
 
