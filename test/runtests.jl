@@ -59,13 +59,13 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
     @time @safetestset "Convergence Tests" begin include("sde/sde_convergence_tests.jl") end
   end
 
-  if !is_APPVEYOR && (GROUP == "All" || GROUP == "AlgConvergence2")
+  if !is_APPVEYOR && GROUP == "AlgConvergence2"
     @time @safetestset "IIF Convergence Tests" begin include("iif_methods.jl") end
     @time @safetestset "Commutative Noise Methods Tests" begin include("commutative_tests.jl") end
     @time @safetestset "Multivariate Geometric Tests" begin include("multivariate_geometric.jl") end
   end
 
-  if !is_APPVEYOR && (GROUP == "All" || GROUP == "AlgConvergence3")
+  if !is_APPVEYOR && GROUP == "AlgConvergence3"
     @time @safetestset "Rossler Order Tests" begin include("sde/sde_rosslerorder_tests.jl") end
     @time @safetestset "ODE Convergence Regression Tests" begin include("ode_convergence_regression.jl") end
     @time @safetestset "Additive SDE Tests" begin include("sde/sde_additive_tests.jl") end
@@ -73,21 +73,21 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
     @time @safetestset "Stratonovich Convergence Tests" begin include("stratonovich_convergence_tests.jl") end
   end
 
-  if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence1")
+  if !is_APPVEYOR && GROUP == "WeakConvergence1"
     @time @safetestset "Multidimensional IIP Weak Convergence Tests" begin include("weak_convergence/multidim_iip_weak.jl") end
     @time @safetestset "Platen's PL1WM weak second order" begin include("weak_convergence/PL1WM.jl") end
   end
 
-  if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence2")
+  if !is_APPVEYOR && GROUP == "WeakConvergence2"
     @time @safetestset "Roessler weak SRK Tests" begin include("weak_convergence/srk_weak_final.jl") end
   end
 
-  if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence3")
+  if !is_APPVEYOR && GROUP == "WeakConvergence3"
     @time @safetestset "Roessler weak SRK (non-diagonal) Tests" begin include("weak_convergence/srk_weak_final_non_diagonal.jl") end
     @time @safetestset "Weak Stratonovich Tests" begin include("weak_convergence/weak_strat.jl") end
   end
 
-  if !is_APPVEYOR && (GROUP == "All" || GROUP == "WeakConvergence4")
+  if !is_APPVEYOR && GROUP == "WeakConvergence4"
     @time @safetestset "Weak Stratonovich (non-diagonal) Tests" begin include("weak_convergence/weak_strat_non_diagonal.jl") end
     @time @safetestset "SIE SME weak Tests" begin include("weak_convergence/SIE_SME.jl") end
   end
