@@ -4,13 +4,12 @@ steps:
       - JuliaCI/julia#v0.6:
           version: "1.5"
       - JuliaCI/julia-test#v0.3:
-      # - JuliaCI/julia-coverage#v0.3:
-      #     codecov: true
+          coverage: false
     agents:
       queue: "juliacpu"
     env:
       GROUP: 'WeakConvergence'
-    timeout_in_minutes: 480
+    timeout_in_minutes: 240
     # Don't run Buildkite if the commit message includes the text [skip tests]
     if: build.message !~ /\[skip tests\]/
 
@@ -19,8 +18,7 @@ steps:
       - JuliaCI/julia#v0.6:
           version: "1.5"
       - JuliaCI/julia-test#v0.3:
-      # - JuliaCI/julia-coverage#v0.3:
-      #     codecov: true
+          coverage: false
     agents:
       queue: "juliagpu"
       cuda: "*"
