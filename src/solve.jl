@@ -199,7 +199,9 @@ function DiffEqBase.__init(
   end
   rateType = typeof(rate_prototype) ## Can be different if united
 
-  if is_diagonal_noise(prob)
+  if prob.f isa DynamicalSDEFunction
+    noise_rate_prototype = rate_prototype.x[1]
+  elseif is_diagonal_noise(prob)
     noise_rate_prototype = rate_prototype
   elseif prob isa DiffEqBase.AbstractRODEProblem
     if prob isa DiffEqBase.AbstractSDEProblem
@@ -273,7 +275,9 @@ function DiffEqBase.__init(
     randType = typeof(rand_prototype)
   else
     randElType = uBottomEltypeNoUnits # Strip units and type info
-    if is_diagonal_noise(prob)
+    if prob.f isa DynamicalSDEFunction
+      rand_prototype = copy(noise_rate_prototype)
+    elseif is_diagonal_noise(prob)
       if typeof(u) <: SArray
         rand_prototype = zero(u) # TODO: Array{randElType} for units
       else
