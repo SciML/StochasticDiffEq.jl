@@ -51,9 +51,10 @@ sim = test_convergence(dts,prob,SROCK1(),save_everystep=false,trajectories=Int(4
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
 println("SROCK2")
 dts = 1 .//2 .^(8:-1:1) #14->7 good plot
-sim = test_convergence(dts,prob,SROCK2(),save_everystep=false,trajectories=Int(5e4),
+sim = test_convergence(dts,prob,SROCK2(),save_everystep=false,trajectories=Int(1e5),
                         weak_timeseries_errors=false)
-@test abs(sim.𝒪est[:weak_final]-1.5) < 0.3
+@show sim.𝒪est[:weak_final]
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-2) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-2) < 0.3
 dts = 1 .//2 .^(7:-1:2) #14->7 good plot
@@ -76,7 +77,7 @@ sim = test_convergence(dts,prob,SKSROCK(),save_everystep=false,trajectories=Int(
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
 println("SROCKC2")
-@time sim = test_convergence(dts,prob,SROCKC2(),save_everystep=false,trajectories=Int(1e6),
+@time sim = test_convergence(dts,prob,SROCKC2(),save_everystep=false,trajectories=Int(5e6),
                         weak_timeseries_errors=false)
 @show sim.𝒪est[:weak_final]
 @test abs(sim.𝒪est[:weak_final]-2) < 0.35
