@@ -22,7 +22,6 @@ steps:
     agents:
       queue: "juliagpu"
       cuda: "*"
-      fastcpu: "true"
     env:
       GROUP: 'WeakAdaptive'
     timeout_in_minutes: 240
