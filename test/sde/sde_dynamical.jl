@@ -1,7 +1,4 @@
-
 using StochasticDiffEq, DiffEqNoiseProcess, Test, DiffEqDevTools
-using Plots
-using RecursiveArrayTools
 
 u0 = zeros(2)
 v0 = ones(2)

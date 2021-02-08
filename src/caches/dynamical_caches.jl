@@ -19,7 +19,7 @@ end
 function alg_cache(alg::BAOAB,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
   k = zero(rate_prototype.x[1])
   c1 = exp(-alg.gamma*dt)
-  c2 = sqrt(1 - c1^2)
+  c2 = sqrt(1 - c1^2) / sqrt(2alg.gamma)
   BAOABConstantCache(k, uEltypeNoUnits(1//2), uEltypeNoUnits(c1), uEltypeNoUnits(c2))
 end
 
@@ -33,7 +33,7 @@ function alg_cache(alg::BAOAB,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototy
 
   half = uEltypeNoUnits(1//2)
   c1 = exp(-alg.gamma*dt)
-  c2 = sqrt(1 - c1^2)
+  c2 = sqrt(1 - c1^2) / sqrt(2alg.gamma)
 
   BAOABCache(utmp, dutmp, k, gtmp, noise, half, uEltypeNoUnits(c1), uEltypeNoUnits(c2))
 end

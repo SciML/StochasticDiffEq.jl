@@ -57,6 +57,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
 
   if !is_APPVEYOR && (GROUP == "All" || GROUP == "AlgConvergence")
     @time @safetestset "Convergence Tests" begin include("sde/sde_convergence_tests.jl") end
+    @time @safetestset "Dynamical SDE Tests" begin include("sde/sde_dynamical.jl") end
   end
 
   if !is_APPVEYOR && GROUP == "AlgConvergence2"

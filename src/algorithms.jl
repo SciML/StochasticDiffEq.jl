@@ -556,10 +556,15 @@ struct RandomEM <: StochasticDiffEqRODEAlgorithm end
 
 const SplitSDEAlgorithms = Union{IIF1M,IIF2M,IIF1Mil,SKenCarp,SplitEM}
 
-"""
+@doc raw"""
 Leimkuhler B., Matthews C., Robust and efficient configurational molecular sampling via
 Langevin dynamics, J. Chem. Phys. 138, 174102 (2013)
 DOI:10.1063/1.4802990
+
+```math
+du = vdt \\
+dv = f(v,u) dt - \gamma v dt + g(u) dW
+```
 """
 struct BAOAB{T} <: StochasticDiffEqAlgorithm
   gamma::T
