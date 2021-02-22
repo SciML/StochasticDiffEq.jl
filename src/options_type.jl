@@ -1,4 +1,4 @@
-mutable struct SDEOptions{tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsType,discType,ECType,SType,MI,A,R,D,
+mutable struct SDEOptions{tTypeNoUnits,tType,F2,F3,F4,F5,F6,F7,tstopsType,discType,ECType,SType,MI,A,R,D,
            tcache,savecache,disccache}
   maxiters::MI
   save_everystep::Bool
@@ -23,7 +23,7 @@ mutable struct SDEOptions{tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsType,discType,
   progress::Bool
   progress_steps::Int
   progress_name::String
-  progress_message::F5
+  progress_message::F6
   timeseries_errors::Bool
   dense_errors::Bool
   beta1::tTypeNoUnits
@@ -34,10 +34,11 @@ mutable struct SDEOptions{tTypeNoUnits,tType,F2,F3,F4,F5,F6,tstopsType,discType,
   save_on::Bool
   save_start::Bool
   save_end::Bool
+  save_end_user::F3
   save_noise::Bool
-  callback::F3
-  isoutofdomain::F4
-  unstable_check::F6
+  callback::F4
+  isoutofdomain::F5
+  unstable_check::F7
   verbose::Bool
   calck::Bool
   force_dtmin::Bool
