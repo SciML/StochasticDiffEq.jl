@@ -27,7 +27,7 @@ function DiffEqBase.__init(
                DiffEqBase.has_analytic(concrete_prob(_prob).f[1]) : DiffEqBase.has_analytic(concrete_prob(_prob).f)),
   save_on = true,
   save_start = save_everystep || isempty(saveat) || typeof(saveat) <: Number ? true : concrete_prob(_prob).tspan[1] in saveat,
-  save_end = save_everystep || isempty(saveat) || typeof(saveat) <: Number ? true : concrete_prob(_prob).tspan[2] in saveat,
+  save_end = nothing,
   callback=nothing,
   dense = false, # save_everystep && isempty(saveat),
   calck = false, #(!isempty(setdiff(saveat,tstops)) || dense),
@@ -458,6 +458,9 @@ function DiffEqBase.__init(
     id = LinearInterpolationData(timeseries,ts)
   end
 
+  save_end_user = save_end
+  save_end = save_everystep || isempty(saveat) || typeof(saveat) <: Number ? true : concrete_prob(_prob).tspan[2] in saveat
+
   opts = SDEOptions(maxiters,save_everystep,
                     adaptive,abstol_internal,
                     reltol_internal,QT(gamma),
@@ -474,7 +477,7 @@ function DiffEqBase.__init(
                     QT(beta1),QT(beta2),
                     convert.(uBottomEltypeNoUnits,delta),
                     QT(qoldinit),
-                    dense,save_on,save_start,save_end,save_noise,
+                    dense,save_on,save_start,save_end,save_end_user,save_noise,
                     callbacks_internal,isoutofdomain,unstable_check,
                     verbose,calck,force_dtmin,
                     advance_to_tstop,stop_at_next_tstop)
