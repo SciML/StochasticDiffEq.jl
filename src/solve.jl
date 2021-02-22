@@ -459,7 +459,7 @@ function DiffEqBase.__init(
   end
 
   save_end_user = save_end
-  save_end = save_everystep || isempty(saveat) || typeof(saveat) <: Number ? true : concrete_prob(_prob).tspan[2] in saveat
+  save_end = save_end === nothing ? save_everystep || isempty(saveat) || saveat isa Number || prob.tspan[2] in saveat : save_end
 
   opts = SDEOptions(maxiters,save_everystep,
                     adaptive,abstol_internal,
