@@ -33,7 +33,7 @@ function u_modified!(integrator::SDEIntegrator,bool::Bool)
   integrator.u_modified = bool
 end
 
-get_proposed_dt(integrator::SDEIntegrator) = integrator.dtpropose
+get_proposed_dt(integrator::SDEIntegrator) = ifelse(integrator.opts.adaptive, integrator.dtpropose, integrator.dtcache)
 set_proposed_dt!(integrator::SDEIntegrator,dt::Number) = (integrator.dtpropose = dt; integrator.dtcache = dt)
 
 function set_proposed_dt!(integrator::SDEIntegrator,integrator2::SDEIntegrator)
