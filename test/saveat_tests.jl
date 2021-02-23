@@ -51,3 +51,11 @@ integ = init(SDEProblem((u,p,t)->u,(u,p,t)->u,0.0,(0.0,1.0)),SOSRI(),saveat=_sav
 add_tstop!(integ,2.0)
 solve!(integ)
 @test integ.sol.t == _saveat
+
+# Catch save for maxiters
+ode = SDEProblem((u,p,t) -> u, (u,p,t) -> u, 1.0, (0.0, 1.0))
+sol = solve(ode, SOSRI(), save_everystep=false) # okay, as expected
+@test length(sol) == 2
+@info "Warning Expected"
+sol = solve(ode, SOSRI(), save_everystep=false, maxiters=3) # doesn't save the final solution anymore!
+@test length(sol) == 2
