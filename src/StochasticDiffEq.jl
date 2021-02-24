@@ -84,6 +84,7 @@ module StochasticDiffEq
   include("caches/predcorr_caches.jl")
   include("caches/SROCK_caches.jl")
   include("caches/tau_caches.jl")
+  include("caches/dynamical_caches.jl")
   include("integrators/type.jl")
   include("dense.jl")
   include("alg_utils.jl")
@@ -110,6 +111,7 @@ module StochasticDiffEq
   include("perform_step/composite.jl")
   include("perform_step/SROCK_perform_step.jl")
   include("perform_step/tau_leaping.jl")
+  include("perform_step/dynamical.jl")
   include("tableaus.jl")
   include("SROCK_tableaus.jl")
   include("iterated_integrals.jl")
@@ -144,6 +146,8 @@ module StochasticDiffEq
          ImplicitRKMil, STrapezoid, SImplicitMidpoint
 
   export TauLeaping, CaoTauLeaping
+
+  export BAOAB
 
   export StochasticDiffEqRODEAlgorithm, StochasticDiffEqRODEAdaptiveAlgorithm,
          StochasticDiffEqRODECompositeAlgorithm

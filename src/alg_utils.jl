@@ -95,6 +95,8 @@ alg_order(alg::SMEB) = 1//1
 alg_order(alg::TauLeaping) = 1//1
 alg_order(alg::CaoTauLeaping) = 1//1
 
+alg_order(alg::BAOAB) = 1//1
+
 alg_order(alg::SKenCarp) = 2//1
 alg_order(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = maximum(alg_order.(alg.algs))
 get_current_alg_order(alg::StochasticDiffEqAlgorithm,cache) = alg_order(alg)
@@ -196,6 +198,7 @@ alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::RKMilGeneral) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::IIF1M) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::IIF2M) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = max((alg_compatible(prob,a) for a in alg.algs)...)
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem,alg::BAOAB) = is_diagonal_noise(prob)
 
 function alg_compatible(prob::JumpProblem,alg::Union{StochasticDiffEqJumpAdaptiveAlgorithm,StochasticDiffEqJumpAlgorithm})
     prob.prob isa DiscreteProblem
