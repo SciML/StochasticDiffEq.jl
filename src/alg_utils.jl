@@ -95,7 +95,7 @@ alg_order(alg::SMEB) = 1//1
 alg_order(alg::TauLeaping) = 1//1
 alg_order(alg::CaoTauLeaping) = 1//1
 
-alg_order(alg::BAOAB) = 2//1
+alg_order(alg::BAOAB) = 1//1
 
 alg_order(alg::SKenCarp) = 2//1
 alg_order(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = maximum(alg_order.(alg.algs))
