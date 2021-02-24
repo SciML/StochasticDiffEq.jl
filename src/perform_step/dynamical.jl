@@ -30,7 +30,7 @@ function initialize!(integrator, cache::BAOABCache)
 end
 
 @muladd function perform_step!(integrator,cache::BAOABConstantCache,f=integrator.f)
-  @unpack t,dt,uprev,u,p,W = integrator
+  @unpack t,dt,sqdt,uprev,u,p,W = integrator
   @unpack k, half, c1, c2 = cache
   du1 = uprev.x[1]
   u1 = uprev.x[2]
@@ -42,7 +42,7 @@ end
   u2 = u1 + half*dt*du2
 
   # O
-  noise = integrator.g(u2,p,t+dt*half).*W.dW
+  noise = integrator.g(u2,p,t+dt*half).*W.dW / sqdt
   du3 = c1*du2 + c2*noise
 
   # A
@@ -56,7 +56,7 @@ end
 end
 
 @muladd function perform_step!(integrator,cache::BAOABCache,f=integrator.f)
-  @unpack t,dt,uprev,u,p,W = integrator
+  @unpack t,dt,sqdt,uprev,u,p,W = integrator
   @unpack utmp, dutmp, k, gtmp, noise, half, c1, c2 = cache
   du1 = uprev.x[1]
   u1 = uprev.x[2]
@@ -69,7 +69,7 @@ end
 
   # O
   integrator.g(gtmp,utmp,p,t+dt*half)
-  @.. noise = gtmp*W.dW
+  @.. noise = gtmp*W.dW / sqdt
   @.. dutmp = c1*dutmp + c2*noise
 
   # A
