@@ -563,7 +563,7 @@ DOI:10.1063/1.4802990
 
 ```math
 du = vdt \\
-dv = f(v,u) dt - \gamma v dt + g(u) dW
+dv = f(v,u) dt - \gamma v dt + g(u) \sqrt{2\gamma} dW
 ```
 """
 struct BAOAB{T} <: StochasticDiffEqAlgorithm
