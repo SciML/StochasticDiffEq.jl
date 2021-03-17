@@ -274,6 +274,7 @@ end
                          integrator.opts.internalnorm, t)
     integrator.EEst = integrator.opts.internalnorm(tmp, t)
   end
+  nothing
 end
 
 #=
