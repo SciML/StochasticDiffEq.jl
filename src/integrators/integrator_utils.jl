@@ -132,6 +132,7 @@ end
 
 @inline function loopfooter!(integrator::SDEIntegrator)
   ttmp = integrator.t + integrator.dt
+  integrator.do_error_check = true
   if integrator.force_stepfail
     if integrator.opts.adaptive
       integrator.dtnew = integrator.dt/integrator.opts.failfactor
@@ -262,6 +263,7 @@ end
 
   integrator.u_modified = continuous_modified || discrete_modified
   if integrator.u_modified
+    integrator.do_error_check = false
     handle_callback_modifiers!(integrator)
   end
 end

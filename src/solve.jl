@@ -521,6 +521,7 @@ function DiffEqBase.__init(
   eigen_est = inv(one(tType)) # rate/state = (state/time)/state = 1/t units
   EEst = tTypeNoUnits(1)
   just_hit_tstop = false
+  do_error_check = true
   isout = false
   accept_step = false
   force_stepfail = false
@@ -539,7 +540,8 @@ function DiffEqBase.__init(
                   uEltypeNoUnits,typeof(W),typeof(P),rateType,typeof(sol),typeof(cache),
                   FType,GType,CType,typeof(opts),typeof(noise),typeof(last_event_error),typeof(callback_cache),typeof(rate_constants)}(
                   f,g,c,noise,uprev,tprev,t,u,p,tType(dt),tType(dt),tType(dt),dtcache,tspan[2],tdir,
-                  just_hit_tstop,isout,event_last_time,vector_event_last_time,last_event_error,accept_step,
+                  just_hit_tstop,do_error_check,isout,event_last_time,
+                  vector_event_last_time,last_event_error,accept_step,
                   last_stepfail,force_stepfail,
                   dtchangeable,u_modified,
                   saveiter,
@@ -574,7 +576,7 @@ function DiffEqBase.solve!(integrator::SDEIntegrator)
   @inbounds while !isempty(integrator.opts.tstops)
     while integrator.tdir*integrator.t < first(integrator.opts.tstops)
       loopheader!(integrator)
-      if check_error!(integrator) != :Success
+      if integrator.do_error_check && check_error!(integrator) != :Success
         return integrator.sol
       end
       perform_step!(integrator,integrator.cache)
