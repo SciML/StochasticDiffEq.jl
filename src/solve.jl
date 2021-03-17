@@ -540,7 +540,7 @@ function DiffEqBase.__init(
                   uEltypeNoUnits,typeof(W),typeof(P),rateType,typeof(sol),typeof(cache),
                   FType,GType,CType,typeof(opts),typeof(noise),typeof(last_event_error),typeof(callback_cache),typeof(rate_constants)}(
                   f,g,c,noise,uprev,tprev,t,u,p,tType(dt),tType(dt),tType(dt),dtcache,tspan[2],tdir,
-                  just_hit_tstop,do_error_checkisout,event_last_time,
+                  just_hit_tstop,do_error_check,isout,event_last_time,
                   vector_event_last_time,last_event_error,accept_step,
                   last_stepfail,force_stepfail,
                   dtchangeable,u_modified,
