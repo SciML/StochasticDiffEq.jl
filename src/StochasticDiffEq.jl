@@ -1,5 +1,9 @@
+"""
+$(DocStringExtensions.README)
+"""
 module StochasticDiffEq
 
+using DocStringExtensions
   import RandomNumbers: Xorshifts
 
   using Reexport
