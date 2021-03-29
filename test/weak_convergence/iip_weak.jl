@@ -20,7 +20,7 @@ sim  = test_convergence(dts,prob,EM(),save_everystep=false,trajectories=Int(1e4)
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
 println("SimplifiedEM")
-sim  = test_convergence(dts,prob,SimplifiedEM(),save_everystep=false,trajectories=Int(1e5),
+sim  = test_convergence(dts,prob,SimplifiedEM(),save_everystep=false,trajectories=Int(5e5),
                         weak_timeseries_errors=false)
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
