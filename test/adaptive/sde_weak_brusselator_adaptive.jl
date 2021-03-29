@@ -1,4 +1,4 @@
-using DiffEqGPU, StochasticDiffEq, Test, DiffEqNoiseProcess
+using StochasticDiffEq, Test, DiffEqNoiseProcess
 using Random
 
 function brusselator_f!(du,u,p,t)
@@ -44,5 +44,5 @@ ensembleprob = EnsembleProblem(prob, prob_func = prob_func)
 #Performance check with nvvp
 # CUDAnative.CUDAdrv.@profile
 # check either on CPU with EnsembleCPUArray() or on GPU with EnsembleGPUArray()
-@test_nowarn sol = @time solve(ensembleprob,DRI1(),EnsembleCPUArray(),trajectories=numtraj)
+@test_nowarn sol = @time solve(ensembleprob,DRI1(),EnsembleThreads(),trajectories=numtraj)
 #sol = @time solve(ensembleprob,DRI1(),EnsembleGPUArray(),trajectories=numtraj)

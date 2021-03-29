@@ -1,7 +1,6 @@
 using StochasticDiffEq, Test, Random
-using DiffEqGPU
 
-function weak_error(prob,alg,numtraj, batchsize, f_true,trange;abstol=1,reltol=0,ensemblealg=EnsembleCPUArray())
+function weak_error(prob,alg,numtraj, batchsize, f_true,trange;abstol=1,reltol=0,ensemblealg=EnsembleThreads())
   sol = @time solve(prob,alg,ensemblealg,
     dt=0.01f0,adaptive=true,abstol=abstol,reltol=reltol,
     trajectories=numtraj,batch_size=batchsize,
@@ -128,11 +127,11 @@ seeds = rand(UInt, numtraj)
 
 for i in 1:2
   @show i
-  err1 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e1),ftrue[i],tsave,abstol=1f0,reltol=1f0, ensemblealg=EnsembleCPUArray())
+  err1 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e1),ftrue[i],tsave,abstol=1f0,reltol=1f0)
   @show err1
   # err2 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e1),ftrue[i],tsave,abstol=0.1f0,reltol=0.1f0, ensemblealg=EnsembleCPUArray())
   # @show err2
-  err3 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e1),ftrue[i],tsave,abstol=0.01f0,reltol=0.01f0, ensemblealg=EnsembleCPUArray())
+  err3 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e1),ftrue[i],tsave,abstol=0.01f0,reltol=0.01f0)
   @show err3
   #@test err1 > err2
   @test err1 > err3
