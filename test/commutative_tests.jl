@@ -75,7 +75,7 @@ sol = solve(proboop,RKMilGeneral(p=2),dt=1/2^(10))
 sol = solve(proboop,EM(),dt=1/2^(10))
 
 dts = (1/2) .^ (10:-1:3) #14->7 good plot
-sim2 = test_convergence(dts,proboop,EM(),trajectories=Int(1e2))
+sim2 = test_convergence(dts,proboop,EM(),trajectories=Int(1e3))
 @test abs(sim2.𝒪est[:final] - 0.5) < 0.2
 
 sim2 = test_convergence(dts,proboop,RKMilCommute(),trajectories=Int(2e2))
