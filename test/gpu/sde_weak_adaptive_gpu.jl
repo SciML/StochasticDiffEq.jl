@@ -93,8 +93,6 @@ ensemble_prob2 = EnsembleProblem(prob2;
 
 tsave = 0.0f0:0.05f0:2f0
 
-
-
 probs = Vector{EnsembleProblem}(undef, 2)
 probs[1] = ensemble_prob1
 probs[2] = ensemble_prob2
@@ -102,43 +100,6 @@ probs[2] = ensemble_prob2
 ftrue = Vector{}(undef, 2)
 ftrue[1] = f_true1
 ftrue[2] = f_true2
-
-numtraj = Int(1e5)
-seed = 100
-Random.seed!(seed)
-seeds = rand(UInt, numtraj)
-
-for i in 1:2
-  @show i
-
-  err1 = weak_error(probs[i],DRI1(),numtraj,Int(10),ftrue[i],tsave,abstol=1f0,reltol=1f0)
-  @show err1
-  err2 = weak_error(probs[i],DRI1(),numtraj,Int(10),ftrue[i],tsave,abstol=0.1f0,reltol=0.1f0)
-  @show err2
-  err3 = weak_error(probs[i],DRI1(),numtraj,Int(10),ftrue[i],tsave,abstol=0.01f0,reltol=0.01f0)
-  @show err3
-  @test err1 > err2
-  @test err2 > err3
-  println("")
-end
-
-numtraj = Int(1e5)
-seed = 100
-Random.seed!(seed)
-seeds = rand(UInt, numtraj)
-
-for i in 1:2
-  @show i
-  err1 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e1),ftrue[i],tsave,abstol=1f0,reltol=1f0, ensemblealg=EnsembleCPUArray())
-  @show err1
-  # err2 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e1),ftrue[i],tsave,abstol=0.1f0,reltol=0.1f0, ensemblealg=EnsembleCPUArray())
-  # @show err2
-  err3 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e1),ftrue[i],tsave,abstol=0.01f0,reltol=0.01f0, ensemblealg=EnsembleCPUArray())
-  @show err3
-  #@test err1 > err2
-  @test err1 > err3
-  println("")
-end
 
 numtraj = Int(1e5)
 seed = 100
