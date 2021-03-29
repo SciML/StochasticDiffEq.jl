@@ -405,7 +405,7 @@ function DiffEqBase.__init(
     W = prob.noise
     if hasfield(typeof(W),:t) && W.reset
       if W.t[end] != t
-        reinit!(W,t)
+        reinit!(W,t, t0=t)
       end
       # Reseed
       if typeof(W) <: NoiseProcess && W.reseed
