@@ -8,7 +8,7 @@ steps:
     agents:
       queue: "juliacpu"
     env:
-      GROUP: 'WeakConvergence'
+      GROUP: 'OOPWeakConvergence'
     timeout_in_minutes: 240
     # Don't run Buildkite if the commit message includes the text [skip tests]
     if: build.message !~ /\[skip tests\]/
@@ -22,7 +22,7 @@ steps:
     agents:
       queue: "juliacpu"
     env:
-      GROUP: 'WeakConvergence'
+      GROUP: 'IIPWeakConvergence'
     timeout_in_minutes: 240
     # Don't run Buildkite if the commit message includes the text [skip tests]
     if: build.message !~ /\[skip tests\]/
