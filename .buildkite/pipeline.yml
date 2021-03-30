@@ -1,5 +1,19 @@
 steps:
-  - label: "WeakConvergence"
+  - label: "OOPWeakConvergence"
+    plugins:
+      - JuliaCI/julia#v0.6:
+          version: "1.5"
+      - JuliaCI/julia-test#v0.3:
+          coverage: false
+    agents:
+      queue: "juliacpu"
+    env:
+      GROUP: 'WeakConvergence'
+    timeout_in_minutes: 240
+    # Don't run Buildkite if the commit message includes the text [skip tests]
+    if: build.message !~ /\[skip tests\]/
+
+  - label: "IIPWeakConvergence"
     plugins:
       - JuliaCI/julia#v0.6:
           version: "1.5"

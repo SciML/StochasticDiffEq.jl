@@ -93,10 +93,13 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
     @time @safetestset "SIE SME weak Tests" begin include("weak_convergence/SIE_SME.jl") end
   end
 
-  if !is_APPVEYOR && GROUP == "WeakConvergence"
-    #activate_gpu_env()
+  if !is_APPVEYOR && GROUP == "OOPWeakConvergence"
     @time @safetestset "OOP Weak Convergence Tests" begin include("weak_convergence/oop_weak.jl") end
     @time @safetestset "Additive Weak Convergence Tests" begin include("weak_convergence/additive_weak.jl") end
+  end
+
+  if !is_APPVEYOR && GROUP == "IIPWeakConvergence"
+    #activate_gpu_env()
     @time @safetestset "IIP Weak Convergence Tests" begin include("weak_convergence/iip_weak.jl") end
   end
 
