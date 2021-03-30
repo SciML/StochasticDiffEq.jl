@@ -93,17 +93,25 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
     @time @safetestset "SIE SME weak Tests" begin include("weak_convergence/SIE_SME.jl") end
   end
 
-  if !is_APPVEYOR && GROUP == "WeakConvergence"
-    #activate_gpu_env()
+  if !is_APPVEYOR && GROUP == "OOPWeakConvergence"
     @time @safetestset "OOP Weak Convergence Tests" begin include("weak_convergence/oop_weak.jl") end
     @time @safetestset "Additive Weak Convergence Tests" begin include("weak_convergence/additive_weak.jl") end
+  end
+
+  if !is_APPVEYOR && GROUP == "IIPWeakConvergence"
+    #activate_gpu_env()
     @time @safetestset "IIP Weak Convergence Tests" begin include("weak_convergence/iip_weak.jl") end
   end
 
-  if !is_APPVEYOR && GROUP == "WeakAdaptive"
+  if !is_APPVEYOR && GROUP == "WeakAdaptiveCPU"
+    @time @safetestset "CPU Weak adaptive step size Brusselator " begin include("adaptive/sde_weak_brusselator_adaptive.jl") end
+    @time @safetestset "CPU Weak adaptive" begin include("adaptive/sde_weak_adaptive.jl") end
+  end
+
+  if !is_APPVEYOR && GROUP == "WeakAdaptiveGPU"
     activate_gpu_env()
-    @time @safetestset "Weak adaptive step size Brusselator " begin include("gpu/sde_weak_brusselator_adaptive.jl") end
-    @time @safetestset "Weak adaptive" begin include("gpu/sde_weak_adaptive.jl") end
+    @time @safetestset "GPU Weak adaptive step size scalar noise SDE" begin include("gpu/sde_weak_scalar_adaptive_gpu.jl") end
+    @time @safetestset "GPU Weak adaptive" begin include("gpu/sde_weak_adaptive_gpu.jl") end
   end
 
 end
