@@ -111,9 +111,9 @@ for i in 1:2
 
   err1 = weak_error(probs[i],DRI1(),numtraj,Int(10),ftrue[i],tsave,abstol=1f0,reltol=1f0)
   @show err1
-  err2 = weak_error(probs[i],DRI1(),numtraj,Int(10),ftrue[i],tsave,abstol=0.1f0,reltol=0.1f0)
+  err2 = weak_error(probs[i],DRI1(),numtraj,Int(10),ftrue[i],tsave,abstol=0.5f0,reltol=0.5f0)
   @show err2
-  err3 = weak_error(probs[i],DRI1(),numtraj,Int(10),ftrue[i],tsave,abstol=0.01f0,reltol=0.01f0)
+  err3 = weak_error(probs[i],DRI1(),numtraj,Int(10),ftrue[i],tsave,abstol=0.1f0,reltol=0.1f0)
   @show err3
   @test err1 > err2
   @test err2 > err3
@@ -129,11 +129,11 @@ for i in 1:2
   @show i
   err1 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e1),ftrue[i],tsave,abstol=1f0,reltol=1f0)
   @show err1
-  # err2 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e1),ftrue[i],tsave,abstol=0.1f0,reltol=0.1f0, ensemblealg=EnsembleCPUArray())
-  # @show err2
-  err3 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e1),ftrue[i],tsave,abstol=0.01f0,reltol=0.01f0)
-  @show err3
+  err2 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e1),ftrue[i],tsave,abstol=0.1f0,reltol=0.1f0)
+  @show err2
+  #err3 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e1),ftrue[i],tsave,abstol=0.01f0,reltol=0.01f0)
+  #@show err3
   #@test err1 > err2
-  @test err1 > err3
+  @test err1 > err2
   println("")
 end
