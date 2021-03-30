@@ -125,7 +125,7 @@ sim = test_convergence(dts,prob,WangLi3SMil_F(),save_everystep=false,trajectorie
 #@test abs(sim.𝒪est[:weak_l2]-1) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-1) < 0.3
 println("SRI")
-sim = test_convergence(dts,prob,SRI(),save_everystep=false,trajectories=Int(5e4))
+sim = test_convergence(dts,prob,SRI(),save_everystep=false,trajectories=Int(2e5))
 @test abs(sim.𝒪est[:weak_final]-2) < 0.3
 #@test abs(sim.𝒪est[:weak_l2]-2) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-2) < 0.3
