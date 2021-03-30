@@ -2,7 +2,7 @@ using StochasticDiffEq, Test, Random
 
 function weak_error(prob,alg,numtraj, batchsize, f_true,trange;abstol=1,reltol=0,ensemblealg=EnsembleThreads())
   sol = @time solve(prob,alg,ensemblealg,
-    dt=0.01f0,adaptive=true,abstol=abstol,reltol=reltol,
+    dt=0.05f0,adaptive=true,abstol=abstol,reltol=reltol,
     trajectories=numtraj,batch_size=batchsize,
     saveat = trange
     )
@@ -101,7 +101,7 @@ ftrue = Vector{}(undef, 2)
 ftrue[1] = f_true1
 ftrue[2] = f_true2
 
-numtraj = Int(1e5)
+numtraj = Int(5e5)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -120,7 +120,7 @@ for i in 1:2
   println("")
 end
 
-numtraj = Int(1e5)
+numtraj = Int(5e5)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
