@@ -1,9 +1,9 @@
 steps:
   - label: "OOPWeakConvergence"
     plugins:
-      - JuliaCI/julia#v0.6:
-          version: "1.5"
-      - JuliaCI/julia-test#v0.3:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - JuliaCI/julia-test#v1:
           coverage: false
     agents:
       queue: "juliacpu"
@@ -15,9 +15,9 @@ steps:
 
   - label: "IIPWeakConvergence"
     plugins:
-      - JuliaCI/julia#v0.6:
-          version: "1.5"
-      - JuliaCI/julia-test#v0.3:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - JuliaCI/julia-test#v1:
           coverage: false
     agents:
       queue: "juliacpu"
@@ -29,9 +29,9 @@ steps:
 
   - label: "WeakAdaptiveCPU"
     plugins:
-      - JuliaCI/julia#v0.6:
-          version: "1.5"
-      - JuliaCI/julia-test#v0.3:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - JuliaCI/julia-test#v1:
           coverage: false
     agents:
       queue: "juliacpu"
@@ -43,9 +43,9 @@ steps:
 
   - label: "WeakAdaptiveGPU"
     plugins:
-      - JuliaCI/julia#v0.6:
-          version: "1.5"
-      - JuliaCI/julia-test#v0.3:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - JuliaCI/julia-test#v1:
           coverage: false
     agents:
       queue: "juliagpu"
