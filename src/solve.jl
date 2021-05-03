@@ -121,7 +121,7 @@ function DiffEqBase.__init(
     auto = alg.choice_function
     alg = StochasticCompositeAlgorithm(alg.algs,
                              AutoSwitchCache(
-                                             0,
+                                             0,0,
                                              auto.nonstiffalg,
                                              auto.stiffalg,
                                              auto.stiffalgfirst,
@@ -131,6 +131,7 @@ function DiffEqBase.__init(
                                              auto.stifftol,
                                              auto.dtfac,
                                              auto.stiffalgfirst,
+                                             auto.switch_max
                                             ))
   end
 
