@@ -1,4 +1,4 @@
-mutable struct SDEOptions{tTypeNoUnits,tType,F2,F3,F4,F5,F6,F7,tstopsType,discType,ECType,SType,MI,A,R,D,
+mutable struct SDEOptions{tTypeNoUnits,tType,Controller,F2,F3,F4,F5,F6,F7,tstopsType,discType,ECType,SType,MI,A,R,D,
            tcache,savecache,disccache}
   maxiters::MI
   save_everystep::Bool
@@ -8,9 +8,13 @@ mutable struct SDEOptions{tTypeNoUnits,tType,F2,F3,F4,F5,F6,F7,tstopsType,discTy
   gamma::tTypeNoUnits
   qmax::tTypeNoUnits
   qmin::tTypeNoUnits
+  qsteady_max::tTypeNoUnits
+  qsteady_min::tTypeNoUnits
+  qoldinit::tTypeNoUnits
   failfactor::tTypeNoUnits
   dtmax::tType
   dtmin::tType
+  controller::Controller
   internalnorm::F2
   save_idxs::SType
   tstops::tstopsType
@@ -26,10 +30,7 @@ mutable struct SDEOptions{tTypeNoUnits,tType,F2,F3,F4,F5,F6,F7,tstopsType,discTy
   progress_message::F6
   timeseries_errors::Bool
   dense_errors::Bool
-  beta1::tTypeNoUnits
-  beta2::tTypeNoUnits
   delta::D
-  qoldinit::tTypeNoUnits
   dense::Bool
   save_on::Bool
   save_start::Bool

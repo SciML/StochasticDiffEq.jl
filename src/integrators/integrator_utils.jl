@@ -142,11 +142,11 @@ end
     integrator.last_stepfail = true
     integrator.accept_step = false
   elseif integrator.opts.adaptive
-    stepsize_controller!(integrator,integrator.alg)
+    q = stepsize_controller!(integrator,integrator.alg)
     integrator.isout = integrator.opts.isoutofdomain(integrator.u,integrator.p,ttmp)
     integrator.accept_step = (!integrator.isout && integrator.EEst <= 1.0) || (integrator.opts.force_dtmin && integrator.dt <= integrator.opts.dtmin)
     if integrator.accept_step # Accepted
-      step_accept_controller!(integrator,integrator.alg)
+      dtnew = step_accept_controller!(integrator,integrator.alg,q)
       integrator.last_stepfail = false
       integrator.tprev = integrator.t
       if typeof(integrator.t)<:AbstractFloat && !isempty(integrator.opts.tstops)
@@ -155,7 +155,7 @@ end
       else
         integrator.t = ttmp
       end
-      calc_dt_propose!(integrator)
+      calc_dt_propose!(integrator, dtnew)
       handle_callbacks!(integrator)
     end
   else # Non adaptive
@@ -182,12 +182,12 @@ end
   end
 end
 
-@inline function calc_dt_propose!(integrator)
+@inline function calc_dt_propose!(integrator, dtnew)
   integrator.qold = max(integrator.EEst,integrator.opts.qoldinit)
   if integrator.tdir > 0
-    integrator.dtpropose = min(integrator.opts.dtmax,integrator.dtnew)
+    integrator.dtpropose = min(integrator.opts.dtmax, dtnew)
   else
-    integrator.dtpropose = max(integrator.opts.dtmax,integrator.dtnew)
+    integrator.dtpropose = max(integrator.opts.dtmax, dtnew)
   end
   if integrator.tdir > 0
     integrator.dtpropose = max(integrator.dtpropose,integrator.opts.dtmin) #abs to fix complex sqrt issue at end

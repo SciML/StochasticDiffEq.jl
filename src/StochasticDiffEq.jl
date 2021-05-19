@@ -10,6 +10,11 @@ using DocStringExtensions
   @reexport using DiffEqBase
 
   import OrdinaryDiffEq
+  import OrdinaryDiffEq: default_controller, isstandard, ispredictive,
+         beta2_default, beta1_default, gamma_default,
+         qmin_default, qmax_default, qsteady_min_default, qsteady_max_default,
+         stepsize_controller!, accept_step_controller, step_accept_controller!,
+         step_reject_controller!, DummyController
 
   using UnPack, RecursiveArrayTools, DataStructures
   using DiffEqNoiseProcess, Random, ArrayInterface
