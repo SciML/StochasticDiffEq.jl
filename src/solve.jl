@@ -36,11 +36,16 @@ function DiffEqBase.__init(
   gamma= isadaptive(alg) ? 9//10 : 0,
   abstol=nothing,
   reltol=nothing,
-  qmax=qmax_default(alg),qmin=qmin_default(alg),
-  qoldinit= isadaptive(alg) ? 1//10^4 : 0, fullnormalize=true,
+  qmin = qmin_default(alg),
+  qmax = qmax_default(alg),
+  qsteady_min = qsteady_min_default(alg),
+  qsteady_max = qsteady_max_default(alg),
+  beta2 = nothing,
+  beta1 = nothing,
+  qoldinit= isadaptive(alg) ? 1//10^4 : 0,
+  controller = nothing,
+  fullnormalize=true,
   failfactor = 2,
-  beta2=beta2_default(alg),
-  beta1=beta1_default(alg,beta2),
   delta=delta_default(alg),
   maxiters = adaptive ? 1000000 : typemax(Int),
   dtmax=eltype(concrete_prob(_prob).tspan)((concrete_prob(_prob).tspan[end]-concrete_prob(_prob).tspan[1])),
@@ -466,12 +471,33 @@ function DiffEqBase.__init(
   save_end_user = save_end
   save_end = save_end === nothing ? save_everystep || isempty(saveat) || saveat isa Number || prob.tspan[2] in saveat : save_end
 
+  # Setting up the step size controller
+  if (beta1 !== nothing || beta2 !== nothing) && controller !== nothing
+    throw(ArgumentError(
+      "Setting both the legacy PID parameters `beta1, beta2 = $((beta1, beta2))` and the `controller = $controller` is not allowed."))
+  end
+
+  if (beta1 !== nothing || beta2 !== nothing)
+    message = "Providing the legacy PID parameters `beta1, beta2` is deprecated. Use the keyword argument `controller` instead."
+    Base.depwarn(message, :init)
+    Base.depwarn(message, :solve)
+  end
+
+  if controller === nothing
+    controller = default_controller(alg, cache, qoldinit, beta1, beta2)
+  end
+
   opts = SDEOptions(maxiters,save_everystep,
                     adaptive,abstol_internal,
-                    reltol_internal,QT(gamma),
+                    reltol_internal,
+                    QT(gamma),
                     QT(qmax),QT(qmin),
+                    QT(qsteady_max),QT(qsteady_min),
+                    QT(qoldinit),
                     QT(failfactor),
-                    tType(dtmax),tType(dtmin),internalnorm,save_idxs,
+                    tType(dtmax),tType(dtmin),
+                    controller,
+                    internalnorm,save_idxs,
                     tstops_internal,saveat_internal,
                     d_discontinuities_internal,
                     tstops,saveat,d_discontinuities,
@@ -479,9 +505,7 @@ function DiffEqBase.__init(
                     progress,progress_steps,
                     progress_name,progress_message,
                     timeseries_errors,dense_errors,
-                    QT(beta1),QT(beta2),
                     convert.(uBottomEltypeNoUnits,delta),
-                    QT(qoldinit),
                     dense,save_on,save_start,save_end,save_end_user,save_noise,
                     callbacks_internal,isoutofdomain,unstable_check,
                     verbose,calck,force_dtmin,

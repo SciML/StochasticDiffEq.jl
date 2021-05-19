@@ -10,6 +10,16 @@ isadaptive(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECom
 isadaptive(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = isadaptive(alg)
 isadaptive(prob::JumpProblem,alg::ImplicitEM) = false
 
+ispredictive(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = false
+isstandard(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = false
+qsteady_min_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = 1
+qsteady_max_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = 1
+
+# special cases in stepsize_controllers.jl
+function default_controller(alg::Union{TauLeaping, CaoTauLeaping}, args...)
+  DummyController()
+end
+
 # For whether an algorithm uses a priori dt estimates or utilizes an error estimate
 isaposteriori(alg) = false
 isaposteriori(alg::CaoTauLeaping) = true
