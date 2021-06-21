@@ -27,7 +27,7 @@ end
 end
 
 @muladd function perform_step!(integrator,cache::Union{IIF1MConstantCache,IIF2MConstantCache,IIF1MilConstantCache})
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,p,f = integrator
   @unpack uhold,rhs,nl_rhs = cache
   alg = unwrap_alg(integrator, true)
   A = integrator.f.f1(u,p,t)
@@ -87,7 +87,7 @@ end
 @muladd function perform_step!(integrator,cache::Union{IIF1MCache,IIF2MCache})
   @unpack rtmp1,rtmp2,rtmp3,tmp,noise_tmp = cache
   @unpack uhold,rhs,nl_rhs = cache
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,p,f = integrator
   alg = unwrap_alg(integrator, true)
   uidx = eachindex(u)
 
@@ -129,7 +129,7 @@ end
 @muladd function perform_step!(integrator,cache::IIF1MilCache)
   @unpack rtmp1,rtmp2,rtmp3,tmp,noise_tmp = cache
   @unpack uhold,rhs,nl_rhs = cache
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,p,f = integrator
   alg = unwrap_alg(integrator, true)
 
   dW = W.dW; sqdt = integrator.sqdt

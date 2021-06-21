@@ -1,6 +1,6 @@
 #methods from https://doi.org/10.1016/j.cam.2009.11.010
 @muladd function perform_step!(integrator,cache::WangLi3SMil_AConstantCache)
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,p,f = integrator
   #stage 1
   k  = integrator.f(uprev,p,t)
   u  = uprev + dt*k
@@ -23,7 +23,7 @@ end
 
 @muladd function perform_step!(integrator,cache::WangLi3SMil_ACache)
   @unpack tmp,k,k₁ = cache
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,p,f = integrator
 
   #stage 1
   integrator.f(k,uprev,p,t)
@@ -46,7 +46,7 @@ end
 end
 
 @muladd function perform_step!(integrator,cache::WangLi3SMil_BConstantCache)
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,p,f = integrator
   #stage 1
   k   = integrator.g(uprev,p,t)
   tmp = uprev + k*integrator.sqdt
@@ -69,7 +69,7 @@ end
 
 @muladd function perform_step!(integrator,cache::WangLi3SMil_BCache)
   @unpack tmp,k,k₁ = cache
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,p,f = integrator
 
     #stage 1
   integrator.g(k,uprev,p,t)
@@ -93,7 +93,7 @@ end
 end
 
 @muladd function perform_step!(integrator,cache::WangLi3SMil_CConstantCache)
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,p,f = integrator
   #stage 1
   k  = integrator.f(uprev,p,t)
   u  = uprev + dt*k
@@ -116,7 +116,7 @@ end
 
 @muladd function perform_step!(integrator,cache::WangLi3SMil_CCache)
   @unpack tmp,k,k₁ = cache
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,p,f = integrator
 
   #stage 1
   integrator.f(k,uprev,p,t)
@@ -139,7 +139,7 @@ end
 end
 
 @muladd function perform_step!(integrator,cache::WangLi3SMil_DConstantCache)
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,p,f = integrator
   #stage 1
   k  = integrator.g(uprev,p,t)
   tmp = uprev + k*integrator.sqdt
@@ -162,7 +162,7 @@ end
 
 @muladd function perform_step!(integrator,cache::WangLi3SMil_DCache)
   @unpack tmp,k,k₁ = cache
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,p,f = integrator
 
   #stage 1
   integrator.g(k,uprev,p,t)
@@ -185,7 +185,7 @@ end
 end
 
 @muladd function perform_step!(integrator,cache::WangLi3SMil_EConstantCache)
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,p,f = integrator
   #stage 1
   k  = integrator.g(uprev,p,t)
   tmp = uprev + k*integrator.sqdt
@@ -208,7 +208,7 @@ end
 
 @muladd function perform_step!(integrator,cache::WangLi3SMil_ECache)
   @unpack tmp,k,k₁ = cache
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,p,f = integrator
 
   #stage 1
   integrator.g(k,uprev,p,t)
@@ -231,7 +231,7 @@ end
 end
 
 @muladd function perform_step!(integrator,cache::WangLi3SMil_FConstantCache)
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,p,f = integrator
   #stage 1
   k   = integrator.g(uprev,p,t)
   tmp = uprev + k*integrator.sqdt
@@ -254,7 +254,7 @@ end
 
 @muladd function perform_step!(integrator,cache::WangLi3SMil_FCache)
   @unpack tmp,k,k₁ = cache
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,p,f = integrator
 
     #stage 1
   integrator.g(k,uprev,p,t)

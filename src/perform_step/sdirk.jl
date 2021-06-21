@@ -2,7 +2,7 @@
                                cache::Union{ImplicitEMConstantCache,
                                             ImplicitEulerHeunConstantCache,
                                             ImplicitRKMilConstantCache})
-  @unpack t,dt,uprev,u,p,P,c = integrator
+  @unpack t,dt,uprev,u,p,P,c,f = integrator
   @unpack nlsolver = cache
   alg = unwrap_alg(integrator, true)
   OrdinaryDiffEq.markfirststage!(nlsolver)
@@ -102,7 +102,7 @@ end
                                cache::Union{ImplicitEMCache,
                                             ImplicitEulerHeunCache,
                                             ImplicitRKMilCache})
-  @unpack t,dt,uprev,u,p,P,c = integrator
+  @unpack t,dt,uprev,u,p,P,c,f = integrator
   @unpack gtmp,gtmp2,nlsolver = cache
   @unpack z,tmp = nlsolver
   @unpack k,dz = nlsolver.cache # alias to reduce memory

@@ -1,5 +1,5 @@
 @muladd function perform_step!(integrator,cache::LambaEMConstantCache)
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,p,f = integrator
   du1 = integrator.f(uprev,p,t)
   K = @.. uprev + dt * du1
 
@@ -40,7 +40,7 @@ end
 
 @muladd function perform_step!(integrator,cache::LambaEMCache)
   @unpack du1,du2,K,tmp,L,gtmp,dW_cache = cache
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,p,f = integrator
 
   integrator.f(du1,uprev,p,t)
   @.. K = uprev + dt * du1
@@ -92,7 +92,7 @@ end
 end
 
 @muladd function perform_step!(integrator,cache::LambaEulerHeunConstantCache)
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,p,f = integrator
   du1 = integrator.f(uprev,p,t)
   K = uprev + dt * du1
   L = integrator.g(uprev,p,t)
@@ -131,7 +131,7 @@ end
 
 @muladd function perform_step!(integrator,cache::LambaEulerHeunCache)
   @unpack du1,du2,K,tmp,L,gtmp,dW_cache = cache
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,p,f = integrator
   integrator.f(du1,uprev,p,t)
   integrator.g(L,uprev,p,t)
   @.. K = uprev + dt * du1
