@@ -30,7 +30,7 @@ function initialize!(integrator, cache::BAOABCache)
 end
 
 @muladd function perform_step!(integrator,cache::BAOABConstantCache)
-  @unpack t,dt,sqdt,uprev,u,p,W = integrator
+  @unpack t,dt,sqdt,uprev,u,p,W,f = integrator
   @unpack k, half, c1, c2 = cache
   du1 = uprev.x[1]
   u1 = uprev.x[2]
@@ -56,7 +56,7 @@ end
 end
 
 @muladd function perform_step!(integrator,cache::BAOABCache)
-  @unpack t,dt,sqdt,uprev,u,p,W = integrator
+  @unpack t,dt,sqdt,uprev,u,p,W,f = integrator
   @unpack utmp, dutmp, k, gtmp, noise, half, c1, c2 = cache
   du1 = uprev.x[1]
   u1 = uprev.x[2]
