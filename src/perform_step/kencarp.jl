@@ -1,4 +1,4 @@
-@muladd function perform_step!(integrator, cache::SKenCarpConstantCache, f=integrator.f)
+@muladd function perform_step!(integrator, cache::SKenCarpConstantCache)
   @unpack t,dt,uprev,u,g,p = integrator
   @unpack nlsolver = cache
   @unpack γ,a31,a32,a41,a42,a43,btilde1,btilde2,btilde3,btilde4,c3,α31,α32 = cache.tab
@@ -132,7 +132,7 @@
   integrator.u = u
 end
 
-@muladd function perform_step!(integrator, cache::SKenCarpCache, f=integrator.f)
+@muladd function perform_step!(integrator, cache::SKenCarpCache)
   repeat_step=false
   @unpack t,dt,uprev,u,g,p = integrator
   @unpack z₁,z₂,z₃,z₄,k1,k2,k3,k4,atmp = cache

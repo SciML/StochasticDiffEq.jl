@@ -29,7 +29,7 @@ function initialize!(integrator, cache::BAOABCache)
   integrator.f.f1(cache.k,du1,u1,p,t)
 end
 
-@muladd function perform_step!(integrator,cache::BAOABConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::BAOABConstantCache)
   @unpack t,dt,sqdt,uprev,u,p,W = integrator
   @unpack k, half, c1, c2 = cache
   du1 = uprev.x[1]
@@ -55,7 +55,7 @@ end
   integrator.u = ArrayPartition((du, u))
 end
 
-@muladd function perform_step!(integrator,cache::BAOABCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::BAOABCache)
   @unpack t,dt,sqdt,uprev,u,p,W = integrator
   @unpack utmp, dutmp, k, gtmp, noise, half, c1, c2 = cache
   du1 = uprev.x[1]

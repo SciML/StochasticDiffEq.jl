@@ -1,8 +1,7 @@
 @muladd function perform_step!(integrator,
                                cache::Union{ImplicitEMConstantCache,
                                             ImplicitEulerHeunConstantCache,
-                                            ImplicitRKMilConstantCache},
-                                            f=integrator.f)
+                                            ImplicitRKMilConstantCache})
   @unpack t,dt,uprev,u,p,P,c = integrator
   @unpack nlsolver = cache
   alg = unwrap_alg(integrator, true)
@@ -102,8 +101,7 @@ end
 @muladd function perform_step!(integrator,
                                cache::Union{ImplicitEMCache,
                                             ImplicitEulerHeunCache,
-                                            ImplicitRKMilCache},
-                               f=integrator.f)
+                                            ImplicitRKMilCache})
   @unpack t,dt,uprev,u,p,P,c = integrator
   @unpack gtmp,gtmp2,nlsolver = cache
   @unpack z,tmp = nlsolver

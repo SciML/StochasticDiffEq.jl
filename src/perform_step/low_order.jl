@@ -1,4 +1,4 @@
-@muladd function perform_step!(integrator,cache::EMConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::EMConstantCache)
   @unpack t,dt,uprev,u,W,P,c,p = integrator
 
   K = uprev .+ dt .* integrator.f(uprev,p,t)
@@ -24,7 +24,7 @@
   integrator.u = u
 end
 
-@muladd function perform_step!(integrator,cache::EMCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::EMCache)
   @unpack tmp,rtmp1,rtmp2 = cache
   @unpack t,dt,uprev,u,W,P,c,p = integrator
   integrator.f(rtmp1,uprev,p,t)
@@ -60,7 +60,7 @@ end
   end
 end
 
-@muladd function perform_step!(integrator,cache::EulerHeunConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::EulerHeunConstantCache)
   @unpack t,dt,uprev,u,W,p = integrator
   ftmp = integrator.f(uprev,p,t)
   gtmp = integrator.g(uprev,p,t)
@@ -80,7 +80,7 @@ end
   integrator.u = u
 end
 
-@muladd function perform_step!(integrator,cache::EulerHeunCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::EulerHeunCache)
   @unpack ftmp1,ftmp2,gtmp1,gtmp2,tmp,nrtmp = cache
   @unpack t,dt,uprev,u,W,p = integrator
   integrator.f(ftmp1,uprev,p,t)
@@ -108,13 +108,13 @@ end
   @.. u = uprev + dto2 * (ftmp1 + ftmp2) + nrtmp
 end
 
-@muladd function perform_step!(integrator,cache::RandomEMConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::RandomEMConstantCache)
   @unpack t,dt,uprev,u,W,p = integrator
   u = uprev .+ dt .* integrator.f(uprev,p,t,W.curW)
   integrator.u = u
 end
 
-@muladd function perform_step!(integrator,cache::RandomEMCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::RandomEMCache)
   @unpack rtmp = cache
   @unpack t,dt,uprev,u,W,p = integrator
   integrator.f(rtmp,uprev,p,t,W.curW)
@@ -122,7 +122,7 @@ end
 end
 
 # weak approximation EM
-@muladd function perform_step!(integrator,cache::SimplifiedEMConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SimplifiedEMConstantCache)
   @unpack t,dt,uprev,u,W,p = integrator
 
   K = uprev .+ dt .* integrator.f(uprev,p,t)
@@ -139,7 +139,7 @@ end
   integrator.u = u
 end
 
-@muladd function perform_step!(integrator,cache::SimplifiedEMCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SimplifiedEMCache)
   @unpack rtmp1,rtmp2, _dW = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
@@ -165,7 +165,7 @@ end
 end
 
 
-@muladd function perform_step!(integrator,cache::RKMilConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::RKMilConstantCache)
   @unpack t,dt,uprev,u,W,p = integrator
   du1 = integrator.f(uprev,p,t)
   K = @.. uprev + dt * du1
@@ -195,7 +195,7 @@ end
 end
 
 #=
-@muladd function perform_step!(integrator,cache::RKMilCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::RKMilCache)
   @unpack du1,du2,K,tmp,L = cache
   @unpack t,dt,uprev,u,W,p = integrator
   integrator.f(du1,uprev,p,t)
@@ -217,7 +217,7 @@ end
 end
 =#
 
-@muladd function perform_step!(integrator,cache::RKMilCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::RKMilCache)
   @unpack du1,du2,K,tmp,L = cache
   @unpack t,dt,uprev,u,W,p = integrator
   integrator.f(du1,uprev,p,t)
@@ -246,7 +246,7 @@ end
   end
 end
 
-@muladd function perform_step!(integrator,cache::RKMilCommuteConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::RKMilCommuteConstantCache)
   @unpack t,dt,uprev,u,W,p = integrator
   dW = W.dW; sqdt = integrator.sqdt
   Wik = cache.WikJ
@@ -310,7 +310,7 @@ end
   integrator.u = u
 end
 
-@muladd function perform_step!(integrator,cache::RKMilCommuteCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::RKMilCommuteCache)
   @unpack du1,du2,K,gtmp,L = cache
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack WikJ,mil_correction,Kj,Dgj,tmp = cache
@@ -371,7 +371,7 @@ end
   end
 end
 
-@muladd function perform_step!(integrator,cache::RKMilGeneralConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::RKMilGeneralConstantCache)
   @unpack t,dt,uprev,u,W,p = integrator
   Wik = cache.WikJ
   dW = W.dW
@@ -433,7 +433,7 @@ end
   integrator.u = u
 end
 
-@muladd function perform_step!(integrator,cache::RKMilGeneralCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::RKMilGeneralCache)
   @unpack du₁, du₂, K, tmp, ggprime, L, mil_correction = cache
   @unpack t,dt,uprev,u,W,p = integrator
   dW = W.dW;
