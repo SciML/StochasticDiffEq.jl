@@ -1,9 +1,8 @@
 @muladd function perform_step!(integrator,
                                cache::Union{ImplicitEMConstantCache,
                                             ImplicitEulerHeunConstantCache,
-                                            ImplicitRKMilConstantCache},
-                                            f=integrator.f)
-  @unpack t,dt,uprev,u,p,P,c = integrator
+                                            ImplicitRKMilConstantCache})
+  @unpack t,dt,uprev,u,p,P,c,f = integrator
   @unpack nlsolver = cache
   alg = unwrap_alg(integrator, true)
   OrdinaryDiffEq.markfirststage!(nlsolver)
@@ -102,9 +101,8 @@ end
 @muladd function perform_step!(integrator,
                                cache::Union{ImplicitEMCache,
                                             ImplicitEulerHeunCache,
-                                            ImplicitRKMilCache},
-                               f=integrator.f)
-  @unpack t,dt,uprev,u,p,P,c = integrator
+                                            ImplicitRKMilCache})
+  @unpack t,dt,uprev,u,p,P,c,f = integrator
   @unpack gtmp,gtmp2,nlsolver = cache
   @unpack z,tmp = nlsolver
   @unpack k,dz = nlsolver.cache # alias to reduce memory

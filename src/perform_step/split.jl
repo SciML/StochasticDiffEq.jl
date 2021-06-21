@@ -1,14 +1,14 @@
-@muladd function perform_step!(integrator,cache::SplitEMConstantCache,f=integrator.f)
-  @unpack t,dt,uprev,u,W,p = integrator
+@muladd function perform_step!(integrator,cache::SplitEMConstantCache)
+  @unpack t,dt,uprev,u,W,p,f = integrator
   u = dt*(integrator.f.f1(uprev,p,t) +
            integrator.f.f2(uprev,p,t)) +
            integrator.g(uprev,p,t).*W.dW + uprev
   integrator.u = u
 end
 
-@muladd function perform_step!(integrator,cache::SplitEMCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SplitEMCache)
   @unpack rtmp1,rtmp2 = cache
-  @unpack t,dt,uprev,u,W,p = integrator
+  @unpack t,dt,uprev,u,W,p,f = integrator
 
   integrator.g(rtmp2,uprev,p,t)
   if is_diagonal_noise(integrator.sol.prob)

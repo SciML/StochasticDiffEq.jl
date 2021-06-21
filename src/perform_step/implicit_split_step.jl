@@ -1,8 +1,7 @@
 @muladd function perform_step!(integrator,
                                cache::Union{ISSEMConstantCache,
-                                            ISSEulerHeunConstantCache},
-                                            f=integrator.f)
-  @unpack t,dt,uprev,u,p = integrator
+                                            ISSEulerHeunConstantCache})
+  @unpack t,dt,uprev,u,p,f = integrator
   @unpack nlsolver = cache
   alg = unwrap_alg(integrator, true)
   theta = alg.theta
@@ -81,9 +80,8 @@
 end
 
 @muladd function perform_step!(integrator, cache::Union{ISSEMCache,
-                                                        ISSEulerHeunCache},
-                               f=integrator.f)
-  @unpack t,dt,uprev,u,p = integrator
+                                                        ISSEulerHeunCache})
+  @unpack t,dt,uprev,u,p,f = integrator
   @unpack gtmp,gtmp2,dW_cache,nlsolver = cache
   @unpack z,tmp = nlsolver
   @unpack k,dz = nlsolver.cache # alias to reduce memory

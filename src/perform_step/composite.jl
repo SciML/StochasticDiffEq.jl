@@ -1,4 +1,4 @@
-@inline function initialize!(integrator,cache::StochasticCompositeCache,f=integrator.f)
+@inline function initialize!(integrator,cache::StochasticCompositeCache)
   cache.current = cache.choice_function(integrator)
   if cache.current == 1
     initialize!(integrator, @inbounds(cache.caches[1]))
@@ -9,13 +9,13 @@
   end
 end
 
-@inline function perform_step!(integrator,cache::StochasticCompositeCache,f=integrator.f)
+@inline function perform_step!(integrator,cache::StochasticCompositeCache)
   if cache.current == 1
-    perform_step!(integrator, @inbounds(cache.caches[1]), f)
+    perform_step!(integrator, @inbounds(cache.caches[1]))
   elseif cache.current == 2
-    perform_step!(integrator, @inbounds(cache.caches[2]), f)
+    perform_step!(integrator, @inbounds(cache.caches[2]))
   else
-    perform_step!(integrator, @inbounds(cache.caches[cache.current]), f)
+    perform_step!(integrator, @inbounds(cache.caches[cache.current]))
   end
 end
 

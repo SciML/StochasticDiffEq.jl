@@ -1,4 +1,4 @@
-@muladd function perform_step!(integrator,cache::TauLeapingConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::TauLeapingConstantCache)
   @unpack t,dt,uprev,u,W,p,P,c = integrator
   tmp = c(uprev, p, t, P.dW, nothing)
   integrator.u = uprev .+ tmp
@@ -18,7 +18,7 @@
   end
 end
 
-@muladd function perform_step!(integrator,cache::TauLeapingCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::TauLeapingCache)
   @unpack t,dt,uprev,u,W,p,P,c = integrator
   @unpack tmp, newrate, EEstcache = cache
   c(tmp, uprev, p, t, P.dW, nothing)
