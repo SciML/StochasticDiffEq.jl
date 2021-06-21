@@ -22,11 +22,11 @@ function (f::RHS_IIF2M_Scalar)(resid,u)
   resid[1] = u[1] - f.tmp - 0.5f.dt*f.f.f2(u[1],f.p,f.t+f.dt)[1]
 end
 
-@muladd function initialize!(integrator,cache::Union{IIF1MConstantCache,IIF2MConstantCache,IIF1MilConstantCache},f=integrator.f)
+@muladd function initialize!(integrator,cache::Union{IIF1MConstantCache,IIF2MConstantCache,IIF1MilConstantCache},f::F=integrator.f) where F
   cache.uhold[1] = integrator.uprev
 end
 
-@muladd function perform_step!(integrator,cache::Union{IIF1MConstantCache,IIF2MConstantCache,IIF1MilConstantCache},f=integrator.f)
+@muladd function perform_step!(integrator,cache::Union{IIF1MConstantCache,IIF2MConstantCache,IIF1MilConstantCache},f::F=integrator.f) where F
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack uhold,rhs,nl_rhs = cache
   alg = unwrap_alg(integrator, true)
@@ -84,7 +84,7 @@ function (f::RHS_IIF2)(resid,u)
   @.. resid = u - f.tmp - 0.5f.dt*du
 end
 
-@muladd function perform_step!(integrator,cache::Union{IIF1MCache,IIF2MCache},f=integrator.f)
+@muladd function perform_step!(integrator,cache::Union{IIF1MCache,IIF2MCache},f::F=integrator.f) where F
   @unpack rtmp1,rtmp2,rtmp3,tmp,noise_tmp = cache
   @unpack uhold,rhs,nl_rhs = cache
   @unpack t,dt,uprev,u,W,p = integrator
@@ -126,7 +126,7 @@ end
 
 end
 
-@muladd function perform_step!(integrator,cache::IIF1MilCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::IIF1MilCache,f::F=integrator.f) where F
   @unpack rtmp1,rtmp2,rtmp3,tmp,noise_tmp = cache
   @unpack uhold,rhs,nl_rhs = cache
   @unpack t,dt,uprev,u,W,p = integrator

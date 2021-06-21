@@ -1,5 +1,5 @@
 
-@muladd function perform_step!(integrator,cache::DRI1ConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::DRI1ConstantCache,f::F=integrator.f) where F
   @unpack a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43,NORMAL_ONESIX_QUANTILE = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
@@ -171,7 +171,7 @@ end
 
 
 
-@muladd function perform_step!(integrator,cache::DRI1Cache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::DRI1Cache,f::F=integrator.f) where F
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack _dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,uhat,tmp,resids = cache
   @unpack a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43,NORMAL_ONESIX_QUANTILE = cache.tab
@@ -332,7 +332,7 @@ end
 
 
 
-@muladd function perform_step!(integrator,cache::DRI1NMCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::DRI1NMCache,f::F=integrator.f) where F
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack _dW, chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,tmp1,tmpg,uhat,tmp,resids = cache
   @unpack a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43,NORMAL_ONESIX_QUANTILE = cache.tab
@@ -436,7 +436,7 @@ end
 
 
 # Roessler SRK for first order weak approx
-@muladd function perform_step!(integrator,cache::RDI1WMConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::RDI1WMConstantCache,f::F=integrator.f) where F
   @unpack a021,b021,α1,α2,c02,beta11,NORMAL_ONESIX_QUANTILE = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
@@ -502,7 +502,7 @@ end
 
 
 
-@muladd function perform_step!(integrator,cache::RDI1WMCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::RDI1WMCache,f::F=integrator.f) where F
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack _dW,_dZ,chi1,Ihat2,tab,g1,k1,k2,H02,tmp1 = cache
   @unpack a021,b021,α1,α2,c02,beta11,NORMAL_ONESIX_QUANTILE = cache.tab
@@ -568,7 +568,7 @@ end
 
 # Stratonovich sense
 
-@muladd function perform_step!(integrator,cache::RSConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::RSConstantCache,f::F=integrator.f) where F
   @unpack a021,a031,a032,a131,a141,b031,b032,b121,b131,b132,b141,b142,b143,b221,b231,b331,b332,b341,b342,α1,α2,α3,α4,c02,c03,c13,c14,beta11,beta12,beta13,beta14,beta22,beta23,NORMAL_ONESIX_QUANTILE = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
@@ -763,7 +763,7 @@ end
 end
 
 
-@muladd function perform_step!(integrator,cache::RSCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::RSCache,f::F=integrator.f) where F
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack _dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,g4,k1,k2,k3,H02,H03,H12,H13,H14,H22,H23,tmp1,tmpg = cache
   @unpack a021,a031,a032,a131,a141,b031,b032,b121,b131,b132,b141,b142,b143,b221,b231,b331,b332,b341,b342,α1,α2,α3,α4,c02,c03,c13,c14,beta11,beta12,beta13,beta14,beta22,beta23,NORMAL_ONESIX_QUANTILE = cache.tab
@@ -965,7 +965,7 @@ end
 
 
 # PL1WM
-@muladd function perform_step!(integrator,cache::PL1WMConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::PL1WMConstantCache,f::F=integrator.f) where F
   @unpack NORMAL_ONESIX_QUANTILE = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
@@ -1066,7 +1066,7 @@ end
 end
 
 
-@muladd function perform_step!(integrator,cache::PL1WMCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::PL1WMCache,f::F=integrator.f) where F
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack _dW,_dZ,chi1,Ihat2,tab,g1,k1,k2,Y,Yp,Ym,tmp1,tmpg1,tmpg2,Ulp,Ulm = cache
   @unpack NORMAL_ONESIX_QUANTILE = cache.tab
@@ -1176,7 +1176,7 @@ end
 
 
 # PL1WM
-@muladd function perform_step!(integrator,cache::PL1WMAConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::PL1WMAConstantCache,f::F=integrator.f) where F
   @unpack NORMAL_ONESIX_QUANTILE = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
@@ -1207,7 +1207,7 @@ end
 
 
 
-@muladd function perform_step!(integrator,cache::PL1WMACache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::PL1WMACache,f::F=integrator.f) where F
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack _dW,chi1,tab,g1,k1,k2,Y,tmp1 = cache
   @unpack NORMAL_ONESIX_QUANTILE = cache.tab
@@ -1242,7 +1242,7 @@ end
 
 
 # NON
-@muladd function perform_step!(integrator,cache::NONConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::NONConstantCache,f::F=integrator.f) where F
   @unpack c01,c02,c03,c04,cj1,cj2,cj3,cj4,cjl2,cjl3,clj2,clj3,a0021,a0032,a0043,aj021,aj041,a0j21,a0j31,a0j32,a0j41,ajj21,ajj31,ajj32,ajj41,ajj42,ajj43,ajl31,ajl32,ajl41,ajl42,ajljj31,aljjl21,aljjl31,NORMAL_ONESIX_QUANTILE = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
@@ -1483,7 +1483,7 @@ end
 end
 
 
-@muladd function perform_step!(integrator,cache::NONCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::NONCache,f::F=integrator.f) where F
   @unpack t,dt,uprev,u,W,p = integrator
   @unpack _dW,_dZ,chi1,Ihat2,tab,gtmp,ktmp,Y100,Y200,Y300,Y400,Y1jajb,Y2jajb,Y3jajb,Y4jajb,tmpu = cache
   @unpack c01,c02,c03,c04,cj1,cj2,cj3,cj4,cjl2,cjl3,clj2,clj3,a0021,a0032,a0043,aj021,aj041,a0j21,a0j31,a0j32,a0j41,ajj21,ajj31,ajj32,ajj41,ajj42,ajj43,ajl31,ajl32,ajl41,ajl42,ajljj31,aljjl21,aljjl31,NORMAL_ONESIX_QUANTILE = cache.tab
@@ -1705,7 +1705,7 @@ end
 
 
 # COM
-@muladd function perform_step!(integrator,cache::COMConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::COMConstantCache,f::F=integrator.f) where F
   @unpack c01,c02,c03,c04,cj1,cj2,cj3,cj4,a0021,a0032,a0043,aj021,aj041,a0j21,a0j31,a0j32,a0j41,ajj21,ajj31,ajj32,ajj41,ajj42,ajj43,ajl31,ajl32,ajl41,ajl42,NORMAL_ONESIX_QUANTILE = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
@@ -1844,7 +1844,7 @@ end
 
 
 # COM
-@muladd function perform_step!(integrator,cache::COMCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::COMCache,f::F=integrator.f) where F
   @unpack _dW,tab,gtmp,ktmp,Y10,Y20,Y30,Y40,Y1j,Y2j,Y3j,Y4j,tmpu,tmpu2 = cache
   @unpack c01,c02,c03,c04,cj1,cj2,cj3,cj4,a0021,a0032,a0043,aj021,aj041,a0j21,a0j31,a0j32,a0j41,ajj21,ajj31,ajj32,ajj41,ajj42,ajj43,ajl31,ajl32,ajl41,ajl42,NORMAL_ONESIX_QUANTILE = cache.tab
   @unpack t,dt,uprev,u,W,p = integrator
@@ -1998,7 +1998,7 @@ end
 
 
 # NON2
-@muladd function perform_step!(integrator,cache::NON2ConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::NON2ConstantCache,f::F=integrator.f) where F
   @unpack c01,c02,c03,c04,cj1,cj2,cj3,cj4,a0021,a0032,a0043,aj021,aj041,a0j21,a0j31,a0j32,a0j41,ajj21,ajj31,ajj32,ajj41,ajj42,ajj43,ajl31,ajl32,ajl41,ajl42,γ,NORMAL_ONESIX_QUANTILE = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
@@ -2157,7 +2157,7 @@ end
   integrator.u = u
 end
 
-@muladd function perform_step!(integrator,cache::NON2Cache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::NON2Cache,f::F=integrator.f) where F
   @unpack _dW,_dZ, chi1,Ihat2,tab,gtmp,gtmp1,ktmp,Y10,Y20,Y30,Y40,Y1j,Y2j,Y3j,Y4j,tmpu,tmpu2 = cache
   @unpack c01,c02,c03,c04,cj1,cj2,cj3,cj4,a0021,a0032,a0043,aj021,aj041,a0j21,a0j31,a0j32,a0j41,ajj21,ajj31,ajj32,ajj41,ajj42,ajj43,ajl31,ajl32,ajl41,ajl42,γ,NORMAL_ONESIX_QUANTILE = cache.tab
   @unpack t,dt,uprev,u,W,p = integrator
@@ -2339,7 +2339,7 @@ end
 
 
 # SIE / SME
-@muladd function perform_step!(integrator,cache::SIESMEConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SIESMEConstantCache,f::F=integrator.f) where F
   @unpack α1,α2,γ1,λ1,λ2,λ3,µ1,µ2,µ3,µ0,µbar0,λ0,λbar0,ν1,ν2,β2,β3,δ2,δ3 = cache
   @unpack t,dt,uprev,u,W,p = integrator
 
@@ -2379,7 +2379,7 @@ end
 
 
 # SIE / SME
-@muladd function perform_step!(integrator,cache::SIESMECache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::SIESMECache,f::F=integrator.f) where F
   @unpack W2,W3,tab,k0,k1,g0,g1,g2,tmpu = cache
   @unpack α1,α2,γ1,λ1,λ2,λ3,µ1,µ2,µ3,µ0,µbar0,λ0,λbar0,ν1,ν2,β2,β3,δ2,δ3 = cache.tab
   @unpack t,dt,uprev,u,W,p = integrator

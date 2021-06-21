@@ -2,7 +2,7 @@
                                cache::Union{ImplicitEMConstantCache,
                                             ImplicitEulerHeunConstantCache,
                                             ImplicitRKMilConstantCache},
-                                            f=integrator.f)
+                                            f::F=integrator.f) where F
   @unpack t,dt,uprev,u,p,P,c = integrator
   @unpack nlsolver = cache
   alg = unwrap_alg(integrator, true)
@@ -103,7 +103,7 @@ end
                                cache::Union{ImplicitEMCache,
                                             ImplicitEulerHeunCache,
                                             ImplicitRKMilCache},
-                               f=integrator.f)
+                               f::F=integrator.f) where F
   @unpack t,dt,uprev,u,p,P,c = integrator
   @unpack gtmp,gtmp2,nlsolver = cache
   @unpack z,tmp = nlsolver

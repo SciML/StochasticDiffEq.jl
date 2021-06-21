@@ -1,7 +1,7 @@
 @muladd function perform_step!(integrator,
                                cache::Union{ISSEMConstantCache,
                                             ISSEulerHeunConstantCache},
-                                            f=integrator.f)
+                                            f::F=integrator.f) where F
   @unpack t,dt,uprev,u,p = integrator
   @unpack nlsolver = cache
   alg = unwrap_alg(integrator, true)
@@ -82,7 +82,7 @@ end
 
 @muladd function perform_step!(integrator, cache::Union{ISSEMCache,
                                                         ISSEulerHeunCache},
-                               f=integrator.f)
+                               f::F=integrator.f) where F
   @unpack t,dt,uprev,u,p = integrator
   @unpack gtmp,gtmp2,dW_cache,nlsolver = cache
   @unpack z,tmp = nlsolver

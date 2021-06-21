@@ -1,4 +1,4 @@
-@muladd function perform_step!(integrator,cache::PCEulerConstantCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::PCEulerConstantCache,f::F=integrator.f) where F
   @unpack t,dt,uprev,u,W,p,f,g = integrator
   @unpack theta,eta,ggprime = integrator.alg
   dW = W.dW
@@ -26,7 +26,7 @@
   integrator.u = u
 end
 
-@muladd function perform_step!(integrator,cache::PCEulerCache,f=integrator.f)
+@muladd function perform_step!(integrator,cache::PCEulerCache,f::F=integrator.f) where F
   @unpack utmp,ftmp,gtmp,gdWtmp, bbprimetmp = cache
   @unpack t,dt,uprev,u,W,p,f,g = integrator
   @unpack theta,eta,ggprime = integrator.alg
