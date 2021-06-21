@@ -145,6 +145,8 @@ end
   alg = unwrap_alg(integrator, true)
   OrdinaryDiffEq.markfirststage!(nlsolver)
 
+  repeat_step = false
+
   # Some aliases
 
   E₁ = g4
