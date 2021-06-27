@@ -24,27 +24,61 @@ struct IIWiktorsson <:  IteratedIntegralApprox end
 ################################################################################
 
 # Basics
-
+"""
+EM: Nonstiff Method
+The Euler-Maruyama method. Strong Order 0.5 in the Ito sense.
+Has an optional argument split=true for controlling step splitting.
+When splitting is enabled, the stability with large diffusion eigenvalues is improved.
+Can handle all forms of noise, including non-diagonal, scalar, and colored noise.
+Fixed time step only.
+"""
 struct EM{split} <: StochasticDiffEqAlgorithm end
 EM(split=true) = EM{split}()
 
 struct SplitEM <: StochasticDiffEqAlgorithm end
+"""
+EulerHeun: Nonstiff Method
+The Euler-Heun method.
+Strong Order 0.5 in the Stratonovich sense.
+Can handle all forms of noise, including non-diagonal, scalar, and colored noise.
+Fixed time step only.
+"""
 struct EulerHeun <: StochasticDiffEqAlgorithm end
-
+"""
+LambaEM: Nonstiff Method
+A modified Euler-Maruyama method with adaptive time stepping with an error estimator based on Lamba and Rackauckas.
+Has an optional argument split=true for controlling step splitting.
+When splitting is enabled, the stability with large diffusion eigenvalues is improved.
+Strong Order 0.5 in the Ito sense. Can handle all forms of noise, including non-diagonal, scalar, and colored noise
+"""
 struct LambaEM{split} <: StochasticDiffEqAdaptiveAlgorithm end
 LambaEM(split=true) = LambaEM{split}()
-
+"""
+LambaEulerHeun: Nonstiff Method
+A modified Euler-Heun method with adaptive time stepping with an error estimator based on Lamba due to Rackauckas.
+Strong order 0.5 in the Stratonovich sense.
+Can handle all forms of noise, including non-diagonal, scalar, and colored noise.
+"""
 struct LambaEulerHeun <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
 Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
 Springer. Berlin Heidelberg (2011)
+
+SimplifiedEM: High Weak Order Method
+A simplified Euler-Maruyama method with weak order 1.0 and fixed step size.
+Can handle all forms of noise, including non-diagonal, scalar, and colored noise.
 """
 struct SimplifiedEM <: StochasticDiffEqAlgorithm end
 
 """
 Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
 Springer. Berlin Heidelberg (2011)
+
+RKMil: Nonstiff Method
+An explicit Runge-Kutta discretization of the strong order 1.0 Milstein method.
+Defaults to solving the Ito problem, but RKMil(interpretation=:Stratonovich) makes it solve the Stratonovich problem.
+Only handles scalar and diagonal noise.
 """
 struct RKMil{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
 RKMil(;interpretation=:Ito) = RKMil{interpretation}()
@@ -52,6 +86,11 @@ RKMil(;interpretation=:Ito) = RKMil{interpretation}()
 """
 Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
 Springer. Berlin Heidelberg (2011)
+
+RKMilCommute: Nonstiff Method
+An explicit Runge-Kutta discretization of the strong order 1.0 Milstein method for commutative noise problems.
+Defaults to solving the Ito problem, but RKMilCommute(interpretation=:Stratonovich) makes it solve the Stratonovich problem.
+Uses a 1.5/2.0 error estimate for adaptive time stepping.
 """
 struct RKMilCommute{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
 RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
@@ -59,6 +98,12 @@ RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
 """
 Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
 Springer. Berlin Heidelberg (2011)
+
+RKMilGeneral: Nonstiff Method
+RKMilGeneral(;interpretation=:Ito, ii_approx=IIWiktorsson()
+An explicit Runge-Kutta discretization of the strong order 1.0 Milstein method for general non-commutative noise problems.
+Allows for a choice of interpretation between :Ito and :Stratonovich.
+Allows for a choice of iterated integral approximation.
 """
 struct RKMilGeneral{T<:IteratedIntegralApprox, TruncationType} <: StochasticDiffEqAdaptiveAlgorithm
   interpretation::Symbol
@@ -71,15 +116,44 @@ function RKMilGeneral(;interpretation=:Ito, ii_approx=IIWiktorsson(), c=1, p=not
   p==true && (p = Int(floor(c*dt^(1//1-2//1*γ)) + 1))
   RKMilGeneral(interpretation, ii_approx, c, p)
 end
-
+"""
+WangLi3SMil_A: Nonstiff Method
+Fixed step-size explicit 3-stage Milstein methods for Ito problem with strong and weak order 1.0
+"""
 struct WangLi3SMil_A <: StochasticDiffEqAlgorithm end
+"""
+WangLi3SMil_B: Nonstiff Method
+Fixed step-size explicit 3-stage Milstein methods for Ito problem with strong and weak order 1.0
+"""
 struct WangLi3SMil_B <: StochasticDiffEqAlgorithm end
+"""
+WangLi3SMil_C: Nonstiff Method
+Fixed step-size explicit 3-stage Milstein methods for Ito problem with strong and weak order 1.0
+"""
 struct WangLi3SMil_C <: StochasticDiffEqAlgorithm end
+"""
+WangLi3SMil_D: Nonstiff Method
+Fixed step-size explicit 3-stage Milstein methods for Ito problem with strong and weak order 1.0
+"""
 struct WangLi3SMil_D <: StochasticDiffEqAlgorithm end
+"""
+WangLi3SMil_E: Nonstiff Method
+Fixed step-size explicit 3-stage Milstein methods for Ito problem with strong and weak order 1.0
+"""
 struct WangLi3SMil_E <: StochasticDiffEqAlgorithm end
+"""
+WangLi3SMil_F: Nonstiff Method
+Fixed step-size explicit 3-stage Milstein methods for Ito problem with strong and weak order 1.0
+"""
 struct WangLi3SMil_F <: StochasticDiffEqAlgorithm end
 
 #SROCK methods
+"""
+SROCK1: S-ROCK Method
+Is a fixed step size stabilized explicit method for stiff problems.
+Defaults to solving th Ito problem but SROCK1(interpretation=:Stratonovich) can make it solve the Stratonovich problem.
+Strong order of convergence is 0.5 and weak order 1, but is optimised to get order 1 in case os scalar/diagonal noise.
+"""
 struct SROCK1{interpretation,E} <: StochasticDiffEqAlgorithm
   eigen_est::E
 end
@@ -96,18 +170,39 @@ for Alg in [:SROCK2, :KomBurSROCK2, :SROCKC2]
 end
 
 # ROCK stabilization for EM
+"""
+SROCKEM: S-ROCK Method
+Is fixed step Euler-Mayurama with first order ROCK stabilization thus can handle stiff problems.
+Only for Ito problems. Defaults to strong and weak order 1.0, but can solve with weak order 0.5 as SROCKEM(strong_order_1=false).
+This method can handle 1-dimensional, diagonal and multi-dimensional noise.
+"""
 struct SROCKEM{E} <: StochasticDiffEqAlgorithm
   strong_order_1::Bool
   eigen_est::E
 end
 SROCKEM(;strong_order_1=true,eigen_est=nothing) = SROCKEM(strong_order_1,eigen_est)
-
+"""
+SKSROCK: S-ROCK Method
+Is fixed step stabilized explicit method for stiff Ito problems.
+Strong order 0.5 and weak order 1.
+This method has a better stability domain then SROCK1.
+Also it allows special post-processing techniques in case of ergodic dynamical systems, in the context of ergodic Brownian dynamics, to achieve order 2 accuracy.
+SKSROCK(;post_processing=true) will make use of post processing.
+By default it doesn't use post processing.
+Post processing is optional and under development.
+The rest of the method is completely functional and can handle 1-dimensional, diagonal and multi-dimensional noise.
+"""
 struct SKSROCK{E} <: StochasticDiffEqAlgorithm
   post_processing::Bool
   eigen_est::E
 end
 SKSROCK(;post_processing=false,eigen_est=nothing) = SKSROCK(post_processing,eigen_est)
-
+"""
+TangXiaoSROCK2: S-ROCK Method
+Is a fixed step size stabilized expicit method for stiff problems.
+Only for Ito problems. Weak order of 2 and strog order of 1.
+Has 5 versions with different stability domains which can be used as TangXiaoSROCK2(version_num=i) where i is 1-5. Under Development.
+"""
 struct TangXiaoSROCK2{E} <: StochasticDiffEqAlgorithm
   version_num::Int
   eigen_est::E
@@ -154,6 +249,10 @@ PCEuler(ggprime; theta=1/2, eta=1/2) = PCEuler(theta,eta,ggprime)
 Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
 Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
 DOI:10.1137/09076636X
+
+SRA: Nonstiff Method
+Adaptive strong order 1.5 methods for additive Ito and Stratonovich SDEs.
+Default tableau is for SRA1. Can handle diagonal, non-diagonal and scalar additive noise.
 """
 struct SRA{TabType} <: StochasticDiffEqAdaptiveAlgorithm
   tableau::TabType
@@ -164,6 +263,10 @@ SRA(;tableau=constructSRA1()) = SRA(tableau)
 Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
 Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
 DOI:10.1137/09076636X
+
+SRI: Nonstiff Method
+Adaptive strong order 1.5 methods for diagonal/scalar Ito SDEs.
+Default tableau is for SRIW1.
 """
 struct SRI{TabType} <: StochasticDiffEqAdaptiveAlgorithm
   tableau::TabType
@@ -175,6 +278,9 @@ SRI(;tableau=constructSRIW1(),error_terms=4) = SRI(tableau,error_terms)
 Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
 Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
 DOI:10.1137/09076636X
+
+SRIW1: Nonstiff Method
+Adaptive strong order 1.5 and weak order 2.0 for diagonal/scalar Ito SDEs.
 """
 struct SRIW1 <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -182,15 +288,32 @@ struct SRIW1 <: StochasticDiffEqAdaptiveAlgorithm end
 Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
 Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
 DOI:10.1137/09076636X
+
+SRIW2: Nonstiff Method
+Adaptive strong order 1.5 and weak order 3.0 for diagonal/scalar Ito SDEs.
 """
 struct SRIW2 <: StochasticDiffEqAdaptiveAlgorithm end
+"""
+SOSRI: Nonstiff Method
+Stability-optimized adaptive strong order 1.5 and weak order 2.0 for diagonal/scalar Ito SDEs.
+Stable at high tolerances and robust to stiffness.
+"""
 struct SOSRI <: StochasticDiffEqAdaptiveAlgorithm end
+"""
+SOSRI2: Nonstiff Method
+Stability-optimized adaptive strong order 1.5 and weak order 2.0 for diagonal/scalar Ito SDEs.
+Stable at high tolerances and robust to stiffness.
+"""
 struct SOSRI2 <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
 Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
 Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
 DOI:10.1137/09076636X
+
+SRA1: Nonstiff Method
+Adaptive strong order 1.5 for additive Ito and Stratonovich SDEs with weak order 2.
+Can handle diagonal, non-diagonal, and scalar additive noise.
 """
 struct SRA1 <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -198,6 +321,10 @@ struct SRA1 <: StochasticDiffEqAdaptiveAlgorithm end
 Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
 Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
 DOI:10.1137/09076636X
+
+SRA2: Nonstiff Method
+Adaptive strong order 1.5 for additive Ito and Stratonovich SDEs with weak order 2.
+Can handle diagonal, non-diagonal, and scalar additive noise.
 """
 struct SRA2 <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -205,9 +332,25 @@ struct SRA2 <: StochasticDiffEqAdaptiveAlgorithm end
 Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
 Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
 DOI:10.1137/09076636X
+
+SRA3: Nonstiff Method
+Adaptive strong order 1.5 for additive Ito and Stratonovich SDEs with weak order 3.
+Can handle non-diagonal and scalar additive noise.
 """
 struct SRA3 <: StochasticDiffEqAdaptiveAlgorithm end
+"""
+SOSRA: Nonstiff Method
+A stability-optimized adaptive SRA. Strong order 1.5 for additive Ito and Stratonovich SDEs with weak order 2.
+Can handle diagonal, non-diagonal, and scalar additive noise.
+Stable at high tolerances and robust to stiffness.
+"""
 struct SOSRA <: StochasticDiffEqAdaptiveAlgorithm end
+"""
+SOSRA2: Nonstiff Method
+A stability-optimized adaptive SRA. Strong order 1.5 for additive Ito and Stratonovich SDEs with weak order 2.
+Can handle diagonal, non-diagonal, and scalar additive noise.
+Stable at high tolerances and robust to stiffness.
+"""
 struct SOSRA2 <: StochasticDiffEqAdaptiveAlgorithm end
 
 ################################################################################
@@ -219,6 +362,10 @@ Debrabant, K. and Rößler A., Families of efficient second order Runge–Kutta 
 for the weak approximation of Itô stochastic differential equations,
 Applied Numerical Mathematics 59, pp. 582–594 (2009)
 DOI:10.1016/j.apnum.2008.03.012
+
+DRI1: High Weak Order Method
+Adaptive step weak order 2.0 for Ito SDEs with minimized error constants (deterministic order 3).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct DRI1 <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -227,6 +374,10 @@ Debrabant, K. and Rößler A., Families of efficient second order Runge–Kutta 
 for the weak approximation of Itô stochastic differential equations,
 Applied Numerical Mathematics 59, pp. 582–594 (2009)
 DOI:10.1016/j.apnum.2008.03.012
+
+DRI1NM: High Weak Order Method
+Adaptive step weak order 2.0 for Ito SDEs with minimized error constants (deterministic order 3).
+Can handle non-mixing diagonal (i.e., du[k] = f(u[k])) and scalar additive noise.
 """
 struct DRI1NM <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -234,6 +385,10 @@ struct DRI1NM <: StochasticDiffEqAdaptiveAlgorithm end
 Rößler A., Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations,
 SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
 DOI:10.1137/060673308
+
+RI1: High Weak Order Method
+Adaptive step weak order 2.0 for Ito SDEs (deterministic order 3).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct RI1 <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -241,6 +396,10 @@ struct RI1 <: StochasticDiffEqAdaptiveAlgorithm end
 Rößler A., Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations,
 SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
 DOI:10.1137/060673308
+
+RI3: High Weak Order Method
+Adaptive step weak order 2.0 for Ito SDEs (deterministic order 3).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct RI3 <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -248,6 +407,10 @@ struct RI3 <: StochasticDiffEqAdaptiveAlgorithm end
 Rößler A., Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations,
 SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
 DOI:10.1137/060673308
+
+RI5: High Weak Order Method
+Adaptive step weak order 2.0 for Ito SDEs (deterministic order 3).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct RI5 <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -255,6 +418,10 @@ struct RI5 <: StochasticDiffEqAdaptiveAlgorithm end
 Rößler A., Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations,
 SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
 DOI:10.1137/060673308
+
+RI6: High Weak Order Method
+Adaptive step weak order 2.0 for Ito SDEs (deterministic order 2).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct RI6 <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -263,6 +430,11 @@ Debrabant, K. and Rößler A., Classification of Stochastic Runge–Kutta Method
 the Weak Approximation of Stochastic Differential Equations,
 Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
 DOI:10.1016/j.matcom.2007.04.016
+
+RDI1WM: High Weak Order Method
+
+Fixed step weak order 1.0 for Ito SDEs (deterministic order 2).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct RDI1WM <: StochasticDiffEqAlgorithm end
 
@@ -271,6 +443,10 @@ Debrabant, K. and Rößler A., Classification of Stochastic Runge–Kutta Method
 the Weak Approximation of Stochastic Differential Equations,
 Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
 DOI:10.1016/j.matcom.2007.04.016
+
+RDI2WM: High Weak Order Method
+Adaptive step weak order 2.0 for Ito SDEs (deterministic order 2).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct RDI2WM <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -279,6 +455,10 @@ Debrabant, K. and Rößler A., Classification of Stochastic Runge–Kutta Method
 the Weak Approximation of Stochastic Differential Equations,
 Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
 DOI:10.1016/j.matcom.2007.04.016
+
+RDI3WM: High Weak Order Method
+Adaptive step weak order 2.0 for Ito SDEs (deterministic order 3).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.†
 """
 struct RDI3WM <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -287,6 +467,10 @@ Debrabant, K. and Rößler A., Classification of Stochastic Runge–Kutta Method
 the Weak Approximation of Stochastic Differential Equations,
 Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
 DOI:10.1016/j.matcom.2007.04.016
+
+RDI4WM: High Weak Order Method
+Adaptive step weak order 2.0 for Ito SDEs (deterministic order 3).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct RDI4WM <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -296,6 +480,10 @@ struct RDI4WM <: StochasticDiffEqAdaptiveAlgorithm end
 Rößler A., Second order Runge–Kutta methods for Stratonovich stochastic differential
 equations, BIT Numerical Mathematics 47, pp. 657-680 (2007)
 DOI:10.1007/s10543-007-0130-3
+
+RS1: High Weak Order Method
+Fixed step weak order 2.0 for Stratonovich SDEs (deterministic order 2).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct RS1 <: StochasticDiffEqAlgorithm end
 
@@ -303,18 +491,30 @@ struct RS1 <: StochasticDiffEqAlgorithm end
 Rößler A., Second order Runge–Kutta methods for Stratonovich stochastic differential
 equations, BIT Numerical Mathematics 47, pp. 657-680 (2007)
 DOI:10.1007/s10543-007-0130-3
+
+RS2: High Weak Order Method
+Fixed step weak order 2.0 for Stratonovich SDEs (deterministic order 3).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct RS2 <: StochasticDiffEqAlgorithm end
 
 """
 Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
 Springer. Berlin Heidelberg (2011)
+
+PL1WM: High Weak Order Method
+Fixed step weak order 2.0 for Ito SDEs (deterministic order 2).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct PL1WM <: StochasticDiffEqAlgorithm end
 
 """
 Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
 Springer. Berlin Heidelberg (2011)
+
+PL1WMA: High Weak Order Method
+Fixed step weak order 2.0 for Ito SDEs (deterministic order 2).
+Can handle additive noise.
 """
 struct PL1WMA <: StochasticDiffEqAlgorithm end
 
@@ -323,6 +523,10 @@ Komori, Y., Weak second-order stochastic Runge–Kutta methods for non-commutati
 stochastic differential equations, Journal of Computational and Applied
 Mathematics 206, pp. 158 – 173 (2007)
 DOI:10.1016/j.cam.2006.06.006
+
+NON: High Weak Order Method
+Fixed step weak order 2.0 for Stratonovich SDEs (deterministic order 4).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct NON <: StochasticDiffEqAlgorithm end
 
@@ -338,7 +542,7 @@ struct COM <: StochasticDiffEqAlgorithm end
 Komori, Y., & Burrage, K. (2011). Supplement: Efficient weak second order stochastic
 Runge–Kutta methods for non-commutative Stratonovich stochastic differential equations.
 Journal of computational and applied mathematics, 235(17), pp. 5326 - 5329 (2011)
-DOI:10.1016/j.cam.2011.04.021 
+DOI:10.1016/j.cam.2011.04.021
 """
 struct NON2 <: StochasticDiffEqAlgorithm end
 
@@ -347,6 +551,11 @@ struct NON2 <: StochasticDiffEqAlgorithm end
 Tocino, A. and Vigo-Aguiar, J., Weak Second Order Conditions for Stochastic Runge-
 Kutta Methods, SIAM Journal on Scientific Computing 24, pp. 507 - 523 (2002)
 DOI:10.1137/S1064827501387814
+
+SIEA:High Weak Order Method
+Fixed step weak order 2.0 for Ito SDEs (deterministic order 2).
+Can handle diagonal and scalar additive noise.†
+Stochastic generalization of the improved Euler method.
 """
 struct SIEA <: StochasticDiffEqAlgorithm end
 
@@ -354,6 +563,11 @@ struct SIEA <: StochasticDiffEqAlgorithm end
 Tocino, A. and Vigo-Aguiar, J., Weak Second Order Conditions for Stochastic Runge-
 Kutta Methods, SIAM Journal on Scientific Computing 24, pp. 507 - 523 (2002)
 DOI:10.1137/S1064827501387814
+
+SMEA: High Weak Order Method
+Fixed step weak order 2.0 for Ito SDEs (deterministic order 2).
+Can handle diagonal and scalar additive noise.†
+Stochastic generalization of the modified Euler method.
 """
 struct SMEA <: StochasticDiffEqAlgorithm end
 
@@ -361,6 +575,11 @@ struct SMEA <: StochasticDiffEqAlgorithm end
 Tocino, A. and Vigo-Aguiar, J., Weak Second Order Conditions for Stochastic Runge-
 Kutta Methods, SIAM Journal on Scientific Computing 24, pp. 507 - 523 (2002)
 DOI:10.1137/S1064827501387814
+
+SIEB: High Weak Order Method
+Fixed step weak order 2.0 for Ito SDEs (deterministic order 2).
+Can handle diagonal and scalar additive noise.†
+Stochastic generalization of the improved Euler method.
 """
 struct SIEB <: StochasticDiffEqAlgorithm end
 
@@ -368,6 +587,11 @@ struct SIEB <: StochasticDiffEqAlgorithm end
 Tocino, A. and Vigo-Aguiar, J., Weak Second Order Conditions for Stochastic Runge-
 Kutta Methods, SIAM Journal on Scientific Computing 24, pp. 507 - 523 (2002)
 DOI:10.1137/S1064827501387814
+
+SMEB: High Order Weak Method
+Fixed step weak order 2.0 for Ito SDEs (deterministic order 2).
+Can handle diagonal and scalar additive noise.†
+Stochastic generalization of the modified Euler method.
 """
 struct SMEB <: StochasticDiffEqAlgorithm end
 
@@ -394,7 +618,13 @@ IIF1Mil(;nlsolve=NLSOLVEJL_SETUP()) = IIF1Mil{typeof(nlsolve)}(nlsolve)
 ################################################################################
 
 # SDIRK
-
+"""
+ImplicitEM: Stiff Method
+An order 0.5 Ito drift-implicit method.
+This is a theta method which defaults to theta=1 or the Trapezoid method on the drift term.
+This method defaults to symplectic=false, but when true and theta=1/2 this is the implicit Midpoint method on the drift term and is symplectic in distribution.
+Can handle all forms of noise, including non-diagonal, scalar, and colored noise. Uses a 1.0/1.5 heuristic for adaptive time stepping.
+"""
 struct ImplicitEM{CS,AD,F,F2,S,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}
   linsolve::F
   nlsolve::F2
@@ -419,7 +649,13 @@ ImplicitEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
 
 STrapezoid(;kwargs...) = ImplicitEM(;theta=1/2,kwargs...)
 SImplicitMidpoint(;kwargs...) = ImplicitEM(;theta=1/2,symplectic=true,kwargs...)
-
+"""
+ImplicitEulerHeun: Stiff Method
+An order 0.5 Stratonovich drift-implicit method.
+This is a theta method which defaults to theta=1/2 or the Trapezoid method on the drift term.
+This method defaults to symplectic=false, but when true and theta=1 this is the implicit Midpoint method on the drift term and is symplectic in distribution.
+Can handle all forms of noise, including non-diagonal, scalar, and colored noise. Uses a 1.0/1.5 heuristic for adaptive time stepping.
+"""
 struct ImplicitEulerHeun{CS,AD,F,S,N,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}
   linsolve::F
   diff_type::S
@@ -444,6 +680,14 @@ ImplicitEulerHeun(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           extrapolant,
                           new_jac_conv_bound,symplectic)
 
+"""
+ImplicitRKMil: Stiff Method
+An order 1.0 drift-implicit method.
+This is a theta method which defaults to theta=1 or the Trapezoid method on the drift term.
+Defaults to solving the Ito problem, but ImplicitRKMil(interpretation=:Stratonovich) makes it solve the Stratonovich problem.
+This method defaults to symplectic=false, but when true and theta=1/2 this is the implicit Midpoint method on the drift term and is symplectic in distribution.
+Handles diagonal and scalar noise. Uses a 1.5/2.0 heuristic for adaptive time stepping.
+"""
 struct ImplicitRKMil{CS,AD,F,S,N,T2,Controller,interpretation} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}
   linsolve::F
   diff_type::S
@@ -467,7 +711,14 @@ ImplicitRKMil(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           symplectic ? 1/2 : theta,
                           extrapolant,
                           new_jac_conv_bound,symplectic)
-
+"""
+ISSEM: Stiff Method
+An order 0.5 split-step Ito implicit method.
+It is fully implicit, meaning it can handle stiffness in the noise term.
+This is a theta method which defaults to theta=1 or the Trapezoid method on the drift term.
+This method defaults to symplectic=false, but when true and theta=1/2 this is the implicit Midpoint method on the drift term and is symplectic in distribution.
+Can handle all forms of noise, including non-diagonal, scalar, and colored noise. Uses a 1.0/1.5 heuristic for adaptive time stepping.
+"""
 struct ISSEM{CS,AD,F,S,N,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}
   linsolve::F
   diff_type::S
@@ -491,7 +742,14 @@ ISSEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                        symplectic ? 1/2 : theta,
                        extrapolant,
                        new_jac_conv_bound,symplectic)
-
+"""
+ISSEulerHeun: Stiff Method
+An order 0.5 split-step Stratonovich implicit method.
+It is fully implicit, meaning it can handle stiffness in the noise term.
+This is a theta method which defaults to theta=1 or the Trapezoid method on the drift term.
+This method defaults to symplectic=false, but when true and theta=1/2 this is the implicit Midpoint method on the drift term and is symplectic in distribution.
+Can handle all forms of noise, including non-diagonal,Q scalar, and colored noise. Uses a 1.0/1.5 heuristic for adaptive time stepping.
+"""
 struct ISSEulerHeun{CS,AD,F,S,N,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}
  linsolve::F
  diff_type::S
@@ -514,7 +772,11 @@ ISSEulerHeun(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                       symplectic ? 1/2 : theta,
                       extrapolant,
                       new_jac_conv_bound,symplectic)
-
+"""
+SKenCarp: Stiff Method
+Adaptive L-stable drift-implicit strong order 1.5 for additive Ito and Stratonovich SDEs with weak order 2.
+Can handle diagonal, non-diagonal and scalar additive noise.
+"""
 struct SKenCarp{CS,AD,F,FDT,N,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}
   linsolve::F
   diff_type::FDT
