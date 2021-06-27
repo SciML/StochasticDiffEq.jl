@@ -232,6 +232,10 @@ SRA(;tableau=constructSRA1()) = SRA(tableau)
 Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
 Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
 DOI:10.1137/09076636X
+
+SRI: Nonstiff Method
+Adaptive strong order 1.5 methods for diagonal/scalar Ito SDEs.
+Default tableau is for SRIW1.
 """
 struct SRI{TabType} <: StochasticDiffEqAdaptiveAlgorithm
   tableau::TabType
@@ -243,6 +247,9 @@ SRI(;tableau=constructSRIW1(),error_terms=4) = SRI(tableau,error_terms)
 Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
 Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
 DOI:10.1137/09076636X
+
+SRIW1: Nonstiff Method
+Adaptive strong order 1.5 and weak order 2.0 for diagonal/scalar Ito SDEs.
 """
 struct SRIW1 <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -250,15 +257,32 @@ struct SRIW1 <: StochasticDiffEqAdaptiveAlgorithm end
 Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
 Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
 DOI:10.1137/09076636X
+
+SRIW2: Nonstiff Method
+Adaptive strong order 1.5 and weak order 3.0 for diagonal/scalar Ito SDEs.
 """
 struct SRIW2 <: StochasticDiffEqAdaptiveAlgorithm end
+"""
+SOSRI: Nonstiff Method
+Stability-optimized adaptive strong order 1.5 and weak order 2.0 for diagonal/scalar Ito SDEs.
+Stable at high tolerances and robust to stiffness.
+"""
 struct SOSRI <: StochasticDiffEqAdaptiveAlgorithm end
+"""
+SOSRI2: Nonstiff Method
+Stability-optimized adaptive strong order 1.5 and weak order 2.0 for diagonal/scalar Ito SDEs.
+Stable at high tolerances and robust to stiffness.
+"""
 struct SOSRI2 <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
 Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
 Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
 DOI:10.1137/09076636X
+
+SRA1: Nonstiff Method
+Adaptive strong order 1.5 for additive Ito and Stratonovich SDEs with weak order 2.
+Can handle diagonal, non-diagonal, and scalar additive noise.
 """
 struct SRA1 <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -266,6 +290,10 @@ struct SRA1 <: StochasticDiffEqAdaptiveAlgorithm end
 Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
 Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
 DOI:10.1137/09076636X
+
+SRA2: Nonstiff Method
+Adaptive strong order 1.5 for additive Ito and Stratonovich SDEs with weak order 2.
+Can handle diagonal, non-diagonal, and scalar additive noise.
 """
 struct SRA2 <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -273,9 +301,25 @@ struct SRA2 <: StochasticDiffEqAdaptiveAlgorithm end
 Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
 Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
 DOI:10.1137/09076636X
+
+SRA3: Nonstiff Method
+Adaptive strong order 1.5 for additive Ito and Stratonovich SDEs with weak order 3.
+Can handle non-diagonal and scalar additive noise.
 """
 struct SRA3 <: StochasticDiffEqAdaptiveAlgorithm end
+"""
+SOSRA: Nonstiff Method
+A stability-optimized adaptive SRA. Strong order 1.5 for additive Ito and Stratonovich SDEs with weak order 2.
+Can handle diagonal, non-diagonal, and scalar additive noise.
+Stable at high tolerances and robust to stiffness.
+"""
 struct SOSRA <: StochasticDiffEqAdaptiveAlgorithm end
+"""
+SOSRA2: Nonstiff Method
+A stability-optimized adaptive SRA. Strong order 1.5 for additive Ito and Stratonovich SDEs with weak order 2.
+Can handle diagonal, non-diagonal, and scalar additive noise.
+Stable at high tolerances and robust to stiffness.
+"""
 struct SOSRA2 <: StochasticDiffEqAdaptiveAlgorithm end
 
 ################################################################################
