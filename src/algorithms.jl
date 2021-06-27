@@ -24,16 +24,41 @@ struct IIWiktorsson <:  IteratedIntegralApprox end
 ################################################################################
 
 # Basics
-
+"""
+EM: Nonstiff Method
+The Euler-Maruyama method. Strong Order 0.5 in the Ito sense.
+Has an optional argument split=true for controlling step splitting.
+When splitting is enabled, the stability with large diffusion eigenvalues is improved.
+Can handle all forms of noise, including non-diagonal, scalar, and colored noise.
+Fixed time step only.
+"""
 struct EM{split} <: StochasticDiffEqAlgorithm end
 EM(split=true) = EM{split}()
 
 struct SplitEM <: StochasticDiffEqAlgorithm end
+"""
+EulerHeun: Nonstiff Method
+The Euler-Heun method.
+Strong Order 0.5 in the Stratonovich sense.
+Can handle all forms of noise, including non-diagonal, scalar, and colored noise.
+Fixed time step only.
+"""
 struct EulerHeun <: StochasticDiffEqAlgorithm end
-
+"""
+LambaEM: Nonstiff Method
+A modified Euler-Maruyama method with adaptive time stepping with an error estimator based on Lamba and Rackauckas.
+Has an optional argument split=true for controlling step splitting.
+When splitting is enabled, the stability with large diffusion eigenvalues is improved.
+Strong Order 0.5 in the Ito sense. Can handle all forms of noise, including non-diagonal, scalar, and colored noise
+"""
 struct LambaEM{split} <: StochasticDiffEqAdaptiveAlgorithm end
 LambaEM(split=true) = LambaEM{split}()
-
+"""
+LambaEulerHeun: Nonstiff Method
+A modified Euler-Heun method with adaptive time stepping with an error estimator based on Lamba due to Rackauckas.
+Strong order 0.5 in the Stratonovich sense.
+Can handle all forms of noise, including non-diagonal, scalar, and colored noise.
+"""
 struct LambaEulerHeun <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
@@ -45,6 +70,11 @@ struct SimplifiedEM <: StochasticDiffEqAlgorithm end
 """
 Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
 Springer. Berlin Heidelberg (2011)
+
+RKMil: Nonstiff Method
+An explicit Runge-Kutta discretization of the strong order 1.0 Milstein method.
+Defaults to solving the Ito problem, but RKMil(interpretation=:Stratonovich) makes it solve the Stratonovich problem.
+Only handles scalar and diagonal noise.
 """
 struct RKMil{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
 RKMil(;interpretation=:Ito) = RKMil{interpretation}()
@@ -52,6 +82,11 @@ RKMil(;interpretation=:Ito) = RKMil{interpretation}()
 """
 Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
 Springer. Berlin Heidelberg (2011)
+
+RKMilCommute: Nonstiff Method
+An explicit Runge-Kutta discretization of the strong order 1.0 Milstein method for commutative noise problems.
+Defaults to solving the Ito problem, but RKMilCommute(interpretation=:Stratonovich) makes it solve the Stratonovich problem.
+Uses a 1.5/2.0 error estimate for adaptive time stepping.
 """
 struct RKMilCommute{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
 RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
@@ -59,6 +94,12 @@ RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
 """
 Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
 Springer. Berlin Heidelberg (2011)
+
+RKMilGeneral: Nonstiff Method
+RKMilGeneral(;interpretation=:Ito, ii_approx=IIWiktorsson()
+An explicit Runge-Kutta discretization of the strong order 1.0 Milstein method for general non-commutative noise problems.
+Allows for a choice of interpretation between :Ito and :Stratonovich.
+Allows for a choice of iterated integral approximation.
 """
 struct RKMilGeneral{T<:IteratedIntegralApprox, TruncationType} <: StochasticDiffEqAdaptiveAlgorithm
   interpretation::Symbol
@@ -71,12 +112,35 @@ function RKMilGeneral(;interpretation=:Ito, ii_approx=IIWiktorsson(), c=1, p=not
   p==true && (p = Int(floor(c*dt^(1//1-2//1*γ)) + 1))
   RKMilGeneral(interpretation, ii_approx, c, p)
 end
-
+"""
+WangLi3SMil_A: Nonstiff Method
+Fixed step-size explicit 3-stage Milstein methods for Ito problem with strong and weak order 1.0
+"""
 struct WangLi3SMil_A <: StochasticDiffEqAlgorithm end
+"""
+WangLi3SMil_B: Nonstiff Method
+Fixed step-size explicit 3-stage Milstein methods for Ito problem with strong and weak order 1.0
+"""
 struct WangLi3SMil_B <: StochasticDiffEqAlgorithm end
+"""
+WangLi3SMil_C: Nonstiff Method
+Fixed step-size explicit 3-stage Milstein methods for Ito problem with strong and weak order 1.0
+"""
 struct WangLi3SMil_C <: StochasticDiffEqAlgorithm end
+"""
+WangLi3SMil_D: Nonstiff Method
+Fixed step-size explicit 3-stage Milstein methods for Ito problem with strong and weak order 1.0
+"""
 struct WangLi3SMil_D <: StochasticDiffEqAlgorithm end
+"""
+WangLi3SMil_E: Nonstiff Method
+Fixed step-size explicit 3-stage Milstein methods for Ito problem with strong and weak order 1.0
+"""
 struct WangLi3SMil_E <: StochasticDiffEqAlgorithm end
+"""
+WangLi3SMil_F: Nonstiff Method
+Fixed step-size explicit 3-stage Milstein methods for Ito problem with strong and weak order 1.0
+"""
 struct WangLi3SMil_F <: StochasticDiffEqAlgorithm end
 
 #SROCK methods
@@ -154,6 +218,10 @@ PCEuler(ggprime; theta=1/2, eta=1/2) = PCEuler(theta,eta,ggprime)
 Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
 Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
 DOI:10.1137/09076636X
+
+SRA: Nonstiff Method
+Adaptive strong order 1.5 methods for additive Ito and Stratonovich SDEs.
+Default tableau is for SRA1. Can handle diagonal, non-diagonal and scalar additive noise.
 """
 struct SRA{TabType} <: StochasticDiffEqAdaptiveAlgorithm
   tableau::TabType
@@ -338,7 +406,7 @@ struct COM <: StochasticDiffEqAlgorithm end
 Komori, Y., & Burrage, K. (2011). Supplement: Efficient weak second order stochastic
 Runge–Kutta methods for non-commutative Stratonovich stochastic differential equations.
 Journal of computational and applied mathematics, 235(17), pp. 5326 - 5329 (2011)
-DOI:10.1016/j.cam.2011.04.021 
+DOI:10.1016/j.cam.2011.04.021
 """
 struct NON2 <: StochasticDiffEqAlgorithm end
 
