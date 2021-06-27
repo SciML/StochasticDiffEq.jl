@@ -64,6 +64,10 @@ struct LambaEulerHeun <: StochasticDiffEqAdaptiveAlgorithm end
 """
 Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
 Springer. Berlin Heidelberg (2011)
+
+SimplifiedEM: High Weak Order Method
+A simplified Euler-Maruyama method with weak order 1.0 and fixed step size.
+Can handle all forms of noise, including non-diagonal, scalar, and colored noise.
 """
 struct SimplifiedEM <: StochasticDiffEqAlgorithm end
 
@@ -358,6 +362,10 @@ Debrabant, K. and Rößler A., Families of efficient second order Runge–Kutta 
 for the weak approximation of Itô stochastic differential equations,
 Applied Numerical Mathematics 59, pp. 582–594 (2009)
 DOI:10.1016/j.apnum.2008.03.012
+
+DRI1: High Weak Order Method
+Adaptive step weak order 2.0 for Ito SDEs with minimized error constants (deterministic order 3).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct DRI1 <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -366,6 +374,10 @@ Debrabant, K. and Rößler A., Families of efficient second order Runge–Kutta 
 for the weak approximation of Itô stochastic differential equations,
 Applied Numerical Mathematics 59, pp. 582–594 (2009)
 DOI:10.1016/j.apnum.2008.03.012
+
+DRI1NM: High Weak Order Method
+Adaptive step weak order 2.0 for Ito SDEs with minimized error constants (deterministic order 3).
+Can handle non-mixing diagonal (i.e., du[k] = f(u[k])) and scalar additive noise.
 """
 struct DRI1NM <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -373,6 +385,10 @@ struct DRI1NM <: StochasticDiffEqAdaptiveAlgorithm end
 Rößler A., Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations,
 SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
 DOI:10.1137/060673308
+
+RI1: High Weak Order Method
+Adaptive step weak order 2.0 for Ito SDEs (deterministic order 3).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct RI1 <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -380,6 +396,10 @@ struct RI1 <: StochasticDiffEqAdaptiveAlgorithm end
 Rößler A., Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations,
 SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
 DOI:10.1137/060673308
+
+RI3: High Weak Order Method
+Adaptive step weak order 2.0 for Ito SDEs (deterministic order 3).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct RI3 <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -387,6 +407,10 @@ struct RI3 <: StochasticDiffEqAdaptiveAlgorithm end
 Rößler A., Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations,
 SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
 DOI:10.1137/060673308
+
+RI5: High Weak Order Method
+Adaptive step weak order 2.0 for Ito SDEs (deterministic order 3).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct RI5 <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -394,6 +418,10 @@ struct RI5 <: StochasticDiffEqAdaptiveAlgorithm end
 Rößler A., Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations,
 SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
 DOI:10.1137/060673308
+
+RI6: High Weak Order Method
+Adaptive step weak order 2.0 for Ito SDEs (deterministic order 2).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct RI6 <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -402,6 +430,11 @@ Debrabant, K. and Rößler A., Classification of Stochastic Runge–Kutta Method
 the Weak Approximation of Stochastic Differential Equations,
 Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
 DOI:10.1016/j.matcom.2007.04.016
+
+RDI1WM: High Weak Order Method
+
+Fixed step weak order 1.0 for Ito SDEs (deterministic order 2).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct RDI1WM <: StochasticDiffEqAlgorithm end
 
@@ -410,6 +443,10 @@ Debrabant, K. and Rößler A., Classification of Stochastic Runge–Kutta Method
 the Weak Approximation of Stochastic Differential Equations,
 Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
 DOI:10.1016/j.matcom.2007.04.016
+
+RDI2WM: High Weak Order Method
+Adaptive step weak order 2.0 for Ito SDEs (deterministic order 2).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct RDI2WM <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -418,6 +455,10 @@ Debrabant, K. and Rößler A., Classification of Stochastic Runge–Kutta Method
 the Weak Approximation of Stochastic Differential Equations,
 Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
 DOI:10.1016/j.matcom.2007.04.016
+
+RDI3WM: High Weak Order Method
+Adaptive step weak order 2.0 for Ito SDEs (deterministic order 3).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.†
 """
 struct RDI3WM <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -426,6 +467,10 @@ Debrabant, K. and Rößler A., Classification of Stochastic Runge–Kutta Method
 the Weak Approximation of Stochastic Differential Equations,
 Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
 DOI:10.1016/j.matcom.2007.04.016
+
+RDI4WM: High Weak Order Method
+Adaptive step weak order 2.0 for Ito SDEs (deterministic order 3).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct RDI4WM <: StochasticDiffEqAdaptiveAlgorithm end
 
@@ -435,6 +480,10 @@ struct RDI4WM <: StochasticDiffEqAdaptiveAlgorithm end
 Rößler A., Second order Runge–Kutta methods for Stratonovich stochastic differential
 equations, BIT Numerical Mathematics 47, pp. 657-680 (2007)
 DOI:10.1007/s10543-007-0130-3
+
+RS1: High Weak Order Method
+Fixed step weak order 2.0 for Stratonovich SDEs (deterministic order 2).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct RS1 <: StochasticDiffEqAlgorithm end
 
@@ -442,18 +491,30 @@ struct RS1 <: StochasticDiffEqAlgorithm end
 Rößler A., Second order Runge–Kutta methods for Stratonovich stochastic differential
 equations, BIT Numerical Mathematics 47, pp. 657-680 (2007)
 DOI:10.1007/s10543-007-0130-3
+
+RS2: High Weak Order Method
+Fixed step weak order 2.0 for Stratonovich SDEs (deterministic order 3).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct RS2 <: StochasticDiffEqAlgorithm end
 
 """
 Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
 Springer. Berlin Heidelberg (2011)
+
+PL1WM: High Weak Order Method
+Fixed step weak order 2.0 for Ito SDEs (deterministic order 2).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct PL1WM <: StochasticDiffEqAlgorithm end
 
 """
 Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
 Springer. Berlin Heidelberg (2011)
+
+PL1WMA: High Weak Order Method
+Fixed step weak order 2.0 for Ito SDEs (deterministic order 2).
+Can handle additive noise.
 """
 struct PL1WMA <: StochasticDiffEqAlgorithm end
 
@@ -462,6 +523,10 @@ Komori, Y., Weak second-order stochastic Runge–Kutta methods for non-commutati
 stochastic differential equations, Journal of Computational and Applied
 Mathematics 206, pp. 158 – 173 (2007)
 DOI:10.1016/j.cam.2006.06.006
+
+NON: High Weak Order Method
+Fixed step weak order 2.0 for Stratonovich SDEs (deterministic order 4).
+Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
 """
 struct NON <: StochasticDiffEqAlgorithm end
 
@@ -486,6 +551,11 @@ struct NON2 <: StochasticDiffEqAlgorithm end
 Tocino, A. and Vigo-Aguiar, J., Weak Second Order Conditions for Stochastic Runge-
 Kutta Methods, SIAM Journal on Scientific Computing 24, pp. 507 - 523 (2002)
 DOI:10.1137/S1064827501387814
+
+SIEA:High Weak Order Method
+Fixed step weak order 2.0 for Ito SDEs (deterministic order 2).
+Can handle diagonal and scalar additive noise.†
+Stochastic generalization of the improved Euler method.
 """
 struct SIEA <: StochasticDiffEqAlgorithm end
 
@@ -493,6 +563,11 @@ struct SIEA <: StochasticDiffEqAlgorithm end
 Tocino, A. and Vigo-Aguiar, J., Weak Second Order Conditions for Stochastic Runge-
 Kutta Methods, SIAM Journal on Scientific Computing 24, pp. 507 - 523 (2002)
 DOI:10.1137/S1064827501387814
+
+SMEA: High Weak Order Method
+Fixed step weak order 2.0 for Ito SDEs (deterministic order 2).
+Can handle diagonal and scalar additive noise.†
+Stochastic generalization of the modified Euler method.
 """
 struct SMEA <: StochasticDiffEqAlgorithm end
 
@@ -500,6 +575,11 @@ struct SMEA <: StochasticDiffEqAlgorithm end
 Tocino, A. and Vigo-Aguiar, J., Weak Second Order Conditions for Stochastic Runge-
 Kutta Methods, SIAM Journal on Scientific Computing 24, pp. 507 - 523 (2002)
 DOI:10.1137/S1064827501387814
+
+SIEB: High Weak Order Method
+Fixed step weak order 2.0 for Ito SDEs (deterministic order 2).
+Can handle diagonal and scalar additive noise.†
+Stochastic generalization of the improved Euler method.
 """
 struct SIEB <: StochasticDiffEqAlgorithm end
 
@@ -507,6 +587,11 @@ struct SIEB <: StochasticDiffEqAlgorithm end
 Tocino, A. and Vigo-Aguiar, J., Weak Second Order Conditions for Stochastic Runge-
 Kutta Methods, SIAM Journal on Scientific Computing 24, pp. 507 - 523 (2002)
 DOI:10.1137/S1064827501387814
+
+SMEB: High Order Weak Method
+Fixed step weak order 2.0 for Ito SDEs (deterministic order 2).
+Can handle diagonal and scalar additive noise.†
+Stochastic generalization of the modified Euler method.
 """
 struct SMEB <: StochasticDiffEqAlgorithm end
 
