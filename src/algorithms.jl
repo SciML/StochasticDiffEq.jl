@@ -144,6 +144,12 @@ Fixed step-size explicit 3-stage Milstein methods for Ito problem with strong an
 struct WangLi3SMil_F <: StochasticDiffEqAlgorithm end
 
 #SROCK methods
+"""
+SROCK1: S-ROCK Method
+Is a fixed step size stabilized explicit method for stiff problems.
+Defaults to solving th Ito problem but SROCK1(interpretation=:Stratonovich) can make it solve the Stratonovich problem.
+Strong order of convergence is 0.5 and weak order 1, but is optimised to get order 1 in case os scalar/diagonal noise.
+"""
 struct SROCK1{interpretation,E} <: StochasticDiffEqAlgorithm
   eigen_est::E
 end
@@ -160,18 +166,39 @@ for Alg in [:SROCK2, :KomBurSROCK2, :SROCKC2]
 end
 
 # ROCK stabilization for EM
+"""
+SROCKEM: S-ROCK Method
+Is fixed step Euler-Mayurama with first order ROCK stabilization thus can handle stiff problems.
+Only for Ito problems. Defaults to strong and weak order 1.0, but can solve with weak order 0.5 as SROCKEM(strong_order_1=false).
+This method can handle 1-dimensional, diagonal and multi-dimensional noise.
+"""
 struct SROCKEM{E} <: StochasticDiffEqAlgorithm
   strong_order_1::Bool
   eigen_est::E
 end
 SROCKEM(;strong_order_1=true,eigen_est=nothing) = SROCKEM(strong_order_1,eigen_est)
-
+"""
+SKSROCK: S-ROCK Method
+Is fixed step stabilized explicit method for stiff Ito problems.
+Strong order 0.5 and weak order 1.
+This method has a better stability domain then SROCK1.
+Also it allows special post-processing techniques in case of ergodic dynamical systems, in the context of ergodic Brownian dynamics, to achieve order 2 accuracy.
+SKSROCK(;post_processing=true) will make use of post processing.
+By default it doesn't use post processing.
+Post processing is optional and under development.
+The rest of the method is completely functional and can handle 1-dimensional, diagonal and multi-dimensional noise.
+"""
 struct SKSROCK{E} <: StochasticDiffEqAlgorithm
   post_processing::Bool
   eigen_est::E
 end
 SKSROCK(;post_processing=false,eigen_est=nothing) = SKSROCK(post_processing,eigen_est)
-
+"""
+TangXiaoSROCK2: S-ROCK Method
+Is a fixed step size stabilized expicit method for stiff problems.
+Only for Ito problems. Weak order of 2 and strog order of 1.
+Has 5 versions with different stability domains which can be used as TangXiaoSROCK2(version_num=i) where i is 1-5. Under Development.
+"""
 struct TangXiaoSROCK2{E} <: StochasticDiffEqAlgorithm
   version_num::Int
   eigen_est::E
