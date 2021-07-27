@@ -1444,15 +1444,15 @@ end
       if is_diagonal_noise(integrator.sol.prob)
         fill!(tmpu,zero(eltype(integrator.u)))
         tmpu[jb] = gtmp[jb]
-        @.. Y1jajb[ja,jb] = Ihat2*tmpu
+        @.. Y1jajb[ja,jb] = ihat2*tmpu
         if ja!=jb
-          @.. Y4jajb[ja,jb] = Ihat2*tmpu
+          @.. Y4jajb[ja,jb] = ihat2*tmpu
         end
       else
         gtmpjb = @view gtmp[:,jb]
-        @.. Y1jajb[ja,jb] = Ihat2*gtmpjb
+        @.. Y1jajb[ja,jb] = ihat2*gtmpjb
         if ja!=jb
-          @.. Y4jajb[ja,jb] = Ihat2*gtmpjb
+          @.. Y4jajb[ja,jb] = ihat2*gtmpjb
         end
       end
     end
@@ -1477,7 +1477,7 @@ end
         integrator.g(gtmp,tmpu,p,t)
         tmpjb = @view gtmp[:,jb]
         ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
-        @.. Y2jajb[ja,jb] = Ihat2*tmpjb
+        @.. Y2jajb[ja,jb] = ihat2*tmpjb
         end
     end
   else
@@ -1497,7 +1497,7 @@ end
         fill!(tmpu,zero(eltype(integrator.u)))
         tmpu[jb] = gtmp[jb]
         ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
-        @.. Y2jajb[ja,jb] = Ihat2*tmpu
+        @.. Y2jajb[ja,jb] = ihat2*tmpu
       end
     end
   end
@@ -1528,7 +1528,7 @@ end
           integrator.g(gtmp,tmpu,p,t)
           tmpjb = @view gtmp[:,jb]
           ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
-          @.. Y3jajb[ja,jb] = Ihat2*tmpjb
+          @.. Y3jajb[ja,jb] = ihat2*tmpjb
         end
       end
   else
@@ -1553,7 +1553,7 @@ end
         fill!(tmpu,zero(eltype(integrator.u)))
         tmpu[jb] = gtmp[jb]
         ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
-        @.. Y3jajb[ja,jb] = Ihat2*tmpu
+        @.. Y3jajb[ja,jb] = ihat2*tmpu
       end
     end
   end
@@ -1577,7 +1577,7 @@ end
       integrator.g(gtmp,tmpu,p,t)
       tmpjb = @view gtmp[:,ja]
       ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, ja)
-      @.. Y4jajb[ja,ja] = Ihat2*tmpjb
+      @.. Y4jajb[ja,ja] = ihat2*tmpjb
     end
   else
     for ja=1:m
@@ -1593,7 +1593,7 @@ end
       fill!(tmpu,zero(eltype(integrator.u)))
       tmpu[ja] = gtmp[ja]
       ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, ja)
-      @.. Y4jajb[ja,ja] = Ihat2*tmpu
+      @.. Y4jajb[ja,ja] = ihat2*tmpu
     end
   end
 
