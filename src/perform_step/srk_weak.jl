@@ -1,4 +1,3 @@
-
 @muladd function perform_step!(integrator,cache::DRI1ConstantCache)
   @unpack a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43,NORMAL_ONESIX_QUANTILE = cache
   @unpack t,dt,uprev,u,W,p,f = integrator
@@ -12,18 +11,6 @@
     m = length(W.dW)
     # define two-point distributed random variables
     _dZ = map(x -> calc_twopoint_random(integrator.sqdt, x),  W.dZ)
-    Ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
-    for k = 1:m
-      for l = 1:m
-        if k<l
-          Ihat2[k, l] = (_dW[k]*_dW[l]-integrator.sqdt*_dZ[k])/2
-        elseif l<k
-          Ihat2[k, l] = (_dW[k]*_dW[l]+integrator.sqdt*_dZ[l])/2
-        else k==l
-          Ihat2[k, k] = chi1[k]
-        end
-      end
-    end
   end
 
   # compute stage values
@@ -118,10 +105,11 @@
         u[k] +=  (m-1)*beta31*g1[k]*_dW[k]
         for l=1:m
           if l!=k
+            Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
             tmpg = integrator.g(H22[l],p,t)
-            u[k] += tmpg[k]*(_dW[k]*beta32 +  Ihat2[k,l]*beta42/integrator.sqdt)
+            u[k] += tmpg[k]*(_dW[k]*beta32 +  Ihat2*beta42/integrator.sqdt)
             tmpg = integrator.g(H23[l],p,t)
-            u[k] += tmpg[k]*(_dW[k]*beta33 + Ihat2[k,l]*beta43/integrator.sqdt)
+            u[k] += tmpg[k]*(_dW[k]*beta33 + Ihat2*beta43/integrator.sqdt)
           end
         end
       end
@@ -131,16 +119,24 @@
         g1k = @view g1[:,k]
         g2k = @view g2[k][:,k]
         g3k = @view g3[k][:,k]
-        @.. u = u + g1k*_dW[k]*(beta11+beta31)
+        @.. u = u + g1k*_dW[k]*(beta11+(m-1)*beta31)
         @.. u = u + g2k*_dW[k]*beta12 + g3k*_dW[k]*beta13
         @.. u = u + g2k*chi1[k]*beta22/integrator.sqdt + g3k*chi1[k]*beta23/integrator.sqdt
-        tmpg = integrator.g(H22[k],p,t)
-        @.. u = u + tmpgk*_dW[k]*beta32 + tmpgk*integrator.sqdt*beta42
-        tmpg = integrator.g(H23[k],p,t)
-        @.. u = u + tmpgk*_dW[k]*beta33 + tmpgk*integrator.sqdt*beta43
+        for l=1:m
+          if l!=k
+            Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
+            tmpg = integrator.g(H22[l],p,t)
+            tmpgk = @view tmpg[:,k]
+            @.. u = u + tmpgk*(_dW[k]*beta32 + Ihat2*beta42/integrator.sqdt)
+            tmpg = integrator.g(H23[l],p,t)
+            tmpgk = @view tmpg[:,k]
+            @.. u = u + tmpgk*(_dW[k]*beta33 + Ihat2*beta43/integrator.sqdt)
+          end
+        end
       end
     end
   end
+
 
   if integrator.opts.adaptive && (typeof(W.dW) <: Number || is_diagonal_noise(integrator.sol.prob) || m==1)
 
@@ -173,7 +169,7 @@ end
 
 @muladd function perform_step!(integrator,cache::DRI1Cache)
   @unpack t,dt,uprev,u,W,p,f = integrator
-  @unpack _dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,uhat,tmp,resids = cache
+  @unpack _dW,_dZ,chi1,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,H22,H23,tmp1,tmpg,uhat,tmp,resids = cache
   @unpack a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43,NORMAL_ONESIX_QUANTILE = cache.tab
 
   m = length(W.dW)
@@ -191,17 +187,6 @@ end
     # define two-point distributed random variables
     if m > 1
       calc_twopoint_random!(_dZ,integrator.sqdt,W.dZ)
-      for k = 1:m
-        for l = 1:m
-          if k<l
-            Ihat2[k, l] = (_dW[k]*_dW[l]-integrator.sqdt*_dZ[k])/2
-          elseif l<k
-            Ihat2[k, l] = (_dW[k]*_dW[l]+integrator.sqdt*_dZ[l])/2
-          else k==l
-            Ihat2[k, k] = chi1[k]
-          end
-        end
-      end
     end
   end
 
@@ -275,10 +260,11 @@ end
         u[k] = u[k] + (m-1)*beta31*g1[k]*_dW[k]
         for l=1:m
           if l!=k
+            Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
             integrator.g(tmpg,H22[l],p,t)
-            u[k] = u[k] + tmpg[k]*(_dW[k]*beta32 + Ihat2[k,l]*beta42/integrator.sqdt)
+            u[k] = u[k] + tmpg[k]*(_dW[k]*beta32 + Ihat2*beta42/integrator.sqdt)
             integrator.g(tmpg,H23[l],p,t)
-            u[k] = u[k] + tmpg[k]*(_dW[k]*beta33 + Ihat2[k,l]*beta43/integrator.sqdt)
+            u[k] = u[k] + tmpg[k]*(_dW[k]*beta33 + Ihat2*beta43/integrator.sqdt)
           end
         end
       end
@@ -294,10 +280,11 @@ end
       @.. u = u + g2k*chi1[k]*beta22/integrator.sqdt + g3k*chi1[k]*beta23/integrator.sqdt
       for l=1:m
         if l!=k
+          Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
           integrator.g(tmpg,H22[l],p,t)
-          @.. u = u + tmpgk*(_dW[k]*beta32 + Ihat2[k,l]*beta42/integrator.sqdt)
+          @.. u = u + tmpgk*(_dW[k]*beta32 + Ihat2*beta42/integrator.sqdt)
           integrator.g(tmpg,H23[l],p,t)
-          @.. u = u + tmpgk*(_dW[k]*beta33 + Ihat2[k,l]*beta43/integrator.sqdt)
+          @.. u = u + tmpgk*(_dW[k]*beta33 + Ihat2*beta43/integrator.sqdt)
         end
       end
     end
@@ -334,8 +321,8 @@ end
 
 @muladd function perform_step!(integrator,cache::DRI1NMCache)
   @unpack t,dt,uprev,u,W,p,f = integrator
-  @unpack _dW, chi1,Ihat2,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,tmp1,tmpg,uhat,tmp,resids = cache
-  @unpack a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43,NORMAL_ONESIX_QUANTILE = cache.tab
+  @unpack _dW, chi1,tab,g1,g2,g3,k1,k2,k3,H02,H03,H12,H13,tmp1,tmpg,uhat,tmp,resids = cache
+  @unpack a021,a031,a032,a121,a131,b021,b031,b121,b131,b221,b222,b223,b231,b232,b233,α1,α2,α3,c02,c03,c12,c13,beta11,beta12,beta13,beta22,beta23,beta31,beta32,beta33,beta42,beta43,NORMAL_ONESIX_QUANTILE = tab
 
   m = length(W.dW)
   sq3dt = sqrt(3*dt)
@@ -444,24 +431,6 @@ end
   dW_scaled = W.dW / sqrt(dt)
   sq3dt = sqrt(3*dt)
   _dW = map(x -> calc_threepoint_random(sq3dt, NORMAL_ONESIX_QUANTILE, x), dW_scaled)
-  chi1 = map(x -> (x^2-dt)/2, _dW) # diagonal of Ihat2
-  if !(typeof(W.dW) <: Number)
-    m = length(W.dW)
-    # define two-point distributed random variables
-    _dZ = map(x -> calc_twopoint_random(integrator.sqdt, x),  W.dZ)
-    Ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
-    for k = 1:m
-      for l = 1:m
-        if k<l
-          Ihat2[k, l] = (_dW[k]*_dW[l]-integrator.sqdt*_dZ[k])/2
-        elseif l<k
-          Ihat2[k, l] = (_dW[k]*_dW[l]+integrator.sqdt*_dZ[l])/2
-        else k==l
-          Ihat2[k, k] = chi1[k]
-        end
-      end
-    end
-  end
 
   # compute stage values
   k1 = integrator.f(uprev,p,t)
@@ -504,8 +473,8 @@ end
 
 @muladd function perform_step!(integrator,cache::RDI1WMCache)
   @unpack t,dt,uprev,u,W,p,f = integrator
-  @unpack _dW,_dZ,chi1,Ihat2,tab,g1,k1,k2,H02,tmp1 = cache
-  @unpack a021,b021,α1,α2,c02,beta11,NORMAL_ONESIX_QUANTILE = cache.tab
+  @unpack _dW,chi1,tab,g1,k1,k2,H02,tmp1 = cache
+  @unpack a021,b021,α1,α2,c02,beta11,NORMAL_ONESIX_QUANTILE = tab
 
   m = length(W.dW)
   sq3dt = sqrt(3*dt)
@@ -516,22 +485,6 @@ end
     # define three-point distributed random variables
     @.. chi1 = W.dW / sqrt(dt)
     calc_threepoint_random!(_dW, sq3dt, NORMAL_ONESIX_QUANTILE, chi1)
-    map!(x -> (x^2-dt)/2, chi1, _dW)
-
-    # define two-point distributed random variables
-    calc_twopoint_random!(_dZ,integrator.sqdt,W.dZ)
-
-    for k = 1:m
-      for l = 1:m
-        if k<l
-          Ihat2[k, l] = (_dW[k]*_dW[l]-integrator.sqdt*_dZ[k])/2
-        elseif l<k
-          Ihat2[k, l] = (_dW[k]*_dW[l]+integrator.sqdt*_dZ[l])/2
-        else k==l
-          Ihat2[k, k] = chi1[k]
-        end
-      end
-    end
   end
 
   # compute stage values
@@ -580,13 +533,6 @@ end
     m = length(W.dW)
     # define two-point distributed random variables
     _dZ = map(x -> calc_twopoint_random(integrator.sqdt, x),  W.dZ)
-    Ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
-    for k = 1:m
-      for l = 1:k-1
-        Ihat2[k, l] = _dW[k]*_dZ[l]
-        Ihat2[l, k] = -_dW[k]*_dZ[l]
-      end
-    end
   end
   # compute stage values
   k1 = integrator.f(uprev,p,t)
@@ -714,12 +660,13 @@ end
         if k == l
           continue
         end
+        Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
         if is_diagonal_noise(integrator.sol.prob)
-          @.. H22[k] += b221*g1[l]*Ihat2[k,l]/integrator.sqdt
-          @.. H23[k] += b231*g1[l]*Ihat2[k,l]/integrator.sqdt
+          @.. H22[k] += b221*g1[l]*Ihat2/integrator.sqdt
+          @.. H23[k] += b231*g1[l]*Ihat2/integrator.sqdt
         else
-          H22[k] += b221*g1[:,l]*Ihat2[k,l]/integrator.sqdt
-          H23[k] += b231*g1[:,l]*Ihat2[k,l]/integrator.sqdt
+          H22[k] += b221*g1[:,l]*Ihat2/integrator.sqdt
+          H23[k] += b231*g1[:,l]*Ihat2/integrator.sqdt
         end
       end
     end
@@ -765,8 +712,8 @@ end
 
 @muladd function perform_step!(integrator,cache::RSCache)
   @unpack t,dt,uprev,u,W,p,f = integrator
-  @unpack _dW,_dZ,chi1,Ihat2,tab,g1,g2,g3,g4,k1,k2,k3,H02,H03,H12,H13,H14,H22,H23,tmp1,tmpg = cache
-  @unpack a021,a031,a032,a131,a141,b031,b032,b121,b131,b132,b141,b142,b143,b221,b231,b331,b332,b341,b342,α1,α2,α3,α4,c02,c03,c13,c14,beta11,beta12,beta13,beta14,beta22,beta23,NORMAL_ONESIX_QUANTILE = cache.tab
+  @unpack _dW,_dZ,chi1,tab,g1,g2,g3,g4,k1,k2,k3,H02,H03,H12,H13,H14,H22,H23,tmp1,tmpg = cache
+  @unpack a021,a031,a032,a131,a141,b031,b032,b121,b131,b132,b141,b142,b143,b221,b231,b331,b332,b341,b342,α1,α2,α3,α4,c02,c03,c13,c14,beta11,beta12,beta13,beta14,beta22,beta23,NORMAL_ONESIX_QUANTILE = tab
 
   m = length(W.dW)
   sq3dt = sqrt(3*dt)
@@ -781,13 +728,6 @@ end
 
     # define two-point distributed random variables
     calc_twopoint_random!(_dZ,integrator.sqdt,W.dZ)
-
-    for k = 1:m
-      for l = 1:k-1
-        Ihat2[k, l] = _dW[k]*_dZ[l]
-        Ihat2[l, k] = -_dW[k]*_dZ[l]
-      end
-    end
   end
 
   # compute stage values
@@ -916,13 +856,14 @@ end
         if k == l
           continue
         end
+        Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
         if is_diagonal_noise(integrator.sol.prob)
-          @.. H22[k] = H22[k] + b221*g1[l]*Ihat2[k,l]/integrator.sqdt
-          @.. H23[k] = H23[k] + b231*g1[l]*Ihat2[k,l]/integrator.sqdt
+          @.. H22[k] = H22[k] + b221*g1[l]*Ihat2/integrator.sqdt
+          @.. H23[k] = H23[k] + b231*g1[l]*Ihat2/integrator.sqdt
         else
           g1l = @view g1[:,l]
-          @.. H22[k] = H22[k] + b221*g1l*Ihat2[k,l]/integrator.sqdt
-          @.. H23[k] = H23[k] + b231*g1l*Ihat2[k,l]/integrator.sqdt
+          @.. H22[k] = H22[k] + b221*g1l*Ihat2/integrator.sqdt
+          @.. H23[k] = H23[k] + b231*g1l*Ihat2/integrator.sqdt
         end
       end
     end
@@ -978,14 +919,6 @@ end
   if !(typeof(W.dW) <: Number)
     # define two-point distributed random variables
     _dZ = map(x -> calc_twopoint_random(integrator.sqdt, x),  W.dZ)
-    Ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
-    for k = 1:m
-      Ihat2[k, k] = -dt
-      for l = 1:k-1
-        Ihat2[k, l] = _dZ[Int(1+1//2*(k-3)*k+l)]
-      	Ihat2[l, k] = -Ihat2[k, l]
-      end
-    end
   end
   # compute stage values
   k1 = integrator.f(uprev,p,t)
@@ -1030,13 +963,15 @@ end
         @.. u += (tmpg1[k]-tmpg2[k])*chi1[k]/integrator.sqdt
         for l=1:m
           if l!=k
+            Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, l, k)
+
             Ulp = @.. uprev + g1[l]*integrator.sqdt
             Ulm = @.. uprev - g1[l]*integrator.sqdt
 
             tmpg1 = integrator.g(Ulp,p,t)
             tmpg2 = integrator.g(Ulm,p,t)
             @.. u += 1//4*(tmpg1[k]+tmpg2[k]-2*g1[k])*_dW[k]
-            @.. u += 1//4*(tmpg1[k]-tmpg2[k])*(_dW[k]*_dW[l] + Ihat2[l,k])/integrator.sqdt
+            @.. u += 1//4*(tmpg1[k]-tmpg2[k])*(_dW[k]*_dW[l] + Ihat2)/integrator.sqdt
           end
         end
       end
@@ -1050,13 +985,15 @@ end
           u += (tmpg1[:,k]-tmpg2[:,k])*chi1[k]/integrator.sqdt
           for l=1:m
             if l!=k
+              Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, l, k)
+
               Ulp = uprev + g1[:,l]*integrator.sqdt
               Ulm = uprev - g1[:,l]*integrator.sqdt
 
               tmpg1 = integrator.g(Ulp,p,t)
               tmpg2 = integrator.g(Ulm,p,t)
               u += 1//4*(tmpg1[:,k]+tmpg2[:,k]-2*g1[:,k])*_dW[k]
-              u += 1//4*(tmpg1[:,k]-tmpg2[:,k])*(_dW[k]*_dW[l] + Ihat2[l,k])/integrator.sqdt
+              u += 1//4*(tmpg1[:,k]-tmpg2[:,k])*(_dW[k]*_dW[l] + Ihat2)/integrator.sqdt
             end
           end
         end
@@ -1080,13 +1017,6 @@ end
   if !(typeof(W.dW) <: Number) || m > 1
     # define two-point distributed random variables
     calc_twopoint_random!(_dZ,integrator.sqdt,W.dZ)
-    for k = 1:m
-      Ihat2[k, k] = -dt
-      for l = 1:k-1
-        Ihat2[k, l] = _dZ[Int(1+1//2*(k-3)*k+l)]
-      	Ihat2[l, k] = -Ihat2[k, l]
-      end
-    end
   end
   # compute stage values
   integrator.f(k1,uprev,p,t)
@@ -1137,6 +1067,8 @@ end
         @.. u = u + (tmpg1k-tmpg2k)*chi1[k]/integrator.sqdt
         for l=1:m
           if l !=k
+            Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, l, k)
+
             g1l = @view g1[:,l]
             @.. Ulp = uprev + g1l*integrator.sqdt
             @.. Ulm = uprev - g1l*integrator.sqdt
@@ -1146,7 +1078,7 @@ end
             tmpg1k = @view tmpg1[:,k]
             tmpg2k = @view tmpg2[:,k]
             u += 1//4*(tmpg1k+tmpg2k-2*g1k)*_dW[k]
-            u += 1//4*(tmpg1k-tmpg2k)*(_dW[k]*_dW[l] + Ihat2[l,k])/integrator.sqdt
+            u += 1//4*(tmpg1k-tmpg2k)*(_dW[k]*_dW[l] + Ihat2)/integrator.sqdt
           end
         end
       end
@@ -1158,13 +1090,15 @@ end
         @.. u = u + (tmpg1[k]-tmpg2[k])*chi1[k]/integrator.sqdt
         for l=1:m
           if l !=k
+            Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, l, k)
+
             @.. Ulp = uprev + g1[l]*integrator.sqdt
             @.. Ulm = uprev - g1[l]*integrator.sqdt
 
             integrator.g(tmpg1,Ulp,p,t)
             integrator.g(tmpg2,Ulm,p,t)
             @.. u = u + 1//4*(tmpg1[k]+tmpg2[k]-2*g1[k])*_dW[k]
-            @.. u = u + 1//4*(tmpg1[k]-tmpg2[k])*(_dW[k]*_dW[l] + Ihat2[l,k])/integrator.sqdt
+            @.. u = u + 1//4*(tmpg1[k]-tmpg2[k])*(_dW[k]*_dW[l] + Ihat2)/integrator.sqdt
           end
         end
       end
@@ -1175,7 +1109,7 @@ end
 
 
 
-# PL1WM
+# PL1WMA
 @muladd function perform_step!(integrator,cache::PL1WMAConstantCache)
   @unpack NORMAL_ONESIX_QUANTILE = cache
   @unpack t,dt,uprev,u,W,p,f = integrator
@@ -1255,14 +1189,6 @@ end
   if !(typeof(W.dW) <: Number)
     # define two-point distributed random variables
     _dZ = map(x -> calc_twopoint_random(integrator.sqdt, x),  W.dZ)
-    Ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
-    for k = 1:m
-      Ihat2[k, k] = _dW[k]
-      for l = 1:k-1
-        Ihat2[k, l] = _dW[l]
-        Ihat2[l, k] = _dZ[k]
-      end
-    end
   end
 
   # compute stage values
@@ -1280,18 +1206,19 @@ end
   else
     for ja=1:m
       for jb=1:m
+        Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
         if is_diagonal_noise(integrator.sol.prob)
           tmpu = zero(integrator.u)
           tmpu[jb] = gtmp[jb]
-          @.. Y1jajb[ja,jb] = Ihat2[ja,jb]*tmpu
+          @.. Y1jajb[ja,jb] = Ihat2*tmpu
           if ja!=jb
-            @.. Y4jajb[ja,jb] = Ihat2[ja,jb]*tmpu
+            @.. Y4jajb[ja,jb] = Ihat2*tmpu
           end
         else
           gtmpjb = @view gtmp[:,jb]
-          @.. Y1jajb[ja,jb] = Ihat2[ja,jb]*gtmpjb
+          @.. Y1jajb[ja,jb] = Ihat2*gtmpjb
           if ja!=jb
-            @.. Y4jajb[ja,jb] = Ihat2[ja,jb]*gtmpjb
+            @.. Y4jajb[ja,jb] = Ihat2*gtmpjb
           end
         end
       end
@@ -1320,7 +1247,8 @@ end
           end
           gtmp = integrator.g(tmpu,p,t)
           tmpjb = @view gtmp[:,jb]
-          @.. Y2jajb[ja,jb] = Ihat2[ja,jb]*tmpjb
+          Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
+          @.. Y2jajb[ja,jb] = Ihat2*tmpjb
         end
       end
     else
@@ -1339,7 +1267,8 @@ end
           gtmp = integrator.g(tmpu,p,t)
           tmpu = zero(integrator.u)
           tmpu[jb] = gtmp[jb]
-          @.. Y2jajb[ja,jb] = Ihat2[ja,jb]*tmpu
+          Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
+          @.. Y2jajb[ja,jb] = Ihat2*tmpu
         end
       end
     end
@@ -1373,7 +1302,8 @@ end
           end
           gtmp = integrator.g(tmpu,p,t)
           tmpjb = @view gtmp[:,jb]
-          @.. Y3jajb[ja,jb] = Ihat2[ja,jb]*tmpjb
+          Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
+          @.. Y3jajb[ja,jb] = Ihat2*tmpjb
         end
       end
     else
@@ -1397,7 +1327,8 @@ end
           gtmp = integrator.g(tmpu,p,t)
           tmpu = zero(integrator.u)
           tmpu[jb] = gtmp[jb]
-          @.. Y3jajb[ja,jb] = Ihat2[ja,jb]*tmpu
+          Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
+          @.. Y3jajb[ja,jb] = Ihat2*tmpu
         end
       end
     end
@@ -1422,7 +1353,8 @@ end
         end
         gtmp = integrator.g(tmpu,p,t)
         tmpjb = @view gtmp[:,ja]
-        @.. Y4jajb[ja,ja] = Ihat2[ja,ja]*tmpjb
+        Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, ja)
+        @.. Y4jajb[ja,ja] = Ihat2*tmpjb
       end
     else
       for ja=1:m
@@ -1437,7 +1369,8 @@ end
         gtmp = integrator.g(tmpu,p,t)
         tmpu = zero(integrator.u)
         tmpu[ja] = gtmp[ja]
-        @.. Y4jajb[ja,ja] = Ihat2[ja,ja]*tmpu
+        Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, ja)
+        @.. Y4jajb[ja,ja] = Ihat2*tmpu
       end
     end
   end
@@ -1485,7 +1418,7 @@ end
 
 @muladd function perform_step!(integrator,cache::NONCache)
   @unpack t,dt,uprev,u,W,p,f = integrator
-  @unpack _dW,_dZ,chi1,Ihat2,tab,gtmp,ktmp,Y100,Y200,Y300,Y400,Y1jajb,Y2jajb,Y3jajb,Y4jajb,tmpu = cache
+  @unpack _dW,_dZ,chi1,tab,gtmp,ktmp,Y100,Y200,Y300,Y400,Y1jajb,Y2jajb,Y3jajb,Y4jajb,tmpu = cache
   @unpack c01,c02,c03,c04,cj1,cj2,cj3,cj4,cjl2,cjl3,clj2,clj3,a0021,a0032,a0043,aj021,aj041,a0j21,a0j31,a0j32,a0j41,ajj21,ajj31,ajj32,ajj41,ajj42,ajj43,ajl31,ajl32,ajl41,ajl42,ajljj31,aljjl21,aljjl31,NORMAL_ONESIX_QUANTILE = cache.tab
 
   m = length(W.dW)
@@ -1497,13 +1430,6 @@ end
   if !(typeof(W.dW) <: Number)
     # define two-point distributed random variables
     calc_twopoint_random!(_dZ,integrator.sqdt,W.dZ)
-    for k = 1:m
-      Ihat2[k, k] = _dW[k]
-      for l = 1:k-1
-       Ihat2[k, l] = _dW[l]
-       Ihat2[l, k] = _dZ[k]
-      end
-    end
   end
 
   # compute stage values
@@ -1514,18 +1440,19 @@ end
   @.. Y100 = ktmp*dt
   for ja=1:m
     for jb=1:m
+      Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
       if is_diagonal_noise(integrator.sol.prob)
         fill!(tmpu,zero(eltype(integrator.u)))
         tmpu[jb] = gtmp[jb]
-        @.. Y1jajb[ja,jb] = Ihat2[ja,jb]*tmpu
+        @.. Y1jajb[ja,jb] = Ihat2*tmpu
         if ja!=jb
-          @.. Y4jajb[ja,jb] = Ihat2[ja,jb]*tmpu
+          @.. Y4jajb[ja,jb] = Ihat2*tmpu
         end
       else
         gtmpjb = @view gtmp[:,jb]
-        @.. Y1jajb[ja,jb] = Ihat2[ja,jb]*gtmpjb
+        @.. Y1jajb[ja,jb] = Ihat2*gtmpjb
         if ja!=jb
-          @.. Y4jajb[ja,jb] = Ihat2[ja,jb]*gtmpjb
+          @.. Y4jajb[ja,jb] = Ihat2*gtmpjb
         end
       end
     end
@@ -1549,7 +1476,8 @@ end
         end
         integrator.g(gtmp,tmpu,p,t)
         tmpjb = @view gtmp[:,jb]
-        @.. Y2jajb[ja,jb] = Ihat2[ja,jb]*tmpjb
+        Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
+        @.. Y2jajb[ja,jb] = Ihat2*tmpjb
         end
     end
   else
@@ -1568,7 +1496,8 @@ end
         integrator.g(gtmp,tmpu,p,t)
         fill!(tmpu,zero(eltype(integrator.u)))
         tmpu[jb] = gtmp[jb]
-        @.. Y2jajb[ja,jb] = Ihat2[ja,jb]*tmpu
+        Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
+        @.. Y2jajb[ja,jb] = Ihat2*tmpu
       end
     end
   end
@@ -1598,7 +1527,8 @@ end
           end
           integrator.g(gtmp,tmpu,p,t)
           tmpjb = @view gtmp[:,jb]
-          @.. Y3jajb[ja,jb] = Ihat2[ja,jb]*tmpjb
+          Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
+          @.. Y3jajb[ja,jb] = Ihat2*tmpjb
         end
       end
   else
@@ -1622,7 +1552,8 @@ end
         integrator.g(gtmp,tmpu,p,t)
         fill!(tmpu,zero(eltype(integrator.u)))
         tmpu[jb] = gtmp[jb]
-        @.. Y3jajb[ja,jb] = Ihat2[ja,jb]*tmpu
+        Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
+        @.. Y3jajb[ja,jb] = Ihat2*tmpu
       end
     end
   end
@@ -1645,7 +1576,8 @@ end
       end
       integrator.g(gtmp,tmpu,p,t)
       tmpjb = @view gtmp[:,ja]
-      @.. Y4jajb[ja,ja] = Ihat2[ja,ja]*tmpjb
+      Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, ja)
+      @.. Y4jajb[ja,ja] = Ihat2*tmpjb
     end
   else
     for ja=1:m
@@ -1660,7 +1592,8 @@ end
       integrator.g(gtmp,tmpu,p,t)
       fill!(tmpu,zero(eltype(integrator.u)))
       tmpu[ja] = gtmp[ja]
-      @.. Y4jajb[ja,ja] = Ihat2[ja,ja]*tmpu
+      Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, ja)
+      @.. Y4jajb[ja,ja] = Ihat2*tmpu
     end
   end
 
