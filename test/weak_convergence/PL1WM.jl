@@ -178,7 +178,7 @@ sim = test_convergence(dts,ensemble_prob,PL1WM(),
     weak_timeseries_errors=false,weak_dense_errors=false,
     expected_value=1//100*exp(301//100)
     )
-@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3 # order is 1.7612533343540109
 println("PL1WM:", sim.𝒪est[:weak_final])
 
 
@@ -210,7 +210,7 @@ sim = test_convergence(dts,ensemble_prob,PL1WM(),
     expected_value=u₀.*exp(1.0*(p[1]))
     )
 
-@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3 # order is 1.9494776704064192
 println("PL1WM:", sim.𝒪est[:weak_final])
 
 sim1 = test_convergence(dts,ensemble_prob,PL1WMA(),
@@ -219,7 +219,7 @@ sim1 = test_convergence(dts,ensemble_prob,PL1WMA(),
     expected_value=u₀.*exp(1.0*(p[1]))
     )
 
-@test abs(sim1.𝒪est[:weak_final]-2) < 0.3
+@test abs(sim1.𝒪est[:weak_final]-2) < 0.3 # order is PL1WMA:1.9494776704064316
 println("PL1WMA:", sim1.𝒪est[:weak_final])
 
 @test minimum(sim.solutions .≈ sim1.solutions)
@@ -244,7 +244,7 @@ sim = test_convergence(dts,ensemble_prob,PL1WM(),
     expected_value=u₀.*exp(1.0*(p[1]))
 )
 
-@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+@test abs(sim.𝒪est[:weak_final]-2) < 0.3 # order is 1.9494776704064192
 println("PL1WM:", sim.𝒪est[:weak_final])
 
 sim1 = test_convergence(dts,ensemble_prob,PL1WMA(),
@@ -253,7 +253,7 @@ sim1 = test_convergence(dts,ensemble_prob,PL1WMA(),
     expected_value=u₀.*exp(1.0*(p[1]))
     )
 
-@test abs(sim1.𝒪est[:weak_final]-2) < 0.3
+@test abs(sim1.𝒪est[:weak_final]-2) < 0.3 # order is 1.9494776704064316
 println("PL1WMA:", sim1.𝒪est[:weak_final])
 
 @test minimum(sim.solutions .≈ sim1.solutions)
