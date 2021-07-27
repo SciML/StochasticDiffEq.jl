@@ -46,7 +46,7 @@ end
 function Ihat2(cache::Union{PL1WMConstantCache,PL1WMCache}, _dW, _dZ, sqdt, k, l)
   # compute elements of I^_(k,l) which is a mxm matrix
   if k<l
-    return -_dZ[Int(1+1//2*(k-3)*k+l)]
+    return -_dZ[Int(1+1//2*(l-3)*l+k)]
   elseif l<k
     return _dZ[Int(1+1//2*(k-3)*k+l)]
   else
