@@ -105,11 +105,11 @@
         u[k] +=  (m-1)*beta31*g1[k]*_dW[k]
         for l=1:m
           if l!=k
-            Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
+            ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
             tmpg = integrator.g(H22[l],p,t)
-            u[k] += tmpg[k]*(_dW[k]*beta32 +  Ihat2*beta42/integrator.sqdt)
+            u[k] += tmpg[k]*(_dW[k]*beta32 +  ihat2*beta42/integrator.sqdt)
             tmpg = integrator.g(H23[l],p,t)
-            u[k] += tmpg[k]*(_dW[k]*beta33 + Ihat2*beta43/integrator.sqdt)
+            u[k] += tmpg[k]*(_dW[k]*beta33 + ihat2*beta43/integrator.sqdt)
           end
         end
       end
@@ -124,13 +124,13 @@
         @.. u = u + g2k*chi1[k]*beta22/integrator.sqdt + g3k*chi1[k]*beta23/integrator.sqdt
         for l=1:m
           if l!=k
-            Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
+            ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
             tmpg = integrator.g(H22[l],p,t)
             tmpgk = @view tmpg[:,k]
-            @.. u = u + tmpgk*(_dW[k]*beta32 + Ihat2*beta42/integrator.sqdt)
+            @.. u = u + tmpgk*(_dW[k]*beta32 + ihat2*beta42/integrator.sqdt)
             tmpg = integrator.g(H23[l],p,t)
             tmpgk = @view tmpg[:,k]
-            @.. u = u + tmpgk*(_dW[k]*beta33 + Ihat2*beta43/integrator.sqdt)
+            @.. u = u + tmpgk*(_dW[k]*beta33 + ihat2*beta43/integrator.sqdt)
           end
         end
       end
@@ -260,11 +260,11 @@ end
         u[k] = u[k] + (m-1)*beta31*g1[k]*_dW[k]
         for l=1:m
           if l!=k
-            Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
+            ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
             integrator.g(tmpg,H22[l],p,t)
-            u[k] = u[k] + tmpg[k]*(_dW[k]*beta32 + Ihat2*beta42/integrator.sqdt)
+            u[k] = u[k] + tmpg[k]*(_dW[k]*beta32 + ihat2*beta42/integrator.sqdt)
             integrator.g(tmpg,H23[l],p,t)
-            u[k] = u[k] + tmpg[k]*(_dW[k]*beta33 + Ihat2*beta43/integrator.sqdt)
+            u[k] = u[k] + tmpg[k]*(_dW[k]*beta33 + ihat2*beta43/integrator.sqdt)
           end
         end
       end
@@ -280,11 +280,11 @@ end
       @.. u = u + g2k*chi1[k]*beta22/integrator.sqdt + g3k*chi1[k]*beta23/integrator.sqdt
       for l=1:m
         if l!=k
-          Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
+          ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
           integrator.g(tmpg,H22[l],p,t)
-          @.. u = u + tmpgk*(_dW[k]*beta32 + Ihat2*beta42/integrator.sqdt)
+          @.. u = u + tmpgk*(_dW[k]*beta32 + ihat2*beta42/integrator.sqdt)
           integrator.g(tmpg,H23[l],p,t)
-          @.. u = u + tmpgk*(_dW[k]*beta33 + Ihat2*beta43/integrator.sqdt)
+          @.. u = u + tmpgk*(_dW[k]*beta33 + ihat2*beta43/integrator.sqdt)
         end
       end
     end
@@ -660,13 +660,13 @@ end
         if k == l
           continue
         end
-        Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
+        ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
         if is_diagonal_noise(integrator.sol.prob)
-          @.. H22[k] += b221*g1[l]*Ihat2/integrator.sqdt
-          @.. H23[k] += b231*g1[l]*Ihat2/integrator.sqdt
+          @.. H22[k] += b221*g1[l]*ihat2/integrator.sqdt
+          @.. H23[k] += b231*g1[l]*ihat2/integrator.sqdt
         else
-          H22[k] += b221*g1[:,l]*Ihat2/integrator.sqdt
-          H23[k] += b231*g1[:,l]*Ihat2/integrator.sqdt
+          H22[k] += b221*g1[:,l]*ihat2/integrator.sqdt
+          H23[k] += b231*g1[:,l]*ihat2/integrator.sqdt
         end
       end
     end
@@ -856,14 +856,14 @@ end
         if k == l
           continue
         end
-        Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
+        ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
         if is_diagonal_noise(integrator.sol.prob)
-          @.. H22[k] = H22[k] + b221*g1[l]*Ihat2/integrator.sqdt
-          @.. H23[k] = H23[k] + b231*g1[l]*Ihat2/integrator.sqdt
+          @.. H22[k] = H22[k] + b221*g1[l]*ihat2/integrator.sqdt
+          @.. H23[k] = H23[k] + b231*g1[l]*ihat2/integrator.sqdt
         else
           g1l = @view g1[:,l]
-          @.. H22[k] = H22[k] + b221*g1l*Ihat2/integrator.sqdt
-          @.. H23[k] = H23[k] + b231*g1l*Ihat2/integrator.sqdt
+          @.. H22[k] = H22[k] + b221*g1l*ihat2/integrator.sqdt
+          @.. H23[k] = H23[k] + b231*g1l*ihat2/integrator.sqdt
         end
       end
     end
@@ -963,7 +963,7 @@ end
         @.. u += (tmpg1[k]-tmpg2[k])*chi1[k]/integrator.sqdt
         for l=1:m
           if l!=k
-            Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, l, k)
+            ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, l, k)
 
             Ulp = @.. uprev + g1[l]*integrator.sqdt
             Ulm = @.. uprev - g1[l]*integrator.sqdt
@@ -971,7 +971,7 @@ end
             tmpg1 = integrator.g(Ulp,p,t)
             tmpg2 = integrator.g(Ulm,p,t)
             @.. u += 1//4*(tmpg1[k]+tmpg2[k]-2*g1[k])*_dW[k]
-            @.. u += 1//4*(tmpg1[k]-tmpg2[k])*(_dW[k]*_dW[l] + Ihat2)/integrator.sqdt
+            @.. u += 1//4*(tmpg1[k]-tmpg2[k])*(_dW[k]*_dW[l] + ihat2)/integrator.sqdt
           end
         end
       end
@@ -985,7 +985,7 @@ end
           u += (tmpg1[:,k]-tmpg2[:,k])*chi1[k]/integrator.sqdt
           for l=1:m
             if l!=k
-              Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, l, k)
+              ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, l, k)
 
               Ulp = uprev + g1[:,l]*integrator.sqdt
               Ulm = uprev - g1[:,l]*integrator.sqdt
@@ -993,7 +993,7 @@ end
               tmpg1 = integrator.g(Ulp,p,t)
               tmpg2 = integrator.g(Ulm,p,t)
               u += 1//4*(tmpg1[:,k]+tmpg2[:,k]-2*g1[:,k])*_dW[k]
-              u += 1//4*(tmpg1[:,k]-tmpg2[:,k])*(_dW[k]*_dW[l] + Ihat2)/integrator.sqdt
+              u += 1//4*(tmpg1[:,k]-tmpg2[:,k])*(_dW[k]*_dW[l] + ihat2)/integrator.sqdt
             end
           end
         end
@@ -1005,7 +1005,7 @@ end
 
 @muladd function perform_step!(integrator,cache::PL1WMCache)
   @unpack t,dt,uprev,u,W,p,f = integrator
-  @unpack _dW,_dZ,chi1,Ihat2,tab,g1,k1,k2,Y,Yp,Ym,tmp1,tmpg1,tmpg2,Ulp,Ulm = cache
+  @unpack _dW,_dZ,chi1,tab,g1,k1,k2,Y,Yp,Ym,tmp1,tmpg1,tmpg2,Ulp,Ulm = cache
   @unpack NORMAL_ONESIX_QUANTILE = cache.tab
 
   m = length(W.dW)
@@ -1067,7 +1067,7 @@ end
         @.. u = u + (tmpg1k-tmpg2k)*chi1[k]/integrator.sqdt
         for l=1:m
           if l !=k
-            Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, l, k)
+            ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, l, k)
 
             g1l = @view g1[:,l]
             @.. Ulp = uprev + g1l*integrator.sqdt
@@ -1078,7 +1078,7 @@ end
             tmpg1k = @view tmpg1[:,k]
             tmpg2k = @view tmpg2[:,k]
             u += 1//4*(tmpg1k+tmpg2k-2*g1k)*_dW[k]
-            u += 1//4*(tmpg1k-tmpg2k)*(_dW[k]*_dW[l] + Ihat2)/integrator.sqdt
+            u += 1//4*(tmpg1k-tmpg2k)*(_dW[k]*_dW[l] + ihat2)/integrator.sqdt
           end
         end
       end
@@ -1090,7 +1090,7 @@ end
         @.. u = u + (tmpg1[k]-tmpg2[k])*chi1[k]/integrator.sqdt
         for l=1:m
           if l !=k
-            Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, l, k)
+            ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, l, k)
 
             @.. Ulp = uprev + g1[l]*integrator.sqdt
             @.. Ulm = uprev - g1[l]*integrator.sqdt
@@ -1098,7 +1098,7 @@ end
             integrator.g(tmpg1,Ulp,p,t)
             integrator.g(tmpg2,Ulm,p,t)
             @.. u = u + 1//4*(tmpg1[k]+tmpg2[k]-2*g1[k])*_dW[k]
-            @.. u = u + 1//4*(tmpg1[k]-tmpg2[k])*(_dW[k]*_dW[l] + Ihat2)/integrator.sqdt
+            @.. u = u + 1//4*(tmpg1[k]-tmpg2[k])*(_dW[k]*_dW[l] + ihat2)/integrator.sqdt
           end
         end
       end
@@ -1206,7 +1206,7 @@ end
   else
     for ja=1:m
       for jb=1:m
-        Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
+        ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
         if is_diagonal_noise(integrator.sol.prob)
           tmpu = zero(integrator.u)
           tmpu[jb] = gtmp[jb]
@@ -1247,7 +1247,7 @@ end
           end
           gtmp = integrator.g(tmpu,p,t)
           tmpjb = @view gtmp[:,jb]
-          Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
+          ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
           @.. Y2jajb[ja,jb] = Ihat2*tmpjb
         end
       end
@@ -1267,7 +1267,7 @@ end
           gtmp = integrator.g(tmpu,p,t)
           tmpu = zero(integrator.u)
           tmpu[jb] = gtmp[jb]
-          Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
+          ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
           @.. Y2jajb[ja,jb] = Ihat2*tmpu
         end
       end
@@ -1302,8 +1302,8 @@ end
           end
           gtmp = integrator.g(tmpu,p,t)
           tmpjb = @view gtmp[:,jb]
-          Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
-          @.. Y3jajb[ja,jb] = Ihat2*tmpjb
+          ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
+          @.. Y3jajb[ja,jb] = ihat2*tmpjb
         end
       end
     else
@@ -1327,8 +1327,8 @@ end
           gtmp = integrator.g(tmpu,p,t)
           tmpu = zero(integrator.u)
           tmpu[jb] = gtmp[jb]
-          Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
-          @.. Y3jajb[ja,jb] = Ihat2*tmpu
+          ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
+          @.. Y3jajb[ja,jb] = ihat2*tmpu
         end
       end
     end
@@ -1353,8 +1353,8 @@ end
         end
         gtmp = integrator.g(tmpu,p,t)
         tmpjb = @view gtmp[:,ja]
-        Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, ja)
-        @.. Y4jajb[ja,ja] = Ihat2*tmpjb
+        ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, ja)
+        @.. Y4jajb[ja,ja] = ihat2*tmpjb
       end
     else
       for ja=1:m
@@ -1369,8 +1369,8 @@ end
         gtmp = integrator.g(tmpu,p,t)
         tmpu = zero(integrator.u)
         tmpu[ja] = gtmp[ja]
-        Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, ja)
-        @.. Y4jajb[ja,ja] = Ihat2*tmpu
+        ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, ja)
+        @.. Y4jajb[ja,ja] = ihat2*tmpu
       end
     end
   end
@@ -1440,7 +1440,7 @@ end
   @.. Y100 = ktmp*dt
   for ja=1:m
     for jb=1:m
-      Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
+      ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
       if is_diagonal_noise(integrator.sol.prob)
         fill!(tmpu,zero(eltype(integrator.u)))
         tmpu[jb] = gtmp[jb]
@@ -1476,7 +1476,7 @@ end
         end
         integrator.g(gtmp,tmpu,p,t)
         tmpjb = @view gtmp[:,jb]
-        Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
+        ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
         @.. Y2jajb[ja,jb] = Ihat2*tmpjb
         end
     end
@@ -1496,7 +1496,7 @@ end
         integrator.g(gtmp,tmpu,p,t)
         fill!(tmpu,zero(eltype(integrator.u)))
         tmpu[jb] = gtmp[jb]
-        Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
+        ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
         @.. Y2jajb[ja,jb] = Ihat2*tmpu
       end
     end
@@ -1527,7 +1527,7 @@ end
           end
           integrator.g(gtmp,tmpu,p,t)
           tmpjb = @view gtmp[:,jb]
-          Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
+          ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
           @.. Y3jajb[ja,jb] = Ihat2*tmpjb
         end
       end
@@ -1552,7 +1552,7 @@ end
         integrator.g(gtmp,tmpu,p,t)
         fill!(tmpu,zero(eltype(integrator.u)))
         tmpu[jb] = gtmp[jb]
-        Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
+        ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, jb)
         @.. Y3jajb[ja,jb] = Ihat2*tmpu
       end
     end
@@ -1576,7 +1576,7 @@ end
       end
       integrator.g(gtmp,tmpu,p,t)
       tmpjb = @view gtmp[:,ja]
-      Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, ja)
+      ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, ja)
       @.. Y4jajb[ja,ja] = Ihat2*tmpjb
     end
   else
@@ -1592,7 +1592,7 @@ end
       integrator.g(gtmp,tmpu,p,t)
       fill!(tmpu,zero(eltype(integrator.u)))
       tmpu[ja] = gtmp[ja]
-      Ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, ja)
+      ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, ja, ja)
       @.. Y4jajb[ja,ja] = Ihat2*tmpu
     end
   end
@@ -1946,7 +1946,7 @@ end
   if !(typeof(W.dW) <: Number)
     # define two-point distributed random variables
     _dZ = map(x -> calc_twopoint_random(integrator.sqdt, x),  W.dZ)
-    Ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
+    ihat2 = zeros(eltype(W.dZ), m, m) # I^_(k,l)
     for j = 1:m
       for l = 1:j-1
         Ihat2[j, l] = -_dZ[j]*_dW[l]/integrator.sqdt
