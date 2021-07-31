@@ -117,7 +117,7 @@ function DRI1ConstantCache(::Type{T}, ::Type{T2}) where {T,T2}
 end
 
 
-function alg_cache(alg::DRI1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::DRI1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}})
   DRI1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
@@ -174,7 +174,7 @@ function RI1ConstantCache(T::Type, T2::Type)
 end
 
 
-function alg_cache(alg::RI1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::RI1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}})
   RI1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
@@ -230,7 +230,7 @@ function RI3ConstantCache(T::Type, T2::Type)
 end
 
 
-function alg_cache(alg::RI3,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::RI3,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}})
   RI3ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
@@ -286,7 +286,7 @@ function RI5ConstantCache(T::Type, T2::Type)
 end
 
 
-function alg_cache(alg::RI5,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::RI5,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}})
   RI5ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
@@ -342,7 +342,7 @@ function RI6ConstantCache(T::Type, T2::Type)
 end
 
 
-function alg_cache(alg::RI6,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::RI6,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}})
   RI6ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
@@ -398,7 +398,7 @@ function RDI2WMConstantCache(T::Type, T2::Type)
 end
 
 
-function alg_cache(alg::RDI2WM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::RDI2WM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}})
   RDI2WMConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
@@ -454,7 +454,7 @@ function RDI3WMConstantCache(T::Type, T2::Type)
 end
 
 
-function alg_cache(alg::RDI3WM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::RDI3WM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}})
   RDI3WMConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
@@ -510,7 +510,7 @@ function RDI4WMConstantCache(T::Type, T2::Type)
 end
 
 
-function alg_cache(alg::RDI4WM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::RDI4WM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}})
   RDI4WMConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
@@ -1040,7 +1040,7 @@ function RDI1WMConstantCache(::Type{T}, ::Type{T2}) where {T,T2}
 end
 
 
-function alg_cache(alg::RDI1WM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::RDI1WM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}})
   RDI1WMConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
@@ -1194,7 +1194,7 @@ function RS1ConstantCache(T::Type, T2::Type)
 end
 
 
-function alg_cache(alg::RS1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::RS1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}})
   RS1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
@@ -1250,7 +1250,7 @@ function RS2ConstantCache(T::Type, T2::Type)
 end
 
 
-function alg_cache(alg::RS2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::RS2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}})
   RS2ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
@@ -1386,7 +1386,7 @@ function PL1WMConstantCache(T::Type)
   PL1WMConstantCache(NORMAL_ONESIX_QUANTILE)
 end
 
-function alg_cache(alg::PL1WM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::PL1WM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}})
   PL1WMConstantCache(real(uBottomEltypeNoUnits))
 end
 
@@ -1401,7 +1401,7 @@ function PL1WMAConstantCache(T::Type)
   PL1WMAConstantCache(NORMAL_ONESIX_QUANTILE)
 end
 
-function alg_cache(alg::PL1WMA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::PL1WMA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}})
   PL1WMAConstantCache(real(uBottomEltypeNoUnits))
 end
 
@@ -1617,7 +1617,7 @@ function NONConstantCache(T::Type)
 end
 
 
-function alg_cache(alg::NON,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::NON,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}})
   NONConstantCache(real(uBottomEltypeNoUnits))
 end
 
@@ -1770,7 +1770,7 @@ function COMConstantCache(T::Type)
 end
 
 
-function alg_cache(alg::COM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::COM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}})
   COMConstantCache(real(uBottomEltypeNoUnits))
 end
 
@@ -1923,7 +1923,7 @@ function NON2ConstantCache(T::Type)
 end
 
 
-function alg_cache(alg::NON2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::NON2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}})
   NON2ConstantCache(real(uBottomEltypeNoUnits))
 end
 
@@ -2065,7 +2065,7 @@ function SIEAConstantCache(::Type{T}, ::Type{T2}) where {T,T2}
 end
 
 
-function alg_cache(alg::SIEA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::SIEA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}})
   SIEAConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
@@ -2104,7 +2104,7 @@ function SMEAConstantCache(::Type{T}, ::Type{T2}) where {T,T2}
 end
 
 
-function alg_cache(alg::SMEA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::SMEA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}})
   SMEAConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
@@ -2144,7 +2144,7 @@ function SIEBConstantCache(::Type{T}, ::Type{T2}) where {T,T2}
 end
 
 
-function alg_cache(alg::SIEB,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::SIEB,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}})
   SIEBConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
@@ -2183,7 +2183,7 @@ function SMEBConstantCache(::Type{T}, ::Type{T2}) where {T,T2}
 end
 
 
-function alg_cache(alg::SMEB,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}})
+function alg_cache(alg::SMEB,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}})
   SMEBConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
