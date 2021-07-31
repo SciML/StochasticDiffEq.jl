@@ -1,6 +1,6 @@
 struct PCEulerConstantCache <: StochasticDiffEqConstantCache end
 
-alg_cache(alg::PCEuler,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}}) = PCEulerConstantCache()
+alg_cache(alg::PCEuler,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits} = PCEulerConstantCache()
 
 @cache struct PCEulerCache{uType,rateType,rateNoiseType,rateNoiseCollectionType} <: StochasticDiffEqMutableCache
   utmp::uType
@@ -10,7 +10,7 @@ alg_cache(alg::PCEuler,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump
   bbprimetmp::rateType
 end
 
-function alg_cache(alg::PCEuler,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}})
+function alg_cache(alg::PCEuler,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
   utmp = zero(u); ftmp = zero(rate_prototype);
   gtmp = zero(noise_rate_prototype)
   bbprimetmp = zero(ftmp)
