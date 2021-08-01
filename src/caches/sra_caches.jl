@@ -56,8 +56,8 @@ function SRA2ConstantCache(T::Type, T2::Type)
 end
 
 function alg_cache(alg::SRA2,prob,u,ΔW,ΔZ,p,rate_prototype,
-                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
-                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{false}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
+                   noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},
+                   ::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
   SRA2ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
@@ -76,8 +76,8 @@ end
 end
 
 function alg_cache(alg::SRA2,prob,u,ΔW,ΔZ,p,rate_prototype,
-                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
-                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
+                   noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},
+                   ::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
   if typeof(ΔW) <: Union{SArray,Number}
     chi2 = copy(ΔW)
   else
@@ -190,19 +190,19 @@ function SOSRA2ConstantCache(T::Type, T2::Type)
 end
 
 function alg_cache(alg::SRA3,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,
-                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,
+                   ::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,
                    f,t,dt,::Type{Val{false}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
   SRA3ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 function alg_cache(alg::SOSRA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,
-                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,
+                   ::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,
                    f,t,dt,::Type{Val{false}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
   SOSRAConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 function alg_cache(alg::SOSRA2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,
-                   uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,
+                   ::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,
                    f,t,dt,::Type{Val{false}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
   SOSRA2ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
@@ -225,8 +225,8 @@ end
 end
 
 function alg_cache(alg::SRA3,prob,u,ΔW,ΔZ,p,rate_prototype,
-                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
-                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
+                   noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},
+                   ::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
   if typeof(ΔW) <: Union{SArray,Number}
     chi2 = copy(ΔW)
   else
@@ -248,8 +248,8 @@ function alg_cache(alg::SRA3,prob,u,ΔW,ΔZ,p,rate_prototype,
 end
 
 function alg_cache(alg::SOSRA,prob,u,ΔW,ΔZ,p,rate_prototype,
-                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
-                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
+                   noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},
+                   ::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
   if typeof(ΔW) <: Union{SArray,Number}
     chi2 = copy(ΔW)
   else
@@ -271,8 +271,8 @@ function alg_cache(alg::SOSRA,prob,u,ΔW,ΔZ,p,rate_prototype,
 end
 
 function alg_cache(alg::SOSRA2,prob,u,ΔW,ΔZ,p,rate_prototype,
-                   noise_rate_prototype,jump_rate_prototype,uEltypeNoUnits,
-                   uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
+                   noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},
+                   ::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
   if typeof(ΔW) <: Union{SArray,Number}
     chi2 = copy(ΔW)
   else
