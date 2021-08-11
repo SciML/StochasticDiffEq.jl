@@ -256,6 +256,9 @@ OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,
 OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqJumpNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = Val(CS)
 OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = Val(CS)
 
+OrdinaryDiffEq.alg_difftype(alg::Union{StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,Controller},
+                                       StochasticDiffEqNewtonAlgorithm{CS,AD,FDT,Controller}}) where {CS,AD,FDT} = FDT
+
 alg_mass_matrix_compatible(alg::StochasticDiffEqAlgorithm) = false
 
 alg_can_repeat_jac(alg::StochasticDiffEqAlgorithm) = true
