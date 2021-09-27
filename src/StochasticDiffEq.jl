@@ -19,6 +19,7 @@ using DocStringExtensions
   using UnPack, RecursiveArrayTools, DataStructures
   using DiffEqNoiseProcess, Random, ArrayInterface
   using NLsolve, ForwardDiff, StaticArrays, MuladdMacro, FiniteDiff, Base.Threads
+  using Adapt
 
   import DiffEqBase: ODE_DEFAULT_NORM, ODE_DEFAULT_ISOUTOFDOMAIN,
          ODE_DEFAULT_PROG_MESSAGE, ODE_DEFAULT_UNSTABLE_CHECK
