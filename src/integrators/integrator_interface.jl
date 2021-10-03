@@ -53,7 +53,7 @@ for typ in (StochasticDiffEqAlgorithm,StochasticDiffEqNewtonAdaptiveAlgorithm)
 end
 @inline DiffEqBase.get_tmp_cache(integrator::SDEIntegrator, alg, cache) = (cache.tmp,)
 @inline DiffEqBase.get_tmp_cache(integrator::SDEIntegrator, alg::StochasticDiffEqNewtonAdaptiveAlgorithm, cache) =
-    (cache.tmp, cache.atmp)
+    (cache.nlsolver.tmp, cache.nlsolver.ztmp)
 @inline DiffEqBase.get_tmp_cache(integrator::SDEIntegrator, alg::StochasticCompositeAlgorithm, cache) =
     get_tmp_cache(integrator, alg.algs[1], cache.caches[1])
 
