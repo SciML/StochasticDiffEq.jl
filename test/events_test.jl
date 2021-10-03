@@ -98,9 +98,9 @@ end
 params = P(0.001,1,0.0,5,0.0);
 x0 = Float64[-1.6,-11.8,0.0,0.0];
 
-condition(u,t,integrator) = u[1];
-affect!(integrator) = integrator.u[4] = integrator.u[4] - params.gSyn; # Inhibitory exponential decay synapse
-cb = ContinuousCallback(condition,affect!,nothing);
+condition2(u,t,integrator) = u[1];
+affect2!(integrator) = integrator.u[4] = integrator.u[4] - params.gSyn; # Inhibitory exponential decay synapse
+cb = ContinuousCallback(condition2,affect2!,nothing);
 prob = SDEProblem(HM_neuron!,HM_noise!,x0,(0.0,1999.9),params);
 sol  = solve(prob,ImplicitEM(),reltol = 1e-4, abstol = 1e-6,dense = true,callback=cb);
 sol  = solve(prob,SKenCarp(),reltol = 1e-4, abstol = 1e-6,dense = true,callback=cb);
