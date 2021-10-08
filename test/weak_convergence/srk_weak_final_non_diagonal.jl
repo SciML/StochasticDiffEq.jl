@@ -109,7 +109,7 @@ sim = test_convergence(dts,ensemble_prob,RI6(),
 println("RI6:", sim.𝒪est[:weak_final])
 
 
-numtraj = Int(1e4)
+numtraj = Int(1e5)
 seed = 15
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -119,6 +119,7 @@ sim = test_convergence(dts,ensemble_prob,RDI1WM(),
     weak_timeseries_errors=false,weak_dense_errors=false,
     expected_value=exp(-3.0)
 )
+@show abs(sim.𝒪est[:weak_final]-2)
 @test abs(sim.𝒪est[:weak_final]-2) < 0.3
 println("RDI1WM:", sim.𝒪est[:weak_final])
 
