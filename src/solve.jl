@@ -290,7 +290,11 @@ function DiffEqBase.__init(
         rand_prototype = (u .- u)./sqrt(oneunit(t))
       end
     elseif prob isa DiffEqBase.AbstractSDEProblem
-      rand_prototype = adapt(DiffEqBase.parameterless_type(u),zeros(size(noise_rate_prototype,2)))
+      if issparse(u)
+        rand_prototype = adapt(DiffEqBase.parameterless_type(u),zeros(randElType,size(noise_rate_prototype,2)))
+      else
+        rand_prototype = false .* noise_rate_prototype[1,:]
+      end
     elseif prob isa DiffEqBase.AbstractRODEProblem
       rand_prototype = copy(prob.rand_prototype)
     else
