@@ -269,7 +269,7 @@ sim = test_convergence(dts,ensemble_prob,RDI2WM(),
     weak_timeseries_errors=false,weak_dense_errors=false,
     expected_value=0.0
 )
-@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+@test abs(sim.𝒪est[:weak_final]-2) < 0.35
 println("RDI2WM:", sim.𝒪est[:weak_final])
 
 sim = test_convergence(dts,ensemble_prob,RDI3WM(),
@@ -334,7 +334,7 @@ sim = test_convergence(dts,ensemble_prob,DRI1NM(),
     weak_timeseries_errors=false,weak_dense_errors=false,
     expected_value=1//100*exp(301//100)
 )
-@test abs(sim.𝒪est[:weak_final]-2) < 0.3 # order is 2.91
+@test abs(sim.𝒪est[:weak_final]-2) < 0.35 # order is 2.91
 println("DRI1NM:", sim.𝒪est[:weak_final])
 
 sim = test_convergence(dts,ensemble_prob,RI1(),
@@ -358,7 +358,7 @@ sim = test_convergence(dts,ensemble_prob,RI5(),
     weak_timeseries_errors=false,weak_dense_errors=false,
     expected_value=1//100*exp(301//100)
 )
-@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+@test abs(sim.𝒪est[:weak_final]-2) < 0.45
 println("RI5:", sim.𝒪est[:weak_final])
 
 
@@ -372,7 +372,7 @@ sim = test_convergence(dts,ensemble_prob,RI6(),
     weak_timeseries_errors=false,weak_dense_errors=false,
     expected_value=1//100*exp(301//100)
 )
-@test abs(sim.𝒪est[:weak_final]-2) < 0.45 # order is 1.55
+@test abs(sim.𝒪est[:weak_final]-2) < 0.5 # order is 1.55
 println("R6:", sim.𝒪est[:weak_final])
 
 
@@ -400,7 +400,7 @@ sim = test_convergence(dts,ensemble_prob,RDI2WM(),
     weak_timeseries_errors=false,weak_dense_errors=false,
     expected_value=1//100*exp(301//100)
 )
-@test abs(sim.𝒪est[:weak_final]-2) < 0.45 # order is 1.55
+@test abs(sim.𝒪est[:weak_final]-2) < 0.5 # order is 1.55
 println("RDI2WM:", sim.𝒪est[:weak_final])
 
 
