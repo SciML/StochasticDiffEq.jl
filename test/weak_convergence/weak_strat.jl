@@ -23,7 +23,7 @@ end
 
 @info "Scalar oop noise"
 
-numtraj = Int(1e5) # in the paper they use 1e9
+numtraj = Int(1e6) # in the paper they use 1e9
 u₀ = 0.1
 p = [1.5, 0.1]
 f(u,p,t) = p[1]*u
@@ -70,7 +70,7 @@ sim = test_convergence(dts,ensemble_prob,NON(),
 @test abs(sim.𝒪est[:weak_final]-2) < 0.3
 println("NON:", sim.𝒪est[:weak_final])
 
-numtraj = Int(5e5)
+numtraj = Int(1e6)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -84,7 +84,7 @@ println("NON2:", sim.𝒪est[:weak_final])
 
 
 dts = 1 .//2 .^(4:-1:0)
-numtraj = Int(1e5)
+numtraj = Int(1e6)
 seed = 10
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -107,7 +107,7 @@ println("COM:", sim.𝒪est[:weak_final])
 f!(du,u,p,t) = du[1] = p[1]*u[1]
 g!(du,u,p,t) = du[1] = p[2]*u[1]
 
-numtraj = Int(1e5)
+numtraj = Int(1e6)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -157,7 +157,7 @@ println("NON2:", sim.𝒪est[:weak_final])
 
 
 dts = 1 .//2 .^(4:-1:0)
-numtraj = Int(1e5)
+numtraj = Int(1e6)
 seed = 10
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -239,7 +239,7 @@ sim = test_convergence(dts,ensemble_prob,NON2(),
 @test abs(sim.𝒪est[:weak_final]-2) < 0.3
 println("NON2:", sim.𝒪est[:weak_final])
 
-numtraj = Int(6e4)
+numtraj = Int(1e6)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
