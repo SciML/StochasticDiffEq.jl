@@ -109,8 +109,8 @@ sim = test_convergence(dts,ensemble_prob,RI6(),
 println("RI6:", sim.𝒪est[:weak_final])
 
 
-numtraj = Int(1e6)
-seed = 35
+numtraj = Int(5e6)
+seed = 55
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
