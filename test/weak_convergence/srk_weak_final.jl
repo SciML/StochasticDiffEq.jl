@@ -21,7 +21,7 @@ end
 
 @info "Scalar oop noise"
 
-numtraj = Int(2e5) # in the paper they use 1e9
+numtraj = Int(1e6) # in the paper they use 1e9
 u₀ = 0.0
 f(u,p,t) = 1//2*u+sqrt(u^2+1)
 g(u,p,t) = sqrt(u^2+1)
@@ -105,7 +105,7 @@ sim = test_convergence(dts,ensemble_prob,RI6(),
 @test abs(sim.𝒪est[:weak_final]-2) < 0.3
 println("RI6:", sim.𝒪est[:weak_final])
 
-numtraj = Int(1e3)
+numtraj = Int(1e6)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -145,7 +145,7 @@ sim = test_convergence(dts,ensemble_prob,RDI4WM(),
     weak_timeseries_errors=false,weak_dense_errors=false,
     expected_value=0.0
 )
-@test abs(sim.𝒪est[:weak_final]-2) < 0.3 # order is 2.568 with 3e5 trajectories
+@test abs(sim.𝒪est[:weak_final]-2) < 0.5 # order is 2.568 with 3e5 trajectories
 println("RDI4WM:", sim.𝒪est[:weak_final])
 
 """
@@ -169,7 +169,7 @@ ensemble_prob = EnsembleProblem(prob;
         )
 
 
-numtraj = Int(2e5)
+numtraj = Int(1e6)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -245,7 +245,7 @@ sim = test_convergence(dts,ensemble_prob,RI6(),
 @test abs(sim.𝒪est[:weak_final]-2) < 0.3
 println("RI6:", sim.𝒪est[:weak_final])
 
-numtraj = Int(1e3)
+numtraj = Int(1e6)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -315,7 +315,7 @@ ensemble_prob = EnsembleProblem(prob;
         prob_func = prob_func
         )
 
-numtraj = Int(5e4)
+numtraj = Int(1e6)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -362,7 +362,7 @@ sim = test_convergence(dts,ensemble_prob,RI5(),
 println("RI5:", sim.𝒪est[:weak_final])
 
 
-numtraj = Int(1e5)
+numtraj = Int(1e6)
 seed = 70
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -376,7 +376,7 @@ sim = test_convergence(dts,ensemble_prob,RI6(),
 println("R6:", sim.𝒪est[:weak_final])
 
 
-numtraj = Int(1e3)
+numtraj = Int(1e6)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -390,7 +390,7 @@ sim = test_convergence(dts,ensemble_prob,RDI1WM(),
 println("RDI1WM:", sim.𝒪est[:weak_final])
 
 
-numtraj = Int(1e5)
+numtraj = Int(1e6)
 seed = 70
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
