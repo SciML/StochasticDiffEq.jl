@@ -45,7 +45,7 @@ ensemble_prob = EnsembleProblem(prob;
         prob_func = prob_func
         )
 
-numtraj = Int(1e6)
+numtraj = Int(1e7)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -82,7 +82,7 @@ sim = test_convergence(dts,ensemble_prob,NON2(),
 @test abs(sim.𝒪est[:weak_final]-2) < 0.3
 println("NON2:", sim.𝒪est[:weak_final])
 
-numtraj = Int(5e5)
+numtraj = Int(1e6)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
