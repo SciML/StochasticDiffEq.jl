@@ -67,7 +67,7 @@ sim = test_convergence(dts,ensemble_prob,NON(),
     weak_timeseries_errors=false,weak_dense_errors=false,
     expected_value=u₀*exp(1.0*(p[1]+0.5*p[2]^2))
     )
-@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+@test abs(sim.𝒪est[:weak_final]-2) < 0.5
 println("NON:", sim.𝒪est[:weak_final])
 
 numtraj = Int(5e6)
