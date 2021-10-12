@@ -13,7 +13,7 @@ using Random
 using DiffEqDevTools
 #using DiffEqGPU
 
-seed = 10
+seed = 1234
 
 function prob_func(prob, i, repeat)
     remake(prob,seed=seeds[i])
@@ -47,7 +47,7 @@ ensemble_prob = EnsembleProblem(prob;
         prob_func = prob_func
         )
 
-numtraj = Int(2e7)
+numtraj = Int(1e7)
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
