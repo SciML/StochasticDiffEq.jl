@@ -215,7 +215,7 @@ function moments!(tmp, E1, E2, E3, W, Wik, Δ, samples, p=nothing)
 end
 
 
-samples = Int(1e5)
+samples = Int(5e5)
 E1 = false .* vec(W.dW) .* vec(W.dW)'
 E2 = zero(E1)
 E3 = zero(E1)
