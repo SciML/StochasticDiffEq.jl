@@ -6,7 +6,7 @@ steps:
       - JuliaCI/julia-test#v1:
           coverage: false
     agents:
-      queue: "juliacpu"
+      queue: "juliaecosystem"
     env:
       GROUP: 'OOPWeakConvergence'
     timeout_in_minutes: 240
@@ -20,7 +20,7 @@ steps:
       - JuliaCI/julia-test#v1:
           coverage: false
     agents:
-      queue: "juliacpu"
+      queue: "juliaecosystem"
     env:
       GROUP: 'IIPWeakConvergence'
     timeout_in_minutes: 240
@@ -34,7 +34,7 @@ steps:
       - JuliaCI/julia-test#v1:
           coverage: false
     agents:
-      queue: "juliacpu"
+      queue: "juliaecosystem"
     env:
       GROUP: 'WeakAdaptiveCPU'
     timeout_in_minutes: 240
