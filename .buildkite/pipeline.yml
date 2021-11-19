@@ -7,6 +7,7 @@ steps:
           coverage: false
     agents:
       queue: "juliaecosystem"
+      exclusive: true
     env:
       GROUP: 'OOPWeakConvergence'
     timeout_in_minutes: 240
@@ -21,6 +22,7 @@ steps:
           coverage: false
     agents:
       queue: "juliaecosystem"
+      exclusive: true
     env:
       GROUP: 'IIPWeakConvergence'
     timeout_in_minutes: 240
