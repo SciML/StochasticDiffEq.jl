@@ -5,6 +5,7 @@ steps:
           version: "1"
       - JuliaCI/julia-test#v1:
           coverage: false
+          julia_args: "--threads=auto"
     agents:
       queue: "juliaecosystem"
       exclusive: true
@@ -20,6 +21,7 @@ steps:
           version: "1"
       - JuliaCI/julia-test#v1:
           coverage: false
+          julia_args: "--threads=auto"
     agents:
       queue: "juliaecosystem"
       exclusive: true
