@@ -40,7 +40,7 @@ function Base.show(io::IO, ::MIME"text/plain", x::NoIndexArray)
     Base.print_array(io, x.x)
 end
 
-prob = SDEProblem((du, u, p, t)->copyto!(du, u),(du, u, p, t)->copyto!(du, u),NoIndexArray(ones(10, 10)),(0.0,10.0))
+prob = SDEProblem((du, u, p, t)->copyto!(du, u),(du, u, p, t)->copyto!(du, u),NoIndexArray(ones(10, 10)),(0.0,1.0))
 algs = [SOSRI(), SOSRA()]
 DiffEqNoiseProcess.wiener_randn!(rng::AbstractRNG,rand_vec::NoIndexArray) = randn!(rng,rand_vec.x)
 
