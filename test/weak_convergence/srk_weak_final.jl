@@ -10,7 +10,7 @@ using Test
 using Random
 using DiffEqDevTools
 #using DiffEqGPU
-
+seed = 103473
 function prob_func(prob, i, repeat)
     remake(prob,seed=seeds[i])
 end
@@ -21,7 +21,7 @@ end
 
 @info "Scalar oop noise"
 
-numtraj = Int(1e6) # in the paper they use 1e9
+numtraj = Int(2e6) # in the paper they use 1e9
 u₀ = 0.0
 f(u,p,t) = 1//2*u+sqrt(u^2+1)
 g(u,p,t) = sqrt(u^2+1)
@@ -33,7 +33,6 @@ h1(z) = z^3-6*z^2+8*z
 #analytical_sol(t) = E(f(X(t))) = E(h1(arsinh(X(t))) = t^3-3*t^2+2*t
 #analytical_sol(2) = 0 and analytical_sol(1)=0
 
-seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -53,8 +52,7 @@ sim = test_convergence(dts,ensemble_prob,DRI1(),
 println("DRI1:", sim.𝒪est[:weak_final])
 
 
-numtraj = Int(5e5)
-seed = 100
+numtraj = Int(6e5)
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -66,8 +64,7 @@ sim = test_convergence(dts,ensemble_prob,RI1(),
 @test abs(sim.𝒪est[:weak_final]-2) < 0.3
 println("RI1:", sim.𝒪est[:weak_final])
 
-numtraj = Int(5e5)
-seed = 100
+numtraj = Int(6e5)
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -79,8 +76,7 @@ sim = test_convergence(dts,ensemble_prob,RI3(),
 @test abs(sim.𝒪est[:weak_final]-2) < 0.3
 println("RI3:", sim.𝒪est[:weak_final])
 
-numtraj = Int(5e5)
-seed = 100
+numtraj = Int(6e5)
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -92,8 +88,7 @@ sim = test_convergence(dts,ensemble_prob,RI5(),
 @test abs(sim.𝒪est[:weak_final]-2) < 0.3
 println("RI5:", sim.𝒪est[:weak_final])
 
-numtraj = Int(7e5)
-seed = 100
+numtraj = Int(8e5)
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -106,7 +101,6 @@ sim = test_convergence(dts,ensemble_prob,RI6(),
 println("RI6:", sim.𝒪est[:weak_final])
 
 numtraj = Int(1e6)
-seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -119,7 +113,6 @@ sim = test_convergence(dts,ensemble_prob,RDI1WM(),
 println("RDI1WM:", sim.𝒪est[:weak_final])
 
 numtraj = Int(7e5)
-seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -169,8 +162,7 @@ ensemble_prob = EnsembleProblem(prob;
         )
 
 
-numtraj = Int(1e6)
-seed = 100
+numtraj = Int(2e6)
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -193,7 +185,6 @@ sim = test_convergence(dts,ensemble_prob,DRI1NM(),
 println("DRI1NM:", sim.𝒪est[:weak_final])
 
 numtraj = Int(5e5)
-seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -206,7 +197,6 @@ sim = test_convergence(dts,ensemble_prob,RI1(),
 println("RI1:", sim.𝒪est[:weak_final])
 
 numtraj = Int(5e5)
-seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -220,7 +210,6 @@ println("RI3:", sim.𝒪est[:weak_final])
 
 
 numtraj = Int(5e5)
-seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -233,7 +222,6 @@ sim = test_convergence(dts,ensemble_prob,RI5(),
 println("RI5:", sim.𝒪est[:weak_final])
 
 numtraj = Int(7e5)
-seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -246,7 +234,6 @@ sim = test_convergence(dts,ensemble_prob,RI6(),
 println("RI6:", sim.𝒪est[:weak_final])
 
 numtraj = Int(1e6)
-seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -260,7 +247,6 @@ println("RDI1WM:", sim.𝒪est[:weak_final])
 
 
 numtraj = Int(1e6)
-seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -316,7 +302,6 @@ ensemble_prob = EnsembleProblem(prob;
         )
 
 numtraj = Int(4e6)
-seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -363,7 +348,6 @@ println("RI5:", sim.𝒪est[:weak_final])
 
 
 numtraj = Int(4e6)
-seed = 70
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -377,7 +361,6 @@ println("R6:", sim.𝒪est[:weak_final])
 
 
 numtraj = Int(1e6)
-seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -391,7 +374,6 @@ println("RDI1WM:", sim.𝒪est[:weak_final])
 
 
 numtraj = Int(4e6)
-seed = 70
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -405,7 +387,6 @@ println("RDI2WM:", sim.𝒪est[:weak_final])
 
 
 numtraj = Int(5e4)
-seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
