@@ -52,7 +52,7 @@ sim = test_convergence(dts,ensemble_prob,DRI1(),
 println("DRI1:", sim.𝒪est[:weak_final])
 
 
-numtraj = Int(6e5)
+numtraj = Int(1e6)
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
