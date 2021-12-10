@@ -18,6 +18,7 @@ jobs:
         os: [ubuntu-latest]
         package:
           - {user: SciML, repo: StochasticDelayDiffEq.jl, group: All}
+          - {user: SciML, repo: DiffEqNoiseProcess.jl, group: All}
 
     steps:
       - uses: actions/checkout@v2
