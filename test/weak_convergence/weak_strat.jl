@@ -23,7 +23,7 @@ end
 
 @info "Scalar oop noise"
 
-numtraj = Int(5e6) # in the paper they use 1e9
+numtraj = Int(7e6) # in the paper they use 1e9
 u₀ = 0.1
 p = [1.5, 0.1]
 f(u,p,t) = p[1]*u
