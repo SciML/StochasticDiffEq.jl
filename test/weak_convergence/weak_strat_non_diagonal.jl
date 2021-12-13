@@ -13,7 +13,7 @@ using Random
 using DiffEqDevTools
 #using DiffEqGPU
 
-seed = 10
+seed = 137475
 
 function prob_func(prob, i, repeat)
     remake(prob,seed=seeds[i])
