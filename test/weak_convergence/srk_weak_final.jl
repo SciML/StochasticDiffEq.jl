@@ -196,7 +196,7 @@ sim = test_convergence(dts,ensemble_prob,RI1(),
     weak_timeseries_errors=false,weak_dense_errors=false,
     expected_value=0.0
 )
-@test abs(sim.𝒪est[:weak_final]-2) < 0.3
+@test abs(sim.𝒪est[:weak_final]-2) < 0.4
 println("RI1:", sim.𝒪est[:weak_final])
 
 numtraj = Int(1e6)
