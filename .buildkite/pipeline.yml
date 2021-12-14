@@ -31,6 +31,54 @@ steps:
     # Don't run Buildkite if the commit message includes the text [skip tests]
     if: build.message !~ /\[skip tests\]/
 
+  - label: "WeakConvergence2"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - JuliaCI/julia-test#v1:
+          coverage: false
+          julia_args: "--threads=auto"
+    agents:
+      queue: "juliaecosystem"
+      exclusive: true
+    env:
+      GROUP: 'WeakConvergence2'
+    timeout_in_minutes: 240
+    # Don't run Buildkite if the commit message includes the text [skip tests]
+    if: build.message !~ /\[skip tests\]/  
+
+  - label: "WeakConvergence3"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - JuliaCI/julia-test#v1:
+          coverage: false
+          julia_args: "--threads=auto"
+    agents:
+      queue: "juliaecosystem"
+      exclusive: true
+    env:
+      GROUP: 'WeakConvergence3'
+    timeout_in_minutes: 240
+    # Don't run Buildkite if the commit message includes the text [skip tests]
+    if: build.message !~ /\[skip tests\]/  
+
+  - label: "WeakConvergence4"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - JuliaCI/julia-test#v1:
+          coverage: false
+          julia_args: "--threads=auto"
+    agents:
+      queue: "juliaecosystem"
+      exclusive: true
+    env:
+      GROUP: 'WeakConvergence4'
+    timeout_in_minutes: 240
+    # Don't run Buildkite if the commit message includes the text [skip tests]
+    if: build.message !~ /\[skip tests\]/  
+
   - label: "WeakAdaptiveCPU"
     plugins:
       - JuliaCI/julia#v1:
