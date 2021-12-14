@@ -127,6 +127,11 @@ sim = test_convergence(dts,ensemble_prob,RS1(),
 @test abs(sim.𝒪est[:weak_final]-2) < 0.4
 println("RS1:", sim.𝒪est[:weak_final])
 
+numtraj = Int(7e6)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
+
 sim = test_convergence(dts,ensemble_prob,RS2(),
     save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
     weak_timeseries_errors=false,weak_dense_errors=false,
@@ -134,6 +139,11 @@ sim = test_convergence(dts,ensemble_prob,RS2(),
     )
 @test abs(sim.𝒪est[:weak_final]-2) < 0.4 #order is 2.36
 println("RS2:", sim.𝒪est[:weak_final])
+
+numtraj = Int(5e6)
+seed = 100
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
 
 sim = test_convergence(dts,ensemble_prob,NON(),
     save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,
