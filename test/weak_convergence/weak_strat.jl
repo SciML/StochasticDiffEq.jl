@@ -127,7 +127,7 @@ sim = test_convergence(dts,ensemble_prob,RS1(),
 @test abs(sim.𝒪est[:weak_final]-2) < 0.4
 println("RS1:", sim.𝒪est[:weak_final])
 
-numtraj = Int(1e7)
+numtraj = Int(2e7)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -207,7 +207,7 @@ ensemble_prob = EnsembleProblem(prob;
         prob_func = prob_func
         )
 
-numtraj = Int(1e5)
+numtraj = Int(5e5)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -219,6 +219,10 @@ sim = test_convergence(dts,ensemble_prob,RS1(),
     )
 @test abs(sim.𝒪est[:weak_final]-2) < 0.34 # order is 1.67
 println("RS1:", sim.𝒪est[:weak_final])
+
+numtraj = Int(1e5)
+Random.seed!(seed)
+seeds = rand(UInt, numtraj)
 
 sim = test_convergence(dts,ensemble_prob,RS2(),
     save_everystep=false,trajectories=numtraj,save_start=false,adaptive=false,

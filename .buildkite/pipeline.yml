@@ -75,9 +75,9 @@ steps:
       exclusive: true
     env:
       GROUP: 'WeakConvergence4'
-    timeout_in_minutes: 240
+    timeout_in_minutes: 360
     # Don't run Buildkite if the commit message includes the text [skip tests]
-    if: build.message !~ /\[skip tests\]/  
+    if: build.message !~ /\[skip tests\]/
 
   - label: "WeakAdaptiveCPU"
     plugins:
