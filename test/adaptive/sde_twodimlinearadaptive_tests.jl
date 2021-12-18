@@ -8,7 +8,7 @@ prob = prob_sde_2Dlinear
 sol1 =solve(prob,RKMil(),abstol=1,reltol=0,adaptive=true)
 err1 = sol1.errors[:final]
 
-sol1 =solve(prob,RKMil(),adaptive=true)
+sol1 =solve(prob,RKMil(),abstol=1e-3,reltol=1e-3,adaptive=true)
 err12 = sol1.errors[:final]
 @test err12 < err1
 

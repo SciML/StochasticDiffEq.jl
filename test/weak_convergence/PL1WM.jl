@@ -21,7 +21,7 @@ end
 @info "Scalar oop noise"
 
 # PC exercise 14.2.2
-numtraj = Int(1e4)
+numtraj = Int(2e4)
 u₀ = 0.1
 f(u,p,t) = p[1]*u
 g(u,p,t) = p[2]*u
@@ -72,7 +72,7 @@ ensemble_prob = EnsembleProblem(prob;
         )
 
 
-numtraj = Int(1e4)
+numtraj = Int(2e4)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -186,7 +186,7 @@ println("PL1WM:", sim.𝒪est[:weak_final])
  Test Additive noise SDEs Kloeden & Platen Exercise 14.4.1
 """
 
-numtraj = Int(1e3)
+numtraj = Int(1e4)
 u₀ = 0.1
 fadd(u,p,t) = p[1]*u
 gadd(u,p,t) = p[2]

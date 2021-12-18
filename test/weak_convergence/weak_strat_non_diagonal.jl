@@ -13,7 +13,7 @@ using Random
 using DiffEqDevTools
 #using DiffEqGPU
 
-seed = 100
+seed = 137475
 
 function prob_func(prob, i, repeat)
     remake(prob,seed=seeds[i])
@@ -47,7 +47,7 @@ ensemble_prob = EnsembleProblem(prob;
         prob_func = prob_func
         )
 
-numtraj = Int(2e7)
+numtraj = Int(3e7)
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -83,7 +83,7 @@ sim = test_convergence(dts,ensemble_prob,NON2(),
 @test abs(sim.𝒪est[:weak_final]-2) < 0.3
 println("NON2:", sim.𝒪est[:weak_final])
 
-numtraj = Int(1e7)
+numtraj = Int(2e7)
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
