@@ -699,7 +699,7 @@ struct ImplicitRKMil{CS,AD,F,FDT,ST,N,T2,Controller,interpretation} <: Stochasti
   symplectic::Bool
 end
 ImplicitRKMil(;chunk_size=0,autodiff=true,diff_type=Val{:central},
-                          standardtag = Val{true}()
+                          standardtag = Val{true}(),
                           linsolve=DEFAULT_LINSOLVE,nlsolve=NLNewton(),
                           extrapolant=:constant,
                           theta = 1,symplectic = false,
