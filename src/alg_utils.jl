@@ -257,7 +257,7 @@ OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqJumpNewtonAdaptiveAlgorithm{CS
 OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = Val(CS)
 
 @static if isdefined(OrdinaryDiffEq,:standardtag)
-    standardtag(alg::Union{StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,Controller},
+    OrdinaryDiffEq.standardtag(alg::Union{StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,Controller},
                             StochasticDiffEqNewtonAlgorithm{CS,AD,FDT,ST,Controller}}
                             ) where {CS,AD,FDT,ST,Controller} = ST
 end
