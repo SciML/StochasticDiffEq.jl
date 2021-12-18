@@ -625,7 +625,7 @@ This is a theta method which defaults to theta=1 or the Trapezoid method on the 
 This method defaults to symplectic=false, but when true and theta=1/2 this is the implicit Midpoint method on the drift term and is symplectic in distribution.
 Can handle all forms of noise, including non-diagonal, scalar, and colored noise. Uses a 1.0/1.5 heuristic for adaptive time stepping.
 """
-struct ImplicitEM{CS,AD,F,F2,FDT,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,Controller}
+struct ImplicitEM{CS,AD,F,F2,FDT,ST,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,Controller}
   linsolve::F
   nlsolve::F2
   theta::T2
