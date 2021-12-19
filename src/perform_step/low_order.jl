@@ -179,6 +179,8 @@ end
     utilde = uprev + L*integrator.sqdt
     ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
     mil_correction = ggprime.*(W.dW.^2)./2
+  else
+    error("Alg interpretation invalid. Use either :Ito or :Stratonovich")
   end
   u = K+L.*W.dW+mil_correction
   if integrator.opts.adaptive
@@ -207,6 +209,8 @@ end
     @.. tmp = (du2-L)/(2integrator.sqdt)*(W.dW^2 - dt)
   elseif alg_interpretation(integrator.alg) == :Stratonovich
     @.. tmp = (du2-L)/(2integrator.sqdt)*(W.dW^2)
+  else
+    error("Alg interpretation invalid. Use either :Ito or :Stratonovich")
   end
   @.. u = K+L*W.dW + tmp
   if integrator.opts.adaptive
@@ -232,6 +236,8 @@ end
     @.. tmp = uprev + integrator.sqdt * L
     integrator.g(du2,tmp,p,t)
     @.. tmp = (du2-L)/(2integrator.sqdt)*(W.dW.^2)
+  else
+    error("Alg interpretation invalid. Use either :Ito or :Stratonovich")
   end
   @.. u = K+L*W.dW + tmp
   if integrator.opts.adaptive

@@ -37,6 +37,8 @@
       ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
       mil_correction = ggprime.*(integrator.W.dW.^2)./2
       gtmp += mil_correction
+    else
+      error("Alg interpretation invalid. Use either :Ito or :Stratonovich")
     end
   end
 
@@ -162,6 +164,8 @@ end
       integrator.g(gtmp3,z,p,t)
       @.. gtmp3 = (gtmp3-gtmp)/(integrator.sqdt) # ggprime approximation
       @.. gtmp2 += gtmp3*(dW.^2)/2
+    else
+      error("Alg interpretation invalid. Use either :Ito or :Stratonovich")
     end
   end
 
