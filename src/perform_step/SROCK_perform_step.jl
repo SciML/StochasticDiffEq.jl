@@ -73,8 +73,6 @@
         gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
         u += gₘ₋₂*W.dW
       end
-    else
-      error("Alg interpretation invalid. Use either :Ito or :Stratonovich")
     end
 
     if i < mdeg
@@ -165,8 +163,6 @@ end
         mul!(uᵢ₋₁,gₘ₋₂,W.dW)
         @.. u += uᵢ₋₁
       end
-    else
-      error("Alg interpretation invalid. Use either :Ito or :Stratonovich")
     end
 
     if i < mdeg
