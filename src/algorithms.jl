@@ -635,7 +635,7 @@ struct ImplicitEM{CS,AD,F,F2,FDT,ST,T2,Controller} <: StochasticDiffEqNewtonAdap
 end
 ImplicitEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           standardtag = Val{true}(),
-                          linsolve=DEFAULT_LINSOLVE,nlsolve=NLNewton(),
+                          linsolve=nothing,nlsolve=NLNewton(),
                           extrapolant=:constant,
                           theta = 1,symplectic=false,
                           new_jac_conv_bound = 1e-3,
@@ -667,7 +667,7 @@ struct ImplicitEulerHeun{CS,AD,F,FDT,ST,N,T2,Controller} <: StochasticDiffEqNewt
 end
 ImplicitEulerHeun(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           standardtag = Val{true}(),
-                          linsolve=DEFAULT_LINSOLVE,nlsolve=NLNewton(),
+                          linsolve=nothing,nlsolve=NLNewton(),
                           extrapolant=:constant,
                           theta = 1,symplectic = false,
                           new_jac_conv_bound = 1e-3,
@@ -700,7 +700,7 @@ struct ImplicitRKMil{CS,AD,F,FDT,ST,N,T2,Controller,interpretation} <: Stochasti
 end
 ImplicitRKMil(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           standardtag = Val{true}(),
-                          linsolve=DEFAULT_LINSOLVE,nlsolve=NLNewton(),
+                          linsolve=nothing,nlsolve=NLNewton(),
                           extrapolant=:constant,
                           theta = 1,symplectic = false,
                           new_jac_conv_bound = 1e-3,
@@ -732,7 +732,7 @@ struct ISSEM{CS,AD,F,FDT,ST,N,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAl
 end
 ISSEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                        standardtag = Val{true}(),
-                       linsolve=DEFAULT_LINSOLVE,nlsolve=NLNewton(),
+                       linsolve=nothing,nlsolve=NLNewton(),
                        extrapolant=:constant,
                        theta = 1,symplectic=false,
                        new_jac_conv_bound = 1e-3,
@@ -764,7 +764,7 @@ struct ISSEulerHeun{CS,AD,F,FDT,ST,N,T2,Controller} <: StochasticDiffEqNewtonAda
 end
 ISSEulerHeun(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                       standardtag = Val{true}(),
-                      linsolve=DEFAULT_LINSOLVE,nlsolve=NLNewton(),
+                      linsolve=nothing,nlsolve=NLNewton(),
                       extrapolant=:constant,
                       theta = 1,symplectic=false,
                       new_jac_conv_bound = 1e-3,
@@ -793,7 +793,7 @@ end
 
 SKenCarp(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                    standardtag = Val{true}(),
-                   linsolve=DEFAULT_LINSOLVE,nlsolve=NLNewton(),
+                   linsolve=nothing,nlsolve=NLNewton(),
                    smooth_est=true,extrapolant=:min_correct,
                    new_jac_conv_bound = 1e-3,controller = :Predictive,
                    ode_error_est = true) =
