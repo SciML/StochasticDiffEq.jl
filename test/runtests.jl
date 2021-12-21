@@ -103,6 +103,11 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
     @time @safetestset "IIP Weak Convergence Tests" begin include("weak_convergence/iip_weak.jl") end
   end
 
+  if !is_APPVEYOR && GROUP == "SROCKC2WeakConvergence"
+    #activate_gpu_env()
+    @time @safetestset "SROCKC2 Weak Convergence Tests" begin include("weak_convergence/weak_srockc2.jl") end
+  end
+
   if !is_APPVEYOR && GROUP == "WeakAdaptiveCPU"
     @time @safetestset "CPU Weak adaptive step size Brusselator " begin include("adaptive/sde_weak_brusselator_adaptive.jl") end
     @time @safetestset "CPU Weak adaptive" begin include("adaptive/sde_weak_adaptive.jl") end
