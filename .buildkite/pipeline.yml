@@ -8,7 +8,6 @@ steps:
           julia_args: "--threads=auto"
     agents:
       queue: "juliaecosystem"
-      exclusive: true
     env:
       GROUP: 'OOPWeakConvergence'
     timeout_in_minutes: 240
@@ -24,9 +23,24 @@ steps:
           julia_args: "--threads=auto"
     agents:
       queue: "juliaecosystem"
-      exclusive: true
     env:
       GROUP: 'IIPWeakConvergence'
+    timeout_in_minutes: 240
+    # Don't run Buildkite if the commit message includes the text [skip tests]
+    if: build.message !~ /\[skip tests\]/
+
+  - label: "SROCKC2WeakConvergence"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - JuliaCI/julia-test#v1:
+          coverage: false
+          julia_args: "--threads=auto"
+    agents:
+      queue: "juliaecosystem"
+      exclusive: true
+    env:
+      GROUP: 'SROCKC2WeakConvergence'
     timeout_in_minutes: 240
     # Don't run Buildkite if the commit message includes the text [skip tests]
     if: build.message !~ /\[skip tests\]/
@@ -44,7 +58,7 @@ steps:
       GROUP: 'WeakConvergence2'
     timeout_in_minutes: 240
     # Don't run Buildkite if the commit message includes the text [skip tests]
-    if: build.message !~ /\[skip tests\]/  
+    if: build.message !~ /\[skip tests\]/
 
   - label: "WeakConvergence3"
     plugins:
@@ -59,7 +73,7 @@ steps:
       GROUP: 'WeakConvergence3'
     timeout_in_minutes: 240
     # Don't run Buildkite if the commit message includes the text [skip tests]
-    if: build.message !~ /\[skip tests\]/  
+    if: build.message !~ /\[skip tests\]/
 
   - label: "WeakConvergence4"
     plugins:
