@@ -290,7 +290,9 @@ end
         @.. g1 = btilde1*z₁  + btilde2*z₂  + btilde3*z₃ + btilde4*z₄
       end
       if alg.smooth_est # From Shampine
-        nlsolver.cache.linsolve(vec(E₁),OrdinaryDiffEq.get_W(nlsolver),vec(g1),false)
+        linres = OrdinaryDiffEq.dolinsolve(integrator, nlsolver.cache.linsolve;
+                                            b = OrdinaryDiffEq._vec(g1),
+                                            u = OrdinaryDiffEq._vec(E₁))
       else
         E₁ .= dz
       end
