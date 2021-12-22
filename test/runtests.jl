@@ -85,12 +85,19 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
 
   if !is_APPVEYOR && GROUP == "WeakConvergence3"
     @time @safetestset "Roessler weak SRK (non-diagonal) Tests" begin include("weak_convergence/srk_weak_final_non_diagonal.jl") end
-    @time @safetestset "Weak Stratonovich Tests" begin include("weak_convergence/weak_strat.jl") end
   end
 
   if !is_APPVEYOR && GROUP == "WeakConvergence4"
     @time @safetestset "Weak Stratonovich (non-diagonal) Tests" begin include("weak_convergence/weak_strat_non_diagonal.jl") end
     @time @safetestset "SIE SME weak Tests" begin include("weak_convergence/SIE_SME.jl") end
+  end
+
+  if !is_APPVEYOR && GROUP == "WeakConvergence5"
+    @time @safetestset "Weak Stratonovich Tests" begin include("weak_convergence/weak_strat.jl") end
+  end
+
+  if !is_APPVEYOR && GROUP == "WeakConvergence6"
+    @time @safetestset "Roessler weak SRK diagonal Tests" begin include("weak_convergence/srk_weak_diagonal_final.jl") end
   end
 
   if !is_APPVEYOR && GROUP == "OOPWeakConvergence"
