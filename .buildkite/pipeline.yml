@@ -38,7 +38,6 @@ steps:
           julia_args: "--threads=auto"
     agents:
       queue: "juliaecosystem"
-      exclusive: true
     env:
       GROUP: 'SROCKC2WeakConvergence'
     timeout_in_minutes: 240
