@@ -9,6 +9,7 @@ stochastic differential equations solvers and utilities. While completely indepe
 and usable on its own, users interested in using this
 functionality should check out [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl).
 
+
 ## API
 
 StochasticDiffEq.jl is part of the JuliaDiffEq common interface, but can be used independently of DifferentialEquations.jl. The only requirement is that the user passes an StochasticDiffEq.jl algorithm to `solve`. For example, we can solve the [SDE tutorial from the docs](https://diffeq.sciml.ai/stable/tutorials/sde_example/) using the `SRIW1()` algorithm:
