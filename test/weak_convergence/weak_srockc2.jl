@@ -16,7 +16,7 @@ Random.seed!(100)
 dts = 1 .//2 .^(7:-1:3) #14->7 good plot
 
 println("SROCKC2")
-@time sim = test_convergence(dts,prob,SROCKC2(),save_everystep=false,trajectories=Int(5e6),
+@time sim = test_convergence(dts,prob_sde_linear_iip,SROCKC2(),save_everystep=false,trajectories=Int(5e6),
                         weak_timeseries_errors=false)
 @show sim.𝒪est[:weak_final]
 @test abs(sim.𝒪est[:weak_final]-2) < 0.35
