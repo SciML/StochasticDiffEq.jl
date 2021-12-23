@@ -83,7 +83,6 @@ steps:
           julia_args: "--threads=auto"
     agents:
       queue: "juliaecosystem"
-      exclusive: true
     env:
       GROUP: 'WeakConvergence4'
     timeout_in_minutes: 360
@@ -99,7 +98,6 @@ steps:
           julia_args: "--threads=auto"
     agents:
       queue: "juliaecosystem"
-      exclusive: true
     env:
       GROUP: 'WeakConvergence5'
     timeout_in_minutes: 240
