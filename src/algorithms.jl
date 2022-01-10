@@ -714,7 +714,7 @@ ImplicitRKMil(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           new_jac_conv_bound = 1e-3,
                           controller = :Predictive,interpretation=:Ito) =
                           ImplicitRKMil{chunk_size,autodiff,
-                          typeof(linsolve),diff_type,
+                          typeof(linsolve),typeof(precs),diff_type,
                           OrdinaryDiffEq._unwrap_val(standardtag),
                           OrdinaryDiffEq._unwrap_val(concrete_jac),
                           typeof(nlsolve),typeof(new_jac_conv_bound),
