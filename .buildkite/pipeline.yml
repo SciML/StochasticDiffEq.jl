@@ -7,6 +7,7 @@ steps:
           coverage: false
           julia_args: "--threads=auto"
     agents:
+      os: "linux"
       queue: "juliaecosystem"
     env:
       GROUP: 'OOPWeakConvergence'
@@ -22,6 +23,7 @@ steps:
           coverage: false
           julia_args: "--threads=auto"
     agents:
+      os: "linux"
       queue: "juliaecosystem"
     env:
       GROUP: 'IIPWeakConvergence'
@@ -37,6 +39,7 @@ steps:
           coverage: false
           julia_args: "--threads=auto"
     agents:
+      os: "linux"
       queue: "juliaecosystem"
     env:
       GROUP: 'SROCKC2WeakConvergence'
@@ -52,6 +55,7 @@ steps:
           coverage: false
           julia_args: "--threads=auto"
     agents:
+      os: "linux"
       queue: "juliaecosystem"
     env:
       GROUP: 'WeakConvergence2'
@@ -67,6 +71,7 @@ steps:
           coverage: false
           julia_args: "--threads=auto"
     agents:
+      os: "linux"
       queue: "juliaecosystem"
     env:
       GROUP: 'WeakConvergence3'
@@ -82,6 +87,7 @@ steps:
           coverage: false
           julia_args: "--threads=auto"
     agents:
+      os: "linux"
       queue: "juliaecosystem"
       exclusive: true
     env:
@@ -98,6 +104,7 @@ steps:
           coverage: false
           julia_args: "--threads=auto"
     agents:
+      os: "linux"
       queue: "juliaecosystem"
       exclusive: true
     env:
@@ -114,6 +121,7 @@ steps:
           coverage: false
           julia_args: "--threads=auto"
     agents:
+      os: "linux"
       queue: "juliaecosystem"
     env:
       GROUP: 'WeakConvergence6'
@@ -128,6 +136,7 @@ steps:
       - JuliaCI/julia-test#v1:
           coverage: false
     agents:
+      os: "linux"
       queue: "juliaecosystem"
     env:
       GROUP: 'WeakAdaptiveCPU'
