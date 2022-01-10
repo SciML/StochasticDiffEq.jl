@@ -635,7 +635,7 @@ struct ImplicitEM{CS,AD,F,F2,P,FDT,ST,CJ,T2,Controller} <: StochasticDiffEqNewto
   symplectic::Bool
 end
 ImplicitEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
-                          standardtag = Val{true}(),concrete_jac = Val{true}(),
+                          standardtag = Val{true}(),concrete_jac = nothing,
                           precs = OrdinaryDiffEq.DEFAULT_PRECS,
                           linsolve=nothing,nlsolve=NLNewton(),
                           extrapolant=:constant,
@@ -670,7 +670,7 @@ struct ImplicitEulerHeun{CS,AD,F,P,FDT,ST,CJ,N,T2,Controller} <: StochasticDiffE
   symplectic::Bool
 end
 ImplicitEulerHeun(;chunk_size=0,autodiff=true,diff_type=Val{:central},
-                          standardtag = Val{true}(),concrete_jac = Val{true}(),
+                          standardtag = Val{true}(),concrete_jac = nothing,
                           precs = OrdinaryDiffEq.DEFAULT_PRECS,
                           linsolve=nothing,nlsolve=NLNewton(),
                           extrapolant=:constant,
@@ -706,7 +706,7 @@ struct ImplicitRKMil{CS,AD,F,P,FDT,ST,CJ,N,T2,Controller,interpretation} <: Stoc
   symplectic::Bool
 end
 ImplicitRKMil(;chunk_size=0,autodiff=true,diff_type=Val{:central},
-                          standardtag = Val{true}(),concrete_jac = Val{true}(),
+                          standardtag = Val{true}(),concrete_jac = nothing,
                           precs = OrdinaryDiffEq.DEFAULT_PRECS,
                           linsolve=nothing,nlsolve=NLNewton(),
                           extrapolant=:constant,
@@ -741,7 +741,7 @@ struct ISSEM{CS,AD,F,P,FDT,ST,CJ,N,T2,Controller} <: StochasticDiffEqNewtonAdapt
   symplectic::Bool
 end
 ISSEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
-                       standardtag = Val{true}(),concrete_jac = Val{true}(),
+                       standardtag = Val{true}(),concrete_jac = nothing,
                        precs = OrdinaryDiffEq.DEFAULT_PRECS,
                        linsolve=nothing,nlsolve=NLNewton(),
                        extrapolant=:constant,
@@ -776,7 +776,7 @@ struct ISSEulerHeun{CS,AD,F,P,FDT,ST,CJ,N,T2,Controller} <: StochasticDiffEqNewt
  symplectic::Bool
 end
 ISSEulerHeun(;chunk_size=0,autodiff=true,diff_type=Val{:central},
-                      standardtag = Val{true}(),concrete_jac = Val{true}(),
+                      standardtag = Val{true}(),concrete_jac = nothing,
                       precs = OrdinaryDiffEq.DEFAULT_PRECS,
                       linsolve=nothing,nlsolve=NLNewton(),
                       extrapolant=:constant,
@@ -808,7 +808,7 @@ struct SKenCarp{CS,AD,F,P,FDT,ST,CJ,N,T2,Controller} <: StochasticDiffEqNewtonAd
 end
 
 SKenCarp(;chunk_size=0,autodiff=true,diff_type=Val{:central},
-                   standardtag = Val{true}(),concrete_jac = Val{true}(),
+                   standardtag = Val{true}(),concrete_jac = nothing,
                    precs = OrdinaryDiffEq.DEFAULT_PRECS,
                    linsolve=nothing,nlsolve=NLNewton(),
                    smooth_est=true,extrapolant=:min_correct,
