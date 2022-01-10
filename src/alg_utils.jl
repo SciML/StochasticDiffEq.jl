@@ -244,31 +244,35 @@ alg_needs_extra_process(alg::PL1WM) = true
 alg_needs_extra_process(alg::NON) = true
 alg_needs_extra_process(alg::NON2) = true
 
-OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
-OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
-OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqJumpNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
-OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = AD
+OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,FDT,ST,CJ,Controller}) where {CS,AD,FDT,ST,CJ,Controller} = AD
+OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,CJ,Controller}) where {CS,AD,FDT,ST,CJ,Controller} = AD
+OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqJumpNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,CJ,Controller}) where {CS,AD,FDT,ST,CJ,Controller} = AD
+OrdinaryDiffEq.alg_autodiff(alg::StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{CS,AD,FDT,ST,CJ,Controller}) where {CS,AD,FDT,ST,CJ,Controller} = AD
 
 OrdinaryDiffEq.get_current_alg_autodiff(alg::StochasticDiffEqCompositeAlgorithm, cache) = OrdinaryDiffEq.alg_autodiff(alg.algs[cache.current])
 
-OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = Val(CS)
-OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = Val(CS)
-OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqJumpNewtonAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = Val(CS)
-OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{CS,AD,Controller}) where {CS,AD,Controller} = Val(CS)
+OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,FDT,ST,CJ,Controller}) where {CS,AD,FDT,ST,CJ,Controller} = Val(CS)
+OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,CJ,Controller}) where {CS,AD,FDT,ST,CJ,Controller} = Val(CS)
+OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqJumpNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,CJ,Controller}) where {CS,AD,FDT,ST,CJ,Controller} = Val(CS)
+OrdinaryDiffEq.get_chunksize(alg::StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{CS,AD,FDT,ST,CJ,Controller}) where {CS,AD,FDT,ST,CJ,Controller} = Val(CS)
 
 @static if isdefined(OrdinaryDiffEq,:standardtag)
-    OrdinaryDiffEq.standardtag(alg::Union{StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,Controller},
-                            StochasticDiffEqNewtonAlgorithm{CS,AD,FDT,ST,Controller}}
-                            ) where {CS,AD,FDT,ST,Controller} = ST
+    OrdinaryDiffEq.standardtag(alg::Union{StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,CJ,Controller},
+                            StochasticDiffEqNewtonAlgorithm{CS,AD,FDT,ST,CJ,Controller}}
+                            ) where {CS,AD,FDT,ST,CJ,Controller} = ST
 end
 
 @static if isdefined(OrdinaryDiffEq,:alg_difftype)
-    OrdinaryDiffEq.alg_difftype(alg::Union{StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,Controller},
-                                StochasticDiffEqNewtonAlgorithm{CS,AD,FDT,ST,Controller}}) where {CS,AD,FDT,ST,Controller} = FDT
+    OrdinaryDiffEq.alg_difftype(alg::Union{StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,CJ,Controller},
+                                StochasticDiffEqNewtonAlgorithm{CS,AD,FDT,ST,CJ,Controller}}) where {CS,AD,FDT,ST,CJ,Controller} = FDT
+end
+
+@static if isdefined(OrdinaryDiffEq,:concrete_jac)
+    OrdinaryDiffEq.concrete_jac(alg::Union{StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,CJ,Controller},
+                                StochasticDiffEqNewtonAlgorithm{CS,AD,FDT,ST,CJ,Controller}}) where {CS,AD,FDT,ST,CJ,Controller} = CJ
 end
 
 alg_mass_matrix_compatible(alg::StochasticDiffEqAlgorithm) = false
-
 alg_can_repeat_jac(alg::StochasticDiffEqAlgorithm) = true
 
 function alg_mass_matrix_compatible(alg::Union{StochasticDiffEqNewtonAlgorithm,StochasticDiffEqNewtonAdaptiveAlgorithm})
