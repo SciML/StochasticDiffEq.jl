@@ -125,7 +125,7 @@ alg_interpretation(alg::RKMil{interpretation}) where {interpretation} = interpre
 alg_interpretation(alg::SROCK1{interpretation,E}) where {interpretation,E} = interpretation
 alg_interpretation(alg::RKMilCommute{interpretation}) where {interpretation} = interpretation
 alg_interpretation(alg::RKMilGeneral) = alg.interpretation
-alg_interpretation(alg::ImplicitRKMil{CS,AD,F,FDT,ST,N,T2,Controller,interpretation}) where {CS,AD,F,FDT,ST,N,T2,Controller,interpretation} = interpretation
+alg_interpretation(alg::ImplicitRKMil{CS,AD,F,P,FDT,ST,CJ,N,T2,Controller,interpretation}) where {CS,AD,F,P,FDT,ST,CJ,N,T2,Controller,interpretation} = interpretation
 
 alg_interpretation(alg::RS1) = :Stratonovich
 alg_interpretation(alg::RS2) = :Stratonovich
