@@ -6,16 +6,16 @@ abstract type StochasticDiffEqRODEAlgorithm <: AbstractRODEAlgorithm end
 abstract type StochasticDiffEqRODEAdaptiveAlgorithm <: StochasticDiffEqRODEAlgorithm end
 abstract type StochasticDiffEqRODECompositeAlgorithm <: StochasticDiffEqRODEAlgorithm end
 
-abstract type StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,Controller} <: StochasticDiffEqAdaptiveAlgorithm end
-abstract type StochasticDiffEqNewtonAlgorithm{CS,AD,FDT,ST,Controller} <: StochasticDiffEqAlgorithm end
+abstract type StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,CJ,Controller} <: StochasticDiffEqAdaptiveAlgorithm end
+abstract type StochasticDiffEqNewtonAlgorithm{CS,AD,FDT,ST,CJ,Controller} <: StochasticDiffEqAlgorithm end
 
 abstract type StochasticDiffEqJumpAlgorithm <: StochasticDiffEqAlgorithm end
 abstract type StochasticDiffEqJumpAdaptiveAlgorithm <: StochasticDiffEqAlgorithm end
-abstract type StochasticDiffEqJumpNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,Controller} <: StochasticDiffEqJumpAdaptiveAlgorithm end
+abstract type StochasticDiffEqJumpNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,CJ,Controller} <: StochasticDiffEqJumpAdaptiveAlgorithm end
 
 abstract type StochasticDiffEqJumpDiffusionAlgorithm <: StochasticDiffEqAlgorithm end
 abstract type StochasticDiffEqJumpDiffusionAdaptiveAlgorithm <: StochasticDiffEqAlgorithm end
-abstract type StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{CS,AD,FDT,ST,Controller} <: StochasticDiffEqJumpDiffusionAdaptiveAlgorithm end
+abstract type StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{CS,AD,FDT,ST,CJ,Controller} <: StochasticDiffEqJumpDiffusionAdaptiveAlgorithm end
 
 abstract type IteratedIntegralApprox end
 struct IICommutative <:  IteratedIntegralApprox end
@@ -625,26 +625,29 @@ This is a theta method which defaults to theta=1 or the Trapezoid method on the 
 This method defaults to symplectic=false, but when true and theta=1/2 this is the implicit Midpoint method on the drift term and is symplectic in distribution.
 Can handle all forms of noise, including non-diagonal, scalar, and colored noise. Uses a 1.0/1.5 heuristic for adaptive time stepping.
 """
-struct ImplicitEM{CS,AD,F,F2,FDT,ST,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,Controller}
+struct ImplicitEM{CS,AD,F,F2,P,FDT,ST,CJ,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,CJ,Controller}
   linsolve::F
   nlsolve::F2
+  precs::P
   theta::T2
   extrapolant::Symbol
   new_jac_conv_bound::T2
   symplectic::Bool
 end
 ImplicitEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
-                          standardtag = Val{true}(),
+                          standardtag = Val{true}(),concrete_jac = nothing,
+                          precs = OrdinaryDiffEq.DEFAULT_PRECS,
                           linsolve=nothing,nlsolve=NLNewton(),
                           extrapolant=:constant,
                           theta = 1,symplectic=false,
                           new_jac_conv_bound = 1e-3,
                           controller = :Predictive) =
                           ImplicitEM{chunk_size,autodiff,
-                          typeof(linsolve),typeof(nlsolve),diff_type,
+                          typeof(linsolve),typeof(nlsolve),typeof(precs),diff_type,
                           OrdinaryDiffEq._unwrap_val(standardtag),
+                          OrdinaryDiffEq._unwrap_val(concrete_jac),
                           typeof(new_jac_conv_bound),controller}(
-                          linsolve,nlsolve,
+                          linsolve,nlsolve,precs,
                           symplectic ? 1/2 : theta,
                           extrapolant,new_jac_conv_bound,symplectic)
 
@@ -657,27 +660,30 @@ This is a theta method which defaults to theta=1/2 or the Trapezoid method on th
 This method defaults to symplectic=false, but when true and theta=1 this is the implicit Midpoint method on the drift term and is symplectic in distribution.
 Can handle all forms of noise, including non-diagonal, scalar, and colored noise. Uses a 1.0/1.5 heuristic for adaptive time stepping.
 """
-struct ImplicitEulerHeun{CS,AD,F,FDT,ST,N,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,Controller}
+struct ImplicitEulerHeun{CS,AD,F,P,FDT,ST,CJ,N,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,CJ,Controller}
   linsolve::F
   nlsolve::N
+  precs::P
   theta::T2
   extrapolant::Symbol
   new_jac_conv_bound::T2
   symplectic::Bool
 end
 ImplicitEulerHeun(;chunk_size=0,autodiff=true,diff_type=Val{:central},
-                          standardtag = Val{true}(),
+                          standardtag = Val{true}(),concrete_jac = nothing,
+                          precs = OrdinaryDiffEq.DEFAULT_PRECS,
                           linsolve=nothing,nlsolve=NLNewton(),
                           extrapolant=:constant,
                           theta = 1,symplectic = false,
                           new_jac_conv_bound = 1e-3,
                           controller = :Predictive) =
                           ImplicitEulerHeun{chunk_size,autodiff,
-                          typeof(linsolve),diff_type,
+                          typeof(linsolve),typeof(precs),diff_type,
                           OrdinaryDiffEq._unwrap_val(standardtag),
+                          OrdinaryDiffEq._unwrap_val(concrete_jac),
                           typeof(nlsolve),
                           typeof(new_jac_conv_bound),controller}(
-                          linsolve,nlsolve,
+                          linsolve,nlsolve,precs,
                           symplectic ? 1/2 : theta,
                           extrapolant,
                           new_jac_conv_bound,symplectic)
@@ -690,27 +696,30 @@ Defaults to solving the Ito problem, but ImplicitRKMil(interpretation=:Stratonov
 This method defaults to symplectic=false, but when true and theta=1/2 this is the implicit Midpoint method on the drift term and is symplectic in distribution.
 Handles diagonal and scalar noise. Uses a 1.5/2.0 heuristic for adaptive time stepping.
 """
-struct ImplicitRKMil{CS,AD,F,FDT,ST,N,T2,Controller,interpretation} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,Controller}
+struct ImplicitRKMil{CS,AD,F,P,FDT,ST,CJ,N,T2,Controller,interpretation} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,CJ,Controller}
   linsolve::F
   nlsolve::N
+  precs::P
   theta::T2
   extrapolant::Symbol
   new_jac_conv_bound::T2
   symplectic::Bool
 end
 ImplicitRKMil(;chunk_size=0,autodiff=true,diff_type=Val{:central},
-                          standardtag = Val{true}(),
+                          standardtag = Val{true}(),concrete_jac = nothing,
+                          precs = OrdinaryDiffEq.DEFAULT_PRECS,
                           linsolve=nothing,nlsolve=NLNewton(),
                           extrapolant=:constant,
                           theta = 1,symplectic = false,
                           new_jac_conv_bound = 1e-3,
                           controller = :Predictive,interpretation=:Ito) =
                           ImplicitRKMil{chunk_size,autodiff,
-                          typeof(linsolve),diff_type,
+                          typeof(linsolve),typeof(precs),diff_type,
                           OrdinaryDiffEq._unwrap_val(standardtag),
+                          OrdinaryDiffEq._unwrap_val(concrete_jac),
                           typeof(nlsolve),typeof(new_jac_conv_bound),
                           controller,interpretation}(
-                          linsolve,nlsolve,
+                          linsolve,nlsolve,precs,
                           symplectic ? 1/2 : theta,
                           extrapolant,
                           new_jac_conv_bound,symplectic)
@@ -722,27 +731,30 @@ This is a theta method which defaults to theta=1 or the Trapezoid method on the 
 This method defaults to symplectic=false, but when true and theta=1/2 this is the implicit Midpoint method on the drift term and is symplectic in distribution.
 Can handle all forms of noise, including non-diagonal, scalar, and colored noise. Uses a 1.0/1.5 heuristic for adaptive time stepping.
 """
-struct ISSEM{CS,AD,F,FDT,ST,N,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,Controller}
+struct ISSEM{CS,AD,F,P,FDT,ST,CJ,N,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,CJ,Controller}
   linsolve::F
   nlsolve::N
+  precs::P
   theta::T2
   extrapolant::Symbol
   new_jac_conv_bound::T2
   symplectic::Bool
 end
 ISSEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
-                       standardtag = Val{true}(),
+                       standardtag = Val{true}(),concrete_jac = nothing,
+                       precs = OrdinaryDiffEq.DEFAULT_PRECS,
                        linsolve=nothing,nlsolve=NLNewton(),
                        extrapolant=:constant,
                        theta = 1,symplectic=false,
                        new_jac_conv_bound = 1e-3,
                        controller = :Predictive) =
                        ISSEM{chunk_size,autodiff,
-                       typeof(linsolve),diff_type,
+                       typeof(linsolve),typeof(precs),diff_type,
                        OrdinaryDiffEq._unwrap_val(standardtag),
+                       OrdinaryDiffEq._unwrap_val(concrete_jac),
                        typeof(nlsolve),
                        typeof(new_jac_conv_bound),controller}(
-                       linsolve,nlsolve,
+                       linsolve,nlsolve,precs,
                        symplectic ? 1/2 : theta,
                        extrapolant,
                        new_jac_conv_bound,symplectic)
@@ -754,26 +766,29 @@ This is a theta method which defaults to theta=1 or the Trapezoid method on the 
 This method defaults to symplectic=false, but when true and theta=1/2 this is the implicit Midpoint method on the drift term and is symplectic in distribution.
 Can handle all forms of noise, including non-diagonal,Q scalar, and colored noise. Uses a 1.0/1.5 heuristic for adaptive time stepping.
 """
-struct ISSEulerHeun{CS,AD,F,FDT,ST,N,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,Controller}
+struct ISSEulerHeun{CS,AD,F,P,FDT,ST,CJ,N,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,CJ,Controller}
  linsolve::F
  nlsolve::N
+ precs::P
  theta::T2
  extrapolant::Symbol
  new_jac_conv_bound::T2
  symplectic::Bool
 end
 ISSEulerHeun(;chunk_size=0,autodiff=true,diff_type=Val{:central},
-                      standardtag = Val{true}(),
+                      standardtag = Val{true}(),concrete_jac = nothing,
+                      precs = OrdinaryDiffEq.DEFAULT_PRECS,
                       linsolve=nothing,nlsolve=NLNewton(),
                       extrapolant=:constant,
                       theta = 1,symplectic=false,
                       new_jac_conv_bound = 1e-3,
                       controller = :Predictive) =
                       ISSEulerHeun{chunk_size,autodiff,
-                      typeof(linsolve),diff_type,
+                      typeof(linsolve),typeof(precs),diff_type,
                       OrdinaryDiffEq._unwrap_val(standardtag),
+                      OrdinaryDiffEq._unwrap_val(concrete_jac),
                       typeof(nlsolve),typeof(new_jac_conv_bound),controller}(
-                      linsolve,nlsolve,
+                      linsolve,nlsolve,precs,
                       symplectic ? 1/2 : theta,
                       extrapolant,
                       new_jac_conv_bound,symplectic)
@@ -782,9 +797,10 @@ SKenCarp: Stiff Method
 Adaptive L-stable drift-implicit strong order 1.5 for additive Ito and Stratonovich SDEs with weak order 2.
 Can handle diagonal, non-diagonal and scalar additive noise.
 """
-struct SKenCarp{CS,AD,F,FDT,ST,N,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,Controller}
+struct SKenCarp{CS,AD,F,P,FDT,ST,CJ,N,T2,Controller} <: StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,CJ,Controller}
   linsolve::F
   nlsolve::N
+  precs::P
   smooth_est::Bool
   extrapolant::Symbol
   new_jac_conv_bound::T2
@@ -792,15 +808,16 @@ struct SKenCarp{CS,AD,F,FDT,ST,N,T2,Controller} <: StochasticDiffEqNewtonAdaptiv
 end
 
 SKenCarp(;chunk_size=0,autodiff=true,diff_type=Val{:central},
-                   standardtag = Val{true}(),
+                   standardtag = Val{true}(),concrete_jac = nothing,
+                   precs = OrdinaryDiffEq.DEFAULT_PRECS,
                    linsolve=nothing,nlsolve=NLNewton(),
                    smooth_est=true,extrapolant=:min_correct,
                    new_jac_conv_bound = 1e-3,controller = :Predictive,
                    ode_error_est = true) =
- SKenCarp{chunk_size,autodiff,typeof(linsolve),diff_type,
-        OrdinaryDiffEq._unwrap_val(standardtag),
+ SKenCarp{chunk_size,autodiff,typeof(linsolve),typeof(precs),diff_type,
+        OrdinaryDiffEq._unwrap_val(standardtag),OrdinaryDiffEq._unwrap_val(concrete_jac),
         typeof(nlsolve),typeof(new_jac_conv_bound),controller}(
-        linsolve,nlsolve,smooth_est,extrapolant,new_jac_conv_bound,
+        linsolve,nlsolve,precs,smooth_est,extrapolant,new_jac_conv_bound,
         ode_error_est)
 
 
