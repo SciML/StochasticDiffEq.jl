@@ -19,7 +19,7 @@ abstract type StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{CS,AD,FDT,ST,
 
 abstract type IteratedIntegralApprox end
 struct IICommutative <:  IteratedIntegralApprox end
-struct IIWiktorsson <:  IteratedIntegralApprox end
+struct IILevyArea <:  IteratedIntegralApprox end
 
 ################################################################################
 
@@ -92,15 +92,18 @@ An explicit Runge-Kutta discretization of the strong order 1.0 Milstein method f
 Defaults to solving the Ito problem, but RKMilCommute(interpretation=:Stratonovich) makes it solve the Stratonovich problem.
 Uses a 1.5/2.0 error estimate for adaptive time stepping.
 """
-struct RKMilCommute{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
-RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
+struct RKMilCommute{T<:IteratedIntegralApprox} <: StochasticDiffEqAdaptiveAlgorithm 
+  interpretation::Symbol
+  ii_approx::T
+end
+RKMilCommute(;interpretation=:Ito, ii_approx=IICommutative()) = RKMilCommute(interpretation,ii_approx)
 
 """
 Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
 Springer. Berlin Heidelberg (2011)
 
 RKMilGeneral: Nonstiff Method
-RKMilGeneral(;interpretation=:Ito, ii_approx=IIWiktorsson()
+RKMilGeneral(;interpretation=:Ito, ii_approx=IILevyArea()
 An explicit Runge-Kutta discretization of the strong order 1.0 Milstein method for general non-commutative noise problems.
 Allows for a choice of interpretation between :Ito and :Stratonovich.
 Allows for a choice of iterated integral approximation.
@@ -111,11 +114,13 @@ struct RKMilGeneral{T<:IteratedIntegralApprox, TruncationType} <: StochasticDiff
   c::Int
   p::TruncationType
 end
-function RKMilGeneral(;interpretation=:Ito, ii_approx=IIWiktorsson(), c=1, p=nothing, dt=nothing)
+
+function RKMilGeneral(;interpretation=:Ito,ii_approx=IILevyArea(), c=1, p=nothing, dt=nothing)
   γ = 1//1
   p==true && (p = Int(floor(c*dt^(1//1-2//1*γ)) + 1))
   RKMilGeneral(interpretation, ii_approx, c, p)
 end
+
 """
 WangLi3SMil_A: Nonstiff Method
 Fixed step-size explicit 3-stage Milstein methods for Ito problem with strong and weak order 1.0

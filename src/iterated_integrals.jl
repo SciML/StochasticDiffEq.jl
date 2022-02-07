@@ -5,6 +5,9 @@ by the J.
 
 abstract type AbstractJ end
 
+
+## Kloeden Platen Wright scheme
+
 """
 Kloeden, P. E., Platen, E., & Wright, I. W., The approximation of multiple stochastic integrals.
 Stochastic analysis and applications, 10(4), pp. 431-441 (1992).
@@ -45,7 +48,7 @@ function get_iterated_I(dt, dW, dZ, Wik::KPWJ_oop, p=nothing, C=1, γ=1//1)
   WikJ = vec(dW) .* vec(dW)'
   WikA = zero(WikJ)
 
-  p==nothing && (p = Int(floor(C*dt^(1//1-2//1*γ)) + 1))
+  p===nothing && (p = Int(floor(C*dt^(1//1-2//1*γ)) + 1))
 
   # Eq.(20)
   ρp = (π^2)/6
@@ -54,14 +57,14 @@ function get_iterated_I(dt, dW, dZ, Wik::KPWJ_oop, p=nothing, C=1, γ=1//1)
   end
   ρp = ρp/(2*π^2)
 
-  if dZ==nothing
+  if dZ===nothing
     μ = randn(eltype(dW),m)
   else
     μ = convert(eltype(dW),sqrt(1/dt))*dZ[1:m]
   end
 
   for k in 1:p
-    if dZ==nothing
+    if dZ===nothing
       ζ = randn(eltype(dW),m)
       η = randn(eltype(dW),m)
     else
@@ -93,7 +96,7 @@ function get_iterated_I!(dt, dW, dZ, Wik::KPWJ_iip, p=nothing, C=1, γ=1//1)
   fill!(WikA, zero(eltype(WikJ)))
 
   # Below Eq.(26): truncation
-  p==nothing && (p = Int(floor(C*dt^(1//1-2//1*γ)) + 1))
+  p===nothing && (p = Int(floor(C*dt^(1//1-2//1*γ)) + 1))
   #@show p, dZ
   # Eq.(20)
   ρp = (π^2)/6
@@ -102,7 +105,7 @@ function get_iterated_I!(dt, dW, dZ, Wik::KPWJ_iip, p=nothing, C=1, γ=1//1)
   end
   ρp = ρp/(2*π^2)
 
-  if dZ==nothing
+  if dZ===nothing
     randn!(μ)
   else
     μ .= convert(eltype(dW),sqrt(1/dt))*@view(dZ[1:m])
@@ -110,7 +113,7 @@ function get_iterated_I!(dt, dW, dZ, Wik::KPWJ_iip, p=nothing, C=1, γ=1//1)
 
   # Eq. (21)
   for k in 1:p
-    if dZ==nothing
+    if dZ===nothing
       randn!(ζ)
       randn!(η)
     else
@@ -209,42 +212,6 @@ function WikJGeneral_iip(ΔW)
   Gp₂ = false .* Array{eltype(ΔW)}(undef, M)
   Aᵢ = zero(ΔW)
   WikJGeneral_iip{eltype(ΔW), typeof(WikJ)}(WikJ, WikJ2, WikJ3, m_seq, vec_ζ, vec_η, Gp₁, Gp₂, Aᵢ)
-end
-
-function get_WikJ(ΔW,prob,alg)
-  if isinplace(prob)
-    if typeof(ΔW) <: Number || is_diagonal_noise(prob)
-      return WikJDiagonal_iip(ΔW)
-    elseif alg.ii_approx isa IICommutative
-      return WikJCommute_iip(ΔW)
-    else
-      return KPWJ_iip(ΔW) # WikJGeneral_iip(ΔW)
-    end
-  else
-    if typeof(ΔW) <: Number || is_diagonal_noise(prob)
-      return WikJDiagonal_oop()
-    elseif alg.ii_approx isa IICommutative
-      return WikJCommute_oop()
-    else
-      return KPWJ_oop() #WikJGeneral_oop(ΔW)
-    end
-  end
-end
-
-function get_WikJ(ΔW,prob,alg::RKMilCommute)
-  if isinplace(prob)
-    if typeof(ΔW) <: Number || is_diagonal_noise(prob)
-      return WikJDiagonal_iip(ΔW)
-    else
-      return WikJCommute_iip(ΔW)
-    end
-  else
-    if typeof(ΔW) <: Number || is_diagonal_noise(prob)
-      return WikJDiagonal_oop()
-    else
-      return WikJCommute_oop()
-    end
-  end
 end
 
 function get_iterated_I(dt, dW, dZ, Wik::WikJDiagonal_oop, p=nothing, C=1, γ=1//1)
@@ -369,7 +336,7 @@ function get_iterated_I(dt, dW, dZ, Wik::WikJGeneral_oop, p=nothing, C=1, γ=1//
 
   WikJ *= 1//2
   𝑎ₚ = (π^2)/6
-  p==nothing && (p = Int(floor((1/(π))*sqrt(M/(12*dt*C))*sqrt(m + 4*sum_dW²/dt) + 1)))
+  p===nothing && (p = Int(floor((1/(π))*sqrt(M/(12*dt*C))*sqrt(m + 4*sum_dW²/dt) + 1)))
   Aᵢ = false .* vec(dW)   # Aᵢ is vector of aᵢ₀
   for r in 1:p
     𝑎ₚ -= (1/r^2)
@@ -482,7 +449,7 @@ function get_iterated_I!(dt, dW, dZ, Wik::WikJGeneral_iip, p=nothing, C=1, γ=1/
 
   @.. WikJ *= 1//2
   𝑎ₚ = (π^2)/6
-  p==nothing && (p = Int(floor((1/(π))*sqrt(M/(12*dt*C))*sqrt(m + 4*sum_dW²/dt) + 1)))
+  p===nothing && (p = Int(floor((1/(π))*sqrt(M/(12*dt*C))*sqrt(m + 4*sum_dW²/dt) + 1)))
   Aᵢ .= false .* vec(dW)    # Aᵢ is vector of aᵢ₀
   for r in 1:p
     𝑎ₚ -= (1/r^2)
@@ -500,3 +467,59 @@ function get_iterated_I!(dt, dW, dZ, Wik::WikJGeneral_iip, p=nothing, C=1, γ=1/
   @.. WikJ = WikJ + WikJ2
   return nothing
 end
+
+# algs from LevyArea.jl # LevyArea.levyarea allocates random variables and then mutates these, see e.g. 
+# https://github.com/stochastics-uni-luebeck/LevyArea.jl/blob/68c5cb08ab103b4dcd3178651f7a5dd9ce8c666d/src/milstein.jl#L25
+function get_iterated_I(dt, dW, dZ, alg::LevyArea.AbstractIteratedIntegralAlgorithm, p=nothing, c=1, γ=1//1)
+  if isnothing(p)
+      ε = c*dt^(γ+1//2)
+      p = terms_needed(length(dW), dt, ε, alg, MaxL2())
+  end
+  I = LevyArea.levyarea(dW/√dt, p, alg)
+  I .= 0.5.*dW.*dW' .+ dt.*I
+end
+
+
+# Default algorithms, keep KPWJ_oop() to have a non-mutating version
+function get_WikJ(ΔW,prob,alg)
+  if alg.ii_approx isa IILevyArea
+    if isinplace(prob)
+      if typeof(ΔW) <: Number || is_diagonal_noise(prob)
+        return WikJDiagonal_iip(ΔW)
+      elseif alg.ii_approx isa IICommutative
+        return WikJCommute_iip(ΔW)
+      else
+        return KPWJ_iip(ΔW) # TODO: Check if we can use defaults from LevyArea.jl 
+      end
+    else
+      if typeof(ΔW) <: Number || is_diagonal_noise(prob)
+       return WikJDiagonal_oop()
+      elseif alg.ii_approx isa IICommutative
+        return WikJCommute_oop()
+      else
+        return KPWJ_oop()  # TODO: Check if we can use defaults from LevyArea.jl 
+      end
+    end
+  elseif alg.ii_approx isa IICommutative
+    if isinplace(prob)
+      if typeof(ΔW) <: Number || is_diagonal_noise(prob)
+        return WikJDiagonal_iip(ΔW)
+      else
+        return WikJCommute_iip(ΔW)
+      end
+    else
+      if typeof(ΔW) <: Number || is_diagonal_noise(prob)
+        return WikJDiagonal_oop()
+      else
+        return WikJCommute_oop()
+      end
+    end
+  else
+    return alg.ii_approx
+  end
+end
+
+# Specific Levy area alg for an SDE solver
+# function StochasticDiffEq.get_WikJ(ΔW,prob,alg::SOLVER)
+#  return MronRoe()
+# end
