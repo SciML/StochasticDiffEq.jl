@@ -486,16 +486,12 @@ function get_WikJ(ΔW,prob,alg)
     if isinplace(prob)
       if typeof(ΔW) <: Number || is_diagonal_noise(prob)
         return WikJDiagonal_iip(ΔW)
-      elseif alg.ii_approx isa IICommutative
-        return WikJCommute_iip(ΔW)
       else
         return KPWJ_iip(ΔW) # TODO: Check if we can use defaults from LevyArea.jl 
       end
     else
       if typeof(ΔW) <: Number || is_diagonal_noise(prob)
        return WikJDiagonal_oop()
-      elseif alg.ii_approx isa IICommutative
-        return WikJCommute_oop()
       else
         return KPWJ_oop()  # TODO: Check if we can use defaults from LevyArea.jl 
       end
