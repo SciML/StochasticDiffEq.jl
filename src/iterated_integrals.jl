@@ -476,7 +476,7 @@ function get_iterated_I(dt, dW, dZ, alg::LevyArea.AbstractIteratedIntegralAlgori
       p = terms_needed(length(dW), dt, ε, alg, MaxL2())
   end
   I = LevyArea.levyarea(dW/√dt, p, alg)
-  I .= 0.5.*dW.*dW' .+ dt.*I
+  I .= 1//2*dW.*dW' .+ dt.*I
 end
 
 
@@ -491,7 +491,7 @@ function get_WikJ(ΔW,prob,alg)
       end
     else
       if typeof(ΔW) <: Number || is_diagonal_noise(prob)
-       return WikJDiagonal_oop()
+        return WikJDiagonal_oop()
       else
         return KPWJ_oop()  # TODO: Check if we can use defaults from LevyArea.jl 
       end

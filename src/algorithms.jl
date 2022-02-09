@@ -92,7 +92,7 @@ An explicit Runge-Kutta discretization of the strong order 1.0 Milstein method f
 Defaults to solving the Ito problem, but RKMilCommute(interpretation=:Stratonovich) makes it solve the Stratonovich problem.
 Uses a 1.5/2.0 error estimate for adaptive time stepping.
 """
-struct RKMilCommute{T<:IteratedIntegralApprox} <: StochasticDiffEqAdaptiveAlgorithm 
+struct RKMilCommute{T} <: StochasticDiffEqAdaptiveAlgorithm 
   interpretation::Symbol
   ii_approx::T
 end
@@ -108,7 +108,7 @@ An explicit Runge-Kutta discretization of the strong order 1.0 Milstein method f
 Allows for a choice of interpretation between :Ito and :Stratonovich.
 Allows for a choice of iterated integral approximation.
 """
-struct RKMilGeneral{T<:IteratedIntegralApprox, TruncationType} <: StochasticDiffEqAdaptiveAlgorithm
+struct RKMilGeneral{T, TruncationType} <: StochasticDiffEqAdaptiveAlgorithm
   interpretation::Symbol
   ii_approx::T
   c::Int
@@ -118,7 +118,7 @@ end
 function RKMilGeneral(;interpretation=:Ito,ii_approx=IILevyArea(), c=1, p=nothing, dt=nothing)
   γ = 1//1
   p==true && (p = Int(floor(c*dt^(1//1-2//1*γ)) + 1))
-  RKMilGeneral(interpretation, ii_approx, c, p)
+  RKMilGeneral{typeof(ii_approx), typeof(p)}(interpretation, ii_approx, c, p)
 end
 
 """
