@@ -10,7 +10,6 @@ abstract type AbstractJ end
 abstract type AbstractWikJ <: AbstractJ end
 abstract type AbstractWikJDiagonal <: AbstractWikJ end
 abstract type AbstractWikJCommute <: AbstractWikJ end
-abstract type AbstractWikJGeneral <: AbstractWikJ end
 
 struct WikJDiagonal_oop <: AbstractWikJDiagonal end
 
@@ -39,7 +38,7 @@ function get_iterated_I!(dt, dW, dZ, Wik::WikJDiagonal_iip, p=nothing, C=1, γ=1
   if typeof(dW) <: Number
     Wik.WikJ = 1//2 .* dW .^ 2
   else
-    @.. WikJ = 1//2*dW^2
+    @.. WikJ = 1//2 * dW^2
   end
   return nothing
 end
@@ -51,7 +50,7 @@ end
 
 function get_iterated_I!(dt, dW, dZ, Wik::WikJCommute_iip, p=nothing, C=1, γ=1//1)
   @unpack WikJ = Wik
-  mul!(WikJ,vec(dW),vec(dW)')
+  mul!(WikJ, vec(dW), vec(dW)')
   @.. WikJ *= 1//2
   return nothing
 end
@@ -60,29 +59,48 @@ end
 # https://github.com/stochastics-uni-luebeck/LevyArea.jl/blob/68c5cb08ab103b4dcd3178651f7a5dd9ce8c666d/src/milstein.jl#L25
 function get_iterated_I(dt, dW, dZ, alg::LevyArea.AbstractIteratedIntegralAlgorithm, p=nothing, c=1, γ=1//1)
   if isnothing(p)
-      ε = c*dt^(γ+1//2)
-      p = terms_needed(length(dW), dt, ε, alg, MaxL2())
+    ε = c * dt^(γ + 1//2)
+    p = terms_needed(length(dW), dt, ε, alg, MaxL2())
   end
   I = LevyArea.levyarea(dW/√dt, p, alg)
-  I .= 1//2*dW.*dW' .+ dt.*I
+  I .= 1//2 * dW .* dW' .+ dt .* I
 end
 
+mutable struct IteratedIntegralAlgorithm_iip{WikJType,algType} <: LevyArea.AbstractIteratedIntegralAlgorithm
+  WikJ::WikJType
+  alg::algType
+  function IteratedIntegralAlgorithm_iip(ΔW, alg)
+    WikJ = false .* vec(ΔW) .* vec(ΔW)'
+    new{typeof(WikJ),typeof(alg)}(WikJ, alg)
+  end
+end
+
+function get_iterated_I!(dt, dW, dZ, Wik::IteratedIntegralAlgorithm_iip, p=nothing, c=1, γ=1//1)
+  @unpack WikJ, alg = Wik
+  if isnothing(p)
+    ε = c * dt^(γ + 1//2)
+    p = terms_needed(length(dW), dt, ε, alg, MaxL2())
+  end
+  WikJ .= LevyArea.levyarea(dW/√dt, p, alg)
+  WikJ .= 1//2 * dW .* dW' .+ dt .* WikJ
+  return nothing
+end
 
 # Default algorithms, keep KPWJ_oop() to have a non-mutating version
-function get_WikJ(ΔW,dt,prob,alg)
+function get_WikJ(ΔW, dt, prob, alg)
   if alg.ii_approx isa IILevyArea
     if isinplace(prob)
       if typeof(ΔW) <: Number || is_diagonal_noise(prob)
         return WikJDiagonal_iip(ΔW)
       else
         # optimal_algorithm(dim, stepsize, eps=stepsize^(3/2), norm=MaxL2())
-        return LevyArea.optimal_algorithm(length(ΔW), dt)
+        return IteratedIntegralAlgorithm_iip(ΔW, LevyArea.optimal_algorithm(length(ΔW), dt))
       end
     else
       if typeof(ΔW) <: Number || is_diagonal_noise(prob)
         return WikJDiagonal_oop()
       else
-        return LevyArea.optimal_algorithm(length(ΔW), dt) 
+        return LevyArea.optimal_algorithm(length(ΔW), dt)
       end
     end
   elseif alg.ii_approx isa IICommutative
