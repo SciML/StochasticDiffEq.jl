@@ -134,7 +134,7 @@ end
 end
 
 function alg_cache(alg::RKMilCommute,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits} 
-  WikJ = get_WikJ(ΔW,prob,alg)
+  WikJ = get_WikJ(ΔW,dt,prob,alg)
   RKMilCommuteConstantCache{typeof(WikJ)}(WikJ)
 end
 
@@ -142,7 +142,7 @@ function alg_cache(alg::RKMilCommute,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
   du1 = zero(rate_prototype); du2 = zero(rate_prototype)
   K = zero(rate_prototype); gtmp = zero(noise_rate_prototype);
   L = zero(noise_rate_prototype); tmp = zero(rate_prototype)
-  WikJ = get_WikJ(ΔW,prob,alg)
+  WikJ = get_WikJ(ΔW,dt,prob,alg)
   mil_correction = zero(rate_prototype)
   Kj = zero(u); Dgj = zero(noise_rate_prototype)
   RKMilCommuteCache(u,uprev,du1,du2,K,gtmp,L,WikJ,mil_correction,Kj,Dgj,tmp)
@@ -166,7 +166,7 @@ end
 end
 
 function alg_cache(alg::RKMilGeneral,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
-  WikJ = get_WikJ(ΔW,prob,alg)
+  WikJ = get_WikJ(ΔW,dt,prob,alg)
   RKMilGeneralConstantCache{typeof(WikJ)}(WikJ)
 end
 
@@ -178,6 +178,6 @@ function alg_cache(alg::RKMilGeneral,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
   L = zero(noise_rate_prototype)
   mil_correction = zero(u)
   ggprime = zero(noise_rate_prototype)
-  WikJ = get_WikJ(ΔW,prob,alg)
+  WikJ = get_WikJ(ΔW,dt,prob,alg)
   RKMilGeneralCache{typeof(u), typeof(rate_prototype), typeof(noise_rate_prototype), typeof(WikJ)}(u, uprev, tmp, du₁, du₂, K, L, mil_correction, ggprime, WikJ)
 end
