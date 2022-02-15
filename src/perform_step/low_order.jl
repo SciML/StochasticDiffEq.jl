@@ -255,18 +255,18 @@ end
 @muladd function perform_step!(integrator,cache::RKMilCommuteConstantCache)
   @unpack t,dt,uprev,u,W,p,f = integrator
   dW = W.dW; sqdt = integrator.sqdt
-  Wik = cache.WikJ
+  Jalg = cache.Jalg
 
   ggprime_norm = 0.0
 
-  WikJ = get_iterated_I(dt, dW, W.dZ, Wik)
+  J = get_iterated_I(dt, dW, W.dZ, Jalg)
 
   mil_correction = zero(u)
   if alg_interpretation(integrator.alg) == :Ito
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
-      WikJ = WikJ .- 1//2 .* dt
+      J = J .- 1//2 .* dt
     else
-      WikJ -= 1//2 .* UniformScaling(dt)
+      J -= 1//2 .* UniformScaling(dt)
     end
   end
 
@@ -280,7 +280,7 @@ end
     gtmp = integrator.g(tmp,p,t)
     Dgj = (gtmp - L)/sqdt
     ggprime_norm = integrator.opts.internalnorm(Dgj,t)
-    u = @.. K + L*dW + Dgj*WikJ
+    u = @.. K + L*dW + Dgj*J
   else
     for j = 1:length(dW)
       if typeof(dW) <: Number
@@ -294,9 +294,9 @@ end
         ggprime_norm += integrator.opts.internalnorm(Dgj,t)
       end
       if typeof(dW) <: Number
-        tmp = Dgj*WikJ
+        tmp = Dgj*J
       else
-        tmp = Dgj*@view(WikJ[:,j])
+        tmp = Dgj*@view(J[:,j])
       end
       mil_correction += tmp
     end
@@ -319,22 +319,22 @@ end
 @muladd function perform_step!(integrator,cache::RKMilCommuteCache)
   @unpack du1,du2,K,gtmp,L = cache
   @unpack t,dt,uprev,u,W,p,f = integrator
-  @unpack WikJ,mil_correction,Kj,Dgj,tmp = cache
+  @unpack mil_correction,Kj,Dgj,tmp = cache
   dW = W.dW; sqdt = integrator.sqdt
 
   ggprime_norm = 0.0
 
-  Wik = cache.WikJ
+  Jalg = cache.Jalg
 
-  get_iterated_I!(dt, dW, W.dZ, Wik)
-  WikJ = Wik.WikJ
+  get_iterated_I!(dt, dW, W.dZ, Jalg)
+  J = Jalg.J
 
   @.. mil_correction = zero(u)
   if alg_interpretation(integrator.alg) == :Ito
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
-      @.. WikJ -= 1//2*dt
+      @.. J -= 1//2*dt
     else
-      WikJ -= 1//2 .* UniformScaling(dt)
+      J -= 1//2 .* UniformScaling(dt)
     end
   end
 
@@ -348,7 +348,7 @@ end
     integrator.g(gtmp,tmp,p,t)
     @.. Dgj = (gtmp - L)/sqdt
     ggprime_norm = integrator.opts.internalnorm(Dgj,t)
-    @.. u = K + L*dW + Dgj*WikJ
+    @.. u = K + L*dW + Dgj*J
   else
     for j = 1:length(dW)
       @.. Kj = K + sqdt*@view(L[:,j]) # This works too
@@ -358,7 +358,7 @@ end
       if integrator.opts.adaptive
           ggprime_norm += integrator.opts.internalnorm(Dgj,t)
       end
-      mul!(tmp,Dgj,@view(WikJ[:,j]))
+      mul!(tmp,Dgj,@view(J[:,j]))
       mil_correction .+= tmp
     end
     mul!(tmp,L,dW)
@@ -379,16 +379,16 @@ end
 
 @muladd function perform_step!(integrator,cache::RKMilGeneralConstantCache)
   @unpack t,dt,uprev,u,W,p,f = integrator
-  Wik = cache.WikJ
+  Jalg = cache.Jalg
   dW = W.dW
 
-  WikJ = get_iterated_I(dt, dW, W.dZ, Wik, integrator.alg.p, integrator.alg.c, alg_order(integrator.alg))
+  J = get_iterated_I(dt, dW, W.dZ, Jalg, integrator.alg.p, integrator.alg.c, alg_order(integrator.alg))
 
   if alg_interpretation(integrator.alg) == :Ito
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
-      WikJ = WikJ .- 1//2 .* dt
+      J = J .- 1//2 .* dt
     else
-      WikJ -= 1//2 .* UniformScaling(dt)
+      J -= 1//2 .* UniformScaling(dt)
     end
   end
 
@@ -402,7 +402,7 @@ end
     K = @.. uprev + dt*du₁
     utilde = (alg_interpretation(integrator.alg) == :Ito ? K : uprev) + L*integrator.sqdt
     ggprime = (integrator.g(utilde,p,t) .- L) ./ (integrator.sqdt)
-    mil_correction = ggprime .* WikJ
+    mil_correction = ggprime .* J
     u = K + L .* dW + mil_correction
   else
     for i in 1:length(dW)
@@ -413,7 +413,7 @@ end
       if integrator.opts.adaptive
         ggprime_norm += integrator.opts.internalnorm(ggprime, t)
       end
-      mil_correction += ggprime*@view(WikJ[:,i])
+      mil_correction += ggprime*@view(J[:,i])
     end
     if integrator.opts.adaptive
       K = @.. uprev + dt*du₁
@@ -444,10 +444,10 @@ end
   @unpack t,dt,uprev,u,W,p,f = integrator
   dW = W.dW;
   sqdt = integrator.sqdt
-  Wik = cache.WikJ
+  Jalg = cache.Jalg
 
-  get_iterated_I!(dt, dW, W.dZ, Wik, integrator.alg.p, integrator.alg.c, alg_order(integrator.alg))
-  WikJ = Wik.WikJ
+  get_iterated_I!(dt, dW, W.dZ, Jalg, integrator.alg.p, integrator.alg.c, alg_order(integrator.alg))
+  J = Wik.J
 
   integrator.f(du₁,uprev,p,t)
   integrator.g(L,uprev,p,t)
@@ -456,9 +456,9 @@ end
 
   if alg_interpretation(integrator.alg) == :Ito
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
-      @.. WikJ -= 1//2*dt
+      @.. J -= 1//2*dt
     else
-      WikJ -= 1//2 .* UniformScaling(dt)
+      J -= 1//2 .* UniformScaling(dt)
     end
   end
 
@@ -469,7 +469,7 @@ end
     integrator.g(du₂,tmp,p,t)
     @.. ggprime = (du₂ - L)/sqdt
     ggprime_norm = integrator.opts.internalnorm(ggprime,t)
-    @.. u = K + L*dW + ggprime*WikJ
+    @.. u = K + L*dW + ggprime*J
   else
     for i in 1:length(dW)
       @.. K = uprev + dt*du₁ + sqdt*@view(L[:,i])
@@ -478,7 +478,7 @@ end
       if integrator.opts.adaptive
         ggprime_norm += integrator.opts.internalnorm(ggprime,t)
       end
-      mul!(tmp,ggprime,@view(WikJ[:,i]))
+      mul!(tmp,ggprime,@view(J[:,i]))
       @.. mil_correction += tmp
     end
     mul!(tmp,L,dW)

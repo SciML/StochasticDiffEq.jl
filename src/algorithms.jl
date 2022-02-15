@@ -91,6 +91,7 @@ RKMilCommute: Nonstiff Method
 An explicit Runge-Kutta discretization of the strong order 1.0 Milstein method for commutative noise problems.
 Defaults to solving the Ito problem, but RKMilCommute(interpretation=:Stratonovich) makes it solve the Stratonovich problem.
 Uses a 1.5/2.0 error estimate for adaptive time stepping.
+Default: ii_approx=IICommutative() does not approximate the Levy area.
 """
 struct RKMilCommute{T} <: StochasticDiffEqAdaptiveAlgorithm 
   interpretation::Symbol
@@ -107,6 +108,9 @@ RKMilGeneral(;interpretation=:Ito, ii_approx=IILevyArea()
 An explicit Runge-Kutta discretization of the strong order 1.0 Milstein method for general non-commutative noise problems.
 Allows for a choice of interpretation between :Ito and :Stratonovich.
 Allows for a choice of iterated integral approximation.
+Default: ii_approx=IILevyArea() uses LevyArea.jl to choose optimal algorithm. See
+Kastner, F. and Rößler, A., arXiv: 2201.08424
+Kastner, F. and Rößler, A., LevyArea.jl, 10.5281/ZENODO.5883748, https://github.com/stochastics-uni-luebeck/LevyArea.jl
 """
 struct RKMilGeneral{T, TruncationType} <: StochasticDiffEqAdaptiveAlgorithm
   interpretation::Symbol

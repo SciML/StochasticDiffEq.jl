@@ -19,12 +19,12 @@ end
 @testset "diagonal noise tests" begin
   true_diag = 1//2 .* W.dW .* W.dW
 
-  Wikdiag = StochasticDiffEq.WikJDiagonal_iip(W.dW)
-  StochasticDiffEq.get_iterated_I!(dt, W.dW, W.dZ, Wikdiag, nothing, 1)
-  Wikdiagoop = StochasticDiffEq.WikJDiagonal_oop()
+  Jdiag = StochasticDiffEq.JDiagonal_iip(W.dW)
+  StochasticDiffEq.get_iterated_I!(dt, W.dW, W.dZ, Jdiag, nothing, 1)
+  Jdiagoop = StochasticDiffEq.JDiagonal_oop()
 
-  @test StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, Wikdiagoop, nothing, 1) == Wikdiag.WikJ
-  @test Wikdiag.WikJ == true_diag
+  @test StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, Jdiagoop, nothing, 1) == Jdiag.J
+  @test Jdiag.J == true_diag
 
   for alg ∈ LevyArea.ITER_INT_ALGS
     @test diag(StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, alg, nothing, 1)) == true_diag
@@ -35,12 +35,12 @@ end
 @testset "Commutative noise tests" begin
   true_commute = 1//2 .* W.dW .* W.dW'
 
-  Wikcommute = StochasticDiffEq.WikJCommute_iip(W.dW)
-  StochasticDiffEq.get_iterated_I!(dt, W.dW, W.dZ, Wikcommute, nothing, 1)
-  Wikcommuteoop = StochasticDiffEq.WikJCommute_oop()
+  Jcommute = StochasticDiffEq.JCommute_iip(W.dW)
+  StochasticDiffEq.get_iterated_I!(dt, W.dW, W.dZ, Jcommute, nothing, 1)
+  Jcommuteoop = StochasticDiffEq.JCommute_oop()
 
-  @test StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, Wikcommuteoop, nothing, 1) == Wikcommute.WikJ
-  @test Wikcommute.WikJ == true_commute
+  @test StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, Jcommuteoop, nothing, 1) == Jcommute.J
+  @test Jcommute.J == true_commute
 
   for alg ∈ LevyArea.ITER_INT_ALGS
     @test diag(StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, alg, nothing, 1)) == diag(true_commute)
@@ -52,7 +52,7 @@ end
 # E1(I_{j1} I_{j2}) = Δ δ_{j1,j2}
 # E2(I_{j1, j2} I_{j1, j2}) = 1/2 Δ^2
 # E3(I_{j1} I_{j2} I_{j3, j4}) = {Δ^2 if j1=j2=j3=j4, 1/2 Δ^2 if j3!=j4 and j1=j3, j2=j4 or j1=j4, j2=j3, 0 otherwise}
-function test_moments(m, Wik, Δ, samples, p=nothing)
+function test_moments(m, alg, Δ, samples, p=nothing)
   # generate new random dW
   W = WienerProcess!(0.0,zeros(m),nothing)
   E1 = false .* vec(W.dW) .* vec(W.dW)'
@@ -64,7 +64,7 @@ function test_moments(m, Wik, Δ, samples, p=nothing)
     accept_step!(W,Δ,nothing,nothing)
     mul!(tmp,vec(W.dW),vec(W.dW)')
 
-    I = StochasticDiffEq.get_iterated_I(Δ, W.dW, W.dZ, Wik, p, 1)
+    I = StochasticDiffEq.get_iterated_I(Δ, W.dW, W.dZ, alg, p, 1)
     @. E1 = E1 + tmp
     @. E2 = E2 + I * I
     @. E3 = E3 + tmp * I
@@ -80,49 +80,26 @@ end
 
 
 """
-Problem 2.3.3 from
-Kloeden, P. E., Platen, E., & Schurz, H. Numerical solution of SDE through computer
-experiments. Springer Science & Business Media. (2012)
-"""
-function test_path_convergence(Wik, dt = 1.0, ps = [Int(2e1),Int(1e3),Int(1e6)])  
-  m = 2
-  W = WienerProcess(0.0,zeros(m),nothing)
-  calculate_step!(W,dt,nothing,nothing)
-  for i in 1:10
-    accept_step!(W,dt,nothing,nothing)
-  end  
-  sample_path = []
-  for (i, p) in enumerate(ps)
-    Random.seed!(seed)
-    I = StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, Wik, p, 1)
-    A = I - 1//2 .* W.dW .* W.dW'
-    push!(sample_path,A[1,2])
-  end
-  v = abs.(sample_path .- sample_path[end])
-  @test sort(v, rev = true) == v
-end
-
-"""
 Exercise 2.3.1 from
 Kloeden, P. E., Platen, E., & Schurz, H. Numerical solution of SDE through computer
 experiments. Springer Science & Business Media. (2012)
 """
 
-function test_compare_sample_mean_and_var(Wik, Δ, m, samples=Int(5e5), p=Int(1e2))
+function test_compare_sample_mean_and_var(alg, Δ, m, samples=Int(5e5), p=Int(1e2))
   W = WienerProcess(0.0,zeros(m),nothing)
   calculate_step!(W,dt,nothing,nothing)
   for i in 1:10
     accept_step!(W,dt,nothing,nothing)
   end  
 
-  xs = [StochasticDiffEq.get_iterated_I(Δ, W.dW, W.dZ, Wik, p, 1)[1,2]]
+  xs = [StochasticDiffEq.get_iterated_I(Δ, W.dW, W.dZ, alg, p, 1)[1,2]]
   coms = [1//2*W.dW[1]*W.dW[2]]
 
   for i in 1:samples
     calculate_step!(W,Δ,nothing,nothing)
     accept_step!(W,Δ,nothing,nothing)
     com = 1//2*W.dW[1]*W.dW[2]
-    x = StochasticDiffEq.get_iterated_I(Δ, W.dW, W.dZ, Wik, p, 1)[1,2]
+    x = StochasticDiffEq.get_iterated_I(Δ, W.dW, W.dZ, alg, p, 1)[1,2]
     
     push!(xs,x)
     push!(coms,com)
@@ -138,7 +115,7 @@ end
   true_commute = 1//2 .* W.dW .* W.dW'
   samples = Int(1e4)
   for alg ∈ LevyArea.ITER_INT_ALGS
-    # Test the relations given in Wiktorsson Eq.(2.1)
+    # Test the relations given in Wiktorsson paper Eq.(2.1)
     Random.seed!(seed)
     I = StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, alg, 1, 1)
     Random.seed!(seed)
@@ -151,9 +128,6 @@ end
 
     # test moment conditions
     test_moments(m, alg, dt, samples)
-
-    # test sample path convergence
-    test_path_convergence(alg)
 
     # test other StatsJ
     @time test_compare_sample_mean_and_var(alg, 1.0, 2)
