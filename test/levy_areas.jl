@@ -1,7 +1,7 @@
 using StochasticDiffEq, DiffEqNoiseProcess, Test, Random, LinearAlgebra
 using LevyArea, Statistics
 
-seed = 10
+seed = 113213898
 Random.seed!(seed)
 
 m = 10
@@ -84,7 +84,7 @@ Problem 2.3.3 from
 Kloeden, P. E., Platen, E., & Schurz, H. Numerical solution of SDE through computer
 experiments. Springer Science & Business Media. (2012)
 """
-function test_path_convergence(Wik, dt = 1.0, ps = [Int(5e1),Int(1e3),Int(1e5)])  
+function test_path_convergence(Wik, dt = 1.0, ps = [Int(1e1),Int(1e3),Int(1e6)])  
   m = 2
   W = WienerProcess(0.0,zeros(m),nothing)
   calculate_step!(W,dt,nothing,nothing)
