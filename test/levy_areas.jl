@@ -84,8 +84,7 @@ Problem 2.3.3 from
 Kloeden, P. E., Platen, E., & Schurz, H. Numerical solution of SDE through computer
 experiments. Springer Science & Business Media. (2012)
 """
-function test_path_convergence(Wik, dt = 1.0, ps = [Int(1e2),Int(1e3),Int(1e4),Int(1e5)])  
-  Random.seed!(seed)
+function test_path_convergence(Wik, dt = 1.0, ps = [Int(5e1),Int(1e3),Int(1e5)])  
   m = 2
   W = WienerProcess(0.0,zeros(m),nothing)
   calculate_step!(W,dt,nothing,nothing)
@@ -102,7 +101,6 @@ function test_path_convergence(Wik, dt = 1.0, ps = [Int(1e2),Int(1e3),Int(1e4),I
   v = abs.(sample_path .- sample_path[end])
   @test sort(v, rev = true) == v
 end
-
 
 """
 Exercise 2.3.1 from
