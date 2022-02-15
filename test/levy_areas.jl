@@ -1,5 +1,5 @@
 using StochasticDiffEq, DiffEqNoiseProcess, Test, Random, LinearAlgebra
-using LevyArea
+using LevyArea, Statistics
 
 seed = 10
 Random.seed!(seed)
@@ -84,7 +84,7 @@ Problem 2.3.3 from
 Kloeden, P. E., Platen, E., & Schurz, H. Numerical solution of SDE through computer
 experiments. Springer Science & Business Media. (2012)
 """
-function test_path_convergence(Wik, dt = 1.0, ps = [1,Int(1e2),Int(5e3),Int(1e4)])  
+function test_path_convergence(Wik, dt = 1.0, ps = [Int(1e2),Int(1e3),Int(1e4),Int(1e5)])  
   Random.seed!(seed)
   m = 2
   W = WienerProcess(0.0,zeros(m),nothing)
@@ -95,15 +95,13 @@ function test_path_convergence(Wik, dt = 1.0, ps = [1,Int(1e2),Int(5e3),Int(1e4)
   sample_path = []
   for (i, p) in enumerate(ps)
     Random.seed!(seed)
-    @show p
     I = StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, Wik, p, 1)
-    push!(sample_path,I[1,2])
+    A = I - 1//2 .* W.dW .* W.dW'
+    push!(sample_path,A[1,2])
   end
   v = abs.(sample_path .- sample_path[end])
   @test sort(v, rev = true) == v
 end
-
-
 
 
 """
@@ -112,78 +110,31 @@ Kloeden, P. E., Platen, E., & Schurz, H. Numerical solution of SDE through compu
 experiments. Springer Science & Business Media. (2012)
 """
 
-mutable struct StatsJ{AType}
-  mean::Vector{AType}
-  var::Vector{AType}
-  meanold::Vector{AType}
-  varold::Vector{AType}
-  tmp::AType
-  x::AType
-end
-
-function StatsJ(u)
-  mean = Vector{typeof(u)}()
-  var = Vector{typeof(u)}()
-  meanold = Vector{typeof(u)}()
-  varold = Vector{typeof(u)}()
-
-  for k=1:2
-    push!(mean,zero(u))
-    push!(var,zero(u))
-    push!(meanold,zero(u))
-    push!(varold,zero(u))
-  end
-
-  tmp = zero(u)
-  x = zero(u)
-  StatsJ(mean,var,meanold,varold,tmp,x)
-end
-
-function test_Welford(cache::StatsJ, Wik, Δ, m, samples=Int(1e5), p=Int(1e2))
+function test_compare_sample_mean_and_var(Wik, Δ, m, samples=Int(5e5), p=Int(1e2))
   W = WienerProcess(0.0,zeros(m),nothing)
   calculate_step!(W,dt,nothing,nothing)
   for i in 1:10
     accept_step!(W,dt,nothing,nothing)
   end  
 
-  for k in 1:2
-    fill!(cache.var[k], zero(eltype(cache.tmp)))
-  end
+  xs = [StochasticDiffEq.get_iterated_I(Δ, W.dW, W.dZ, Wik, p, 1)[1,2]]
+  coms = [1//2*W.dW[1]*W.dW[2]]
+
   for i in 1:samples
     calculate_step!(W,Δ,nothing,nothing)
     accept_step!(W,Δ,nothing,nothing)
-    mul!(cache.tmp,1//2*vec(W.dW),vec(W.dW)')
-
-    I = StochasticDiffEq.get_iterated_I(Δ, W.dW, W.dZ, Wik, p, 1)
-    for k in 1:2
-      if k==1
-        copyto!(cache.x,cache.tmp)
-      else
-        copyto!(cache.x,I)
-      end
-      if i == 1
-        copyto!(cache.meanold[k], cache.x)
-      else
-        @. cache.mean[k] = cache.meanold[k] + (cache.x - cache.meanold[k]) / i
-        @. cache.var[k] = cache.varold[k] + (cache.x - cache.meanold[k]) * (cache.x - cache.mean[k])
-
-        copyto!(cache.meanold[k],cache.mean[k])
-        copyto!(cache.varold[k],cache.var[k])
-      end
-    end
+    com = 1//2*W.dW[1]*W.dW[2]
+    x = StochasticDiffEq.get_iterated_I(Δ, W.dW, W.dZ, Wik, p, 1)[1,2]
+    
+    push!(xs,x)
+    push!(coms,com)
   end
 
-  for k in 1:2
-    @. cache.mean[k] = cache.mean[k]/samples
-    @. cache.var[k] = cache.var[k]/(samples-1)
-  end
-
-  @test maximum(abs.(cache.mean[1])) < 1e-5
-  @test maximum(abs.(cache.mean[2])) < 1e-5
-  @test maximum(abs.(cache.var[1]-cache.var[2])) > 1e-1
-
+  @test mean(xs) ≈ 0 atol = 1e-2
+  @test mean(coms) ≈ 0 atol = 1e-2
+  @test var(xs) ≈ 1//2*Δ^2 rtol = 1e-2
+  @test var(coms) ≈ 1//4*Δ^2 rtol = 1e-2
 end
-
 
 @testset "General noise tests" begin
   true_commute = 1//2 .* W.dW .* W.dW'
@@ -201,13 +152,12 @@ end
     @test A ≈ -A' atol=1e-12
 
     # test moment conditions
-    @time test_moments(m, alg, dt, samples)
+    test_moments(m, alg, dt, samples)
 
     # test sample path convergence
-    @time test_path_convergence(alg)
+    test_path_convergence(alg)
 
     # test other StatsJ
-    cache = StatsJ(zeros(2,2))
-    @time test_Welford(cache, alg, dt, 2)
+    @time test_compare_sample_mean_and_var(alg, 1.0, 2)
   end  
 end
