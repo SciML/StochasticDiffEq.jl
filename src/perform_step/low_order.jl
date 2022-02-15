@@ -447,7 +447,7 @@ end
   Jalg = cache.Jalg
 
   get_iterated_I!(dt, dW, W.dZ, Jalg, integrator.alg.p, integrator.alg.c, alg_order(integrator.alg))
-  J = Wik.J
+  J = Jalg.J
 
   integrator.f(du₁,uprev,p,t)
   integrator.g(L,uprev,p,t)
