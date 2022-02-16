@@ -85,7 +85,7 @@ Kloeden, P. E., Platen, E., & Schurz, H. Numerical solution of SDE through compu
 experiments. Springer Science & Business Media. (2012)
 """
 
-function test_compare_sample_mean_and_var(alg, Δ, m, samples=Int(5e5), p=Int(1e2))
+function test_compare_sample_mean_and_var(alg, Δ, m, samples=Int(1e6), p=Int(1e2))
   W = WienerProcess(0.0,zeros(m),nothing)
   calculate_step!(W,dt,nothing,nothing)
   for i in 1:10
