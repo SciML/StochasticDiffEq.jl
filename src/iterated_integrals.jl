@@ -115,7 +115,11 @@ function get_Jalg(ΔW, dt, prob, alg)
       end
     end
   else
-    return alg.ii_approx
+    if isinplace(prob)
+      IteratedIntegralAlgorithm_iip(ΔW, alg.ii_approx)
+    else
+      return alg.ii_approx
+    end
   end
 end
 

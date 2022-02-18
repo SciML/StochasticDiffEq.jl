@@ -165,7 +165,7 @@ using DocStringExtensions
 
   export RandomEM
 
-  export IteratedIntegralApprox, IICommutative, IIWiktorsson
+  export IteratedIntegralApprox, IICommutative, IILevyArea
 
   #General Functions
   export solve, init, solve!, step!

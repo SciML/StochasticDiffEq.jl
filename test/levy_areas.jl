@@ -133,3 +133,34 @@ end
     @time test_compare_sample_mean_and_var(alg, 1.0, 2)
   end  
 end
+
+@testset "Simulate non-com. SDEs tests" begin
+  u₀ = [0.0,0.0,0.0]
+  f(u,p,t) = [0.0,0.0,0.0]
+  g(u,p,t) = [1.0 0.0;0.0 1.0;0.0 u[1]]
+  f!(du,u,p,t) = du .*= false
+  function g!(du,u,p,t) 
+    du[1,1] = 1.0
+    du[2,2] = 1.0
+    du[3,2] = u[1]
+    return nothing
+  end
+  dt = 1//2^8
+  tspan = (0.0,1.0)
+  prob = SDEProblem(f,g,u₀,(0.0,1.0); noise_rate_prototype=zeros(3,2))
+  prob! = SDEProblem(f!,g!,u₀,(0.0,1.0); noise_rate_prototype=zeros(3,2))
+
+  sol = solve(prob, RKMilGeneral(;ii_approx=IICommutative()), dt=dt, adaptive=false)
+  @test sol.retcode == :Success
+  sol = solve(prob, RKMilGeneral(;ii_approx=IILevyArea()), dt=dt, adaptive=false)
+  @test sol.retcode == :Success
+  sol = solve(prob, RKMilGeneral(ii_approx=Fourier()), dt=dt, adaptive=false)
+  @test sol.retcode == :Success
+
+  sol = solve(prob!, RKMilGeneral(;ii_approx=IICommutative()), dt=dt, adaptive=false)
+  @test sol.retcode == :Success
+  sol = solve(prob!, RKMilGeneral(;ii_approx=IILevyArea()), dt=dt, adaptive=false)
+  @test sol.retcode == :Success
+  sol = solve(prob!, RKMilGeneral(ii_approx=Fourier()), dt=dt, adaptive=false)
+  @test sol.retcode == :Success
+end
