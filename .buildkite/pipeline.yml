@@ -41,6 +41,7 @@ steps:
     agents:
       os: "linux"
       queue: "juliaecosystem"
+      exclusive: true
     env:
       GROUP: 'SROCKC2WeakConvergence'
     timeout_in_minutes: 240
