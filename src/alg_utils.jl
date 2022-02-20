@@ -123,7 +123,7 @@ alg_interpretation(alg::LambaEulerHeun) = :Stratonovich
 alg_interpretation(alg::KomBurSROCK2) = :Stratonovich
 alg_interpretation(alg::RKMil{interpretation}) where {interpretation} = interpretation
 alg_interpretation(alg::SROCK1{interpretation,E}) where {interpretation,E} = interpretation
-alg_interpretation(alg::RKMilCommute{interpretation}) where {interpretation} = interpretation
+alg_interpretation(alg::RKMilCommute) = alg.interpretation
 alg_interpretation(alg::RKMilGeneral) = alg.interpretation
 alg_interpretation(alg::ImplicitRKMil{CS,AD,F,P,FDT,ST,CJ,N,T2,Controller,interpretation}) where {CS,AD,F,P,FDT,ST,CJ,N,T2,Controller,interpretation} = interpretation
 

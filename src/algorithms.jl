@@ -19,7 +19,7 @@ abstract type StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{CS,AD,FDT,ST,
 
 abstract type IteratedIntegralApprox end
 struct IICommutative <:  IteratedIntegralApprox end
-struct IIWiktorsson <:  IteratedIntegralApprox end
+struct IILevyArea <:  IteratedIntegralApprox end
 
 ################################################################################
 
@@ -91,31 +91,40 @@ RKMilCommute: Nonstiff Method
 An explicit Runge-Kutta discretization of the strong order 1.0 Milstein method for commutative noise problems.
 Defaults to solving the Ito problem, but RKMilCommute(interpretation=:Stratonovich) makes it solve the Stratonovich problem.
 Uses a 1.5/2.0 error estimate for adaptive time stepping.
+Default: ii_approx=IICommutative() does not approximate the Levy area.
 """
-struct RKMilCommute{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
-RKMilCommute(;interpretation=:Ito) = RKMilCommute{interpretation}()
+struct RKMilCommute{T} <: StochasticDiffEqAdaptiveAlgorithm 
+  interpretation::Symbol
+  ii_approx::T
+end
+RKMilCommute(;interpretation=:Ito, ii_approx=IICommutative()) = RKMilCommute(interpretation,ii_approx)
 
 """
 Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
 Springer. Berlin Heidelberg (2011)
 
 RKMilGeneral: Nonstiff Method
-RKMilGeneral(;interpretation=:Ito, ii_approx=IIWiktorsson()
+RKMilGeneral(;interpretation=:Ito, ii_approx=IILevyArea()
 An explicit Runge-Kutta discretization of the strong order 1.0 Milstein method for general non-commutative noise problems.
 Allows for a choice of interpretation between :Ito and :Stratonovich.
 Allows for a choice of iterated integral approximation.
+Default: ii_approx=IILevyArea() uses LevyArea.jl to choose optimal algorithm. See
+Kastner, F. and Rößler, A., arXiv: 2201.08424
+Kastner, F. and Rößler, A., LevyArea.jl, 10.5281/ZENODO.5883748, https://github.com/stochastics-uni-luebeck/LevyArea.jl
 """
-struct RKMilGeneral{T<:IteratedIntegralApprox, TruncationType} <: StochasticDiffEqAdaptiveAlgorithm
+struct RKMilGeneral{T, TruncationType} <: StochasticDiffEqAdaptiveAlgorithm
   interpretation::Symbol
   ii_approx::T
   c::Int
   p::TruncationType
 end
-function RKMilGeneral(;interpretation=:Ito, ii_approx=IIWiktorsson(), c=1, p=nothing, dt=nothing)
+
+function RKMilGeneral(;interpretation=:Ito,ii_approx=IILevyArea(), c=1, p=nothing, dt=nothing)
   γ = 1//1
   p==true && (p = Int(floor(c*dt^(1//1-2//1*γ)) + 1))
-  RKMilGeneral(interpretation, ii_approx, c, p)
+  RKMilGeneral{typeof(ii_approx), typeof(p)}(interpretation, ii_approx, c, p)
 end
+
 """
 WangLi3SMil_A: Nonstiff Method
 Fixed step-size explicit 3-stage Milstein methods for Ito problem with strong and weak order 1.0

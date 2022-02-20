@@ -63,6 +63,7 @@ using DocStringExtensions
 
   using SparseDiffTools: forwarddiff_color_jacobian!, ForwardColorJacCache
 
+  using LevyArea
 
   const CompiledFloats = Union{Float32,Float64}
 
@@ -164,7 +165,7 @@ using DocStringExtensions
 
   export RandomEM
 
-  export IteratedIntegralApprox, IICommutative, IIWiktorsson
+  export IteratedIntegralApprox, IICommutative, IILevyArea
 
   #General Functions
   export solve, init, solve!, step!

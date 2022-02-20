@@ -378,7 +378,7 @@ function DiffEqBase.__init(
                              rng = Xorshifts.Xoroshiro128Plus(_seed))
         elseif typeof(alg) <: RKMilGeneral
           m = length(rand_prototype)
-          if typeof(rand_prototype) <: Number || alg.p == nothing
+          if typeof(rand_prototype) <: Number || alg.p === nothing
             rand_prototype2 = nothing
           else
             rand_prototype2 = similar(rand_prototype,Int(m + alg.p*m*2))
