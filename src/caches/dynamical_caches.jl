@@ -5,7 +5,7 @@ struct BAOABConstantCache{uType,uEltypeNoUnits} <: StochasticDiffEqConstantCache
   c1::uEltypeNoUnits
   c2::uEltypeNoUnits
 end
-@cache struct BAOABCache{uType,uEltypeNoUnits,rateNoiseType} <: StochasticDiffEqMutableCache
+@cache struct BAOABCache{uType,uEltypeNoUnits,rateNoiseType,uTypeCombined} <: StochasticDiffEqMutableCache
   utmp::uType
   dutmp::uType
   k::uType
@@ -14,6 +14,7 @@ end
   half::uEltypeNoUnits
   c1::uEltypeNoUnits
   c2::uEltypeNoUnits
+  tmp::uTypeCombined
 end
 
 function alg_cache(alg::BAOAB,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
@@ -35,5 +36,7 @@ function alg_cache(alg::BAOAB,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototy
   c1 = exp(-alg.gamma*dt)
   c2 = sqrt(1 - c1^2)
 
-  BAOABCache(utmp, dutmp, k, gtmp, noise, half, uEltypeNoUnits(c1), uEltypeNoUnits(c2))
+  tmp = zero(u)
+
+  BAOABCache(utmp, dutmp, k, gtmp, noise, half, uEltypeNoUnits(c1), uEltypeNoUnits(c2), tmp)
 end
