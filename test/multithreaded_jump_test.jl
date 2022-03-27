@@ -2,7 +2,7 @@ using DiffEqJump, StochasticDiffEq, Test
 
 # Requires threads to be effective
 # https://github.com/SciML/DifferentialEquations.jl/issues/854
-using Threads
+using Base.Threads
 @test Threads.nthreads() > 1
 
 
