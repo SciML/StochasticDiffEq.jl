@@ -125,5 +125,9 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
     @time @safetestset "GPU Weak adaptive step size scalar noise SDE" begin include("gpu/sde_weak_scalar_adaptive_gpu.jl") end
     @time @safetestset "GPU Weak adaptive" begin include("gpu/sde_weak_adaptive_gpu.jl") end
   end
+  
+  if !is_APPVEYOR && GROUP == "Multithreaded"
+    @time @safetestset "Mulithreaded Jump Thread Safety Tests" begin include("multithreaded_jump_test.jl") end
+  end
 
 end

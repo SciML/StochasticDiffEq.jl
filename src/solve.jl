@@ -79,7 +79,7 @@ function DiffEqBase.__init(
   end
 
   if typeof(_prob) <: JumpProblem
-    if alias_jumps
+    if !alias_jumps
       _prob = DiffEqJump.resetted_jump_problem(_prob, _seed)
     elseif _seed !== 0
       DiffEqJump.reset_jump_problem!(_prob, _seed)
