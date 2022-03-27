@@ -208,6 +208,7 @@ end
 
   z₂ = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
   OrdinaryDiffEq.nlsolvefail(nlsolver) && return
+  OrdinaryDiffEq.isnewton(nlsolver) && OrdinaryDiffEq.set_new_W!(nlsolver, false)
 
   ################################## Solve Step 3
 
@@ -292,7 +293,7 @@ end
       if alg.smooth_est # From Shampine
         linres = OrdinaryDiffEq.dolinsolve(integrator, nlsolver.cache.linsolve;
                                             b = OrdinaryDiffEq._vec(g1),
-                                            u = OrdinaryDiffEq._vec(E₁))
+                                            linu = OrdinaryDiffEq._vec(E₁))
       else
         E₁ .= dz
       end

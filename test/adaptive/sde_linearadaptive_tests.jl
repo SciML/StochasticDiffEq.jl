@@ -92,3 +92,19 @@ for i in 1:2
   err24 = sol4.errors[:final]
   @test isapprox(err4,err24;atol=1e-4)
 end
+
+# https://github.com/SciML/StochasticDiffEq.jl/issues/463
+
+σ = 0.05
+function f(du, u, p, t)
+    @. du = -u
+end
+
+function g(du, u, p, t)
+    @. du = σ
+end
+
+u0 = [1.0, 1.0]
+prob = SDEProblem(f, g, u0, (0.0, 10.0))
+
+sol = solve(prob, SKenCarp())
