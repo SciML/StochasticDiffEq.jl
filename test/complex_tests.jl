@@ -20,7 +20,7 @@ implicit_noautodiff = [SKenCarp(autodiff=false), ImplicitEulerHeun(autodiff=fals
 
   # currently broken
   for alg in implicit_autodiff
-    @test_throws MethodError solve(prob, alg)
+    @test_throws DimensionMismatch solve(prob, alg)
   end
 end
 
@@ -39,6 +39,6 @@ end
 
   # currently broken
   for alg in implicit_autodiff
-    @test_throws ArgumentError solve(prob, alg)
+    @test_throws DimensionMismatch solve(prob, alg)
   end
 end
