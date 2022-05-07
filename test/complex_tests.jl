@@ -39,6 +39,6 @@ end
 
   # currently broken
   for alg in implicit_autodiff
-    @test_throws DimensionMismatch solve(prob, alg)
+    @test_throws ArgumentError solve(prob, alg)
   end
 end
