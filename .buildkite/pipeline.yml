@@ -9,6 +9,7 @@ steps:
     agents:
       os: "linux"
       queue: "juliaecosystem"
+      arch: "x86_64"
     env:
       GROUP: 'Multithreaded'
     timeout_in_minutes: 240
@@ -25,6 +26,7 @@ steps:
     agents:
       os: "linux"
       queue: "juliaecosystem"
+      arch: "x86_64"
     env:
       GROUP: 'OOPWeakConvergence'
     timeout_in_minutes: 240
@@ -41,6 +43,7 @@ steps:
     agents:
       os: "linux"
       queue: "juliaecosystem"
+      arch: "x86_64"
     env:
       GROUP: 'IIPWeakConvergence'
     timeout_in_minutes: 240
@@ -57,6 +60,7 @@ steps:
     agents:
       os: "linux"
       queue: "juliaecosystem"
+      arch: "x86_64"
       exclusive: true
     env:
       GROUP: 'SROCKC2WeakConvergence'
@@ -74,6 +78,7 @@ steps:
     agents:
       os: "linux"
       queue: "juliaecosystem"
+      arch: "x86_64"
     env:
       GROUP: 'WeakConvergence2'
     timeout_in_minutes: 240
@@ -90,6 +95,7 @@ steps:
     agents:
       os: "linux"
       queue: "juliaecosystem"
+      arch: "x86_64"
     env:
       GROUP: 'WeakConvergence3'
     timeout_in_minutes: 240
@@ -106,6 +112,7 @@ steps:
     agents:
       os: "linux"
       queue: "juliaecosystem"
+      arch: "x86_64"
       exclusive: true
     env:
       GROUP: 'WeakConvergence4'
@@ -123,6 +130,7 @@ steps:
     agents:
       os: "linux"
       queue: "juliaecosystem"
+      arch: "x86_64"
       exclusive: true
     env:
       GROUP: 'WeakConvergence5'
@@ -140,6 +148,7 @@ steps:
     agents:
       os: "linux"
       queue: "juliaecosystem"
+      arch: "x86_64"
     env:
       GROUP: 'WeakConvergence6'
     timeout_in_minutes: 240
@@ -155,6 +164,7 @@ steps:
     agents:
       os: "linux"
       queue: "juliaecosystem"
+      arch: "x86_64"
     env:
       GROUP: 'WeakAdaptiveCPU'
     timeout_in_minutes: 240
