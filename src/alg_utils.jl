@@ -15,6 +15,8 @@ isstandard(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) 
 qsteady_min_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = 1
 qsteady_max_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = 1
 
+SciMLBase.isautodifferentiable(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = true
+
 # special cases in stepsize_controllers.jl
 function default_controller(alg::Union{TauLeaping, CaoTauLeaping}, args...)
   DummyController()
