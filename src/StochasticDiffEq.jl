@@ -61,6 +61,8 @@ using DocStringExtensions
 
   import DiffEqBase: iip_get_uf, oop_get_uf, build_jac_config
 
+  import SciMLBase
+
   using SparseDiffTools: forwarddiff_color_jacobian!, ForwardColorJacCache
 
   using LevyArea

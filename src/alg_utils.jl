@@ -1,14 +1,23 @@
-qmax_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = isadaptive(alg) ? 9//8 : 0
-qmin_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = isadaptive(alg) ? 1//5 : 0
+## SciMLBase Trait Definitions
 
-delta_default(alg) = 1//1
-delta_default(alg::SRIW1) = 1//6
+SciMLBase.isautodifferentiable(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm,StochasticDiffEqJumpAlgorithm}) = true
+SciMLBase.allows_arbitrary_number_types(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm,StochasticDiffEqJumpAlgorithm}) = true
+SciMLBase.allowscomplex(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm,StochasticDiffEqJumpAlgorithm}) = true
+SciMLBase.isdiscrete(alg::StochasticDiffEqJumpAlgorithm) = true
 
 isadaptive(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = false
 isadaptive(alg::Union{StochasticDiffEqAdaptiveAlgorithm,StochasticDiffEqRODEAdaptiveAlgorithm,StochasticDiffEqJumpAdaptiveAlgorithm,StochasticDiffEqJumpDiffusionAdaptiveAlgorithm}) = true
 isadaptive(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = all(isadaptive.(alg.algs))
 isadaptive(prob,alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = isadaptive(alg)
 isadaptive(prob::JumpProblem,alg::ImplicitEM) = false
+
+## StochasticDiffEq Internal Traits
+
+qmax_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = isadaptive(alg) ? 9//8 : 0
+qmin_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = isadaptive(alg) ? 1//5 : 0
+
+delta_default(alg) = 1//1
+delta_default(alg::SRIW1) = 1//6
 
 ispredictive(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = false
 isstandard(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = false
