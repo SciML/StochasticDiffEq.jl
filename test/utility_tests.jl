@@ -25,7 +25,7 @@ using StochasticDiffEq.OrdinaryDiffEq: WOperator, set_gamma!, calc_W!
     _f = (du,u,p,t) -> mul!(du,A,u); _g = (du,u,p,t) -> mul!(du,σ,u)
     fun = SDEFunction(_f, _g;
                       mass_matrix=mm,
-                      jac_prototype=DiffEqArrayOperator(A))
+                      jac_prototype=MatrixOperator(A))
     prob = SDEProblem(fun, _g, u0, tspan)
     integrator = init(prob, ImplicitEM(theta=1); adaptive=false, dt=dt)
     W = integrator.cache.nlsolver.cache.W
@@ -52,7 +52,7 @@ using StochasticDiffEq.OrdinaryDiffEq: WOperator, set_gamma!, calc_W!
     prob1 = SDEProblem(SDEFunction(_f, _g; mass_matrix=mm), _g, u0, tspan)
     prob2 = SDEProblem(SDEFunction(_f, _g; mass_matrix=mm, jac=(u,p,t) -> t*A), _g, u0, tspan)
     prob1_ip = SDEProblem(SDEFunction(_f_ip, _g_ip; mass_matrix=mm), _g_ip, u0, tspan)
-    jac_prototype=DiffEqArrayOperator(similar(A); update_func=(J,u,p,t) -> (J .= t .* A; J))
+    jac_prototype=MatrixOperator(similar(A); update_func=(J,u,p,t) -> (J .= t .* A; J))
     prob2_ip = SDEProblem(SDEFunction(_f_ip, _g_ip; mass_matrix=mm, jac_prototype=jac_prototype), _g_ip, u0, tspan)
 
     for Alg in [ImplicitEM, ISSEM]
