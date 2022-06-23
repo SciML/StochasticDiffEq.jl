@@ -1,39 +1,39 @@
 using StochasticDiffEq, Random
 
-function f(du,u,p,t)
-  for i in 1:length(u)
-    du[i] = (0.2/length(u))*u[i]
-  end
+function f(du, u, p, t)
+    for i in 1:length(u)
+        du[i] = (0.2 / length(u)) * u[i]
+    end
 end
 
-function g(du,u,p,t)
-  for i in 1:length(u)
-    du[i] = (0.2/length(u))*u[i]
-  end
+function g(du, u, p, t)
+    for i in 1:length(u)
+        du[i] = (0.2 / length(u)) * u[i]
+    end
 end
 
-function condition(u,t,integrator)
-  1-maximum(u)
+function condition(u, t, integrator)
+    1 - maximum(u)
 end
 
 function callback_affect!(integrator)
-  u = integrator.u
-  resize!(integrator,length(u)+1)
-  maxidx = findmax(u)[2]
-  Θ = rand()
-  u[maxidx] = Θ
-  u[end] = 1-Θ
-  nothing
+    u = integrator.u
+    resize!(integrator, length(u) + 1)
+    maxidx = findmax(u)[2]
+    Θ = rand()
+    u[maxidx] = Θ
+    u[end] = 1 - Θ
+    nothing
 end
 
-callback = ContinuousCallback(condition,callback_affect!)
+callback = ContinuousCallback(condition, callback_affect!)
 
 u0 = [0.2]
-tspan = (0.0,100.0)
-prob = SDEProblem(f,g,u0,tspan)
+tspan = (0.0, 100.0)
+prob = SDEProblem(f, g, u0, tspan)
 
 Random.seed!(3)
-sol = solve(prob,SRIW1(),callback=callback)
+sol = solve(prob, SRIW1(), callback = callback)
 
 #=
 using Plots; pyplot()
@@ -45,14 +45,14 @@ plot(p1,p2,layout=(2,1),size=(600,1000))
 =#
 
 Random.seed!(3)
-sol = solve(prob,EM(),callback=callback,dt=1/4)
-sol = solve(prob,RKMil(),callback=callback,dt=1/4)
+sol = solve(prob, EM(), callback = callback, dt = 1 / 4)
+sol = solve(prob, RKMil(), callback = callback, dt = 1 / 4)
 
-function g(du,u,p,t)
-  for i in 1:length(u)
-    du[i] = (0.3/length(u))
-  end
+function g(du, u, p, t)
+    for i in 1:length(u)
+        du[i] = (0.3 / length(u))
+    end
 end
-prob = SDEProblem(f,g,u0,tspan)
+prob = SDEProblem(f, g, u0, tspan)
 
-sol = solve(prob,SRA1(),callback=callback)
+sol = solve(prob, SRA1(), callback = callback)
