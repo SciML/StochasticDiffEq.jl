@@ -80,9 +80,9 @@ function DiffEqBase.__init(
 
   if typeof(_prob) <: JumpProblem
     if !alias_jumps
-      _prob = DiffEqJump.resetted_jump_problem(_prob, _seed)
+      _prob = JumpProcesses.resetted_jump_problem(_prob, _seed)
     elseif _seed !== 0
-      DiffEqJump.reset_jump_problem!(_prob, _seed)
+      JumpProcesses.reset_jump_problem!(_prob, _seed)
     end
   end
 

@@ -1,4 +1,4 @@
-using DiffEqJump, StochasticDiffEq, Test
+using JumpProcesses, StochasticDiffEq, Test
 
 # Requires threads to be effective
 # https://github.com/SciML/DifferentialEquations.jl/issues/854

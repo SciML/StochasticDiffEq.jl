@@ -1,4 +1,4 @@
-using StochasticDiffEq, DiffEqJump, DiffEqBase, Statistics
+using StochasticDiffEq, JumpProcesses, DiffEqBase, Statistics
 using Test, LinearAlgebra
 
 function regular_rate(out,u,p,t)

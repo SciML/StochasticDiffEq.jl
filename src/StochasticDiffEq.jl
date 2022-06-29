@@ -69,8 +69,8 @@ using DocStringExtensions
 
   const CompiledFloats = Union{Float32,Float64}
 
-  import DiffEqJump
-  import DiffEqJump: JumpProblem
+  import JumpProcesses
+  import JumpProcesses: JumpProblem
 
   import Base.Threads
   @static if VERSION < v"1.3"
