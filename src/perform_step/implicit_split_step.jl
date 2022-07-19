@@ -58,7 +58,6 @@
     else
       J = OrdinaryDiffEq.calc_J(integrator, nlsolver.cache)
     end
-    du2 = integrator.f(uprev + dt * ftmp, p, t + dt)
     Ed = dt*(dt*J*ftmp)/2
 
     if typeof(cache) <: ISSEMConstantCache
