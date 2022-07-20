@@ -33,9 +33,9 @@ seeds = rand(UInt, numtraj)
 W = WienerProcess(0.0,0.0,0.0)
 
 CUDA.allowscalar(false)
-u0 = [-0.1f0,0.0f0]
+u0 = [0.1f0,0.0f0]
 tspan = (0.0f0,100.0f0)
-p = [1.9f0,0.1f0]
+p = [0.1f0,0.1f0]
 
 prob = SDEProblem(f!,scalar_noise!,u0,tspan,p, noise=W)
 ensembleprob = EnsembleProblem(prob, prob_func = prob_func)
@@ -46,4 +46,4 @@ ensembleprob = EnsembleProblem(prob, prob_func = prob_func)
 # CUDAnative.CUDAdrv.@profile
 # check either on CPU with EnsembleCPUArray() or on GPU with EnsembleGPUArray()
 #@test_nowarn sol = @time solve(ensembleprob,DRI1(),EnsembleCPUArray(),trajectories=numtraj)
-sol = @time solve(ensembleprob,DRI1NM(),EnsembleGPUArray(),trajectories=numtraj)
+@test_nowarn sol = @time solve(ensembleprob,DRI1NM(),EnsembleGPUArray(),trajectories=numtraj)
