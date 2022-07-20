@@ -15,7 +15,7 @@ steps:
     timeout_in_minutes: 240
     # Don't run Buildkite if the commit message includes the text [skip tests]
     if: build.message !~ /\[skip tests\]/
-    
+
   - label: "OOPWeakConvergence"
     plugins:
       - JuliaCI/julia#v1:
@@ -182,6 +182,7 @@ steps:
       cuda: "*"
     env:
       GROUP: 'WeakAdaptiveGPU'
+      JULIA_PKG_SERVER: "" # it often struggles with our large artifacts
     timeout_in_minutes: 240
     # Don't run Buildkite if the commit message includes the text [skip tests]
     if: build.message !~ /\[skip tests\]/
