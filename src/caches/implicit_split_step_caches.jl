@@ -64,7 +64,7 @@ function alg_cache(alg::ISSEulerHeun, prob, u, ΔW, ΔZ, p, rate_prototype, nois
   gtmp2 = zero(rate_prototype)
 
   if is_diagonal_noise(prob)
-    gtmp3 = gtmp2
+    gtmp3 = copy(gtmp2)
     dW_cache = nothing
   else
     gtmp3 = zero(noise_rate_prototype)
