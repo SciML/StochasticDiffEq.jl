@@ -69,19 +69,33 @@
 
     if typeof(cache) <: ISSEMConstantCache
       K = @.. uprev + dt * ftmp
-      utilde = @.. K + integrator.sqdt * L
-      ggprime = (integrator.g(utilde, p, t) .- L) ./ (integrator.sqdt)
       if !is_diagonal_noise(integrator.sol.prob)
-        En = ggprime * (integrator.W.dW .^ 2 .- dt) ./ 2
+        g_sized = norm(L, 2)
+        utilde = @.. K + integrator.sqdt * g_sized
+        gtmp2 = integrator.g(utilde, p, t)
+        g_sized2 = norm(gtmp2, 2)
+        ggprime = (g_sized2 - g_sized) / (integrator.sqdt)
+        dW_cache = integrator.W.dW .^ 2 .- dt
+        diff_tmp = integrator.opts.internalnorm(dW_cache, t)
+        En = ggprime * diff_tmp / 2
       else
+        utilde = @.. K + integrator.sqdt * L
+        ggprime = (integrator.g(utilde, p, t) .- L) ./ (integrator.sqdt)
         En = ggprime .* (integrator.W.dW .^ 2 .- dt) ./ 2
       end
     elseif typeof(cache) <: ISSEulerHeunConstantCache
-      utilde = @.. uprev + L * integrator.sqdt
-      ggprime = (integrator.g(utilde, p, t) .- L) ./ (integrator.sqdt)
       if !is_diagonal_noise(integrator.sol.prob)
-        En = ggprime * (integrator.W.dW .^ 2) ./ 2
+        g_sized = norm(L, 2)
+        utilde = @.. uprev + g_sized * integrator.sqdt
+        gtmp2 = integrator.g(utilde, p, t)
+        g_sized2 = norm(gtmp2, 2)
+        ggprime = (g_sized2 - g_sized) / (integrator.sqdt)
+        dW_cache = integrator.W.dW .^ 2
+        diff_tmp = integrator.opts.internalnorm(dW_cache, t)
+        En = ggprime * diff_tmp / 2
       else
+        utilde = @.. uprev + L * integrator.sqdt
+        ggprime = (integrator.g(utilde, p, t) .- L) ./ (integrator.sqdt)
         En = ggprime .* (integrator.W.dW .^ 2) ./ 2
       end
     end
