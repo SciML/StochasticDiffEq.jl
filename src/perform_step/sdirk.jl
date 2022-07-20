@@ -272,11 +272,3 @@ end
 
   end
 end
-
-### Mirror OrdinaryDiffEq because of dispatch on cache
-function OrdinaryDiffEq.update_W!(nlsolver::OrdinaryDiffEq.AbstractNLSolver, integrator, cache::StochasticDiffEqMutableCache, dtgamma, repeat_step)
-  if OrdinaryDiffEq.isnewton(nlsolver)
-    OrdinaryDiffEq.calc_W!(OrdinaryDiffEq.get_W(nlsolver), integrator, nlsolver, cache, dtgamma, repeat_step, true)
-  end
-  nothing
-end
