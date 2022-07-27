@@ -74,6 +74,9 @@ jac_iter(integrator::StochasticCompositeCache) = Iterators.flatten(jac_iter(c) f
   push!(integrator.opts.tstops, integrator.tdir * t)
 end
 
+DiffEqBase.has_tstop(integrator::SDEIntegrator) = !isempty(integrator.opts.tstops)
+DiffEqBase.first_tstop(integrator::SDEIntegrator) = first(integrator.opts.tstops)
+DiffEqBase.pop_tstop!(integrator::SDEIntegrator) = pop!(integrator.opts.tstops)
 
 function DiffEqBase.add_saveat!(integrator::SDEIntegrator,t)
   integrator.tdir * (t - integrator.t) < 0 && error("Tried to add a saveat that is behind the current time. This is strictly forbidden")
