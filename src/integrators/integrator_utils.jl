@@ -41,7 +41,7 @@ end
       modify_dtnew_for_tstops!(integrator)
       reject_step!(integrator)
       integrator.dt = integrator.dtnew
-      integrator.sqdt = sqrt(abs(integrator.dt))
+      integrator.sqdt = integrator.tdir * sqrt(abs(integrator.dt))
     end
   end
 
@@ -292,7 +292,7 @@ end
 
   # Allow RSWM1 on Wiener Process to change dt
   !isnothing(integrator.W) && (integrator.dt = integrator.W.dt)
-  integrator.sqdt = @fastmath sqrt(abs(integrator.dt)) # It can change dt, like in RSwM1
+  integrator.sqdt = @fastmath integrator.tdir*sqrt(abs(integrator.dt)) # It can change dt, like in RSwM1
 end
 
 @inline function handle_tstop!(integrator)
