@@ -240,9 +240,9 @@ end
   mil_correction = zero(u)
   if alg_interpretation(integrator.alg) == :Ito
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
-      J = J .- 1//2 .* dt
+      J = J .- 1//2 .* abs(dt)
     else
-      J -= 1//2 .* UniformScaling(dt)
+      J -= 1//2 .* UniformScaling(abs(dt))
     end
   end
 
@@ -308,9 +308,9 @@ end
   @.. mil_correction = zero(u)
   if alg_interpretation(integrator.alg) == :Ito
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
-      @.. J -= 1//2*dt
+      @.. J -= 1 // 2 * abs(dt)
     else
-      J -= 1//2 .* UniformScaling(dt)
+      J -= 1//2 .* UniformScaling(abs(dt))
     end
   end
 
@@ -362,9 +362,9 @@ end
 
   if alg_interpretation(integrator.alg) == :Ito
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
-      J = J .- 1//2 .* dt
+      J = J .- 1//2 .* abs(dt)
     else
-      J -= 1//2 .* UniformScaling(dt)
+      J -= 1//2 .* UniformScaling(abs(dt))
     end
   end
 
@@ -432,9 +432,9 @@ end
 
   if alg_interpretation(integrator.alg) == :Ito
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
-      @.. J -= 1//2*dt
+      @.. J -= 1 // 2 * abs(dt)
     else
-      J -= 1//2 .* UniformScaling(dt)
+      J -= 1 // 2 .* UniformScaling(abs(dt))
     end
   end
 

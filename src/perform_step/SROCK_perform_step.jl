@@ -3,7 +3,7 @@
 
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
-  cache.mdeg = Int(floor(sqrt(2*dt*integrator.opts.internalnorm(integrator.eigen_est,t))+1)) # this is the spectral radius estimate to choose optimal stage
+  cache.mdeg = Int(floor(sqrt(2*abs(dt)*integrator.opts.internalnorm(integrator.eigen_est,t))+1)) # this is the spectral radius estimate to choose optimal stage
   choose_deg!(integrator,cache)
 
   mdeg = cache.mdeg
@@ -61,14 +61,14 @@
     elseif (i == mdeg) && alg_interpretation(integrator.alg) == :Ito
       if typeof(W.dW) <: Number
         gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
-        uᵢ₋₂ = uᵢ₋₁ + sqrt(dt)*gₘ₋₂
+        uᵢ₋₂ = uᵢ₋₁ + sqrt(abs(dt))*gₘ₋₂
         gₘ₋₁ = integrator.g(uᵢ₋₂,p,tᵢ₋₁)
-        u += gₘ₋₂*W.dW + 1/(2*sqrt(dt))*(gₘ₋₁ - gₘ₋₂)*(W.dW^2 - dt)
+        u += gₘ₋₂*W.dW + 1/(2*sqrt(abs(dt)))*(gₘ₋₁ - gₘ₋₂)*(W.dW^2 - abs(dt))
       elseif is_diagonal_noise(integrator.sol.prob)
         gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
-        uᵢ₋₂ .= uᵢ₋₁ .+ sqrt(dt) .* gₘ₋₂
+        uᵢ₋₂ .= uᵢ₋₁ .+ sqrt(abs(dt)) .* gₘ₋₂
         gₘ₋₁ = integrator.g(uᵢ₋₂,p,tᵢ₋₁)
-        u .+= gₘ₋₂ .* W.dW .+ (1/(2*sqrt(dt))) .* (gₘ₋₁ .- gₘ₋₂) .* (W.dW .^ 2 .- dt)
+        u .+= gₘ₋₂ .* W.dW .+ (1/(2*sqrt(abs(dt)))) .* (gₘ₋₁ .- gₘ₋₂) .* (W.dW .^ 2 .- abs(dt))
       else
         gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
         u += gₘ₋₂*W.dW
@@ -94,7 +94,7 @@ end
   ccache = cache.constantcache
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
-  ccache.mdeg = Int(floor(sqrt(2*dt*integrator.opts.internalnorm(integrator.eigen_est,t))+1))   # this is the spectral radius estimate to choose optimal stage
+  ccache.mdeg = Int(floor(sqrt(2*abs(dt)*integrator.opts.internalnorm(integrator.eigen_est,t))+1))   # this is the spectral radius estimate to choose optimal stage
   choose_deg!(integrator,cache)
 
   mdeg = ccache.mdeg
@@ -155,9 +155,9 @@ end
     elseif (i == mdeg) && alg_interpretation(integrator.alg) == :Ito
       if typeof(W.dW) <: Number || is_diagonal_noise(integrator.sol.prob)
         integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁)
-        @.. uᵢ₋₂ = uᵢ₋₁ + sqrt(dt)*gₘ₋₂
+        @.. uᵢ₋₂ = uᵢ₋₁ + sqrt(abs(dt))*gₘ₋₂
         integrator.g(gₘ₋₁,uᵢ₋₂,p,tᵢ₋₁)
-        @.. u += gₘ₋₂*W.dW + 1/(2*sqrt(dt))*(gₘ₋₁ - gₘ₋₂)*(W.dW^2 - dt)
+        @.. u += gₘ₋₂*W.dW + 1/(2*sqrt(abs(dt)))*(gₘ₋₁ - gₘ₋₂)*(W.dW^2 - abs(dt))
       else
         integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁)
         mul!(uᵢ₋₁,gₘ₋₂,W.dW)
@@ -187,7 +187,7 @@ end
 
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
-  cache.mdeg = Int(floor(sqrt((2*dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1))
+  cache.mdeg = Int(floor(sqrt((2*abs(dt)*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1))
   cache.mdeg = max(3,min(cache.mdeg,200))-2
   choose_deg!(integrator,cache)
 
@@ -319,7 +319,7 @@ end
 
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
-  ccache.mdeg = Int(floor(sqrt((2*dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1))
+  ccache.mdeg = Int(floor(sqrt((2*abs(dt)*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1))
   ccache.mdeg = max(3,min(ccache.mdeg,200))-2
   choose_deg!(integrator,cache)
 
@@ -461,9 +461,9 @@ end
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
   if integrator.alg.strong_order_1
-    cache.mdeg = Int(floor(sqrt(dt*integrator.opts.internalnorm(integrator.eigen_est,t)/0.19)+1))
+    cache.mdeg = Int(floor(sqrt(abs(dt)*integrator.opts.internalnorm(integrator.eigen_est,t)/0.19)+1))
   else
-    cache.mdeg = Int(floor(sqrt(dt*integrator.opts.internalnorm(integrator.eigen_est,t)/0.33)+1))
+    cache.mdeg = Int(floor(sqrt(abs(dt)*integrator.opts.internalnorm(integrator.eigen_est,t)/0.33)+1))
   end
   cache.mdeg = max(3,min(cache.mdeg,200))
   choose_deg!(integrator,cache)
@@ -552,9 +552,9 @@ end
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
   if integrator.alg.strong_order_1
-    ccache.mdeg = Int(floor(sqrt(dt*integrator.opts.internalnorm(integrator.eigen_est,t)/0.19)+1))
+    ccache.mdeg = Int(floor(sqrt(abs(dt)*integrator.opts.internalnorm(integrator.eigen_est,t)/0.19)+1))
   else
-    ccache.mdeg = Int(floor(sqrt(dt*integrator.opts.internalnorm(integrator.eigen_est,t)/0.33)+1))
+    ccache.mdeg = Int(floor(sqrt(abs(dt)*integrator.opts.internalnorm(integrator.eigen_est,t)/0.33)+1))
   end
   ccache.mdeg = max(3,min(ccache.mdeg,200))
   choose_deg!(integrator,cache)
@@ -643,7 +643,7 @@ end
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
   η = oftype(t,0.05)
-  mdeg = Int(floor(sqrt((dt*integrator.opts.internalnorm(integrator.eigen_est,t) + 1.5)/(2-η*4/3))+1))
+  mdeg = Int(floor(sqrt((abs(dt)*integrator.opts.internalnorm(integrator.eigen_est,t) + 1.5)/(2-η*4/3))+1))
   mdeg = max(3,min(mdeg,200))
 
   ω₀ = 1 + (η/(mdeg^2))
@@ -729,7 +729,7 @@ end
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
   η = oftype(t,0.05)
-  mdeg = Int(floor(sqrt((dt*integrator.opts.internalnorm(integrator.eigen_est,t) + 1.5)/(2-η*4/3))+1))
+  mdeg = Int(floor(sqrt((abs(dt)*integrator.opts.internalnorm(integrator.eigen_est,t) + 1.5)/(2-η*4/3))+1))
   mdeg = max(3,min(mdeg,200))
 
   ω₀ = 1 + (η/(mdeg^2))
@@ -819,8 +819,8 @@ end
 
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
-  (integrator.alg.version_num <= 2) && (cache.mdeg = Int(floor(sqrt((dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1)))
-  (integrator.alg.version_num > 2) && (cache.mdeg = Int(floor(sqrt((dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.611)+1)))
+  (integrator.alg.version_num <= 2) && (cache.mdeg = Int(floor(sqrt((abs(dt)*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1)))
+  (integrator.alg.version_num > 2) && (cache.mdeg = Int(floor(sqrt((abs(dt)*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.611)+1)))
 
   cache.mdeg = max(4,min(cache.mdeg,200))-2
   choose_deg!(integrator,cache)
@@ -974,8 +974,8 @@ end
 
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
-  (integrator.alg.version_num <= 2) && (ccache.mdeg = Int(floor(sqrt((dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1)))
-  (integrator.alg.version_num > 2) && (ccache.mdeg = Int(floor(sqrt((dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.611)+1)))
+  (integrator.alg.version_num <= 2) && (ccache.mdeg = Int(floor(sqrt((abs(dt)*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1)))
+  (integrator.alg.version_num > 2) && (ccache.mdeg = Int(floor(sqrt((abs(dt)*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.611)+1)))
   ccache.mdeg = max(4,min(ccache.mdeg,200))-2
   choose_deg!(integrator,cache)
 
@@ -1109,7 +1109,7 @@ end
 
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
-  cache.mdeg = Int(floor(sqrt((2*dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1))
+  cache.mdeg = Int(floor(sqrt((2*abs(dt)*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1))
   cache.mdeg = max(6,min(cache.mdeg,200))-2
   choose_deg!(integrator,cache)
 
@@ -1298,7 +1298,7 @@ end
 
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
-  ccache.mdeg = Int(floor(sqrt((2*dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1))
+  ccache.mdeg = Int(floor(sqrt((2*abs(dt)*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1))
   ccache.mdeg = max(6,min(ccache.mdeg,200))-2
   choose_deg!(integrator,cache)
 
@@ -1511,7 +1511,7 @@ end
 
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
-  cache.mdeg = Int(floor(sqrt((2*dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1))
+  cache.mdeg = Int(floor(sqrt((2*abs(dt)*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1))
   cache.mdeg = max(3,min(cache.mdeg,200))-2
   choose_deg!(integrator,cache)
 
@@ -1597,7 +1597,7 @@ end
 
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
-  ccache.mdeg = Int(floor(sqrt((2*dt*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1))
+  ccache.mdeg = Int(floor(sqrt((2*abs(dt)*integrator.opts.internalnorm(integrator.eigen_est,t)+1.5)/0.811)+1))
   ccache.mdeg = max(3,min(ccache.mdeg,200))-2
   choose_deg!(integrator,cache)
 
