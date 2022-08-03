@@ -121,6 +121,21 @@ end
   @.. u = uprev + dt * rtmp
 end
 
+@muladd function perform_step!(integrator,cache::RandomHeunConstantCache)
+    @unpack t,dt,uprev,u,W,p,f = integrator
+    ftmp = integrator.f(uprev,p,t,W.curW)
+    tmp = @.. uprev + dt * ftmp 
+    u = uprev .+ (dt / 2) .* (ftmp .+ integrator.f(tmp,p,t+dt, W.curW .+ W.dW)) # Need to check the last argument, if it should also be in terms of an intermediate step
+    integrator.u = u
+end
+  
+@muladd function perform_step!(integrator,cache::RandomHeunCache)
+    @unpack rtmp1, rtmp2 = cache
+    @unpack t,dt,uprev,u,W,p,f = integrator
+    integrator.f(rtmp1,uprev,p,t,W.curW)
+    @.. u = uprev + dt * rtmp1
+end
+
 # weak approximation EM
 @muladd function perform_step!(integrator,cache::SimplifiedEMConstantCache)
   @unpack t,dt,uprev,u,W,p,f = integrator
