@@ -79,8 +79,13 @@ function alg_cache(alg::SROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_protot
   uᵢ₋₂ = zero(u)
   Gₛ = zero(noise_rate_prototype)
   Gₛ₁ = zero(noise_rate_prototype)
-  WikRange = false .* vec(ΔW)
-  vec_χ = false .* vec(ΔW)
+  if typeof(ΔW) <: Union{SArray,Number}
+    WikRange = copy(ΔW)
+    vec_χ = copy(ΔW)
+  else
+    WikRange = false .* vec(ΔW)
+    vec_χ = false .* vec(ΔW)
+  end
   tmp  = uᵢ₋₂            # these 2 variables are dummied to use same memory
   fsalfirst = k
   atmp = zero(rate_prototype)
@@ -125,7 +130,11 @@ function alg_cache(alg::SROCKEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_proto
   else
     Gₛ₁ = zero(noise_rate_prototype)
   end
-  WikRange = false .* vec(ΔW)
+  if typeof(ΔW) <: Union{SArray,Number}
+    WikRange = copy(ΔW)
+  else
+    WikRange = false .* vec(ΔW)
+  end
   tmp  = zero(u)             # these 3 variables are dummied to use same memory
   fsalfirst = k
   atmp = zero(rate_prototype)
@@ -164,7 +173,11 @@ function alg_cache(alg::SKSROCK,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_proto
   Gₛ = zero(noise_rate_prototype)
   tmp  = uᵢ₋₂             # Dummmy variables
   fsalfirst = k
-  WikRange = false .* vec(ΔW)
+  if typeof(ΔW) <: Union{SArray,Number}
+    WikRange = copy(ΔW)
+  else
+    WikRange = false .* vec(ΔW)
+  end
   atmp = zero(rate_prototype)
   constantcache = SKSROCKConstantCache{typeof(t)}(u)
   SKSROCKCache(u,uprev,uᵢ₋₁,uᵢ₋₂,Gₛ,tmp,k,fsalfirst,WikRange,atmp,constantcache)

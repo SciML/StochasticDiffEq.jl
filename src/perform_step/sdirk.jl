@@ -29,7 +29,7 @@
       K = @.. uprev + dt * ftmp
       utilde =  K + L*integrator.sqdt
       ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
-      mil_correction = ggprime .* (integrator.W.dW.^2 .- dt)./2
+      mil_correction = ggprime .* (integrator.W.dW.^2 .- abs(dt))./2
       gtmp += mil_correction
     elseif alg_interpretation(alg) == :Stratonovich ||
            typeof(cache) <: ImplicitEulerHeunConstantCache
@@ -158,7 +158,7 @@ end
       @.. z = uprev + dt * tmp + integrator.sqdt * gtmp
       integrator.g(gtmp3,z,p,t)
       @.. gtmp3 = (gtmp3-gtmp)/(integrator.sqdt) # ggprime approximation
-      @.. gtmp2 += gtmp3*(dW.^2 - dt)/2
+      @.. gtmp2 += gtmp3*(dW.^2 - abs(dt))/2
     elseif alg_interpretation(alg) == :Stratonovich
       @.. z = uprev + integrator.sqdt * gtmp
       integrator.g(gtmp3,z,p,t)
