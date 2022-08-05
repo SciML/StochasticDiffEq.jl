@@ -198,7 +198,7 @@ end
   σ = (1-α)*1//2 + α*mσ[deg_index]
   τ = 1//2*((1-α)^2) + 2*α*(1-α)*mσ[deg_index] + (α^2)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
 
-  sqrt_dt   = sqrt(dt)
+  sqrt_dt   = sqrt(abs(dt))
 
   μ = recf[start]  # here κ = 0
   tᵢ = t + α*dt*μ
@@ -258,7 +258,7 @@ end
 
     uₓ = integrator.f(uₓ,p,tₓ)
     u  += (1//2*dt)*uₓ
-    uₓ  = 1//2 .* Gₛ .* (W.dW .^ 2 .- dt)
+    uₓ  = 1//2 .* Gₛ .* (W.dW .^ 2 .- abs(dt))
     uᵢ₋₂ = uᵢ + uₓ
     Gₛ₁ = integrator.g(uᵢ₋₂,p,tᵢ)
     u   += (1//2)*Gₛ₁
@@ -284,7 +284,7 @@ end
     u  += (1//2)*dt*uₓ
     for i in 1:length(W.dW)
       WikJ = W.dW[i]; WikJ2 = vec_χ[i]
-      WikRange = 1//2 .* (W.dW .* WikJ .- (1:length(W.dW) .== i) .* dt) #.- (1:length(W.dW) .> i) .* dt .* vec_χ .+ (1:length(W.dW) .< i) .* dt .* WikJ2)
+      WikRange = 1//2 .* (W.dW .* WikJ .- (1:length(W.dW) .== i) .* abs(dt)) #.- (1:length(W.dW) .> i) .* dt .* vec_χ .+ (1:length(W.dW) .< i) .* dt .* WikJ2)
       uₓ = Gₛ*WikRange
       WikRange = 1//2 .* (1:length(W.dW) .== i)
       uᵢ₋₂ = uᵢ + uₓ
@@ -330,7 +330,7 @@ end
   σ = (1-α)*1//2 + α*mσ[deg_index]
   τ = 1//2*((1-α)^2) + 2*α*(1-α)*mσ[deg_index] + (α^2)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
 
-  sqrt_dt   = sqrt(dt)
+  sqrt_dt   = sqrt(abs(dt))
   if gen_prob
     vec_χ .= 1//2 .+ oftype(W.dW, rand(W.rng, length(W.dW)))
     @.. vec_χ = 2*floor(vec_χ) - 1
@@ -396,7 +396,7 @@ end
     integrator.f(k,uₓ,p,tₓ)
     @.. u  += (1//2)*dt*k
 
-    @.. uₓ  = Gₛ*((W.dW^2 - dt)/2)
+    @.. uₓ  = Gₛ*((W.dW^2 - abs(dt))/2)
     @.. uᵢ₋₂ = uᵢ + uₓ
     integrator.g(Gₛ₁,uᵢ₋₂,p,tᵢ)
     @.. u   += (1//2)*Gₛ₁
@@ -425,7 +425,7 @@ end
 
       for i in 1:length(W.dW)
         WikJ = W.dW[i]; WikJ2 = vec_χ[i]
-        WikRange .= 1//2 .* (W.dW .* WikJ .- (1:length(W.dW) .== i) .* dt )#.+ (1:length(W.dW) .< i) .* dt .* WikJ2 .- (1:length(W.dW) .> i) .* dt .* vec_χ)
+        WikRange .= 1//2 .* (W.dW .* WikJ .- (1:length(W.dW) .== i) .* abs(dt) )#.+ (1:length(W.dW) .< i) .* dt .* WikJ2 .- (1:length(W.dW) .> i) .* dt .* vec_χ)
         mul!(uₓ,Gₛ,WikRange)
         @.. uᵢ₋₂ = uᵢ + uₓ
         WikRange .= 1//2 .* (1:length(W.dW) .== i)
@@ -517,7 +517,7 @@ end
 
   if integrator.alg.strong_order_1
     if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || (is_diagonal_noise(integrator.sol.prob))
-      uᵢ₋₂  = @. 1//2 * Gₛ * (W.dW ^ 2 - dt)
+      uᵢ₋₂  = @. 1//2 * Gₛ * (W.dW ^ 2 - abs(dt))
       tmp = @. u + uᵢ₋₂
       Gₛ  = integrator.g(tmp,p,tᵢ)
       uᵢ₋₁ = @. 1//2*Gₛ
@@ -528,7 +528,7 @@ end
     else
       for i in 1:length(W.dW)
         WikJ = W.dW[i]
-        WikRange = 1//2 .* (W.dW .* WikJ - (1:length(W.dW) .== i) .* dt)
+        WikRange = 1//2 .* (W.dW .* WikJ - (1:length(W.dW) .== i) .* abs(dt))
         uᵢ₋₂ = Gₛ*WikRange
         WikRange = 1//2 .* (1:length(W.dW) .== i)
         tmp = u + uᵢ₋₂
@@ -608,7 +608,7 @@ end
 
   if integrator.alg.strong_order_1
     if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || (is_diagonal_noise(integrator.sol.prob))
-      @.. uᵢ₋₂  = 1//2*Gₛ*(W.dW^2 - dt)
+      @.. uᵢ₋₂  = 1//2*Gₛ*(W.dW^2 - abs(dt))
       @.. tmp = u + uᵢ₋₂
       integrator.g(Gₛ,tmp,p,tᵢ)
       @.. uᵢ₋₁ = 1//2*Gₛ
@@ -619,7 +619,7 @@ end
     else
       for i in 1:length(W.dW)
         WikJ = W.dW[i]
-        WikRange .= 1//2 .* (WikJ .* W.dW .- (1:length(W.dW) .== i) .* dt)
+        WikRange .= 1//2 .* (WikJ .* W.dW .- (1:length(W.dW) .== i) .* abs(dt))
         mul!(uᵢ₋₂,Gₛ,WikRange)
         WikRange .= 1//2 .* (1:length(W.dW) .== i)
         @.. tmp = u + uᵢ₋₂
@@ -834,7 +834,7 @@ end
 
   η₁ = (rand() < 1//2) ? -1 : 1
   η₂ = (rand() < 1//2) ? -1 : 1
-  sqrt_dt   = sqrt(dt)
+  sqrt_dt   = sqrt(abs(dt))
 
   Û₁ = zero(u)
   Û₂ = zero(u)
@@ -901,7 +901,7 @@ end
     uₓ += Gₛ*W.dW
 
     uₓ = integrator.f(uₓ,p,tₓ)
-    u  += (1//2*dt)*uₓ + Gₛ*((W.dW^2 - dt)/(η₁*sqrt_dt) - W.dW)
+    u  += (1//2*dt)*uₓ + Gₛ*((W.dW^2 - abs(dt))/(η₁*sqrt_dt) - W.dW)
     Û₁ -= (η₁*sqrt_dt/2)*Gₛ
     Û₂ += (η₁*sqrt_dt/2)*Gₛ
 
@@ -909,7 +909,7 @@ end
     u += Gₛ*W.dW
 
     Gₛ = integrator.g(Û₁,p,t̂₁)
-    u += Gₛ*(W.dW - (W.dW^2 - dt)/(η₁*sqrt_dt))
+    u += Gₛ*(W.dW - (W.dW^2 - abs(dt))/(η₁*sqrt_dt))
   elseif is_diagonal_noise(integrator.sol.prob)
 
     Gₛ = integrator.g(Û₁,p,t̂₁)
@@ -922,13 +922,13 @@ end
     uₓ = integrator.f(uₓ,p,tₓ)
     u  += (1//2)*dt*uₓ
 
-    u .+= Gₛ .* ((W.dW .^ 2 .- dt) ./ (η₁*sqrt_dt) .- W.dW)
+    u .+= Gₛ .* ((W.dW .^ 2 .- abs(dt)) ./ (η₁*sqrt_dt) .- W.dW)
 
     Gₛ = integrator.g(Û₂,p,t̂₂)
     u .+= Gₛ .* W.dW
 
     Gₛ = integrator.g(Û₁,p,t̂₁)
-    u .-= Gₛ .* ((W.dW .^ 2 .- dt) ./ (η₁*sqrt_dt) .- W.dW)
+    u .-= Gₛ .* ((W.dW .^ 2 .- abs(dt)) ./ (η₁*sqrt_dt) .- W.dW)
   else
       Gₛ = integrator.g(Û₁,p,t̂₁)
 
@@ -945,7 +945,7 @@ end
       for i in 1:length(W.dW)
         uᵢ₋₁ = Û₁ - (1//2*η₁*sqrt_dt)*@view(Gₛ[:,i])
         Gₛ₁ = integrator.g(uᵢ₋₁,p,t̂₁)
-        u += @view(Gₛ₁[:,i])*W.dW[i] + (@view(Gₛ[:,i]) - @view(Gₛ₁[:,i]))*((W.dW[i]^2 - dt)/(η₁*sqrt_dt))
+        u += @view(Gₛ₁[:,i])*W.dW[i] + (@view(Gₛ[:,i]) - @view(Gₛ₁[:,i]))*((W.dW[i]^2 - abs(dt))/(η₁*sqrt_dt))
       end
 
       for i in 1:length(W.dW)
@@ -988,7 +988,7 @@ end
 
   η₁ = (rand() < 1//2) ? -1 : 1
   η₂ = (rand() < 1//2) ? -1 : 1
-  sqrt_dt   = sqrt(dt)
+  sqrt_dt   = sqrt(abs(dt))
 
   @.. Û₁ = zero(eltype(u))
   @.. Û₂ = zero(eltype(u))
@@ -1056,7 +1056,7 @@ end
     @.. uₓ += Gₛ*W.dW
 
     integrator.f(k,uₓ,p,tₓ)
-    @.. u  += (1//2*dt)*k + Gₛ*((W.dW^2 - dt)/(η₁*sqrt_dt) - W.dW)
+    @.. u  += (1//2*dt)*k + Gₛ*((W.dW^2 - abs(dt))/(η₁*sqrt_dt) - W.dW)
     @.. Û₁ -= (η₁*sqrt_dt/2)*Gₛ
     @.. Û₂ += (η₁*sqrt_dt/2)*Gₛ
 
@@ -1064,7 +1064,7 @@ end
     @.. u += Gₛ*W.dW
 
     integrator.g(Gₛ,Û₁,p,t̂₁)
-    @.. u += Gₛ*(W.dW - (W.dW^2 - dt)/(η₁*sqrt_dt))
+    @.. u += Gₛ*(W.dW - (W.dW^2 - abs(dt))/(η₁*sqrt_dt))
   else
       integrator.g(Gₛ,Û₁,p,t̂₁)
 
@@ -1081,7 +1081,7 @@ end
       for i in 1:length(W.dW)
         @.. uᵢ₋₁ = Û₁ - (1//2*η₁*sqrt_dt)*@view(Gₛ[:,i])
         integrator.g(Gₛ₁,uᵢ₋₁,p,t̂₁)
-        @.. u += @view(Gₛ₁[:,i])*W.dW[i] + (@view(Gₛ[:,i]) - @view(Gₛ₁[:,i]))*((W.dW[i]^2 - dt)/(η₁*sqrt_dt))
+        @.. u += @view(Gₛ₁[:,i])*W.dW[i] + (@view(Gₛ[:,i]) - @view(Gₛ₁[:,i]))*((W.dW[i]^2 - abs(dt))/(η₁*sqrt_dt))
       end
 
       for i in 1:length(W.dW)
@@ -1120,7 +1120,7 @@ end
   σ = mσ[deg_index]
   τ = mτ[deg_index]
 
-  sqrt_dt   = sqrt(dt)
+  sqrt_dt   = sqrt(abs(dt))
   (gen_prob) && (vec_χ = 2 .* floor.( 1//2 .+ false .* W.dW .+ rand(length(W.dW))) .- 1)
 
   tᵢ₋₂ = t
@@ -1309,7 +1309,7 @@ end
   σ = mσ[deg_index]
   τ = mτ[deg_index]
 
-  sqrt_dt   = sqrt(dt)
+  sqrt_dt   = sqrt(abs(dt))
   (gen_prob) && (vec_χ .= 2 .* floor.(1//2 .+ false .* vec_χ .+ rand(length(vec_χ))) .- 1)
 
   tᵢ₋₂ = t

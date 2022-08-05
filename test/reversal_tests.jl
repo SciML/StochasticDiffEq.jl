@@ -43,8 +43,17 @@ Ito_solver = [
   WangLi3SMil_E(),
   WangLi3SMil_F(),
   RKMil(),
+  SRI(),
+  SRIW1(),
+  SRIW2(),
+  SOSRI(),
+  SOSRI2(),
   # S-Rock methods
   SROCK1(),
+  SROCKEM(),
+  SROCK2(),
+  SKSROCK(),
+  TangXiaoSROCK2(),
   # stiff methods
   ImplicitEM(),
   ImplicitRKMil(),
