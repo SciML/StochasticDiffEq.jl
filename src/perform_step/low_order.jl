@@ -125,7 +125,7 @@ end
     @unpack t,dt,uprev,u,W,p,f = integrator
     ftmp = integrator.f(uprev,p,t,W.curW)
     tmp = @.. uprev + dt * ftmp 
-    u = uprev .+ (dt / 2) .* (ftmp .+ integrator.f(tmp,p,t+dt, W.curW .+ W.dW)) # Need to check the last argument, if it should also be in terms of an intermediate step
+    u = uprev .+ (dt / 2) .* (ftmp .+ integrator.f(tmp,p,t+dt, W.curW .+ W.dW))
     integrator.u = u
 end
   
@@ -134,6 +134,7 @@ end
     @unpack t,dt,uprev,u,W,p,f = integrator
     integrator.f(rtmp1,uprev,p,t,W.curW)
     @.. u = uprev + dt * rtmp1
+    integrator.f(rtmp1,u,p,t,W.curW)
 end
 
 # weak approximation EM
