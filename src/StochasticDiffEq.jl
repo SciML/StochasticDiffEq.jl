@@ -166,6 +166,7 @@ using DocStringExtensions
          StochasticDiffEqRODECompositeAlgorithm
 
   export RandomEM
+  
   export RandomHeun
 
   export IteratedIntegralApprox, IICommutative, IILevyArea
