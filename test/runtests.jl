@@ -9,7 +9,7 @@ end
 
 const LONGER_TESTS = false
 
-const GROUP = "Interface" # get(ENV, "GROUP", "All")
+const GROUP = get(ENV, "GROUP", "All")
 
 const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
 
