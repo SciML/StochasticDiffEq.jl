@@ -197,7 +197,7 @@ end
   if alg_interpretation(integrator.alg) == :Ito
     utilde =  K + L*integrator.sqdt
     ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
-    mil_correction = ggprime.*(W.dW.^2 .- dt)./2
+    mil_correction = ggprime.*(W.dW.^2 .- abs(dt))./2
   elseif alg_interpretation(integrator.alg) == :Stratonovich
     utilde = uprev + L*integrator.sqdt
     ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
@@ -206,6 +206,7 @@ end
     error("Alg interpretation invalid. Use either :Ito or :Stratonovich")
   end
   u = K+L.*W.dW+mil_correction
+
   if integrator.opts.adaptive
     du2 = integrator.f(K,p,t+dt)
     Ed = dt*(du2 - du1)/2
@@ -219,31 +220,6 @@ end
   integrator.u = u
 end
 
-#=
-@muladd function perform_step!(integrator,cache::RKMilCache)
-  @unpack du1,du2,K,tmp,L = cache
-  @unpack t,dt,uprev,u,W,p,f = integrator
-  integrator.f(du1,uprev,p,t)
-  integrator.g(L,uprev,p,t)
-  @.. K = uprev + dt * du1
-  @.. tmp = K + integrator.sqdt * L
-  integrator.g(du2,tmp,p,t)
-  if alg_interpretation(integrator.alg) == :Ito
-    @.. tmp = (du2-L)/(2integrator.sqdt)*(W.dW^2 - dt)
-  elseif alg_interpretation(integrator.alg) == :Stratonovich
-    @.. tmp = (du2-L)/(2integrator.sqdt)*(W.dW^2)
-  else
-    error("Alg interpretation invalid. Use either :Ito or :Stratonovich")
-  end
-  @.. u = K+L*W.dW + tmp
-  if integrator.opts.adaptive
-    @.. tmp = (tmp)/(integrator.opts.abstol + max(integrator.opts.internalnorm(uprev,t),integrator.opts.internalnorm(u,t))*integrator.opts.reltol)
-    integrator.EEst = integrator.opts.internalnorm(tmp,t)
-  end
-  integrator.u = u
-end
-=#
-
 @muladd function perform_step!(integrator,cache::RKMilCache)
   @unpack du1,du2,K,tmp,L = cache
   @unpack t,dt,uprev,u,W,p,f = integrator
@@ -254,7 +230,7 @@ end
   if alg_interpretation(integrator.alg) == :Ito
     @.. tmp = K + integrator.sqdt * L
     integrator.g(du2,tmp,p,t)
-    @.. tmp = (du2-L)/(2integrator.sqdt)*(W.dW.^2 - dt)
+    @.. tmp = (du2-L)/(2integrator.sqdt)*(W.dW.^2 - abs(dt))
   elseif alg_interpretation(integrator.alg) == :Stratonovich
     @.. tmp = uprev + integrator.sqdt * L
     integrator.g(du2,tmp,p,t)
@@ -287,9 +263,9 @@ end
   mil_correction = zero(u)
   if alg_interpretation(integrator.alg) == :Ito
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
-      J = J .- 1//2 .* dt
+      J = J .- 1//2 .* abs(dt)
     else
-      J -= 1//2 .* UniformScaling(dt)
+      J -= 1//2 .* UniformScaling(abs(dt))
     end
   end
 
@@ -355,9 +331,9 @@ end
   @.. mil_correction = zero(u)
   if alg_interpretation(integrator.alg) == :Ito
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
-      @.. J -= 1//2*dt
+      @.. J -= 1 // 2 * abs(dt)
     else
-      J -= 1//2 .* UniformScaling(dt)
+      J -= 1//2 .* UniformScaling(abs(dt))
     end
   end
 
@@ -409,9 +385,9 @@ end
 
   if alg_interpretation(integrator.alg) == :Ito
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
-      J = J .- 1//2 .* dt
+      J = J .- 1//2 .* abs(dt)
     else
-      J -= 1//2 .* UniformScaling(dt)
+      J -= 1//2 .* UniformScaling(abs(dt))
     end
   end
 
@@ -479,9 +455,9 @@ end
 
   if alg_interpretation(integrator.alg) == :Ito
     if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
-      @.. J -= 1//2*dt
+      @.. J -= 1 // 2 * abs(dt)
     else
-      J -= 1//2 .* UniformScaling(dt)
+      J -= 1 // 2 .* UniformScaling(abs(dt))
     end
   end
 

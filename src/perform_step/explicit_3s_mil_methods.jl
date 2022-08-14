@@ -16,7 +16,7 @@
   k  = integrator.g(u,p,t)
   tmp = u + k*integrator.sqdt
   k₁ = integrator.g(tmp,p,t)
-  k₁ = (k₁ - k)/(integrator.sqdt)
+  k₁ = (k₁ - k)/abs(integrator.sqdt)
   u  = u .+ k .* W.dW .+ 0.5 .* (W.dW .^ 2) .* k₁
   integrator.u = u
 end
@@ -40,7 +40,7 @@ end
   integrator.g(k,u,p,t)
   @.. tmp = u + k*integrator.sqdt
   integrator.g(k₁,tmp,p,t)
-  @.. k₁ = (k₁ - k)/(integrator.sqdt)
+  @.. k₁ = (k₁ - k)/abs(integrator.sqdt)
   @.. u  = u + k*W.dW + (W.dW^2/2)*k₁
   integrator.u = u
 end
@@ -62,7 +62,7 @@ end
   k   = integrator.g(u,p,t)
   tmp = u + k*integrator.sqdt
   k₁  = integrator.g(tmp,p,t)
-  k₁  = (k₁ - k)/integrator.sqdt
+  k₁  = (k₁ - k)/abs(integrator.sqdt)
   u   = u - (dt/2)*k₁
   integrator.u = u
 end
@@ -86,7 +86,7 @@ end
   integrator.g(k,u,p,t)
   @.. tmp = u + k*integrator.sqdt
   integrator.g(k₁,tmp,p,t)
-  @.. k₁  = (k₁ - k)/integrator.sqdt
+  @.. k₁  = (k₁ - k)/abs(integrator.sqdt)
   @.. u   = u - (dt/2)*k₁
 
   integrator.u = u
@@ -109,7 +109,7 @@ end
   k  = integrator.g(u,p,t)
   tmp = u + k*integrator.sqdt
   k₁ = integrator.g(tmp,p,t)
-  k₁ = (k₁ - k)/(integrator.sqdt)
+  k₁ = (k₁ - k)/abs(integrator.sqdt)
   u  = u - (dt/2)*k₁
   integrator.u = u
 end
@@ -133,7 +133,7 @@ end
   integrator.g(k,u,p,t)
   @.. tmp = u + k*integrator.sqdt
   integrator.g(k₁,tmp,p,t)
-  @.. k₁ = (k₁ - k)/(integrator.sqdt)
+  @.. k₁ = (k₁ - k)/abs(integrator.sqdt)
   @.. u  = u - (dt/2)*k₁
   integrator.u = u
 end
@@ -155,7 +155,7 @@ end
   k  = integrator.g(u,p,t)
   tmp = u + k*integrator.sqdt
   k₁ = integrator.g(tmp,p,t)
-  k₁ = (k₁ - k)/(integrator.sqdt)
+  k₁ = (k₁ - k)/abs(integrator.sqdt)
   u  = u .+ k .* W.dW .+ 0.5 .* (W.dW .^ 2) .* k₁
  integrator.u = u
 end
@@ -179,7 +179,7 @@ end
   integrator.g(k,u,p,t)
   @.. tmp = u + k*integrator.sqdt
   integrator.g(k₁,tmp,p,t)
-  @.. k₁ = (k₁ - k)/(integrator.sqdt)
+  @.. k₁ = (k₁ - k)/abs(integrator.sqdt)
   @.. u  = u + k*W.dW + (W.dW^2/2)*k₁
   integrator.u = u
 end
@@ -197,7 +197,7 @@ end
   k  = integrator.g(u,p,t)
   tmp = u + k*integrator.sqdt
   k₁ = integrator.g(tmp,p,t)
-  k₁ = (k₁ - k)/(integrator.sqdt)
+  k₁ = (k₁ - k)/abs(integrator.sqdt)
   u  = u .+ k .* W.dW .+ 0.5 .* (W.dW .^ 2) .* k₁
 
   #stage 3
@@ -221,7 +221,7 @@ end
   integrator.g(k,u,p,t)
   @.. tmp = u + k*integrator.sqdt
   integrator.g(k₁,tmp,p,t)
-  @.. k₁ = (k₁ - k)/(integrator.sqdt)
+  @.. k₁ = (k₁ - k)/abs(integrator.sqdt)
   @.. u  = u + k*W.dW + (W.dW^2/2)*k₁
 
   #stage 3
@@ -243,7 +243,7 @@ end
   k   = integrator.g(u,p,t)
   tmp = u + k*integrator.sqdt
   k₁  = integrator.g(tmp,p,t)
-  k₁  = (k₁ - k)/integrator.sqdt
+  k₁  = (k₁ - k)/abs(integrator.sqdt)
   u   = u - (dt/2)*k₁
 
   #stage 3
@@ -267,7 +267,7 @@ end
   integrator.g(k,u,p,t)
   @.. tmp = u + k*integrator.sqdt
   integrator.g(k₁,tmp,p,t)
-  @.. k₁  = (k₁ - k)/integrator.sqdt
+  @.. k₁  = (k₁ - k)/abs(integrator.sqdt)
   @.. u   = u - (dt/2)*k₁
 
   #stage 3

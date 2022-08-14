@@ -28,6 +28,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
     @time @safetestset "tstops Tests" begin include("tstops_tests.jl") end
     @time @safetestset "saveat Tests" begin include("saveat_tests.jl") end
     @time @safetestset "Oval2" begin include("oval2_test.jl") end
+    @time @safetestset "Solver Reversal Tests" begin include("reversal_tests.jl") end
   end
 
   if GROUP == "All" || GROUP == "Interface2"
@@ -125,7 +126,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
     @time @safetestset "GPU Weak adaptive step size scalar noise SDE" begin include("gpu/sde_weak_scalar_adaptive_gpu.jl") end
     @time @safetestset "GPU Weak adaptive" begin include("gpu/sde_weak_adaptive_gpu.jl") end
   end
-  
+
   if !is_APPVEYOR && GROUP == "Multithreaded"
     @time @safetestset "Mulithreaded Jump Thread Safety Tests" begin include("multithreaded_jump_test.jl") end
   end

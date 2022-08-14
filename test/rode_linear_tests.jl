@@ -10,11 +10,12 @@ prob = RODEProblem(f,u0,tspan, noise=NoiseWrapper(sol.W))
 sol2 = solve(prob,RandomHeun(),dt=1/100)
 @test abs(sol[end] - sol2[end]) < 0.1
 
-f!(du,u,p,t,W) = (du.=1.01u.+0.87u.*W)
+
+f(du,u,p,t,W) = (du.=1.01u.+0.87u.*W)
 u0 = ones(4)
-prob = RODEProblem(f!,u0,tspan)
+prob = RODEProblem(f,u0,tspan)
 sol = solve(prob,RandomEM(),dt=1/100, save_noise=true)
-prob = RODEProblem(f!,u0,tspan, noise=NoiseWrapper(sol.W))
+prob = RODEProblem(f,u0,tspan, noise=NoiseWrapper(sol.W))
 sol2 = solve(prob,RandomHeun(),dt=1/100)
 @test sum(abs,sol[end]-sol2[end]) < 0.1 * sum(abs, sol[end])
 
