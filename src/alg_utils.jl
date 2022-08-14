@@ -59,6 +59,7 @@ alg_order(alg::IIF1Mil) = 1 // 1
 alg_order(alg::EulerHeun) = 1 // 2
 alg_order(alg::LambaEulerHeun) = 1 // 2
 alg_order(alg::RandomEM) = 1 // 2
+alg_order(alg::RandomHeun) = 1 // 2
 alg_order(alg::SimplifiedEM) = 1 // 2
 alg_order(alg::RKMil) = 1 // 1
 alg_order(alg::RKMilCommute) = 1 // 1
