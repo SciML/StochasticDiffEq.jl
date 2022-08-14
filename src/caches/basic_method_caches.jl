@@ -73,19 +73,20 @@ function alg_cache(alg::RandomEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prot
 end
 
 struct RandomHeunConstantCache <: StochasticDiffEqConstantCache end
-@cache struct RandomHeunCache{uType,rateType} <: StochasticDiffEqMutableCache
+@cache struct RandomHeunCache{uType,rateType,randType} <: StochasticDiffEqMutableCache
   u::uType
   uprev::uType
   tmp::uType
   rtmp1::rateType
   rtmp2::rateType
+  wtmp::randType
 end
 
 alg_cache(alg::RandomHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits} = RandomHeunConstantCache()
 
 function alg_cache(alg::RandomHeun,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
-  tmp = zero(u); rtmp1 = zero(rate_prototype); rtmp2 = zero(rate_prototype)
-  RandomHeunCache(u,uprev,tmp,rtmp1,rtmp2)
+  tmp = zero(u); rtmp1 = zero(rate_prototype); rtmp2 = zero(rate_prototype); wtmp = zero(ΔW)
+  RandomHeunCache(u,uprev,tmp,rtmp1,rtmp2,wtmp)
 end
 
 struct SimplifiedEMConstantCache <: StochasticDiffEqConstantCache end
