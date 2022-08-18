@@ -412,7 +412,7 @@ function DiffEqBase.__init(
       =#
     end
   elseif typeof(prob) <: DiffEqBase.AbstractRODEProblem
-    W = prob.noise
+    W = deepcopy(prob.noise)
     if hasfield(typeof(W),:t) && W.reset
       if W.t[end] != t
         reinit!(W,t, t0=t)
