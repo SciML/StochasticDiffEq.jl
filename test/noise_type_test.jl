@@ -54,7 +54,7 @@ sol = solve(prob,EM(),dt=1/1000)
 @test length(sol.W[1]) == 4
 
 sol2 = solve(prob,EM(),dt=1/1000)
-@test sol.W.curt ≈ sol2.W.curt ≈ last(tspan)
+@test sol.W.curt ≈ sol2.W.curt ≈ 1.0
 
 ff = (u,p,t) -> exp(t)
 W = NoiseFunction(0.0,ff)
@@ -63,8 +63,12 @@ vol(u,p,t) = u
 dt = 0.01
 tspan = (0.0,1.0)
 u0 = 0.0
-prob = SDEProblem(drift,vol,u0,(0.0,1.0), noise=W)
+prob = SDEProblem(drift,vol,u0,tspan, noise=W)
 sol = solve(prob,EM(),dt=0.1)
 @test sol.W.curt ≈ last(tspan)
 sol2 = solve(prob,EM(),dt=0.1)
 @test sol2.W.curt ≈ last(tspan)
+tspan = (0.0,2.0)
+prob = SDEProblem(drift,vol,u0,tspan, noise=W)
+sol = solve(prob,EM(),dt=0.01)
+@test sol.W.curt ≈ last(tspan)
