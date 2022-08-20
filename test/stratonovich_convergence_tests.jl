@@ -1,6 +1,6 @@
 using StochasticDiffEq, Test, Random, DiffEqDevTools
-using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
-using DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear_stratonovich, prob_sde_2Dlinear_stratonovich
+using SDEProblemLibrary: importsdeproblems; importsdeproblems()
+using SDEProblemLibrary: prob_sde_linear_stratonovich, prob_sde_2Dlinear_stratonovich
 Random.seed!(100)
 dts = 1 ./2 .^(10:-1:2) #14->7 good plot
 

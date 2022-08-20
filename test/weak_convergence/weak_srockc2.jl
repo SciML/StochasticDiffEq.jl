@@ -1,8 +1,8 @@
 using StochasticDiffEq, DiffEqDevTools, Test
 using Random
-using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems
+using SDEProblemLibrary: importsdeproblems
 importsdeproblems()
-using DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear
+using SDEProblemLibrary: prob_sde_linear
 
 f_linear_iip(du,u,p,t) = @.(du = 1.01*u)
 σ_linear_iip(du,u,p,t) = @.(du = 0.87*u)

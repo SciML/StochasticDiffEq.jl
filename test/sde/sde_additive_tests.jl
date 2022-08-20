@@ -1,6 +1,6 @@
 using StochasticDiffEq, DiffEqDevTools, Test, Random
-using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
-using DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_additive, prob_sde_additivesystem
+using SDEProblemLibrary: importsdeproblems; importsdeproblems()
+using SDEProblemLibrary: prob_sde_additive, prob_sde_additivesystem
 Random.seed!(100)
 
 println("Bunch of additive solves")

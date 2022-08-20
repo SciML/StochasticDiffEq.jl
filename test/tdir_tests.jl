@@ -1,6 +1,6 @@
 using StochasticDiffEq, Test, Random, DiffEqNoiseProcess
-using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
-using DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_linear, prob_sde_2Dlinear
+using SDEProblemLibrary: importsdeproblems; importsdeproblems()
+using SDEProblemLibrary: prob_sde_linear, prob_sde_2Dlinear
 
 Random.seed!(100)
 
