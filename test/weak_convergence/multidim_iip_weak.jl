@@ -1,8 +1,6 @@
 using StochasticDiffEq, DiffEqDevTools, Test
 using Random
-using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems
-importsdeproblems()
-using DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_2Dlinear
+using SDEProblemLibrary
 Random.seed!(100)
 dts = 1 .//2 .^(7:-1:3) #14->7 good plot
 

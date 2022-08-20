@@ -1,5 +1,4 @@
-using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
-using DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_lorenz, oval2ModelExample
+using SDEProblemLibrary
 
 oval2ModelExample()
 

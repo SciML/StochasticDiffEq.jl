@@ -1,8 +1,6 @@
 using StochasticDiffEq, DiffEqNoiseProcess, Test, Random
 using Random
-using DiffEqProblemLibrary.SDEProblemLibrary
-# load problems
-SDEProblemLibrary.importsdeproblems()
+using SDEProblemLibrary
 # automatically construct SDE transformation for Ito reversal
 using ModelingToolkit
 
@@ -73,8 +71,7 @@ W_forward = NoiseGrid(ts, W, Z)
 W_reverse = reverse(W_forward)
 
 @testset "Additive Noise Solver Reversal Tests ($(["out-of-place", "in-place"][i]))" for i in 1:2
-  prob = (SDEProblemLibrary.prob_sde_additive,
-    SDEProblemLibrary.prob_sde_additivesystem)[i]
+  prob = (prob_sde_additive, prob_sde_additivesystem)[i]
 
   prob_forward = remake(prob, noise=W_forward)
 
@@ -91,8 +88,7 @@ W_reverse = reverse(W_forward)
 end
 
 @testset "Stratonovich Solver Reversal Tests ($(["out-of-place", "in-place"][i]))" for i in 1:2
-  prob = (SDEProblemLibrary.prob_sde_linear_stratonovich,
-    SDEProblemLibrary.prob_sde_2Dlinear_stratonovich)[i]
+  prob = (prob_sde_linear_stratonovich, prob_sde_2Dlinear_stratonovich)[i]
 
   prob_forward = remake(prob, noise=W_forward)
 
@@ -109,8 +105,7 @@ end
 end
 
 @testset "Ito Solver Reversal Tests ($(["out-of-place", "in-place"][i]))" for i in 1:2
-  prob = (SDEProblemLibrary.prob_sde_linear,
-    SDEProblemLibrary.prob_sde_2Dlinear)[i]
+  prob = (prob_sde_linear, prob_sde_2Dlinear)[i]
 
   if i == 1
     prob_forward = remake(prob, noise=W_forward)
