@@ -1,5 +1,4 @@
 using StochasticDiffEq, Test, Random
-using SDEProblemLibrary: importsdeproblems; importsdeproblems()
 using SDEProblemLibrary: prob_sde_2Dlinear
 Random.seed!(100)
 prob = prob_sde_2Dlinear

@@ -1,5 +1,4 @@
 using StochasticDiffEq, Random
-using SDEProblemLibrary: importsdeproblems; importsdeproblems()
 using SDEProblemLibrary: oval2ModelExample
 Random.seed!(200)
 prob = oval2ModelExample(largeFluctuations=true,useBigs=false)
