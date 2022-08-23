@@ -1,6 +1,5 @@
 using StochasticDiffEq, Test, Random
-using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
-using DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_stiffquadito
+using SDEProblemLibrary: prob_sde_stiffquadito
 
 Random.seed!(100)
 prob = prob_sde_stiffquadito

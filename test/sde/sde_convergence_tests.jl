@@ -1,6 +1,5 @@
 using StochasticDiffEq, DiffEqDevTools, Test, Random
-using DiffEqProblemLibrary.SDEProblemLibrary: importsdeproblems; importsdeproblems()
-using DiffEqProblemLibrary.SDEProblemLibrary: prob_sde_wave, prob_sde_cubic, prob_sde_additive
+using SDEProblemLibrary: prob_sde_wave, prob_sde_cubic, prob_sde_additive
 Random.seed!(100)
 dts = (1/2) .^ (10:-1:2) #14->7 good plot
 
