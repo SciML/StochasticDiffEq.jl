@@ -421,6 +421,15 @@ function DiffEqBase.__init(
       if typeof(W) <: NoiseProcess && W.reseed
         Random.seed!(W.rng,_seed)
       end
+      if typeof(W) <: NoiseTransport && W.reseed
+        Random.seed!(W.rng,_seed)
+        if typeof(W.rv) <: AbstractArray
+            W.draw(W.rng, W.rv)
+        else
+            W.rv = W.draw(W.rng)
+        end
+      end
+
     elseif W.curt != t
       error("Starting time in the noise process is not the starting time of the simulation. The noise process should be re-initialized for repeated use")
     end
