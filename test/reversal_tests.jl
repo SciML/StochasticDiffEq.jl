@@ -1,8 +1,6 @@
 using StochasticDiffEq, DiffEqNoiseProcess, Test, Random
 using Random
-using DiffEqProblemLibrary.SDEProblemLibrary
-# load problems
-SDEProblemLibrary.importsdeproblems()
+using SDEProblemLibrary
 # automatically construct SDE transformation for Ito reversal
 using ModelingToolkit
 
