@@ -423,11 +423,11 @@ function DiffEqBase.__init(
       end
       if typeof(W) <: NoiseTransport && W.reseed
         Random.seed!(W.rng,_seed)
-        if typeof(W.rv) <: AbstractArray
-            W.draw(W.rng, W.rv)
+#=         if typeof(W.rv) <: AbstractArray
+            W.RV(W.rng, W.rv)
         else
-            W.rv = W.draw(W.rng)
-        end
+            W.rv = W.RV(W.rng)
+        end =#
       end
 
     elseif W.curt != t
