@@ -5,7 +5,7 @@ function DiffEqBase.__solve(prob::DiffEqBase.AbstractRODEProblem,
                             kwargs...) where recompile_flag
   integrator = DiffEqBase.__init(prob,alg,timeseries,ts,recompile;kwargs...)
   solve!(integrator)
-  integrator.sol
+  deepcopy(integrator.sol)
 end
 
 # Make it easy to grab the RODEProblem/SDEProblem/DiscreteProblem from the keyword arguments
@@ -412,7 +412,7 @@ function DiffEqBase.__init(
       =#
     end
   elseif typeof(prob) <: DiffEqBase.AbstractRODEProblem
-    W = deepcopy(prob.noise)
+    W = prob.noise
     if W.reset
       if W.curt != t
           reinit!(W,t,t0=t)
