@@ -414,20 +414,12 @@ function DiffEqBase.__init(
   elseif typeof(prob) <: DiffEqBase.AbstractRODEProblem
     W = prob.noise
     if W.reset
-      if W.curt != t
-          reinit!(W,t,t0=t)
-      end
       # Reseed
-      if typeof(W) <: NoiseProcess && W.reseed
+      if typeof(W) <: Union{NoiseProcess, NoiseTransport} && W.reseed
         Random.seed!(W.rng,_seed)
       end
-      if typeof(W) <: NoiseTransport && W.reseed
-        Random.seed!(W.rng,_seed)
-#=         if typeof(W.rv) <: AbstractArray
-            W.RV(W.rng, W.rv)
-        else
-            W.rv = W.RV(W.rng)
-        end =#
+      if W.curt != t
+        reinit!(W,t,t0=t)
       end
 
     elseif W.curt != t
