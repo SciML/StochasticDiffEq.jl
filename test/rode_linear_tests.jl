@@ -24,7 +24,7 @@ sol3 = solve(prob,RandomEM(),dt=1/100)
 
 f(u,p,t,W) = 2u*sin(W)
 u0 = 1.00
-tspan = (0.0,5.0)
+tspan = (0.0,1.0)
 prob = RODEProblem{false}(f,u0,tspan)
 sol = solve(prob,RandomEM(),dt=1/100, save_noise=true)
 prob = RODEProblem{false}(f,u0,tspan, noise=NoiseWrapper(sol.W))
@@ -38,7 +38,7 @@ function f(du,u,p,t,W)
   du[2] = -0.2u[2]*cos(W[1] + W[2])
 end
 u0 = [1.00;1.00]
-tspan = (0.0,4.0)
+tspan = (0.0,1.0)
 prob = RODEProblem(f,u0,tspan)
 sol = solve(prob,RandomEM(),dt=1/100, save_noise=true)
 prob = RODEProblem(f,u0,tspan, noise=NoiseWrapper(sol.W))
@@ -52,7 +52,7 @@ function f(du,u,p,t,W)
   du[2] = -0.2u[2]*cos(W[1] + W[2])
 end
 u0 = [1.00;1.00]
-tspan = (0.0,5.0)
+tspan = (0.0,1.0)
 prob = RODEProblem(f,u0,tspan,rand_prototype=zeros(3))
 sol = solve(prob,RandomEM(),dt=1/100, save_noise=true)
 prob = RODEProblem(f,u0,tspan, noise=NoiseWrapper(sol.W))
