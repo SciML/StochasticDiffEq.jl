@@ -850,6 +850,8 @@ struct RandomEM <: StochasticDiffEqRODEAlgorithm end
 
 struct RandomHeun <: StochasticDiffEqRODEAlgorithm end
 
+struct RandomTamedEM <: StochasticDiffEqRODEAlgorithm end
+
 const SplitSDEAlgorithms = Union{IIF1M,IIF2M,IIF1Mil,SKenCarp,SplitEM}
 
 @doc raw"""

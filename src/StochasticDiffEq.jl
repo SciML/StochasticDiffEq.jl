@@ -165,9 +165,7 @@ using DocStringExtensions
   export StochasticDiffEqRODEAlgorithm, StochasticDiffEqRODEAdaptiveAlgorithm,
          StochasticDiffEqRODECompositeAlgorithm
 
-  export RandomEM
-  
-  export RandomHeun
+  export RandomEM, RandomTamedEM, RandomHeun
 
   export IteratedIntegralApprox, IICommutative, IILevyArea
 
