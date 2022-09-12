@@ -121,6 +121,20 @@ end
   @.. u = uprev + dt * rtmp
 end
 
+@muladd function perform_step!(integrator,cache::RandomTamedEMConstantCache)
+    @unpack t,dt,uprev,u,W,p,f = integrator
+    ftmp = integrator.f(uprev,p,t,W.curW)
+    u = uprev .+ dt .* ftmp ./ (1 .+ dt .* norm(ftmp))
+    integrator.u = u
+end
+  
+@muladd function perform_step!(integrator,cache::RandomTamedEMCache)
+    @unpack rtmp = cache
+    @unpack t,dt,uprev,u,W,p,f = integrator
+    integrator.f(rtmp,uprev,p,t,W.curW)
+    @.. u = uprev + dt * rtmp / (1 + dt * norm(rtmp))
+end
+
 @muladd function perform_step!(integrator,cache::RandomHeunConstantCache)
     @unpack t,dt,uprev,u,W,p,f = integrator
     ftmp = integrator.f(uprev,p,t,W.curW)
