@@ -417,8 +417,8 @@ function DiffEqBase.__init(
       end
       =#
     end
-  elseif typeof(prob) <: DiffEqBase.AbstractRODEProblem && (!haskey(kwargs, :alias_noise) || kwargs[:alias_noise] == true)
-    W = deepcopy(prob.noise)
+  elseif typeof(prob) <: DiffEqBase.AbstractRODEProblem
+    W = (!haskey(kwargs, :alias_noise) || kwargs[:alias_noise] == true) ? deepcopy(prob.noise) : prob.noise
     if W.reset
       if W.curt != t
           reinit!(W,t,t0=t)
