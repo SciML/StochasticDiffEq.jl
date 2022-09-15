@@ -5,7 +5,7 @@ function DiffEqBase.__solve(prob::DiffEqBase.AbstractRODEProblem,
                             kwargs...) where recompile_flag
   integrator = DiffEqBase.__init(prob,alg,timeseries,ts,recompile;kwargs...)
   solve!(integrator)
-  if typeof(prob) <: DiffEqBase.AbstractRODEProblem && typeof(prob.noise) == typeof(integrator.sol.W) && (!haskey(kwargs, :alias_noise) || kwargs[:alias_noise] == true)
+  if typeof(prob) <: DiffEqBase.AbstractRODEProblem && typeof(prob.noise) == typeof(integrator.sol.W) && (!haskey(kwargs, :alias_noise) || kwargs[:alias_noise] === true)
     # would be better to make the following a function `noise_deepcopy!(W::T, Z::T) where {T <: AbstractNoiseProcess}` in `DiffEqNoiseProcess.jl` or a proper `copy` overload, but this should do it for the moment
     for x in fieldnames(typeof(prob.noise))
         setfield!(prob.noise, x, deepcopy(getfield(integrator.sol.W, x)))
