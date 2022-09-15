@@ -414,13 +414,14 @@ function DiffEqBase.__init(
   elseif typeof(prob) <: DiffEqBase.AbstractRODEProblem
     W = prob.noise
     if W.reset
-      if W.curt != t
-          reinit!(W,t,t0=t)
-      end
       # Reseed
-      if typeof(W) <: NoiseProcess && W.reseed
+      if typeof(W) <: Union{NoiseProcess, NoiseTransport} && W.reseed
         Random.seed!(W.rng,_seed)
       end
+      if W.curt != t
+        reinit!(W,t,t0=t)
+      end
+
     elseif W.curt != t
       error("Starting time in the noise process is not the starting time of the simulation. The noise process should be re-initialized for repeated use")
     end
