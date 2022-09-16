@@ -49,9 +49,7 @@ function DiffEqBase.__init(
   delta=delta_default(alg),
   maxiters = adaptive ? 1000000 : typemax(Int),
   dtmax=eltype(concrete_prob(_prob).tspan)((concrete_prob(_prob).tspan[end]-concrete_prob(_prob).tspan[1])),
-  dtmin = typeof(one(eltype(concrete_prob(_prob).tspan))) <: AbstractFloat ? eps(eltype(concrete_prob(_prob).tspan)) :
-          typeof(one(eltype(concrete_prob(_prob).tspan))) <: Integer ? 0 :
-          eltype(concrete_prob(_prob).tspan)(1//10^(10)),
+  dtmin = DiffEqBase.prob2dtmin(prob),
   internalnorm = ODE_DEFAULT_NORM,
   isoutofdomain = ODE_DEFAULT_ISOUTOFDOMAIN,
   unstable_check = ODE_DEFAULT_UNSTABLE_CHECK,
