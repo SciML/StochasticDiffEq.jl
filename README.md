@@ -11,7 +11,7 @@ functionality should check out [DifferentialEquations.jl](https://github.com/Sci
 
 ## API
 
-StochasticDiffEq.jl is part of the JuliaDiffEq common interface, but can be used independently of DifferentialEquations.jl. The only requirement is that the user passes an StochasticDiffEq.jl algorithm to `solve`. For example, we can solve the [SDE tutorial from the docs](https://diffeq.sciml.ai/stable/tutorials/sde_example/) using the `SRIW1()` algorithm:
+StochasticDiffEq.jl is part of the JuliaDiffEq common interface, but can be used independently of [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl). The only requirement is that the user passes an StochasticDiffEq.jl algorithm to `solve`. For example, we can solve the [SDE tutorial from the docs](https://diffeq.sciml.ai/stable/tutorials/sde_example/) using the `SRIW1()` algorithm:
 
 ```julia
 using StochasticDiffEq
@@ -66,7 +66,7 @@ end
 prob = SDEProblem(f,g,ones(2),(0.0,1.0),noise_rate_prototype=zeros(2,4))
 ```
 
-Colored noise can be set using [an `AbstractNoiseProcess`](https://diffeq.sciml.ai/stable/features/noise_process/). For example, we can set the underlying noise process to a `GeometricBrownian` via:
+Colored noise can be set using [an `AbstractNoiseProcess`](https://diffeq.sciml.ai/stable/features/noise_process/). For example, we can set the underlying noise process to a `GeometricBrownianMotionProcess` via:
 
 ```julia
 μ = 1.0
