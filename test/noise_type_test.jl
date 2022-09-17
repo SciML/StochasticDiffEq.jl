@@ -37,6 +37,26 @@ sol = solve(prob,SRA())
 
 @test length(sol.W[1]) == 4
 
+f(du,u,p,t) = (du.=1.01u)
+g(du,u,p,t) = (du.=0.1)
+Z = WienerProcess(0.0, [0.0])
+prob = SDEProblem(f,g,[1.0],(0.0,1.0),noise=Z)
+
+sol = solve(prob,EM(),dt=1/100)
+
+@test sol.W == prob.noise
+@test objectid(prob.noise) != objectid(sol.W)
+
+sol = solve(prob,EM(),dt=1/1000,alias_noise=false)
+
+@test sol.W == prob.noise
+@test objectid(prob.noise) == objectid(sol.W)
+
+sol = solve(prob,EM(),dt=1/1000, alias_noise=true)
+
+@test sol.W == prob.noise
+@test objectid(prob.noise) != objectid(sol.W)
+
 function g(du,u,p,t)
   @test typeof(du) <: SparseMatrixCSC
   du[1,1] = 0.3u[1]
@@ -72,3 +92,18 @@ tspan = (0.0,2.0)
 prob = SDEProblem(drift,vol,u0,tspan, noise=W)
 sol = solve(prob,EM(),dt=0.01)
 @test sol.W.curt ≈ last(tspan)
+
+@test typeof(sol.W) == typeof(prob.noise) <: NoiseFunction
+@test objectid(prob.noise) != objectid(sol.W)
+
+sol = solve(prob,EM(),dt=0.01,alias_noise=true)
+@test sol.W.curt ≈ last(tspan)
+
+@test typeof(sol.W) == typeof(prob.noise) <: NoiseFunction
+@test objectid(prob.noise) != objectid(sol.W)
+
+sol = solve(prob,EM(),dt=0.01,alias_noise=false)
+@test sol.W.curt ≈ last(tspan)
+
+@test typeof(sol.W) == typeof(prob.noise) <: NoiseFunction
+@test objectid(prob.noise) == objectid(sol.W)
