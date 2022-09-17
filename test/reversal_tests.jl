@@ -85,8 +85,8 @@ W_reverse = reverse(W_forward)
 
     @test sol_forward(ts).u ≈ sol_reverse(ts).u rtol = 1e-3
     @test length(sol_forward.t) == length(sol_reverse.t)
+    GC.gc()
   end
-  GC.gc()
 end
 
 @testset "Stratonovich Solver Reversal Tests ($(["out-of-place", "in-place"][i]))" for i in 1:2
@@ -104,8 +104,8 @@ end
 
     @test sol_forward(ts).u ≈ sol_reverse(ts).u rtol = 1e-2
     @test length(sol_forward.t) == length(sol_reverse.t)
+    GC.gc()
   end
-  GC.gc()
 end
 
 @testset "Ito Solver Reversal Tests ($(["out-of-place", "in-place"][i]))" for i in 1:2
@@ -140,6 +140,6 @@ end
       @test sol_forward(ts).u ≈ sol_reverse(ts).u rtol = 1e-2
     end
     @test length(sol_forward.t) == length(sol_reverse.t)
+    GC.gc()
   end
-  GC.gc()
 end
