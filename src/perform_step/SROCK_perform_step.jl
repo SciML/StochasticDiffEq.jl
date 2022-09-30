@@ -425,7 +425,8 @@ end
 
       for i in 1:length(W.dW)
         WikJ = W.dW[i]; WikJ2 = vec_χ[i]
-        WikRange .= 1//2 .* (W.dW .* WikJ .- (1:length(W.dW) .== i) .* abs(dt) )#.+ (1:length(W.dW) .< i) .* dt .* WikJ2 .- (1:length(W.dW) .> i) .* dt .* vec_χ)
+        dwrange = 1:length(W.dW)
+        @.. WikRange = 1//2 * (W.dW * WikJ - (dwrange == i) * abs(dt))#.+ (1:length(W.dW) .< i) .* dt .* WikJ2 .- (1:length(W.dW) .> i) .* dt .* vec_χ)
         mul!(uₓ,Gₛ,WikRange)
         @.. uᵢ₋₂ = uᵢ + uₓ
         WikRange .= 1//2 .* (1:length(W.dW) .== i)
@@ -619,7 +620,8 @@ end
     else
       for i in 1:length(W.dW)
         WikJ = W.dW[i]
-        WikRange .= 1//2 .* (WikJ .* W.dW .- (1:length(W.dW) .== i) .* abs(dt))
+        dwrange = 1:length(W.dW)
+        @.. WikRange = 1//2 * (W.dW * WikJ - (dwrange == i) * abs(dt))
         mul!(uᵢ₋₂,Gₛ,WikRange)
         WikRange .= 1//2 .* (1:length(W.dW) .== i)
         @.. tmp = u + uᵢ₋₂
