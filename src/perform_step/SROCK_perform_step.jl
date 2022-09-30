@@ -426,10 +426,11 @@ end
       for i in 1:length(W.dW)
         WikJ = W.dW[i]; WikJ2 = vec_χ[i]
         dwrange = 1:length(W.dW)
-        @.. WikRange = 1//2 * (W.dW * WikJ - (dwrange == i) * abs(dt))#.+ (1:length(W.dW) .< i) .* dt .* WikJ2 .- (1:length(W.dW) .> i) .* dt .* vec_χ)
+        abs_dt = abs(dt)
+        @.. WikRange = 1//2 * (W.dW * WikJ - (dwrange == i) * abs_dt) #+ (dwrange < i) * dt * WikJ2 - (dwrange > i) * dt * vec_χ)
         mul!(uₓ,Gₛ,WikRange)
         @.. uᵢ₋₂ = uᵢ + uₓ
-        WikRange .= 1//2 .* (1:length(W.dW) .== i)
+        @.. WikRange = 1//2 * (dwrange == i)
         integrator.g(Gₛ₁,uᵢ₋₂,p,tᵢ)
         mul!(uᵢ₋₂,Gₛ₁,WikRange)
         @.. u   += uᵢ₋₂
@@ -621,9 +622,10 @@ end
       for i in 1:length(W.dW)
         WikJ = W.dW[i]
         dwrange = 1:length(W.dW)
-        @.. WikRange = 1//2 * (W.dW * WikJ - (dwrange == i) * abs(dt))
+        abs_dt = abs(dt)
+        @.. WikRange = 1//2 * (W.dW * WikJ - (dwrange == i) * abs_dt)
         mul!(uᵢ₋₂,Gₛ,WikRange)
-        WikRange .= 1//2 .* (1:length(W.dW) .== i)
+        @.. WikRange = 1//2 * (dwrange == i)
         @.. tmp = u + uᵢ₋₂
         integrator.g(Gₛ₁,tmp,p,tᵢ)
         mul!(uᵢ₋₁,Gₛ₁,WikRange)
