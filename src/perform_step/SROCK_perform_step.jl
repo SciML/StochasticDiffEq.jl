@@ -1688,6 +1688,8 @@ end
 function init_χ!(vec_χ, W)
     if hasfield(W, :rng)
         rand!(W.rng, vec_χ)
+    elseif isa(W, NoiseWrapper)
+        rand!(W.W.rng, vec_χ)
     else
         rand!(vec_χ)
     end
