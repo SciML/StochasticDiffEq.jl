@@ -332,12 +332,8 @@ end
 
   sqrt_dt   = sqrt(abs(dt))
   if gen_prob
-    if hasfield(W, :rng)
-        rand!(W.rng, vec_χ)
-    else
-        rand!(vec_χ)
-    end
-    @.. vec_χ = 2*floor(vec_χ + 1//2) - 1
+    vec_χ .= 1//2 .+ oftype(W.dW, rand(W.rng, length(W.dW)))
+    @.. vec_χ = 2*floor(vec_χ) - 1
   end
 
   μ = recf[start]  # here κ = 0
