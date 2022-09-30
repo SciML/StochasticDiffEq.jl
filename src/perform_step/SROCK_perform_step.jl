@@ -1686,12 +1686,9 @@ end
 end
 
 function init_χ!(vec_χ, W)
-    if hasfield(typeof(W), :rng)
-        rand!(W.rng, vec_χ)
-    elseif isa(W, NoiseWrapper)
-        rand!(W.source.rng, vec_χ)
-    else
-        rand!(vec_χ)
-    end
+    rand!(rng(W), vec_χ)
     @.. vec_χ = 2*floor(vec_χ + 1//2) - 1
 end
+
+rng(W::DiffEqNoiseProcess.AbstractNoiseProcess) = W.rng
+rng(W::NoiseWrapper) = W.source.rng
