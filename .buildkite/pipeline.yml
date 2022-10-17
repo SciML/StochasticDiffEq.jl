@@ -1,20 +1,15 @@
 steps:
-  - label: "{{matrix.group}}"
+  - label: "{{matrix}}"
     matrix:
-      setup:
-        version:
-          - "1"
-        group:
-          - "Multithreaded"
-          - "OOPWeakConvergence"
-          - "IIPWeakConvergence"
-          - "WeakConvergence2"
-          - "WeakConvergence3"
-          - "WeakConvergence6"
-          - "WeakAdaptiveCPU"
+        - "Multithreaded"
+        - "OOPWeakConvergence"
+        - "IIPWeakConvergence"
+        - "WeakConvergence2"
+        - "WeakConvergence3"
+        - "WeakConvergence6"
+        - "WeakAdaptiveCPU"
     env:
-      BUILDKITE_PLUGIN_JULIA_VERSION: "{{matrix.version}}"
-      GROUP: "{{matrix.group}}"
+      GROUP: "{{matrix}}"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -29,17 +24,12 @@ steps:
     # Don't run Buildkite if the commit message includes the text [skip tests]
     if: build.message !~ /\[skip tests\]/
 
-  - label: "{{matrix.group}}"
+  - label: "{{matrix}}"
     matrix:
-      setup:
-        version:
-          - "1"
-        group:
-          - "SROCKC2WeakConvergence"
-          - "WeakConvergence5"
+        - "SROCKC2WeakConvergence"
+        - "WeakConvergence5"
     env:
-      BUILDKITE_PLUGIN_JULIA_VERSION: "{{matrix.version}}"
-      GROUP: "{{matrix.group}}"
+      GROUP: "{{matrix}}"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -56,16 +46,11 @@ steps:
     if: build.message !~ /\[skip tests\]/
 
   # jobs that have an extended timeout of 360 minutes
-  - label: "{{matrix.group}}"
+  - label: "{{matrix}}"
     matrix:
-      setup:
-        version:
-          - "1"
-        group:
-          - "WeakConvergence4"
+        - "WeakConvergence4"
     env:
-      BUILDKITE_PLUGIN_JULIA_VERSION: "{{matrix.version}}"
-      GROUP: "{{matrix.group}}"
+      GROUP: "{{matrix}}"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -79,7 +64,6 @@ steps:
     timeout_in_minutes: 360
     # Don't run Buildkite if the commit message includes the text [skip tests]
     if: build.message !~ /\[skip tests\]/
-
 
   - label: "WeakAdaptiveGPU"
     plugins:
