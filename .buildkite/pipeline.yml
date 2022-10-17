@@ -1,5 +1,26 @@
 steps:
-  - label: "Multithreaded"
+  - label: "{{matrix.group}}"
+    matrix:
+      setup:
+        version:
+          - "1"
+        group:
+          - "Multithreaded"
+          - "OOPWeakConvergence"
+          - "IIPWeakConvergence"
+          - "WeakConvergence2"
+          - "WeakConvergence3"
+          - "WeakConvergence4"
+          - "WeakConvergence6"
+          - "WeakAdaptiveCPU"
+      adjustments:
+        - with:
+            group: "WeakConvergence4"
+          timeout_in_minutes: 360
+
+    env:
+      BUILDKITE_PLUGIN_JULIA_VERSION: "{{matrix.version}}"
+      GROUP: "{{matrix.group}}"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -10,47 +31,21 @@ steps:
       os: "linux"
       queue: "juliaecosystem"
       arch: "x86_64"
-    env:
-      GROUP: 'Multithreaded'
-    timeout_in_minutes: 240
-    # Don't run Buildkite if the commit message includes the text [skip tests]
-    if: build.message !~ /\[skip tests\]/
-    
-  - label: "OOPWeakConvergence"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - JuliaCI/julia-test#v1:
-          coverage: false
-          julia_args: "--threads=auto"
-    agents:
-      os: "linux"
-      queue: "juliaecosystem"
-      arch: "x86_64"
-    env:
-      GROUP: 'OOPWeakConvergence'
     timeout_in_minutes: 240
     # Don't run Buildkite if the commit message includes the text [skip tests]
     if: build.message !~ /\[skip tests\]/
 
-  - label: "IIPWeakConvergence"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - JuliaCI/julia-test#v1:
-          coverage: false
-          julia_args: "--threads=auto"
-    agents:
-      os: "linux"
-      queue: "juliaecosystem"
-      arch: "x86_64"
+  - label: "{{matrix.group}}"
+    matrix:
+      setup:
+        version:
+          - "1"
+        group:
+          - "SROCKC2WeakConvergence"
+          - "WeakConvergence5"
     env:
-      GROUP: 'IIPWeakConvergence'
-    timeout_in_minutes: 240
-    # Don't run Buildkite if the commit message includes the text [skip tests]
-    if: build.message !~ /\[skip tests\]/
-
-  - label: "SROCKC2WeakConvergence"
+      BUILDKITE_PLUGIN_JULIA_VERSION: "{{matrix.version}}"
+      GROUP: "{{matrix.group}}"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -62,114 +57,10 @@ steps:
       queue: "juliaecosystem"
       arch: "x86_64"
       exclusive: true
-    env:
-      GROUP: 'SROCKC2WeakConvergence'
     timeout_in_minutes: 240
     # Don't run Buildkite if the commit message includes the text [skip tests]
     if: build.message !~ /\[skip tests\]/
 
-  - label: "WeakConvergence2"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - JuliaCI/julia-test#v1:
-          coverage: false
-          julia_args: "--threads=auto"
-    agents:
-      os: "linux"
-      queue: "juliaecosystem"
-      arch: "x86_64"
-    env:
-      GROUP: 'WeakConvergence2'
-    timeout_in_minutes: 240
-    # Don't run Buildkite if the commit message includes the text [skip tests]
-    if: build.message !~ /\[skip tests\]/
-
-  - label: "WeakConvergence3"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - JuliaCI/julia-test#v1:
-          coverage: false
-          julia_args: "--threads=auto"
-    agents:
-      os: "linux"
-      queue: "juliaecosystem"
-      arch: "x86_64"
-    env:
-      GROUP: 'WeakConvergence3'
-    timeout_in_minutes: 240
-    # Don't run Buildkite if the commit message includes the text [skip tests]
-    if: build.message !~ /\[skip tests\]/
-
-  - label: "WeakConvergence4"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - JuliaCI/julia-test#v1:
-          coverage: false
-          julia_args: "--threads=auto"
-    agents:
-      os: "linux"
-      queue: "juliaecosystem"
-      arch: "x86_64"
-      exclusive: true
-    env:
-      GROUP: 'WeakConvergence4'
-    timeout_in_minutes: 360
-    # Don't run Buildkite if the commit message includes the text [skip tests]
-    if: build.message !~ /\[skip tests\]/
-
-  - label: "WeakConvergence5"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - JuliaCI/julia-test#v1:
-          coverage: false
-          julia_args: "--threads=auto"
-    agents:
-      os: "linux"
-      queue: "juliaecosystem"
-      arch: "x86_64"
-      exclusive: true
-    env:
-      GROUP: 'WeakConvergence5'
-    timeout_in_minutes: 240
-    # Don't run Buildkite if the commit message includes the text [skip tests]
-    if: build.message !~ /\[skip tests\]/
-
-  - label: "WeakConvergence6"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - JuliaCI/julia-test#v1:
-          coverage: false
-          julia_args: "--threads=auto"
-    agents:
-      os: "linux"
-      queue: "juliaecosystem"
-      arch: "x86_64"
-    env:
-      GROUP: 'WeakConvergence6'
-    timeout_in_minutes: 240
-    # Don't run Buildkite if the commit message includes the text [skip tests]
-    if: build.message !~ /\[skip tests\]/
-
-  - label: "WeakAdaptiveCPU"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - JuliaCI/julia-test#v1:
-          coverage: false
-    agents:
-      os: "linux"
-      queue: "juliaecosystem"
-      arch: "x86_64"
-    env:
-      GROUP: 'WeakAdaptiveCPU'
-    timeout_in_minutes: 240
-    # Don't run Buildkite if the commit message includes the text [skip tests]
-    if: build.message !~ /\[skip tests\]/
 
   - label: "WeakAdaptiveGPU"
     plugins:
