@@ -413,7 +413,7 @@ function DiffEqBase.__init(
       =#
     end
   elseif typeof(prob) <: DiffEqBase.AbstractRODEProblem
-    W = (!haskey(kwargs, :alias_noise) || kwargs[:alias_noise] === true) ? deepcopy(prob.noise) : prob.noise
+    W = (!haskey(kwargs, :alias_noise) || kwargs[:alias_noise] === true) ? copy(prob.noise) : prob.noise
     if W.reset
       # Reseed
       if typeof(W) <: Union{NoiseProcess, NoiseTransport} && W.reseed
