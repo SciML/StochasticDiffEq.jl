@@ -1,7 +1,7 @@
 name = "StochasticDiffEq"
 uuid = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
 authors = ["Chris Rackauckas <accounts@chrisrackauckas.com>"]
-version = "6.55.0"
+version = "6.56.0"
 
 [deps]
 Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
@@ -48,7 +48,7 @@ OrdinaryDiffEq = "6.4"
 RandomNumbers = "1.5.3"
 RecursiveArrayTools = "2"
 Reexport = "0.2, 1.0"
-SciMLBase = "1.44"
+SciMLBase = "1.70"
 SparseDiffTools = "0.9, 0.10, 1.0"
 StaticArrays = "0.11, 0.12, 1.0"
 UnPack = "0.1, 1.0"
