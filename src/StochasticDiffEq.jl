@@ -106,7 +106,6 @@ using DocStringExtensions
   include("cache_utils.jl")
   include("integrators/integrator_interface.jl")
   include("iterator_interface.jl")
-  include("composite_solution.jl")
   include("solve.jl")
   include("initdt.jl")
   include("perform_step/low_order.jl")
