@@ -46,16 +46,19 @@ sol = solve(prob,EM(),dt=1/100)
 
 @test sol.W == prob.noise
 @test objectid(prob.noise) != objectid(sol.W)
+@test objectid(prob.noise.u) == objectid(prob.noise.W) != objectid(sol.W.W) == objectid(sol.W.u)
 
 sol = solve(prob,EM(),dt=1/1000,alias_noise=false)
 
 @test sol.W == prob.noise
 @test objectid(prob.noise) == objectid(sol.W)
+@test objectid(prob.noise.u) == objectid(prob.noise.W) == objectid(sol.W.W) == objectid(sol.W.u)
 
 sol = solve(prob,EM(),dt=1/1000, alias_noise=true)
 
 @test sol.W == prob.noise
 @test objectid(prob.noise) != objectid(sol.W)
+@test objectid(prob.noise.u) == objectid(prob.noise.W) != objectid(sol.W.W) == objectid(sol.W.u)
 
 function g(du,u,p,t)
   @test typeof(du) <: SparseMatrixCSC
@@ -95,6 +98,9 @@ sol = solve(prob,EM(),dt=0.01)
 
 @test typeof(sol.W) == typeof(prob.noise) <: NoiseFunction
 @test objectid(prob.noise) != objectid(sol.W)
+
+sol = solve(prob,EM(),dt=1/1000,alias_noise=false)
+@test objectid(prob.noise) == objectid(sol.W)
 
 sol = solve(prob,EM(),dt=0.01,alias_noise=true)
 @test sol.W.curt ≈ last(tspan)
