@@ -62,7 +62,7 @@ if isdefined(OrdinaryDiffEq,:FastConvergence)
     import OrdinaryDiffEq:
         calculate_residuals, calculate_residuals!, nlsolve_f, unwrap_cache, islinear
 
-    using OrdinaryDiffEq: NLNewton
+    using OrdinaryDiffEq: NLFunctional, NLAnderson, NLNewton
 else
     using DiffEqBase:
         FastConvergence, Convergence, SlowConvergence, VerySlowConvergence, Divergence
