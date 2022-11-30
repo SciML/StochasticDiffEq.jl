@@ -55,11 +55,19 @@ using OrdinaryDiffEq: nlsolvefail, isnewton, set_new_W!, get_W, _vec, _reshape
 
 using OrdinaryDiffEq: NLSolver
 
-using OrdinaryDiffEq:
-    FastConvergence, Convergence, SlowConvergence, VerySlowConvergence, Divergence
+if isdefined(OrdinaryDiffEq,:FastConvergence)
+    using OrdinaryDiffEq:
+        FastConvergence, Convergence, SlowConvergence, VerySlowConvergence, Divergence
 
-import OrdinaryDiffEq:
-    calculate_residuals, calculate_residuals!, nlsolve_f, unwrap_cache, islinear
+    import OrdinaryDiffEq:
+        calculate_residuals, calculate_residuals!, nlsolve_f, unwrap_cache, islinear
+else
+    using DiffEqBase:
+        FastConvergence, Convergence, SlowConvergence, VerySlowConvergence, Divergence
+
+    import DiffEqBase:
+        calculate_residuals, calculate_residuals!, nlsolve_f, unwrap_cache, islinear
+end
 
   import SciMLBase
 
