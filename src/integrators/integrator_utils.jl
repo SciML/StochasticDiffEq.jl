@@ -381,8 +381,8 @@ end
 nlsolve!(integrator, cache) = DiffEqBase.nlsolve!(cache.nlsolver, cache.nlsolver.cache, integrator)
 
 
-DiffEqBase.nlsolve_f(f, alg::StochasticDiffEqAlgorithm) = f isa SplitSDEFunction && issplit(alg) ? f.f1 : f
-DiffEqBase.nlsolve_f(integrator::SDEIntegrator) =
+OrdinaryDiffEq.nlsolve_f(f, alg::StochasticDiffEqAlgorithm) = f isa SplitSDEFunction && issplit(alg) ? f.f1 : f
+OrdinaryDiffEq.nlsolve_f(integrator::SDEIntegrator) =
   nlsolve_f(integrator.f, unwrap_alg(integrator, true))
 
 function iip_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
