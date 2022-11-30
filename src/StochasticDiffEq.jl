@@ -51,15 +51,15 @@ using DocStringExtensions
 
   using DiffEqBase: check_error!, is_diagonal_noise, @..
 
-  using DiffEqBase: nlsolvefail, isnewton, set_new_W!, get_W, iipnlsolve, oopnlsolve, _vec, _reshape
+using OrdinaryDiffEq: nlsolvefail, isnewton, set_new_W!, get_W, _vec, _reshape
 
-  using DiffEqBase: NLSolver
+using OrdinaryDiffEq: NLSolver
 
-  using DiffEqBase: FastConvergence, Convergence, SlowConvergence, VerySlowConvergence, Divergence
+using OrdinaryDiffEq:
+    FastConvergence, Convergence, SlowConvergence, VerySlowConvergence, Divergence
 
-  import DiffEqBase: calculate_residuals, calculate_residuals!, nlsolve_f, unwrap_cache, islinear
-
-  import DiffEqBase: iip_get_uf, oop_get_uf, build_jac_config
+import OrdinaryDiffEq:
+    calculate_residuals, calculate_residuals!, nlsolve_f, unwrap_cache, islinear
 
   import SciMLBase
 
