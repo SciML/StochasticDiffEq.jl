@@ -89,7 +89,7 @@ end
   if is_diagonal_noise(integrator.sol.prob)
     @.. nrtmp=gtmp1*W.dW
   else
-    mul!(nrtmp,gtmp1,W.dW)
+    mul!(nrtmp,gtmp1,vec(W.dW))
   end
 
   @.. tmp = uprev + dt * ftmp1 + nrtmp
@@ -101,7 +101,7 @@ end
     @.. nrtmp=(1/2)*W.dW*(gtmp1+gtmp2)
   else
     @.. gtmp1 = (1/2)*(gtmp1+gtmp2)
-    mul!(nrtmp,gtmp1,W.dW)
+    mul!(nrtmp,gtmp1,vec(W.dW))
   end
 
   dto2 = dt / 2
