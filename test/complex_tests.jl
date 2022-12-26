@@ -20,7 +20,7 @@ implicit_noautodiff = [SKenCarp(autodiff=false), ImplicitEulerHeun(autodiff=fals
 
   # currently broken
   for alg in implicit_autodiff
-    @test_throws DimensionMismatch solve(prob, alg)
+    @test_throws OrdinaryDiffEq.FirstAutodiffJacError solve(prob, alg)
   end
 end
 
@@ -39,6 +39,14 @@ end
 
   # currently broken
   for alg in implicit_autodiff
-    @test_throws ArgumentError solve(prob, alg)
+    @test_throws OrdinaryDiffEq.FirstAutodiffJacError solve(prob, alg)
   end
 end
+
+u0 = ones(2,4) + im*ones(2,4)
+function f(du, u, p, t)
+  t isa Complex && error("time is complex")
+  du .= 1.01u
+end
+prob = SDEProblem(f, f, u0, tspan)
+solve(prob, SKenCarp())
