@@ -1,5 +1,5 @@
 
-struct BAOABConstantCache{uType,uEltypeNoUnits} <: StochasticDiffEqConstantCache
+mutable struct BAOABConstantCache{uType,uEltypeNoUnits} <: StochasticDiffEqConstantCache
   k::uType
   half::uEltypeNoUnits
   c1::uEltypeNoUnits
