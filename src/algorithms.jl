@@ -866,5 +866,6 @@ dv = f(v,u) dt - \gamma v dt + g(u) \sqrt{2\gamma} dW
 """
 struct BAOAB{T} <: StochasticDiffEqAlgorithm
   gamma::T
+  scale_noise::Bool
 end
-BAOAB(;gamma=1.0) = BAOAB(gamma)
+BAOAB(;gamma=1.0, scale_noise=true) = BAOAB(gamma, scale_noise)
