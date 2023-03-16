@@ -42,5 +42,5 @@ mutable struct SDEIntegrator{algType,IIP,uType,uEltype,tType,tdirType,P2,eigenTy
   q::tTypeNoUnits
   qold::tTypeNoUnits
   q11::tTypeNoUnits
-  destats::DiffEqBase.DEStats
+  stats::DiffEqBase.Stats
 end
