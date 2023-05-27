@@ -418,7 +418,7 @@ function oop_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
     # get the operator
     J = islin ? nf.f : f.jac(uprev, p, t)
     if !isa(J, DiffEqBase.AbstractDiffEqLinearOperator)
-      J = DiffEqArrayOperator(J)
+      J = MatrixOperator(J)
     end
     W = WOperator{false}(f.mass_matrix, dt, J, u)
   else
