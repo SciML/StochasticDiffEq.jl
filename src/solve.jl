@@ -625,7 +625,7 @@ function DiffEqBase.solve!(integrator::SDEIntegrator)
   if DiffEqBase.has_analytic(f)
     DiffEqBase.calculate_solution_errors!(integrator.sol;timeseries_errors=integrator.opts.timeseries_errors,dense_errors=integrator.opts.dense_errors)
   end
-  if integrator.sol.retcode != :Default
+  if integrator.sol.retcode != ReturnCode.Default
     return integrator.sol
   end
   integrator.sol = DiffEqBase.solution_new_retcode(integrator.sol,ReturnCode.Success)

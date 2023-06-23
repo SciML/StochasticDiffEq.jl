@@ -280,7 +280,7 @@ function addat_noise!(integrator,cache,idxs)
 end
 
 
-function terminate!(integrator::SDEIntegrator, retcode = :Terminated)
+function terminate!(integrator::SDEIntegrator, retcode = ReturnCode.Terminated)
   integrator.sol = DiffEqBase.solution_new_retcode(integrator.sol, retcode)
   integrator.opts.tstops.valtree = typeof(integrator.opts.tstops.valtree)()
 end
