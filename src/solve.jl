@@ -110,6 +110,10 @@ function DiffEqBase.__init(
     error("The algorithm is not compatible with the chosen noise type. Please see the documentation on the solver methods")
   end
 
+  if adaptive && !isadaptive(_prob,alg)
+    error("The given solver is a Fixed timestep method and does not support adaptivity.")
+  end
+
   progress && @logmsg(LogLevel(-1),progress_name,_id=_id = :StochasticDiffEq,progress=0)
 
   tType = eltype(prob.tspan)
