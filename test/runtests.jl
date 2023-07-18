@@ -40,6 +40,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
     @time @safetestset "Scalar Tests" begin include("scalar_noise.jl") end
     @time @safetestset "Stiffness Detection Test" begin include("stiffness_detection_test.jl") end
     @time @safetestset "Adaptive SDE Linear Tests" begin include("adaptive/sde_linearadaptive_tests.jl") end
+    @time @safetestset "Inplace RODESolution Interpolation Tests" begin include("inplace_interpolation.jl") end
   end
 
   if GROUP == "All" || GROUP == "Interface3"
