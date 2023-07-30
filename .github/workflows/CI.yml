@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         group:
-          - Interface
+          - Interface1
           - Interface2
           - Interface3
           - AlgConvergence
