@@ -36,7 +36,7 @@ h1(z) = z^3-6*z^2+8*z
 
 function f1!(du,u,p,t)
  @inbounds begin
-     du[1] = 1//2*u[1]+sqrt(u[1]^2 +1)
+     du[1] = 5f-1*u[1]+sqrt(u[1]^2 +1)
  end
  nothing
 end
@@ -65,20 +65,20 @@ ensemble_prob1 = EnsembleProblem(prob1;
 u₀ = [0.1f0,0.1f0]
 function f2!(du,u,p,t)
   @inbounds begin
-    du[1] = 3//2*u[1]
-    du[2] = 3//2*u[2]
+    du[1] = 1.5f-0*u[1]
+    du[2] = 1.5f-0*u[2]
   end
   nothing
 end
 function g2!(du,u,p,t)
   @inbounds begin
-    du[1] = 1//10*u[1]
-    du[2] = 1//10*u[2]
+    du[1] = 1f-1*u[1]
+    du[2] = 1f-1*u[2]
   end
   nothing
 end
 
-f_true2(t) = 1//10*exp(3//2*t) #1//100*exp(301//100*t)
+f_true2(t) = 1f-1*exp(1.5f-1*t) #1//100*exp(301//100*t)
 
 h2(z) = z #z^2
 
