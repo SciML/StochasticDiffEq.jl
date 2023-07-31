@@ -56,7 +56,8 @@ ensemble_prob1 = EnsembleProblem(prob1;
         output_func = output_func,
         prob_func = prob_func,
         reduction = reduction,
-        u_init=Vector{eltype(prob1.u0)}([0.0])
+        u_init=Vector{eltype(prob1.u0)}([0.0]),
+        safetycopy = false
         )
 
 
@@ -86,7 +87,8 @@ ensemble_prob2 = EnsembleProblem(prob2;
         output_func = (sol,i) -> (h2.(sol),false),
         prob_func = prob_func,
         reduction = reduction,
-        u_init=Vector{eltype(prob2.u0)}([0.0, 0.0])
+        u_init=Vector{eltype(prob2.u0)}([0.0, 0.0]),
+        safetycopy = false
         )
 
 
@@ -109,11 +111,11 @@ seeds = rand(UInt, numtraj)
 for i in 1:2
   @show i
 
-  err1 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e4),ftrue[i],tsave,abstol=1f0,reltol=1f0, ensemblealg=EnsembleGPUArray())
+  err1 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e4),ftrue[i],tsave,abstol=1f0,reltol=1f0, ensemblealg=EnsembleGPUArray(CUDA.CUDABackend()))
   @show err1
-  # err2 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e4),ftrue[i],tsave,abstol=0.1f0,reltol=0.1f0, ensemblealg=EnsembleGPUArray())
+  # err2 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e4),ftrue[i],tsave,abstol=0.1f0,reltol=0.1f0, ensemblealg=EnsembleGPUArray(CUDA.CUDABackend()))
   # @show err2
-  err3 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e4),ftrue[i],tsave,abstol=0.01f0,reltol=0.01f0, ensemblealg=EnsembleGPUArray())
+  err3 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e4),ftrue[i],tsave,abstol=0.01f0,reltol=0.01f0, ensemblealg=EnsembleGPUArray(CUDA.CUDABackend()))
   @show err3
   @test err1 > err3
   println("")
@@ -121,7 +123,7 @@ end
 
 
 #
-# sol = @time solve(probs[1],DRI1NM(),EnsembleGPUArray(),
+# sol = @time solve(probs[1],DRI1NM(),EnsembleGPUArray(CUDA.CUDABackend()),
 #   dt=0.001f0,adaptive=false,abstol=0.1f0,reltol=0.1f0,
 #   trajectories=numtraj,batch_size=Int(1e1),
 #   saveat = tsave
