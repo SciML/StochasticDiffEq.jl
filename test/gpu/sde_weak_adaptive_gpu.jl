@@ -36,7 +36,7 @@ h1(z) = z^3-6*z^2+8*z
 
 function f1!(du,u,p,t)
  @inbounds begin
-     du[1] = 1//2*u[1]+sqrt(u[1]^2 +1)
+     du[1] = 5f-1*u[1]+sqrt(u[1]^2 +1)
  end
  nothing
 end
@@ -56,7 +56,8 @@ ensemble_prob1 = EnsembleProblem(prob1;
         output_func = output_func,
         prob_func = prob_func,
         reduction = reduction,
-        u_init=Vector{eltype(prob1.u0)}([0.0])
+        u_init=Vector{eltype(prob1.u0)}([0.0]),
+        safetycopy = false
         )
 
 
@@ -64,20 +65,20 @@ ensemble_prob1 = EnsembleProblem(prob1;
 u₀ = [0.1f0,0.1f0]
 function f2!(du,u,p,t)
   @inbounds begin
-    du[1] = 3//2*u[1]
-    du[2] = 3//2*u[2]
+    du[1] = 1.5f-0*u[1]
+    du[2] = 1.5f-0*u[2]
   end
   nothing
 end
 function g2!(du,u,p,t)
   @inbounds begin
-    du[1] = 1//10*u[1]
-    du[2] = 1//10*u[2]
+    du[1] = 1f-1*u[1]
+    du[2] = 1f-1*u[2]
   end
   nothing
 end
 
-f_true2(t) = 1//10*exp(3//2*t) #1//100*exp(301//100*t)
+f_true2(t) = 1f-1*exp(1.5f-1*t) #1//100*exp(301//100*t)
 
 h2(z) = z #z^2
 
@@ -86,7 +87,8 @@ ensemble_prob2 = EnsembleProblem(prob2;
         output_func = (sol,i) -> (h2.(sol),false),
         prob_func = prob_func,
         reduction = reduction,
-        u_init=Vector{eltype(prob2.u0)}([0.0, 0.0])
+        u_init=Vector{eltype(prob2.u0)}([0.0, 0.0]),
+        safetycopy = false
         )
 
 
@@ -109,11 +111,11 @@ seeds = rand(UInt, numtraj)
 for i in 1:2
   @show i
 
-  err1 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e4),ftrue[i],tsave,abstol=1f0,reltol=1f0, ensemblealg=EnsembleGPUArray())
+  err1 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e4),ftrue[i],tsave,abstol=1f0,reltol=1f0, ensemblealg=EnsembleGPUArray(CUDA.CUDABackend()))
   @show err1
-  # err2 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e4),ftrue[i],tsave,abstol=0.1f0,reltol=0.1f0, ensemblealg=EnsembleGPUArray())
+  # err2 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e4),ftrue[i],tsave,abstol=0.1f0,reltol=0.1f0, ensemblealg=EnsembleGPUArray(CUDA.CUDABackend()))
   # @show err2
-  err3 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e4),ftrue[i],tsave,abstol=0.01f0,reltol=0.01f0, ensemblealg=EnsembleGPUArray())
+  err3 = weak_error(probs[i],DRI1NM(),numtraj,Int(1e4),ftrue[i],tsave,abstol=0.01f0,reltol=0.01f0, ensemblealg=EnsembleGPUArray(CUDA.CUDABackend()))
   @show err3
   @test err1 > err3
   println("")
@@ -121,7 +123,7 @@ end
 
 
 #
-# sol = @time solve(probs[1],DRI1NM(),EnsembleGPUArray(),
+# sol = @time solve(probs[1],DRI1NM(),EnsembleGPUArray(CUDA.CUDABackend()),
 #   dt=0.001f0,adaptive=false,abstol=0.1f0,reltol=0.1f0,
 #   trajectories=numtraj,batch_size=Int(1e1),
 #   saveat = tsave
