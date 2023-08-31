@@ -869,3 +869,16 @@ struct BAOAB{T} <: StochasticDiffEqAlgorithm
   scale_noise::Bool
 end
 BAOAB(;gamma=1.0, scale_noise=true) = BAOAB(gamma, scale_noise)
+
+struct ABOBA{T} <: StochasticDiffEqAlgorithm
+  gamma::T
+  scale_noise::Bool
+end
+ABOBA(;gamma=1.0, scale_noise=true) = ABOBA(gamma, scale_noise)
+
+
+struct OBABO{T} <: StochasticDiffEqAlgorithm
+  gamma::T
+  scale_noise::Bool
+end
+OBABO(;gamma=1.0, scale_noise=true) = OBABO(gamma, scale_noise)
