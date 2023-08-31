@@ -211,10 +211,13 @@ function DiffEqBase.__init(
   end
   rateType = typeof(rate_prototype) ## Can be different if united
 
-  if prob.f isa DynamicalSDEFunction
-    noise_rate_prototype = rate_prototype.x[1]
-  elseif is_diagonal_noise(prob)
-    noise_rate_prototype = rate_prototype
+
+  if is_diagonal_noise(prob)
+    if prob.f isa DynamicalSDEFunction
+      noise_rate_prototype = rate_prototype.x[1]
+    else
+      noise_rate_prototype = rate_prototype
+    end
   elseif prob isa DiffEqBase.AbstractRODEProblem
     if prob isa DiffEqBase.AbstractSDEProblem
       noise_rate_prototype = copy(prob.noise_rate_prototype)
