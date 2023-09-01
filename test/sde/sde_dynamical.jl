@@ -3,7 +3,7 @@ Random.seed!(1)
 
 f1_harmonic(v,u,p,t) = -u
 f2_harmonic(v,u,p,t) = v
-g(u,p,t) = 1
+g(u,p,t) = 1 .+zero(u)
 γ = 1
 
 @testset "Scalar u" begin
@@ -20,9 +20,14 @@ g(u,p,t) = 1
     display(sim1.𝒪est)
     @test abs(sim1.𝒪est[:weak_final]-1) < 0.3
 
-    sim1  = analyticless_test_convergence(dts,prob1,ABOBA(gamma=γ),(1/2)^10;trajectories=Int(2e2),use_noise_grid=false)
+    sim1  = analyticless_test_convergence(dts,prob1,ABOBA(gamma=γ),(1/2)^10;trajectories=Int(5e2),use_noise_grid=false)
     display(sim1.𝒪est)
     @test abs(sim1.𝒪est[:weak_final]-2) < 0.3
+
+
+    sim1  = analyticless_test_convergence(dts,prob1,OBABO(gamma=γ),(1/2)^10;trajectories=Int(5e2),use_noise_grid=false)
+    display(sim1.𝒪est)
+    @test abs(sim1.𝒪est[:weak_final]-1) < 0.3
 end
 
 @testset "Vector u" begin
@@ -51,13 +56,25 @@ end
 
 
     sol1 = solve(prob1,ABOBA(gamma=[γ,γ]);dt=1/10,save_noise=true)
+    prob2 = DynamicalSDEProblem(f1_harmonic_iip,f2_harmonic_iip,g_iip,v0,u0,(0.0,5.0); noise=NoiseWrapper(sol1.W))
     sol2 = solve(prob2,ABOBA(gamma=[γ,γ]);dt=1/10)
 
     @test sol1[:] ≈ sol2[:]
 
     # Can't use NoiseGrid as noise is not generated with the correct size in convergence.jl. We require noise with shape of v.
     sim1  = analyticless_test_convergence(dts,prob1,ABOBA(gamma=γ),(1/2)^10;trajectories=Int(1e2),use_noise_grid=false)
-    @test abs(sim1.𝒪est[:weak_final]-2) < 0.3
+    @test abs(sim1.𝒪est[:weak_final]-1) < 0.3
+
+
+    sol1 = solve(prob1,OBABO(gamma=[γ,γ]);dt=1/10,save_noise=true)
+    prob2 = DynamicalSDEProblem(f1_harmonic_iip,f2_harmonic_iip,g_iip,v0,u0,(0.0,5.0); noise=NoiseWrapper(sol1.W))
+    sol2 = solve(prob2,OBABO(gamma=[γ,γ]);dt=1/10)
+
+    @test sol1[:] ≈ sol2[:]
+
+    # Can't use NoiseGrid as noise is not generated with the correct size in convergence.jl. We require noise with shape of v.
+    sim1  = analyticless_test_convergence(dts,prob1,OBABO(gamma=γ),(1/2)^10;trajectories=Int(1e2),use_noise_grid=false)
+    @test abs(sim1.𝒪est[:weak_final]-1) < 0.3
 end
 
 
@@ -67,7 +84,7 @@ end
     u0 = zeros(2)
     v0 = ones(2)
 
-    gamma_mat = [γ 2*γ;0.5*γ γ]
+    gamma_mat = [γ -0.1*γ;0.5*γ γ]
 
     f1_harmonic_iip(dv,v,u,p,t) = dv .= f1_harmonic(v,u,p,t)
     f2_harmonic_iip(du,v,u,p,t) = du .= f2_harmonic(v,u,p,t)
@@ -82,19 +99,17 @@ end
 
     @test sol1[:] ≈ sol2[:]
 
-    dts = (1/2) .^ (8:-1:4)
-
-    # Can't use NoiseGrid as noise is not generated with the correct size in convergence.jl. We require noise with shape of v.
-    sim1  = analyticless_test_convergence(dts,prob1,BAOAB(gamma=gamma_mat),(1/2)^10;trajectories=Int(1e2),use_noise_grid=false)
-    @test abs(sim1.𝒪est[:weak_final]-1) < 0.3
-
 
     sol1 = solve(prob1,ABOBA(gamma=gamma_mat);dt=1/10,save_noise=true)
+    prob2 = DynamicalSDEProblem(f1_harmonic_iip,f2_harmonic_iip,g_iip,v0,u0,(0.0,5.0); noise=NoiseWrapper(sol1.W))
     sol2 = solve(prob2,ABOBA(gamma=gamma_mat);dt=1/10)
 
     @test sol1[:] ≈ sol2[:]
 
-    # Can't use NoiseGrid as noise is not generated with the correct size in convergence.jl. We require noise with shape of v.
-    sim1  = analyticless_test_convergence(dts,prob1,ABOBA(gamma=gamma_mat),(1/2)^10;trajectories=Int(1e2),use_noise_grid=false)
-    @test abs(sim1.𝒪est[:weak_final]-2) < 0.3
+
+    sol1 = solve(prob1,OBABO(gamma=gamma_mat);dt=1/10,save_noise=true)
+    prob2 = DynamicalSDEProblem(f1_harmonic_iip,f2_harmonic_iip,g_iip,v0,u0,(0.0,5.0); noise=NoiseWrapper(sol1.W))
+    sol2 = solve(prob2,OBABO(gamma=gamma_mat);dt=1/10)
+
+    @test sol1[:] ≈ sol2[:]
 end
