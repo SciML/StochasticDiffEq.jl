@@ -17,7 +17,7 @@ sol2 = solve(prob,EM(),dt=1/10)
 u0 = rand(4)
 
 ff_split = SplitSDEFunction(f1,f2,σ,analytic=f_split_analytic)
-prob = SplitSDEProblem(ff_split,σ,u0,(0.0,1.0))
+prob = SplitSDEProblem(ff_split,u0,(0.0,1.0))
 
 sol = solve(prob,SplitEM(),dt=1/10,save_noise=true)
 
@@ -40,7 +40,7 @@ ff2 = (u,p,t) -> 0.0
 σ2 = (u,p,t) -> α*β./sqrt.(1+t)
 ff1_analytic(u0,p,t,W) = @. u0/sqrt(1+t) + β*(t+α*W)/sqrt(1+t)
 f_ff1 = SplitSDEFunction(ff1,ff2,σ2,analytic=ff1_analytic)
-prob = SplitSDEProblem(f_ff1,σ2,1.,(0.0,1.0))
+prob = SplitSDEProblem(f_ff1,1.,(0.0,1.0))
 
 
 sol = solve(prob,EM(),dt=1/10)
@@ -60,7 +60,7 @@ ff1 = (u,p,t) -> 0.0
 ff2 = (u,p,t) -> β./sqrt.(1+t) - u./(2*(1+t))
 σ2 = (u,p,t) -> α*β./sqrt.(1+t)
 f_ff1 = SplitSDEFunction(ff1,ff2,σ2,analytic=ff1_analytic)
-prob = SplitSDEProblem(f_ff1,σ2,1.,(0.0,1.0))
+prob = SplitSDEProblem(f_ff1,1.,(0.0,1.0))
 
 sol = solve(prob,EM(),dt=1/10)
 sol2 = solve(prob,SKenCarp(),dt=1/10,seed=1)
@@ -79,7 +79,7 @@ ff1 = (u,p,t) -> β./sqrt.(1+t)
 ff2 = (u,p,t) -> - u./(2*(1+t))
 σ2 = (u,p,t) -> α*β./sqrt.(1+t)
 f_ff1 = SplitSDEFunction(ff1,ff2,σ2,analytic=ff1_analytic)
-prob = SplitSDEProblem(f_ff1,σ2,1.,(0.0,1.0))
+prob = SplitSDEProblem(f_ff1,1.,(0.0,1.0))
 
 sol = solve(prob,EM(),dt=1/10)
 sol2 = solve(prob,SKenCarp(),dt=1/10)
@@ -102,7 +102,7 @@ ff1 = (du,u,p,t) -> @. du = β/sqrt(1+t) - u/(2*(1+t))
 ff2 = (du,u,p,t) -> @. du = 0.0
 σ2 = (du,u,p,t) -> @. du = α*β/sqrt(1+t)
 f_ff1 = SplitSDEFunction(ff1,ff2,σ2,analytic=ff1_analytic)
-prob = SplitSDEProblem(f_ff1,σ2,[1.],(0.0,1.0))
+prob = SplitSDEProblem(f_ff1,[1.],(0.0,1.0))
 
 sol = solve(prob,EM(),dt=1/10)
 sol2 = solve(prob,SKenCarp(),dt=1/10)
@@ -121,7 +121,7 @@ ff1 = (du,u,p,t) -> @. du = 0.0
 ff2 = (du,u,p,t) -> @. du = β/sqrt(1+t) - u/(2*(1+t))
 σ2 = (du,u,p,t) -> @. du = α*β/sqrt(1+t)
 f_ff1 = SplitSDEFunction(ff1,ff2,σ2,analytic=ff1_analytic)
-prob = SplitSDEProblem(f_ff1,σ2,[1.],(0.0,1.0))
+prob = SplitSDEProblem(f_ff1,[1.],(0.0,1.0))
 
 sol = solve(prob,EM(),dt=1/10)
 sol2 = solve(prob,SKenCarp(),dt=1/10)
@@ -140,7 +140,7 @@ ff1 = (du,u,p,t) -> @. du = β/sqrt(1+t)
 ff2 = (du,u,p,t) -> @. du = - u/(2*(1+t))
 σ2 = (du,u,p,t) -> @. du = α*β/sqrt(1+t)
 f_ff1 = SplitSDEFunction(ff1,ff2,σ2,analytic=ff1_analytic)
-prob = SplitSDEProblem(f_ff1,σ2,[1.],(0.0,1.0))
+prob = SplitSDEProblem(f_ff1,[1.],(0.0,1.0))
 
 sol = solve(prob,EM(),dt=1/10)
 sol2 = solve(prob,SKenCarp(),dt=1/10)
