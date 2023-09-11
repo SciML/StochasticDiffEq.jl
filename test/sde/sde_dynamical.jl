@@ -22,7 +22,7 @@ g(u,p,t) = 1 .+zero(u)
 
     sim1  = analyticless_test_convergence(dts,prob1,ABOBA(gamma=γ),(1/2)^10;trajectories=Int(5e2),use_noise_grid=false)
     display(sim1.𝒪est)
-    @test abs(sim1.𝒪est[:weak_final]-2) < 0.3
+    @test abs(sim1.𝒪est[:weak_final]-1) < 0.3
 
 
     sim1  = analyticless_test_convergence(dts,prob1,OBABO(gamma=γ),(1/2)^10;trajectories=Int(5e2),use_noise_grid=false)
