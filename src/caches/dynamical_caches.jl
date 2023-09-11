@@ -125,7 +125,7 @@ end
 
 mutable struct OBABOConstantCache{uType,rateNoiseType, uEltypeNoUnits, uCoeffType, uCoeffMType} <: StochasticDynamicalEqConstantCache
   k::uType
-  sig::rateNoiseType
+  gt::rateNoiseType
   half::uEltypeNoUnits
   c₂::uCoeffType
   σ::uCoeffMType
@@ -147,7 +147,7 @@ end
 
 function alg_cache(alg::OBABO,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
   k = zero(rate_prototype.x[1])
-  sig = zero(noise_rate_prototype)
+  gt = zero(noise_rate_prototype)
   half=uEltypeNoUnits(1//2)
 
   if typeof(alg.gamma) <: AbstractMatrix
@@ -158,7 +158,7 @@ function alg_cache(alg::OBABO,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototy
       σ = sqrt.(1 .- alg.scale_noise*c₂.^2)
   end
    # if scale_noise == false, c2 = 1
-  OBABOConstantCache(k, sig, half, c₂, σ)
+  OBABOConstantCache(k, gt, half, c₂, σ)
 end
 
 function alg_cache(alg::OBABO,prob,u,ΔW,ΔZ,p,rate_prototype, noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}

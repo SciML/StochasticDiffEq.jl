@@ -160,7 +160,7 @@ function initialize!(integrator, cache::OBABOConstantCache)
 
   verify_f2(integrator.f.f2, du1, u1, p, t, integrator, cache)
   cache.k = integrator.f.f1(du1,u1,p,t)
-  cache.sig = integrator.g(u1,p,t)
+  cache.gt = integrator.g(u1,p,t)
 end
 
 function initialize!(integrator, cache::OBABOCache)
@@ -181,7 +181,7 @@ end
   u1 = uprev.x[2]
 
   # O
-  noise = cache.sig.*W.dW ./ sqdt
+  noise = cache.gt.*W.dW ./ sqdt
   if typeof(σ) <: AbstractMatrix || typeof(noise) <: Number
     du2 = c₂*du1 + σ*noise
   else
@@ -199,8 +199,8 @@ end
   du3 = dumid + half*dt*cache.k
 
   # O
-  cache.sig = integrator.g(u,p,t+dt)
-  noise = cache.sig.*W.dW ./ sqdt # That should be a second noise
+  cache.gt = integrator.g(u,p,t+dt)
+  noise = cache.gt.*W.dW ./ sqdt # That should be a second noise
   if typeof(σ) <: AbstractMatrix || typeof(noise) <: Number
     du = c₂*du3 + σ*noise
   else
