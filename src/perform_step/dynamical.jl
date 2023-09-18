@@ -200,7 +200,7 @@ end
 
   # O
   cache.gt = integrator.g(u,p,t+dt)
-  noise = cache.gt.*W.dW ./ sqdt # That should be a second noise
+  noise = cache.gt.*W.dZ ./ sqdt # That should be a second noise
   if typeof(σ) <: AbstractMatrix || typeof(noise) <: Number
     du = c₂*du3 + σ*noise
   else
@@ -242,7 +242,7 @@ end
 
   # O
   integrator.g(gtmp,u.x[2],p,t+dt)
-  @.. noise = gtmp*W.dW / sqdt  # That should be a second noise
+  @.. noise = gtmp*W.dZ / sqdt  # That should be a second noise
 
   if typeof(σ) <: AbstractMatrix
       mul!(u.x[1],c₂,dutmp)
