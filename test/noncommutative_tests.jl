@@ -44,7 +44,7 @@ end
 
 ff_noncommute = SDEFunction(f_noncommute,g_noncommute,analytic=f_noncommute_analytic)
 
-prob = SDEProblem(ff_noncommute,g_noncommute,u0,(0.0,1.0),noise_rate_prototype=rand(4,m))
+prob = SDEProblem(ff_noncommute,u0,(0.0,1.0),noise_rate_prototype=rand(4,m))
 
 sol = solve(prob,EM(),dt=1/2^(8))
 sol = solve(prob,RKMilGeneral(p=10),dt=1/2^(8))
@@ -58,7 +58,7 @@ sim3 = test_convergence(dts,prob,RKMilGeneral(p=2),trajectories=Int(1e2))
 @test abs(sim3.𝒪est[:final] - 1) < 0.2
 
 ff_noncommute_stratonovich = SDEFunction(f_noncommute,g_noncommute,analytic=f_noncommute_analytic_stratonovich)
-prob_stratonovich = SDEProblem(ff_noncommute_stratonovich,g_noncommute,u0,(0.0,1.0),noise_rate_prototype=rand(4,m))
+prob_stratonovich = SDEProblem(ff_noncommute_stratonovich,u0,(0.0,1.0),noise_rate_prototype=rand(4,m))
 
 sim4 = test_convergence(dts,prob_stratonovich,EulerHeun(),trajectories=Int(1e2))
 @test abs(sim4.𝒪est[:final] - 1.0) < 0.2

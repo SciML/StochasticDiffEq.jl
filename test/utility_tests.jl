@@ -15,7 +15,7 @@ using StochasticDiffEq.SciMLOperators: MatrixOperator
     fun = SDEFunction(_f, _g;
                       mass_matrix=mm,
                       jac=(u,p,t) -> A)
-    prob = SDEProblem(fun, _g, u0, tspan)
+    prob = SDEProblem(fun, u0, tspan)
     integrator = init(prob, ImplicitEM(theta=1); adaptive=false, dt=dt)
     W = integrator.cache.nlsolver.cache.W
     calc_W!(W, integrator, integrator.cache.nlsolver, integrator.cache, dtgamma, false)
@@ -27,7 +27,7 @@ using StochasticDiffEq.SciMLOperators: MatrixOperator
     fun = SDEFunction(_f, _g;
                       mass_matrix=mm,
                       jac_prototype=MatrixOperator(A))
-    prob = SDEProblem(fun, _g, u0, tspan)
+    prob = SDEProblem(fun, u0, tspan)
     integrator = init(prob, ImplicitEM(theta=1); adaptive=false, dt=dt)
     W = integrator.cache.nlsolver.cache.W
     calc_W!(W, integrator, integrator.cache.nlsolver, integrator.cache, dtgamma, false)
@@ -50,11 +50,11 @@ using StochasticDiffEq.SciMLOperators: MatrixOperator
 
     _f = (u,p,t) -> t*(A*u); _f_ip = (du,u,p,t) -> lmul!(t,mul!(du,A,u))
     _g = (u,p,t) -> σ*u; _g_ip = (du,u,p,t) -> mul!(du,σ,u)
-    prob1 = SDEProblem(SDEFunction(_f, _g; mass_matrix=mm), _g, u0, tspan)
-    prob2 = SDEProblem(SDEFunction(_f, _g; mass_matrix=mm, jac=(u,p,t) -> t*A), _g, u0, tspan)
-    prob1_ip = SDEProblem(SDEFunction(_f_ip, _g_ip; mass_matrix=mm), _g_ip, u0, tspan)
+    prob1 = SDEProblem(SDEFunction(_f, _g; mass_matrix=mm), u0, tspan)
+    prob2 = SDEProblem(SDEFunction(_f, _g; mass_matrix=mm, jac=(u,p,t) -> t*A), u0, tspan)
+    prob1_ip = SDEProblem(SDEFunction(_f_ip, _g_ip; mass_matrix=mm), u0, tspan)
     jac_prototype=MatrixOperator(similar(A); update_func! = (J,u,p,t) -> (J .= t .* A; J))
-    prob2_ip = SDEProblem(SDEFunction(_f_ip, _g_ip; mass_matrix=mm, jac_prototype=jac_prototype), _g_ip, u0, tspan)
+    prob2_ip = SDEProblem(SDEFunction(_f_ip, _g_ip; mass_matrix=mm, jac_prototype=jac_prototype), u0, tspan)
 
     for Alg in [ImplicitEM, ISSEM]
       println(Alg)
@@ -68,10 +68,10 @@ using StochasticDiffEq.SciMLOperators: MatrixOperator
 
     σ = 1.0
     _g = (u,p,t) -> σ; _g_ip = (du,u,p,t) -> (du .= σ)
-    prob1 = SDEProblem(SDEFunction(_f, _g), _g, u0, tspan)
-    prob2 = SDEProblem(SDEFunction(_f, _g; jac=(u,p,t) -> t*A), _g, u0, tspan)
-    prob1_ip = SDEProblem(SDEFunction(_f_ip, _g_ip), _g_ip, u0, tspan)
-    prob2_ip = SDEProblem(SDEFunction(_f_ip, _g_ip; jac_prototype=jac_prototype), _g_ip, u0, tspan)
+    prob1 = SDEProblem(SDEFunction(_f, _g), u0, tspan)
+    prob2 = SDEProblem(SDEFunction(_f, _g; jac=(u,p,t) -> t*A), u0, tspan)
+    prob1_ip = SDEProblem(SDEFunction(_f_ip, _g_ip), u0, tspan)
+    prob2_ip = SDEProblem(SDEFunction(_f_ip, _g_ip; jac_prototype=jac_prototype), u0, tspan)
 
     println(SKenCarp)
     Random.seed!(0); sol1 = solve(prob1, SKenCarp(); adaptive=false, dt=0.01)

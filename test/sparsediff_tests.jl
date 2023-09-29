@@ -40,7 +40,7 @@ colorvec = repeat(1:3,10)[1:10]
 u0=[1.,2.,3,4,5,5,4,3,2,1]
 tspan=(0.,10.)
 sdefun_sp= SDEFunction(f,g,colorvec=colorvec,jac_prototype=jac_sp)
-prob_sp = SDEProblem(sdefun_sp,g,u0,tspan)
+prob_sp = SDEProblem(sdefun_sp,u0,tspan)
 prob_std = SDEProblem(f,g,u0,tspan)
 
 sol_sp=solve(prob_sp,SKenCarp(autodiff=false))

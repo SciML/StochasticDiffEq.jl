@@ -8,7 +8,7 @@ f_linear_iip(du,u,p,t) = @.(du = 1.01*u)
 linear_analytic(u0,p,t,W) = @.(u0*exp(0.63155t+0.87W))
 
 prob_sde_linear_iip = SDEProblem(SDEFunction(f_linear_iip,σ_linear_iip,
-                             analytic=linear_analytic),σ_linear_iip,[1/2],(0.0,1.0))
+                             analytic=linear_analytic),[1/2],(0.0,1.0))
 
 Random.seed!(100)
 dts = 1 .//2 .^(7:-1:3) #14->7 good plot

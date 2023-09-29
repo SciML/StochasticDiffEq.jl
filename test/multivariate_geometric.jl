@@ -19,7 +19,7 @@ function f_analytic(u0,p,t,W)
   exp(tmp)*u0
 end
 
-prob2 = SDEProblem(SDEFunction(f,σ,analytic=f_analytic),σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
+prob2 = SDEProblem(SDEFunction(f,σ,analytic=f_analytic),u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
 
 sol2 = solve(prob2,EM(),dt=1/100)
 
@@ -51,7 +51,7 @@ function f_analytic_iip(u0,p,t,W)
  exp(tmp)*u0
 end
 
-prob2 = SDEProblem(SDEFunction(f_iip,σ_iip,analytic=f_analytic_iip),σ_iip,u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
+prob2 = SDEProblem(SDEFunction(f_iip,σ_iip,analytic=f_analytic_iip),u0,(0.0,1.0),noise_rate_prototype=rand(2,2))
 
 sol2 = solve(prob2,EM(),dt=1/100)
 

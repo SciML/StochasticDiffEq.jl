@@ -47,8 +47,8 @@ function ggprime(du, u, p, t)
   du .= coeff*u
 end
 
-prob = SDEProblem(SDEFunction(f_nondiag,g_nondiag,analytic=f_analytic_nondiag),g_nondiag,u0,(0.0,1.0),noise_rate_prototype=zeros(2,2))
-probiip = SDEProblem(SDEFunction(f_nondiag_iip,g_nondiag_iip,analytic=f_analytic_nondiag),g_nondiag_iip,u0,(0.0,1.0),noise_rate_prototype=zeros(2,2))
+prob = SDEProblem(SDEFunction(f_nondiag,g_nondiag,analytic=f_analytic_nondiag),u0,(0.0,1.0),noise_rate_prototype=zeros(2,2))
+probiip = SDEProblem(SDEFunction(f_nondiag_iip,g_nondiag_iip,analytic=f_analytic_nondiag),u0,(0.0,1.0),noise_rate_prototype=zeros(2,2))
 
 ## Just solve to test compatibility
 IEM = solve(probiip,ImplicitEM())
