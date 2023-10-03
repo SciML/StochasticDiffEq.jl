@@ -183,7 +183,10 @@ end
   @unpack recf, recf2, mα, mσ, mτ = cache
 
   gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (typeof(W.dW) <: Number) || (length(W.dW) == 1))
-  gen_prob && (vec_χ = 2 .* floor.(false .* W.dW .+ 1//2 .+ oftype(W.dW, rand(W.rng,length(W.dW)))) .- true)
+  if gen_prob
+    vec_χ = similar(W.dW)
+    init_χ!(vec_χ, W)
+  end
 
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
@@ -316,6 +319,9 @@ end
   @unpack recf, recf2, mα, mσ, mτ = cache.constantcache
   ccache = cache.constantcache
   gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (typeof(W.dW) <: Number) || (length(W.dW) == 1))
+  if gen_prob
+    init_χ!(vec_χ, W)
+  end
 
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
@@ -331,10 +337,6 @@ end
   τ = 1//2*((1-α)^2) + 2*α*(1-α)*mσ[deg_index] + (α^2)*(mσ[deg_index]*(mσ[deg_index]+mτ[deg_index]))
 
   sqrt_dt   = sqrt(abs(dt))
-  if gen_prob
-    vec_χ .= 1//2 .+ oftype(W.dW, rand(W.rng, length(W.dW)))
-    @.. vec_χ = 2*floor(vec_χ) - 1
-  end
 
   μ = recf[start]  # here κ = 0
   tᵢ = t + α*dt*μ
@@ -1110,6 +1112,10 @@ end
   @unpack recf, mσ, mτ, mδ = cache
 
   gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (typeof(W.dW) <: Number) || (length(W.dW) == 1))
+  if gen_prob
+    vec_χ = similar(W.dW)
+    init_χ!(vec_χ, W)
+  end
 
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
@@ -1125,7 +1131,6 @@ end
   τ = mτ[deg_index]
 
   sqrt_dt   = sqrt(abs(dt))
-  (gen_prob) && (vec_χ = 2 .* floor.( 1//2 .+ false .* W.dW .+ rand(length(W.dW))) .- 1)
 
   tᵢ₋₂ = t
   uᵢ₋₂ = uprev
@@ -1299,6 +1304,9 @@ end
 
   ccache = cache.constantcache
   gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (typeof(W.dW) <: Number) || (length(W.dW) == 1))
+  if gen_prob
+    init_χ!(vec_χ, W)
+  end
 
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
@@ -1314,7 +1322,7 @@ end
   τ = mτ[deg_index]
 
   sqrt_dt   = sqrt(abs(dt))
-  (gen_prob) && (vec_χ .= 2 .* floor.(1//2 .+ false .* vec_χ .+ rand(length(vec_χ))) .- 1)
+
 
   tᵢ₋₂ = t
   @.. uᵢ₋₂ = uprev
@@ -1680,3 +1688,11 @@ end
 
   integrator.u = u
 end
+
+function init_χ!(vec_χ, W)
+    rand!(rng(W), vec_χ)
+    @.. vec_χ = 2*floor(vec_χ + 1//2) - 1
+end
+
+rng(W::DiffEqNoiseProcess.AbstractNoiseProcess) = W.rng
+rng(W::NoiseWrapper) = W.source.rng
