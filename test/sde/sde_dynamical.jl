@@ -91,7 +91,7 @@ end
     g_iip(du,u,p,t) = du .= g(u,p,t)
 
     ff_harmonic = DynamicalSDEFunction(f1_harmonic,f2_harmonic,g)
-    prob1 = DynamicalSDEProblem(ff_harmonic,g,v0,u0,(0.0,5.0))
+    prob1 = DynamicalSDEProblem(ff_harmonic,v0,u0,(0.0,5.0))
     sol1 = solve(prob1,BAOAB(gamma=gamma_mat);dt=1/10,save_noise=true)
 
     prob2 = DynamicalSDEProblem(f1_harmonic_iip,f2_harmonic_iip,g_iip,v0,u0,(0.0,5.0); noise=NoiseWrapper(sol1.W))
