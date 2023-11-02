@@ -16,7 +16,7 @@ alg_cache(alg::SRA1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_ra
 end
 
 function alg_cache(alg::SRA1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
-  if typeof(ΔW) <: Union{SArray,Number}
+  if ΔW isa Union{SArray,Number}
     chi2 = copy(ΔW)
   else
     chi2 = zero(ΔW)
@@ -78,7 +78,7 @@ end
 function alg_cache(alg::SRA2,prob,u,ΔW,ΔZ,p,rate_prototype,
                    noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},
                    ::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
-  if typeof(ΔW) <: Union{SArray,Number}
+  if ΔW isa Union{SArray,Number}
     chi2 = copy(ΔW)
   else
     chi2 = zero(ΔW)
@@ -227,7 +227,7 @@ end
 function alg_cache(alg::SRA3,prob,u,ΔW,ΔZ,p,rate_prototype,
                    noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},
                    ::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
-  if typeof(ΔW) <: Union{SArray,Number}
+  if ΔW isa Union{SArray,Number}
     chi2 = copy(ΔW)
   else
     chi2 = zero(ΔW)
@@ -250,7 +250,7 @@ end
 function alg_cache(alg::SOSRA,prob,u,ΔW,ΔZ,p,rate_prototype,
                    noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},
                    ::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
-  if typeof(ΔW) <: Union{SArray,Number}
+  if ΔW isa Union{SArray,Number}
     chi2 = copy(ΔW)
   else
     chi2 = zero(ΔW)
@@ -273,7 +273,7 @@ end
 function alg_cache(alg::SOSRA2,prob,u,ΔW,ΔZ,p,rate_prototype,
                    noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},
                    ::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
-  if typeof(ΔW) <: Union{SArray,Number}
+  if ΔW isa Union{SArray,Number}
     chi2 = copy(ΔW)
   else
     chi2 = zero(ΔW)
@@ -347,7 +347,7 @@ function alg_cache(alg::SRA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype
   end
   A0temp = zero(rate_prototype); B0temp = zero(rate_prototype)
   ftmp = zero(rate_prototype); gtmp = zero(noise_rate_prototype);
-  if typeof(ΔW) <: Union{SArray,Number}
+  if ΔW isa Union{SArray,Number}
     chi2 = copy(ΔW)
   else
     chi2 = zero(ΔW)

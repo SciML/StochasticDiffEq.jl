@@ -117,7 +117,7 @@ end
 alg_cache(alg::SimplifiedEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits} = SimplifiedEMConstantCache()
 
 function alg_cache(alg::SimplifiedEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
-  if typeof(ΔW) <: Union{SArray,Number}
+  if ΔW isa Union{SArray,Number}
     _dW = copy(ΔW)
   else
     _dW = zero(ΔW)

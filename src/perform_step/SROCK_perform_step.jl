@@ -45,21 +45,21 @@
     if (i > mdeg - 2) && alg_interpretation(integrator.alg) == :Stratonovich
       if i == mdeg - 1
         gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
-        if typeof(W.dW) <: Number || !is_diagonal_noise(integrator.sol.prob)
+        if W.dW isa Number || !is_diagonal_noise(integrator.sol.prob)
           u += α*(gₘ₋₂*W.dW)
         else
           u .+= α .*  gₘ₋₂ .* W.dW
         end
       else
         gₘ₋₁ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
-        if typeof(W.dW) <: Number || !is_diagonal_noise(integrator.sol.prob)
+        if W.dW isa Number || !is_diagonal_noise(integrator.sol.prob)
           u += β*(gₘ₋₂*W.dW) + γ*(gₘ₋₁*W.dW)
         else
           u .+= (β .* gₘ₋₂ .+ γ .* gₘ₋₁) .* W.dW
         end
       end
     elseif (i == mdeg) && alg_interpretation(integrator.alg) == :Ito
-      if typeof(W.dW) <: Number
+      if W.dW isa Number
         gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
         uᵢ₋₂ = uᵢ₋₁ + sqrt(abs(dt))*gₘ₋₂
         gₘ₋₁ = integrator.g(uᵢ₋₂,p,tᵢ₋₁)
@@ -135,7 +135,7 @@ end
     if (i > mdeg - 2) && alg_interpretation(integrator.alg) == :Stratonovich
       if i == mdeg - 1
         integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁)
-        if typeof(W.dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+        if W.dW isa Number || is_diagonal_noise(integrator.sol.prob)
           @.. u += α*gₘ₋₂*W.dW
         else
           mul!(k,gₘ₋₂,W.dW)
@@ -143,7 +143,7 @@ end
         end
       else
         integrator.g(gₘ₋₁,uᵢ₋₁,p,tᵢ₋₁)
-        if typeof(W.dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+        if W.dW isa Number || is_diagonal_noise(integrator.sol.prob)
           @.. u += (β*gₘ₋₂ + γ*gₘ₋₁)*W.dW
         else
           mul!(k,gₘ₋₂,W.dW)
@@ -153,7 +153,7 @@ end
         end
       end
     elseif (i == mdeg) && alg_interpretation(integrator.alg) == :Ito
-      if typeof(W.dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+      if W.dW isa Number || is_diagonal_noise(integrator.sol.prob)
         integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁)
         @.. uᵢ₋₂ = uᵢ₋₁ + sqrt(abs(dt))*gₘ₋₂
         integrator.g(gₘ₋₁,uᵢ₋₂,p,tᵢ₋₁)
@@ -182,7 +182,7 @@ end
   @unpack t,dt,uprev,u,W,p,f = integrator
   @unpack recf, recf2, mα, mσ, mτ = cache
 
-  gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (typeof(W.dW) <: Number) || (length(W.dW) == 1))
+  gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (W.dW isa Number) || (length(W.dW) == 1))
   gen_prob && (vec_χ = 2 .* floor.(false .* W.dW .+ 1//2 .+ oftype(W.dW, rand(W.rng,length(W.dW)))) .- true)
 
   alg = unwrap_alg(integrator, true)
@@ -250,7 +250,7 @@ end
   # Now uᵢ₋₂ = uₛ₋₂, uᵢ₋₁ = uₛ₋₁, uᵢ = uₛ
   # Similarly tᵢ₋₂ = tₛ₋₂, tᵢ₋₁ = tₛ₋₁, tᵢ = tₛ
 
-  if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || is_diagonal_noise(integrator.sol.prob)
+  if (W.dW isa Number) || (length(W.dW) == 1) || is_diagonal_noise(integrator.sol.prob)
     Gₛ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
     u  += Gₛ .* W.dW
     Gₛ = integrator.g(uᵢ,p,tᵢ)
@@ -315,7 +315,7 @@ end
 
   @unpack recf, recf2, mα, mσ, mτ = cache.constantcache
   ccache = cache.constantcache
-  gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (typeof(W.dW) <: Number) || (length(W.dW) == 1))
+  gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (W.dW isa Number) || (length(W.dW) == 1))
 
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
@@ -388,7 +388,7 @@ end
   # Now uᵢ₋₂ = uₛ₋₂, uᵢ₋₁ = uₛ₋₁, uᵢ = uₛ
   # Similarly tᵢ₋₂ = tₛ₋₂, tᵢ₋₁ = tₛ₋₁, tᵢ = tₛ
 
-  if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || is_diagonal_noise(integrator.sol.prob)
+  if (W.dW isa Number) || (length(W.dW) == 1) || is_diagonal_noise(integrator.sol.prob)
     integrator.g(Gₛ,uᵢ₋₁,p,tᵢ₋₁)
     @.. u  += Gₛ*W.dW
     integrator.g(Gₛ,uᵢ,p,tᵢ)
@@ -511,14 +511,14 @@ end
   end
 
   Gₛ = integrator.g(u,p,tᵢ)
-  if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || is_diagonal_noise(integrator.sol.prob)
+  if (W.dW isa Number) || (length(W.dW) == 1) || is_diagonal_noise(integrator.sol.prob)
     u += Gₛ .* W.dW
   else
     u += Gₛ * W.dW
   end
 
   if integrator.alg.strong_order_1
-    if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || (is_diagonal_noise(integrator.sol.prob))
+    if (W.dW isa Number) || (length(W.dW) == 1) || (is_diagonal_noise(integrator.sol.prob))
       uᵢ₋₂  = @. 1//2 * Gₛ * (W.dW ^ 2 - abs(dt))
       tmp = @. u + uᵢ₋₂
       Gₛ  = integrator.g(tmp,p,tᵢ)
@@ -601,7 +601,7 @@ end
   end
 
   integrator.g(Gₛ,u,p,tᵢ)
-  if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || is_diagonal_noise(integrator.sol.prob)
+  if (W.dW isa Number) || (length(W.dW) == 1) || is_diagonal_noise(integrator.sol.prob)
     @.. u += Gₛ*W.dW
   else
     mul!(uᵢ₋₁,Gₛ,W.dW)
@@ -609,7 +609,7 @@ end
   end
 
   if integrator.alg.strong_order_1
-    if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || (is_diagonal_noise(integrator.sol.prob))
+    if (W.dW isa Number) || (length(W.dW) == 1) || (is_diagonal_noise(integrator.sol.prob))
       @.. uᵢ₋₂  = 1//2*Gₛ*(W.dW^2 - abs(dt))
       @.. tmp = u + uᵢ₋₂
       integrator.g(Gₛ,tmp,p,tᵢ)
@@ -666,7 +666,7 @@ end
 
   #stage 1
   Gₛ = integrator.g(uprev,p,t)
-  if (typeof(W.dW) <: Number) || !is_diagonal_noise(integrator.sol.prob)
+  if (W.dW isa Number) || !is_diagonal_noise(integrator.sol.prob)
     u = Gₛ*W.dW
   else
     u = Gₛ .* W.dW
@@ -709,7 +709,7 @@ end
   end
   if integrator.alg.post_processing && (t+dt >= integrator.sol.prob.tspan[2])
     Gₛ = integrator.g(u,p,tᵢ)
-    if (typeof(W.dW) <: Number) || is_diagonal_noise(integrator.sol.prob)
+    if (W.dW isa Number) || is_diagonal_noise(integrator.sol.prob)
       uᵢ₋₁ = Gₛ
     else
       WikRange = 1 .* (1:length(W.dW) .== 1)
@@ -752,7 +752,7 @@ end
 
   #stage 1
   integrator.g(Gₛ,uprev,p,t)
-  if (typeof(W.dW) <: Number) || is_diagonal_noise(integrator.sol.prob)
+  if (W.dW isa Number) || is_diagonal_noise(integrator.sol.prob)
     @.. u = Gₛ*W.dW
   else
     mul!(u,Gₛ,W.dW)
@@ -798,7 +798,7 @@ end
   if integrator.alg.post_processing && (t+dt >= integrator.sol.prob.tspan[2])
     integrator.g(Gₛ,u,p,tᵢ)
     # println(Gₛ/length(W.dW))
-    if (typeof(W.dW) <: Number) || is_diagonal_noise(integrator.sol.prob)
+    if (W.dW isa Number) || is_diagonal_noise(integrator.sol.prob)
       @.. uᵢ₋₁ = Gₛ
     else
       WikRange .= 1 .* (1:length(W.dW) .== 1)
@@ -900,7 +900,7 @@ end
     end
   end
 
-  if (typeof(W.dW) <: Number) || (length(W.dW) == 1)
+  if (W.dW isa Number) || (length(W.dW) == 1)
     Gₛ = integrator.g(Û₁,p,t̂₁)
     uₓ += Gₛ*W.dW
 
@@ -1055,7 +1055,7 @@ end
     end
   end
 
-  if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || is_diagonal_noise(integrator.sol.prob)
+  if (W.dW isa Number) || (length(W.dW) == 1) || is_diagonal_noise(integrator.sol.prob)
     integrator.g(Gₛ,Û₁,p,t̂₁)
     @.. uₓ += Gₛ*W.dW
 
@@ -1109,7 +1109,7 @@ end
   @unpack t,dt,uprev,u,W,p,f = integrator
   @unpack recf, mσ, mτ, mδ = cache
 
-  gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (typeof(W.dW) <: Number) || (length(W.dW) == 1))
+  gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (W.dW isa Number) || (length(W.dW) == 1))
 
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
@@ -1164,7 +1164,7 @@ end
   tᵢ₋₁ += θₛ₋₃*(tᵢ₋₁ - tᵢ₋₂)
   tᵢ₋₂ = ttmp
 
-  if typeof(W.dW) <: Number || length(W.dW) == 1 || is_diagonal_noise(integrator.sol.prob)
+  if W.dW isa Number || length(W.dW) == 1 || is_diagonal_noise(integrator.sol.prob)
     # stage s-3
     yₛ₋₃ = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
     utmp = uᵢ₋₁ + μₛ₋₃*yₛ₋₃
@@ -1298,7 +1298,7 @@ end
   @unpack recf, mσ, mτ, mδ = cache.constantcache
 
   ccache = cache.constantcache
-  gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (typeof(W.dW) <: Number) || (length(W.dW) == 1))
+  gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (W.dW isa Number) || (length(W.dW) == 1))
 
   alg = unwrap_alg(integrator, true)
   alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
@@ -1352,7 +1352,7 @@ end
   tᵢ₋₁ += θₛ₋₃*(tᵢ₋₁ - tᵢ₋₂)
   tᵢ₋₂ = ttmp
 
-  if typeof(W.dW) <: Number || length(W.dW) == 1 || is_diagonal_noise(integrator.sol.prob)
+  if W.dW isa Number || length(W.dW) == 1 || is_diagonal_noise(integrator.sol.prob)
     # stage s-3
     integrator.f(yₛ₋₃,uᵢ₋₁,p,tᵢ₋₁)
     @.. utmp = uᵢ₋₁ + μₛ₋₃*yₛ₋₃
@@ -1561,7 +1561,7 @@ end
   uᵢ₋₂ = integrator.f(uᵢ₋₂,p,tᵢ₋₂)
   u += dt*(σ + τ)*uᵢ₋₂
 
-  if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || is_diagonal_noise(integrator.sol.prob)
+  if (W.dW isa Number) || (length(W.dW) == 1) || is_diagonal_noise(integrator.sol.prob)
     Gₛ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
     u += Gₛ .* W.dW
 
@@ -1646,7 +1646,7 @@ end
   integrator.f(k,uᵢ₋₂,p,tᵢ₋₂)
   @.. u += dt*(σ + τ)*k
 
-  if (typeof(W.dW) <: Number) || (length(W.dW) == 1) || is_diagonal_noise(integrator.sol.prob)
+  if (W.dW isa Number) || (length(W.dW) == 1) || is_diagonal_noise(integrator.sol.prob)
     integrator.g(Gₛ,uᵢ₋₁,p,tᵢ₋₁)
     @.. u += Gₛ*W.dW
 

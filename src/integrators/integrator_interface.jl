@@ -5,7 +5,7 @@
   if integrator.tdir*t < integrator.tdir*integrator.tprev
     error("Current interpolant only works between tprev and t")
   elseif t != integrator.t
-    if typeof(integrator.u) <: AbstractArray
+    if integrator.u isa AbstractArray
       integrator(integrator.u,t)
     else
       integrator.u = integrator(t)
@@ -324,7 +324,7 @@ function DiffEqBase.reinit!(integrator::SDEIntegrator,u0 = integrator.sol.prob.u
     if integrator.sol.u_analytic !== nothing
       resize!(integrator.sol.u_analytic,0)
     end
-    if typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm
+    if integrator.alg isa StochasticDiffEqCompositeAlgorithm
       resize!(integrator.sol.alg_choice,resize_start)
     end
     integrator.saveiter = resize_start

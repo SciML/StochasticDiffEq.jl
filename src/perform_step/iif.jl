@@ -31,11 +31,11 @@ end
   @unpack uhold,rhs,nl_rhs = cache
   alg = unwrap_alg(integrator, true)
   A = integrator.f.f1(u,p,t)
-  if typeof(cache) <: IIF1MilConstantCache
+  if cache isa IIF1MilConstantCache
     error("Milstein correction does not work.")
-  elseif typeof(cache) <: IIF1MConstantCache
+  elseif cache isa IIF1MConstantCache
     tmp = exp(A*dt)*(uprev + integrator.g(uprev,p,t)*W.dW)
-  elseif typeof(cache) <: IIF2MConstantCache
+  elseif cache isa IIF2MConstantCache
     tmp = exp(A*dt)*(uprev + 0.5dt*integrator.f.f2(uprev,p,t) + integrator.g(uprev,p,t)*W.dW)
   end
 
@@ -101,7 +101,7 @@ end
 
   rtmp3 .+= uprev
 
-  if typeof(cache) <: IIF2MCache
+  if cache isa IIF2MCache
     integrator.f.f2(rtmp1,uprev,p,t)
     dto2 = dt / 2
     @.. rtmp3 = dto2 * rtmp1 + rtmp3
@@ -140,7 +140,7 @@ end
 
   uidx = eachindex(u)
   integrator.g(rtmp2,uprev,p,t)
-  if typeof(cache) <: Union{IIF1MCache,IIF2MCache}
+  if cache isa Union{IIF1MCache,IIF2MCache}
     if is_diagonal_noise(integrator.sol.prob)
       rmul!(rtmp2,W.dW) # rtmp2 === rtmp3
     else
@@ -168,12 +168,12 @@ end
     rtmp3 .+= mil_correction
   end
 
-  if typeof(cache) <: IIF2MCache
+  if cache isa IIF2MCache
     integrator.f.f2(t,uprev,rtmp1)
     dto2 = dt / 2
     @.. rtmp1 = dto2 * rtmp1 + uprev + rtmp3
     mul!(tmp,M,rtmp1)
-  elseif !(typeof(cache) <: IIF1MilCache)
+  elseif !(cache isa IIF1MilCache)
     @.. rtmp1 = uprev + rtmp3
     mul!(tmp,M,rtmp1)
   else

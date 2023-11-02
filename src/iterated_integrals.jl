@@ -32,7 +32,7 @@ end
 
 function get_iterated_I!(dt, dW, dZ, alg::JDiagonal_iip, p=nothing, c=1, γ=1//1)
   @unpack J = alg
-  if typeof(dW) <: Number
+  if dW isa Number
     alg.J = 1//2 .* dW .^ 2
   else
     @.. J = 1//2 * dW^2
@@ -87,14 +87,14 @@ end
 function get_Jalg(ΔW, dt, prob, alg)
   if alg.ii_approx isa IILevyArea
     if isinplace(prob)
-      if typeof(ΔW) <: Number || is_diagonal_noise(prob)
+      if ΔW isa Number || is_diagonal_noise(prob)
         return JDiagonal_iip(ΔW)
       else
         # optimal_algorithm(dim, stepsize, eps=stepsize^(3/2), norm=MaxL2())
         return IteratedIntegralAlgorithm_iip(ΔW, LevyArea.optimal_algorithm(length(ΔW), dt))
       end
     else
-      if typeof(ΔW) <: Number || is_diagonal_noise(prob)
+      if ΔW isa Number || is_diagonal_noise(prob)
         return JDiagonal_oop()
       else
         return LevyArea.optimal_algorithm(length(ΔW), dt)
@@ -102,13 +102,13 @@ function get_Jalg(ΔW, dt, prob, alg)
     end
   elseif alg.ii_approx isa IICommutative
     if isinplace(prob)
-      if typeof(ΔW) <: Number || is_diagonal_noise(prob)
+      if ΔW isa Number || is_diagonal_noise(prob)
         return JDiagonal_iip(ΔW)
       else
         return JCommute_iip(ΔW)
       end
     else
-      if typeof(ΔW) <: Number || is_diagonal_noise(prob)
+      if ΔW isa Number || is_diagonal_noise(prob)
         return JDiagonal_oop()
       else
         return JCommute_oop()

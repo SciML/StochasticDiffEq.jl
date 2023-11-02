@@ -1337,9 +1337,9 @@ end
 
 
 function checkNONOrder(NON;tol=1e-6)
-  if typeof(NON) <: KomoriNON
+  if NON isa KomoriNON
     @unpack c0,cj,cjl,clj,α00,α0j,αj0,αjj,αjl,αjljj,αljjl = NON
-  elseif typeof(NON) <: KomoriNON2
+  elseif NON isa KomoriNON2
     @unpack c0,cj,ckj,α00,α0j,αj0,αjj,αjl,αkjjl = NON
   else
     @unpack c0,cj,α00,α0j,αj0,αjj,αjl = NON
@@ -1382,14 +1382,14 @@ function checkNONOrder(NON;tol=1e-6)
   conditions[31] = abs(dot(cj,αjl*(αjl*e))-0)<tol
   conditions[32] = abs(dot(cj,(αjj*e).*(αjl*e))-1/4)<tol
 
-  if typeof(NON) <: KomoriNON
+  if NON isa KomoriNON
     conditions[33] = abs(dot(clj,e)-0)<tol
     conditions[34] = abs(dot(cjl,e)-0)<tol
     conditions[35] = abs(dot(clj,αljjl*e)-1/2)<tol
     conditions[36] = abs(dot(cjl,αjljj*e)+1/2)<tol
     conditions[37] = abs(dot(clj.*(αljjl*e),αljjl*(αjljj*e))-0)<tol
     conditions[38] = abs(dot(clj,(αljjl*e).^2)-0)<tol
-  elseif typeof(NON) <: KomoriNON2
+  elseif NON isa KomoriNON2
     conditions[33] = abs(ckj[4]+ckj[3]-0)<tol
     conditions[34] = abs(ckj[2]-0)<tol
     conditions[35] = abs(αkjjl[4,3]-0)<tol

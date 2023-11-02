@@ -155,7 +155,7 @@ alg_compatible(prob, alg::StochasticDiffEqAlgorithm) = false
 
 function alg_compatible(prob::JumpProblem, alg::StochasticDiffEqAlgorithm)
     alg_compatible(prob.prob, alg) && prob.regular_jump === nothing &&
-        typeof(prob.prob) <: DiffEqBase.AbstractSDEProblem
+        prob.prob isa DiffEqBase.AbstractSDEProblem
 end
 alg_compatible(prob::JumpProblem, alg::EM) = alg_compatible(prob.prob, alg)
 alg_compatible(prob::JumpProblem, alg::ImplicitEM) = alg_compatible(prob.prob, alg)
@@ -315,7 +315,7 @@ function unwrap_alg(integrator, is_nlsolve)
     alg = integrator.alg
     if !is_composite(alg)
         return alg
-    elseif typeof(alg.choice_function) <: AutoSwitchCache
+    elseif alg.choice_function isa AutoSwitchCache
         num = is_nlsolve ? 2 : 1
         if num == 1
             return alg.algs[1]
@@ -342,7 +342,7 @@ function OrdinaryDiffEq.unwrap_alg(integrator::SDEIntegrator, is_stiff)
     alg = integrator.alg
     if !is_composite(alg)
         return alg
-    elseif typeof(alg.choice_function) <: AutoSwitchCache
+    elseif alg.choice_function isa AutoSwitchCache
         num = is_stiff ? 2 : 1
         if num == 1
             return alg.algs[1]
