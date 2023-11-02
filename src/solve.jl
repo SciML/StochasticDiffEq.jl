@@ -62,6 +62,7 @@ function DiffEqBase.__init(
   initialize_save = true,
   progress=false,progress_steps=1000,progress_name="SDE",
   progress_message = ODE_DEFAULT_PROG_MESSAGE,
+  progress_id=gensym("StochasticDiffEq"),
   userdata=nothing,
   initialize_integrator=true,
   seed = UInt64(0), alias_u0=false, alias_jumps = Threads.threadid()==1,
@@ -114,7 +115,7 @@ function DiffEqBase.__init(
     error("The given solver is a Fixed timestep method and does not support adaptivity.")
   end
 
-  progress && @logmsg(LogLevel(-1),progress_name,_id=_id = :StochasticDiffEq,progress=0)
+  progress && @logmsg(LogLevel(-1),progress_name,_id=progress_id,progress=0)
 
   tType = eltype(prob.tspan)
   noise = prob isa DiffEqBase.AbstractRODEProblem ? prob.noise : nothing
@@ -513,7 +514,7 @@ function DiffEqBase.__init(
                     tstops,saveat,d_discontinuities,
                     userdata,
                     progress,progress_steps,
-                    progress_name,progress_message,
+                    progress_name,progress_message,progress_id,
                     timeseries_errors,dense_errors,
                     convert.(uBottomEltypeNoUnits,delta),
                     dense,save_on,save_start,save_end,save_end_user,save_noise,
