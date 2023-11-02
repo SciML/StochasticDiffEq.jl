@@ -61,7 +61,7 @@ end
   @unpack t,dt,uprev,u,W,p,f = integrator
 
   sqrt3 = sqrt(3one(eltype(W.dW)))
-  if typeof(W.dW) <: Union{SArray,Number}
+  if W.dW isa Union{SArray,Number}
     chi1 = (W.dW.^2 - abs(dt))/2integrator.sqdt #I_(1,1)/sqrt(h)
     chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
     chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
@@ -168,7 +168,7 @@ end
   @unpack chi1,chi2,chi3,fH01o4,g₁o2,H0,H11,H12,H13,g₂o3,Fg₂o3,g₃o3,Tg₃o3,mg₁,E₁,E₂,fH01,fH02,g₁,g₂,g₃,g₄,tmp = cache
 
   sqrt3 = sqrt(3one(eltype(W.dW)))
-  if typeof(W.dW) <: Union{SArray,Number}
+  if W.dW isa Union{SArray,Number}
     chi1 = (W.dW.^2 - abs(dt))/2integrator.sqdt #I_(1,1)/sqrt(h)
     chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
     chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
@@ -352,7 +352,7 @@ end
 
   E₁ = dt*(k1 + k2 + k3 + k4)
 
-  if typeof(integrator.alg) <: StochasticCompositeAlgorithm && typeof(integrator.alg.algs[1]) <: SOSRI2
+  if integrator.alg isa StochasticCompositeAlgorithm && integrator.alg.algs[1] isa SOSRI2
     ϱu = integrator.opts.internalnorm(k4 - k3, t)
     ϱd = integrator.opts.internalnorm(H03 - H02, t)
     integrator.eigen_est = ϱu/ϱd
@@ -377,7 +377,7 @@ end
 
   sqdt = integrator.sqdt
   sqrt3 = sqrt(3one(eltype(W.dW)))
-  if typeof(W.dW) <: Union{SArray,Number}
+  if W.dW isa Union{SArray,Number}
     chi1 = (W.dW.^2 - abs(dt))/2integrator.sqdt #I_(1,1)/sqrt(h)
     chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
     chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
@@ -407,7 +407,7 @@ end
   @.. tmp = uprev + dt*(a141*k1 + a142*k2 + a143*k3) + sqdt*(b141*g1 + b142*g2 + b143*g3)
   integrator.g(g4,tmp,p,t+c14*dt)
 
-  if typeof(integrator.alg) <: StochasticCompositeAlgorithm && typeof(integrator.alg.algs[1]) <: SOSRI2
+  if integrator.alg isa StochasticCompositeAlgorithm && integrator.alg.algs[1] isa SOSRI2
     @.. tmp = k4 - k3
     ϱu = integrator.opts.internalnorm(tmp, t)
     @.. tmp = H03 - H02

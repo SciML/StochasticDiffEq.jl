@@ -10,7 +10,7 @@
   sqrt3 = sqrt(3one(eltype(integrator.W.dW)))
   chi2 = (integrator.W.dW + integrator.W.dZ/sqrt3)/2 #I_(1,0)/h
 
-  if typeof(integrator.f) <: SplitSDEFunction
+  if integrator.f isa SplitSDEFunction
     f = integrator.f.f1
     f2 = integrator.f.f2
   else
@@ -28,7 +28,7 @@
 
   g1 = g(uprev,p,t)
   tmp = uprev + γ*z₁ + nb021*chi2.*g1
-  if typeof(integrator.f) <: SplitSDEFunction
+  if integrator.f isa SplitSDEFunction
     # This assumes the implicit part is cheaper than the explicit part
     k1 = dt*f2(uprev,p,t)
     tmp += ea21*k1
@@ -48,7 +48,7 @@
   ################################## Solve Step 3
 
   nlsolver.c = c3
-  if typeof(integrator.f) <: SplitSDEFunction
+  if integrator.f isa SplitSDEFunction
     u = tmp + γ*z₂
     k2 = dt*f2(u,p,t + 2γ*dt)
     tmp = uprev + a31*z₁ + a32*z₂ + ea31*k1 + ea32*k2
@@ -73,7 +73,7 @@
 
   # Note: Can use g1 since c13 = 0 => g3 == g1
 
-  if typeof(integrator.f) <: SplitSDEFunction
+  if integrator.f isa SplitSDEFunction
     u = tmp + γ*z₃
     k3 = dt*f2(u,p,t + c3*dt)
     tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + ea41*k1 + ea42*k2 + ea43*k3 + nb043*chi2.*g1
@@ -97,7 +97,7 @@
 
   E₂ = chi2.*(g1-g4)
 
-  if typeof(integrator.f) <: SplitSDEFunction
+  if integrator.f isa SplitSDEFunction
     k4 = dt*f2(u,p,t+dt)
     u = uprev + a41*z₁ + a42*z₂ + a43*z₃ + γ*z₄ + eb1*k1 + eb2*k2 + eb3*k3 + eb4*k4 + integrator.W.dW.*g4 + E₂
   else
@@ -109,7 +109,7 @@
   if integrator.opts.adaptive
 
     if alg.ode_error_est
-      if typeof(integrator.f) <: SplitSDEFunction
+      if integrator.f isa SplitSDEFunction
         tmp = btilde1*z₁  + btilde2*z₂  + btilde3*z₃ + btilde4*z₄ + ebtilde1*k1 + ebtilde2*k2 + ebtilde3*k3 + ebtilde4*k4 + chi2*(g1-g4)
       else
         tmp = btilde1*z₁ + btilde2*z₂ + btilde3*z₃ + btilde4*z₄ + chi2*(g1-g4)
@@ -152,7 +152,7 @@ end
   E₁ = g4
   E₂ = dz
 
-  if typeof(integrator.f) <: SplitSDEFunction
+  if integrator.f isa SplitSDEFunction
     f = integrator.f.f1
     f2 = integrator.f.f2
   else
@@ -160,7 +160,7 @@ end
   end
 
   sqrt3 = sqrt(3one(eltype(integrator.W.dW)))
-  if typeof(integrator.W.dW) <: Union{SArray,Number}
+  if integrator.W.dW isa Union{SArray,Number}
     chi2 = (integrator.W.dW + integrator.W.dZ/sqrt3)/2 #I_(1,0)/h
   else
     @.. chi2 = (integrator.W.dW + integrator.W.dZ/sqrt3)/2 #I_(1,0)/h
@@ -194,7 +194,7 @@ end
     @.. z₂ = z₁
   end
 
-  if typeof(integrator.f) <: SplitSDEFunction
+  if integrator.f isa SplitSDEFunction
     # This assumes the implicit part is cheaper than the explicit part
     if !repeat_step && !integrator.last_stepfail
       f2(k1,integrator.uprev,integrator.p,integrator.t)
@@ -212,7 +212,7 @@ end
 
   ################################## Solve Step 3
 
-  if typeof(integrator.f) <: SplitSDEFunction
+  if integrator.f isa SplitSDEFunction
     @.. u = tmp + γ*z₂
     f2(k2,u,p,t + 2γ*dt); k2 .*= dt
     @.. tmp = uprev + a31*z₁ + a32*z₂ + ea31*k1 + ea32*k2
@@ -232,7 +232,7 @@ end
 
   ################################## Solve Step 4
 
-  if typeof(integrator.f) <: SplitSDEFunction
+  if integrator.f isa SplitSDEFunction
     @.. u = tmp + γ*z₃
     f2(k3,u,p,t + c3*dt); k3 .*= dt
     # z₄ is storage for the g1*chi2 from earlier
@@ -256,7 +256,7 @@ end
 
   g(g4,u,p,t+dt)
 
-  if typeof(integrator.f) <: SplitSDEFunction
+  if integrator.f isa SplitSDEFunction
     @.. u = tmp + γ*z₄
     f2(k4,u,p,t+dt); k4 .*= dt
     if is_diagonal_noise(integrator.sol.prob)
@@ -285,7 +285,7 @@ end
   if integrator.opts.adaptive
 
     if alg.ode_error_est
-      if typeof(integrator.f) <: SplitSDEFunction
+      if integrator.f isa SplitSDEFunction
         @.. g1 = btilde1*z₁  + btilde2*z₂  + btilde3*z₃ + btilde4*z₄ + ebtilde1*k1 + ebtilde2*k2 + ebtilde3*k3 + ebtilde4*k4
       else
         @.. g1 = btilde1*z₁  + btilde2*z₂  + btilde3*z₃ + btilde4*z₄

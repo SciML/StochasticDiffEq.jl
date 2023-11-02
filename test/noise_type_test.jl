@@ -61,7 +61,7 @@ sol = solve(prob,EM(),dt=1/1000, alias_noise=true)
 @test objectid(prob.noise.u) == objectid(prob.noise.W) != objectid(sol.W.W) == objectid(sol.W.u)
 
 function g(du,u,p,t)
-  @test typeof(du) <: SparseMatrixCSC
+  @test du isa SparseMatrixCSC
   du[1,1] = 0.3u[1]
   du[1,2] = 0.6u[1]
   du[1,3] = 0.9u[1]
@@ -96,7 +96,7 @@ prob = SDEProblem(drift,vol,u0,tspan, noise=W)
 sol = solve(prob,EM(),dt=0.01)
 @test sol.W.curt ≈ last(tspan)
 
-@test typeof(sol.W) == typeof(prob.noise) <: NoiseFunction
+@test typeof(sol.W) == prob.noise isa NoiseFunction
 @test objectid(prob.noise) != objectid(sol.W)
 
 sol = solve(prob,EM(),dt=1/1000,alias_noise=false)
@@ -105,11 +105,11 @@ sol = solve(prob,EM(),dt=1/1000,alias_noise=false)
 sol = solve(prob,EM(),dt=0.01,alias_noise=true)
 @test sol.W.curt ≈ last(tspan)
 
-@test typeof(sol.W) == typeof(prob.noise) <: NoiseFunction
+@test typeof(sol.W) == prob.noise isa NoiseFunction
 @test objectid(prob.noise) != objectid(sol.W)
 
 sol = solve(prob,EM(),dt=0.01,alias_noise=false)
 @test sol.W.curt ≈ last(tspan)
 
-@test typeof(sol.W) == typeof(prob.noise) <: NoiseFunction
+@test typeof(sol.W) == prob.noise isa NoiseFunction
 @test objectid(prob.noise) == objectid(sol.W)

@@ -99,7 +99,7 @@ last_step_failed(integrator::SDEIntegrator) =
       save_val = val
       copyat_or_push!(integrator.sol.t,integrator.saveiter,curt)
       copyat_or_push!(integrator.sol.u,integrator.saveiter,save_val,Val{false})
-      if typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm
+      if integrator.alg isa StochasticDiffEqCompositeAlgorithm
         copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
       end
     else # ==t, just save
@@ -110,7 +110,7 @@ last_step_failed(integrator::SDEIntegrator) =
       else
         copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})
       end
-      if typeof(integrator.alg) <: Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}
+      if integrator.alg isa Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}
         copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
       end
     end
@@ -123,7 +123,7 @@ last_step_failed(integrator::SDEIntegrator) =
       copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})
     end
     copyat_or_push!(integrator.sol.t,integrator.saveiter,integrator.t)
-    if typeof(integrator.alg) <: Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}
+    if integrator.alg isa Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}
       copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
     end
   end
@@ -271,7 +271,7 @@ end
 @inline function handle_callback_modifiers!(integrator::SDEIntegrator)
   #integrator.reeval_fsal = true
   if integrator.P !== nothing && integrator.opts.adaptive
-    if typeof(integrator.cache) <: StochasticDiffEqMutableCache
+    if integrator.cache isa StochasticDiffEqMutableCache
       oldrate = integrator.P.cache.currate
       P.cache.rate(oldrate,u,p,t)
     else
@@ -323,7 +323,7 @@ end
       rmul!(integrator.ΔZ,scaling_factor)
     end
   else
-    if typeof(integrator.u) <: AbstractArray
+    if integrator.u isa AbstractArray
       integrator.ΔW .= scaling_factor.*integrator.noise(size(integrator.u),integrator)
       if alg_needs_extra_process(integrator.alg)
         integrator.ΔZ .= scaling_factor.*integrator.noise(size(integrator.u),integrator)
@@ -354,7 +354,7 @@ end
       end
     end
   else
-    if typeof(integrator.u) <: AbstractArray
+    if integrator.u isa AbstractArray
       if add1 != 0
         integrator.ΔWtilde = add1 .+ scaling.*integrator.noise(size(integrator.u),integrator)
       else

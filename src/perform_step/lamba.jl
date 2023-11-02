@@ -10,7 +10,7 @@
   end
 
   mil_correction = zero(u)
-  if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
+  if !is_diagonal_noise(integrator.sol.prob) || W.dW isa Number
       noise = L*W.dW
   else
       noise = L.*W.dW
@@ -24,7 +24,7 @@
 
     utilde =  K + noise*integrator.sqdt #L*integrator.sqdt
     ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
-    if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
+    if !is_diagonal_noise(integrator.sol.prob) || W.dW isa Number
         En = ggprime*(W.dW.^2 .- dt)./2
     else
         En = ggprime.*(W.dW.^2 .- dt)./2

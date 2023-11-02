@@ -18,21 +18,21 @@
   ftmp = integrator.f(uprev,p,t)
   gtmp = L.*integrator.W.dW
 
-  if typeof(cache) <: ImplicitEulerHeunConstantCache
+  if cache isa ImplicitEulerHeunConstantCache
     utilde = uprev + gtmp
     gtmp = ((integrator.g(utilde,p,t) + L)/2)*integrator.W.dW
   end
 
-  if typeof(cache) <: ImplicitRKMilConstantCache || integrator.opts.adaptive == true
+  if cache isa ImplicitRKMilConstantCache || integrator.opts.adaptive == true
     if alg_interpretation(alg) == :Ito ||
-       typeof(cache) <: ImplicitEMConstantCache
+       cache isa ImplicitEMConstantCache
       K = @.. uprev + dt * ftmp
       utilde =  K + L*integrator.sqdt
       ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
       mil_correction = ggprime .* (integrator.W.dW.^2 .- abs(dt))./2
       gtmp += mil_correction
     elseif alg_interpretation(alg) == :Stratonovich ||
-           typeof(cache) <: ImplicitEulerHeunConstantCache
+           cache isa ImplicitEulerHeunConstantCache
       utilde = uprev + L*integrator.sqdt
       ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
       mil_correction = ggprime.*(integrator.W.dW.^2)./2
@@ -83,7 +83,7 @@
     end
 
     Ed = _reshape(dt*(nlsolver.cache.J*_vec(ftmp))/2, axes(ftmp))
-    if typeof(cache) <: Union{ImplicitEMConstantCache,ImplicitEulerHeunConstantCache}
+    if cache isa Union{ImplicitEMConstantCache,ImplicitEulerHeunConstantCache}
         En = mil_correction
     else
         En = integrator.opts.internalnorm.(integrator.W.dW.^3, t) .*
@@ -140,7 +140,7 @@ end
     mul!(gtmp2,gtmp,dW)
   end
 
-  if typeof(cache) <: ImplicitEulerHeunCache
+  if cache isa ImplicitEulerHeunCache
     gtmp3 = cache.gtmp3
     @.. z = uprev + gtmp2
     integrator.g(gtmp3,z,p,t)
@@ -152,7 +152,7 @@ end
     end
   end
 
-  if typeof(cache) <: ImplicitRKMilCache
+  if cache isa ImplicitRKMilCache
     gtmp3 = cache.gtmp3
     if alg_interpretation(alg) == :Ito
       @.. z = uprev + dt * tmp + integrator.sqdt * gtmp
@@ -218,7 +218,7 @@ end
 
     # k is Ed
     # dz is En
-    if typeof(cache) <: Union{ImplicitEMCache,ImplicitEulerHeunCache}
+    if cache isa Union{ImplicitEMCache,ImplicitEulerHeunCache}
       dW_cache = cache.dW_cache
       if !is_diagonal_noise(integrator.sol.prob)
         g_sized = norm(gtmp,2)
@@ -226,7 +226,7 @@ end
         g_sized = gtmp
       end
 
-      if typeof(cache) <: ImplicitEMCache
+      if cache isa ImplicitEMCache
         @.. z = uprev + dt * tmp + integrator.sqdt * g_sized
 
         if !is_diagonal_noise(integrator.sol.prob)
@@ -242,7 +242,7 @@ end
           @.. dz = (g_sized2-g_sized)/(2integrator.sqdt)*(dW.^2 - dt)
         end
 
-      elseif typeof(cache) <: ImplicitEulerHeunCache
+      elseif cache isa ImplicitEulerHeunCache
         @.. z = uprev + integrator.sqdt * g_sized
 
         if !is_diagonal_noise(integrator.sol.prob)
@@ -260,7 +260,7 @@ end
 
       end
 
-    elseif typeof(cache) <: ImplicitRKMilCache
+    elseif cache isa ImplicitRKMilCache
       # gtmp3 is ggprime
       @.. dz = integrator.opts.internalnorm(dW^3, t)*integrator.opts.internalnorm(gtmp3, t)^2 / 6
     end

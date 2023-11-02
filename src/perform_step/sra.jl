@@ -54,7 +54,7 @@ end
   integrator.g(gpdt,uprev,p,t+dt)
   integrator.f(k₁,uprev,p,t); k₁*=dt
   sqrt3 = sqrt(3one(eltype(W.dW)))
-  if typeof(W.dW) <: Union{SArray,Number}
+  if W.dW isa Union{SArray,Number}
     chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
   else
     @.. chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
@@ -129,7 +129,7 @@ end
   @unpack a21,b21,c02,c11,c12,α1,α2,beta12,beta21,beta22 = cache.tab
   H01 = E₁
   sqrt3 = sqrt(3one(eltype(W.dW)))
-  if typeof(W.dW) <: Union{SArray,Number}
+  if W.dW isa Union{SArray,Number}
     chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
   else
     @.. chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
@@ -193,7 +193,7 @@ end
 
   u = uprev + E₁ + E₂ + W.dW.*(beta11*g1 + beta12*g2 + beta13*g3)
 
-  if typeof(integrator.alg) <: StochasticCompositeAlgorithm && typeof(integrator.alg.algs[1]) <: SOSRA2
+  if integrator.alg isa StochasticCompositeAlgorithm && integrator.alg.algs[1] isa SOSRA2
     ϱu = integrator.opts.internalnorm(k3 - k2, t)
     ϱd = integrator.opts.internalnorm(H02 - H01, t)
     integrator.eigen_est = ϱu/ϱd
@@ -217,7 +217,7 @@ end
 
   H01 = E₁; H02 = E₁
   sqrt3 = sqrt(3one(eltype(W.dW)))
-  if typeof(W.dW) <: Union{SArray,Number}
+  if W.dW isa Union{SArray,Number}
     chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
   else
     @.. chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
@@ -258,7 +258,7 @@ end
     u = uprev + dt*(α1*k1 + α2*k2 + α3*k3) + E₂ + E₁
   end
 
-  if typeof(integrator.alg) <: StochasticCompositeAlgorithm && typeof(integrator.alg.algs[1]) <: SOSRA2
+  if integrator.alg isa StochasticCompositeAlgorithm && integrator.alg.algs[1] isa SOSRA2
     @.. tmp = k3 - k2
     ϱu = integrator.opts.internalnorm(tmp, t)
     @.. tmp = H02 - H01
@@ -329,7 +329,7 @@ end
   @unpack H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂,tmp = cache
   @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages = cache.tab
   sqrt3 = sqrt(3one(eltype(W.dW)))
-  if typeof(W.dW) <: Union{SArray,Number}
+  if W.dW isa Union{SArray,Number}
     chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
   else
     @.. chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h

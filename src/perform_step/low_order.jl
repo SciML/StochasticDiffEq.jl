@@ -9,7 +9,7 @@
     u_choice = uprev
   end
 
-  if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
+  if !is_diagonal_noise(integrator.sol.prob) || W.dW isa Number
     noise = integrator.g(u_choice,p,t)*W.dW
   else
     noise = integrator.g(u_choice,p,t).*W.dW
@@ -166,7 +166,7 @@ end
 
   _dW = map(x -> calc_twopoint_random(integrator.sqdt, x),  W.dW)
 
-  if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
+  if !is_diagonal_noise(integrator.sol.prob) || W.dW isa Number
     noise = integrator.g(uprev,p,t)*_dW
   else
     noise = integrator.g(uprev,p,t).*_dW
@@ -186,7 +186,7 @@ end
 
   integrator.g(rtmp2,uprev,p,t)
 
-  if typeof(W.dW) <: Union{SArray,Number}
+  if W.dW isa Union{SArray,Number}
     _dW = map(x -> calc_twopoint_random(integrator.sqdt, x),  W.dW)
   else
     calc_twopoint_random!(_dW, integrator.sqdt, W.dW)
@@ -276,7 +276,7 @@ end
 
   mil_correction = zero(u)
   if alg_interpretation(integrator.alg) == :Ito
-    if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+    if dW isa Number || is_diagonal_noise(integrator.sol.prob)
       J = J .- 1//2 .* abs(dt)
     else
       J -= 1//2 .* UniformScaling(abs(dt))
@@ -296,7 +296,7 @@ end
     u = @.. K + L*dW + Dgj*J
   else
     for j = 1:length(dW)
-      if typeof(dW) <: Number
+      if dW isa Number
         Kj = K + sqdt*L
       else
         Kj = K + sqdt*@view(L[:,j])
@@ -306,7 +306,7 @@ end
       if integrator.opts.adaptive
         ggprime_norm += integrator.opts.internalnorm(Dgj,t)
       end
-      if typeof(dW) <: Number
+      if dW isa Number
         tmp = Dgj*J
       else
         tmp = Dgj*@view(J[:,j])
@@ -344,7 +344,7 @@ end
 
   @.. mil_correction = zero(u)
   if alg_interpretation(integrator.alg) == :Ito
-    if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+    if dW isa Number || is_diagonal_noise(integrator.sol.prob)
       @.. J -= 1 // 2 * abs(dt)
     else
       J -= 1//2 .* UniformScaling(abs(dt))
@@ -398,7 +398,7 @@ end
   J = get_iterated_I(dt, dW, W.dZ, Jalg, integrator.alg.p, integrator.alg.c, alg_order(integrator.alg))
 
   if alg_interpretation(integrator.alg) == :Ito
-    if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+    if dW isa Number || is_diagonal_noise(integrator.sol.prob)
       J = J .- 1//2 .* abs(dt)
     else
       J -= 1//2 .* UniformScaling(abs(dt))
@@ -411,7 +411,7 @@ end
   ggprime_norm = zero(eltype(u)) #0
   # sqdt = integrator.sqdt
 
-  if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+  if dW isa Number || is_diagonal_noise(integrator.sol.prob)
     K = @.. uprev + dt*du₁
     utilde = (alg_interpretation(integrator.alg) == :Ito ? K : uprev) + L*integrator.sqdt
     ggprime = (integrator.g(utilde,p,t) .- L) ./ (integrator.sqdt)
@@ -438,7 +438,7 @@ end
 
   if integrator.opts.adaptive
     du₂ = integrator.f(K,p,t+dt)
-    if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+    if dW isa Number || is_diagonal_noise(integrator.sol.prob)
       tmp  = dt*(du₂ -du₁)/2
       En = W.dW.^3 .* ((du₂-L)/(integrator.sqdt)).^2 / 6
     else
@@ -468,14 +468,14 @@ end
   ggprime_norm = zero(eltype(ggprime))
 
   if alg_interpretation(integrator.alg) == :Ito
-    if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+    if dW isa Number || is_diagonal_noise(integrator.sol.prob)
       @.. J -= 1 // 2 * abs(dt)
     else
       J -= 1 // 2 .* UniformScaling(abs(dt))
     end
   end
 
-  if typeof(dW) <: Number || is_diagonal_noise(integrator.sol.prob)
+  if dW isa Number || is_diagonal_noise(integrator.sol.prob)
     @.. K = uprev + dt*du₁
     @.. du₂ = zero(eltype(u))
     tmp .= (alg_interpretation(integrator.alg) == :Ito ? K : uprev) .+ integrator.sqdt .* L

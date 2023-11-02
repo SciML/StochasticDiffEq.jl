@@ -42,7 +42,7 @@ function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prot
   atmp = fill!(similar(u,uEltypeNoUnits),0)
   z₁ = similar(u); z₂ = similar(u)
   z₃ = similar(u); z₄ = nlsolver.z
-  if typeof(f) <: SplitSDEFunction
+  if f isa SplitSDEFunction
     k1 = zero(u); k2 = zero(u)
     k3 = zero(u); k4 = zero(u)
   else
@@ -50,7 +50,7 @@ function alg_cache(alg::SKenCarp,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prot
     k3 = nothing; k4 = nothing
   end
 
-  if typeof(ΔW) <: Union{SArray,Number}
+  if ΔW isa Union{SArray,Number}
     chi2 = copy(ΔW)
   else
     chi2 = zero(ΔW)

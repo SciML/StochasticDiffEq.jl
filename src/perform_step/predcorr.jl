@@ -2,7 +2,7 @@
   @unpack t,dt,uprev,u,W,p,f,g = integrator
   @unpack theta,eta,ggprime = integrator.alg
   dW = W.dW
-  if !is_diagonal_noise(integrator.sol.prob) || typeof(W.dW) <: Number
+  if !is_diagonal_noise(integrator.sol.prob) || W.dW isa Number
     gdW_n = g(uprev,p,t)*dW
   else
     gdW_n = g(uprev,p,t).*dW
@@ -16,7 +16,7 @@
   tnp1 = t + dt
   fbar_np1 = f(ubar, p, tnp1) - eta*ggprime(ubar, p, tnp1)
 
-  if !is_diagonal_noise(integrator.sol.prob) || typeof(dW) <: Number
+  if !is_diagonal_noise(integrator.sol.prob) || dW isa Number
     gdW_np1 = g(ubar,p,tnp1)*dW
   else
     gdW_np1 = g(ubar,p,tnp1).*dW

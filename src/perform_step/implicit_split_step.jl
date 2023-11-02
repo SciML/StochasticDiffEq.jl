@@ -47,7 +47,7 @@
     gtmp = L .* integrator.W.dW
   end
 
-  if typeof(cache) <: ISSEulerHeunConstantCache
+  if cache isa ISSEulerHeunConstantCache
     utilde = u + gtmp
     if !is_diagonal_noise(integrator.sol.prob)
       gtmp = ((integrator.g(utilde, p, t) + L) / 2) * integrator.W.dW
@@ -67,7 +67,7 @@
     end
     Ed = dt * (dt * J * ftmp) / 2
 
-    if typeof(cache) <: ISSEMConstantCache
+    if cache isa ISSEMConstantCache
       K = @.. uprev + dt * ftmp
       if !is_diagonal_noise(integrator.sol.prob)
         g_sized = norm(L, 2)
@@ -83,7 +83,7 @@
         ggprime = (integrator.g(utilde, p, t) .- L) ./ (integrator.sqdt)
         En = ggprime .* (integrator.W.dW .^ 2 .- dt) ./ 2
       end
-    elseif typeof(cache) <: ISSEulerHeunConstantCache
+    elseif cache isa ISSEulerHeunConstantCache
       if !is_diagonal_noise(integrator.sol.prob)
         g_sized = norm(L, 2)
         utilde = @.. uprev + g_sized * integrator.sqdt
@@ -171,13 +171,13 @@ end
       g_sized = gtmp
     end
     # z is utilde above
-    if typeof(cache) <: ISSEMCache
+    if cache isa ISSEMCache
       @.. z = uprev + dt * tmp + integrator.sqdt * g_sized
-    elseif typeof(cache) <: ISSEulerHeunCache
+    elseif cache isa ISSEulerHeunCache
       @.. z = uprev + integrator.sqdt * g_sized
     end
 
-    if typeof(cache) <: ISSEMCache
+    if cache isa ISSEMCache
 
       if !is_diagonal_noise(integrator.sol.prob)
         integrator.g(gtmp, z, p, t)
@@ -191,7 +191,7 @@ end
         g_sized2 = gtmp2
         @.. dz = (g_sized2 - g_sized) / (2integrator.sqdt) * (dW .^ 2 - dt)
       end
-    elseif typeof(cache) <: ISSEulerHeunCache
+    elseif cache isa ISSEulerHeunCache
       if !is_diagonal_noise(integrator.sol.prob)
         integrator.g(gtmp, z, p, t)
         g_sized2 = norm(gtmp, 2)
@@ -227,7 +227,7 @@ end
   end
 
   ##############################################################################
-  if typeof(cache) <: ISSEulerHeunCache
+  if cache isa ISSEulerHeunCache
     gtmp3 = cache.gtmp3
     @.. z = u + gtmp2
     integrator.g(gtmp3, z, p, t)
