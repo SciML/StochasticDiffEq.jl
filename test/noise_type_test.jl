@@ -96,7 +96,7 @@ prob = SDEProblem(drift,vol,u0,tspan, noise=W)
 sol = solve(prob,EM(),dt=0.01)
 @test sol.W.curt ≈ last(tspan)
 
-@test typeof(sol.W) == prob.noise isa NoiseFunction
+@test typeof(sol.W) == typeof(prob.noise) && prob.noise isa NoiseFunction
 @test objectid(prob.noise) != objectid(sol.W)
 
 sol = solve(prob,EM(),dt=1/1000,alias_noise=false)
@@ -105,11 +105,11 @@ sol = solve(prob,EM(),dt=1/1000,alias_noise=false)
 sol = solve(prob,EM(),dt=0.01,alias_noise=true)
 @test sol.W.curt ≈ last(tspan)
 
-@test typeof(sol.W) == prob.noise isa NoiseFunction
+@test typeof(sol.W) == typeof(prob.noise) && prob.noise isa NoiseFunction
 @test objectid(prob.noise) != objectid(sol.W)
 
 sol = solve(prob,EM(),dt=0.01,alias_noise=false)
 @test sol.W.curt ≈ last(tspan)
 
-@test typeof(sol.W) == prob.noise isa NoiseFunction
+@test typeof(sol.W) == typeof(prob.noise) && prob.noise isa NoiseFunction
 @test objectid(prob.noise) == objectid(sol.W)
