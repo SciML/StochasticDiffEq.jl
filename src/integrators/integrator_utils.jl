@@ -176,7 +176,7 @@ end
   if integrator.opts.progress && integrator.iter%integrator.opts.progress_steps==0
     @logmsg(LogLevel(-1),
     integrator.opts.progress_name,
-    _id = :StochasticDiffEq,
+    _id = integrator.opts.progress_id,
     message=integrator.opts.progress_message(integrator.dt,integrator.u,integrator.p,integrator.t),
     progress=integrator.t/integrator.sol.prob.tspan[2])
   end
@@ -227,7 +227,7 @@ end
   if integrator.opts.progress
     @logmsg(LogLevel(-1),
     integrator.opts.progress_name,
-    _id = :StochasticDiffEq,
+    _id = integrator.opts.progress_id,
     message=integrator.opts.progress_message(integrator.dt,integrator.u,integrator.p,integrator.t),
     progress="done")
   end
