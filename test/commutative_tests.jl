@@ -44,7 +44,7 @@ end
 
 ff_commute = SDEFunction(f_commute,σ,analytic=f_commute_analytic)
 
-prob = SDEProblem(ff_commute,σ,u0,(0.0,1.0),noise_rate_prototype=rand(2,4))
+prob = SDEProblem(ff_commute,u0,(0.0,1.0),noise_rate_prototype=rand(2,4))
 
 sol = solve(prob,RKMilCommute(),dt=1/2^(8))
 sol = solve(prob,RKMilGeneral(ii_approx=IICommutative()),dt=1/2^(8))
@@ -67,7 +67,7 @@ sim2 = test_convergence(dts,prob,RKMilGeneral(p=2),trajectories=Int(2e2))
 
 ff_commute_oop = SDEFunction(f_commute_oop,σ_oop,analytic=f_commute_analytic)
 
-proboop = SDEProblem(ff_commute_oop,σ_oop,u0,(0.0,1.0),noise_rate_prototype=rand(2,4))
+proboop = SDEProblem(ff_commute_oop,u0,(0.0,1.0),noise_rate_prototype=rand(2,4))
 
 sol = solve(proboop,RKMilCommute(),dt=1/2^(8))
 sol = solve(proboop,RKMilGeneral(ii_approx=IICommutative()),dt=1/2^(8))

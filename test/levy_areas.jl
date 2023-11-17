@@ -28,7 +28,7 @@ end
 
   for alg ∈ LevyArea.ITER_INT_ALGS
     @test diag(StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, alg, nothing, 1)) == true_diag
-  end   
+  end
 end
 
 # Commutative noise tests
@@ -44,7 +44,7 @@ end
 
   for alg ∈ LevyArea.ITER_INT_ALGS
     @test diag(StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, alg, nothing, 1)) == diag(true_commute)
-  end   
+  end
 end
 
 
@@ -90,7 +90,7 @@ function test_compare_sample_mean_and_var(alg, Δ, m, samples=Int(1e6), p=Int(1e
   calculate_step!(W,dt,nothing,nothing)
   for i in 1:10
     accept_step!(W,dt,nothing,nothing)
-  end  
+  end
 
   xs = [StochasticDiffEq.get_iterated_I(Δ, W.dW, W.dZ, alg, p, 1)[1,2]]
   coms = [1//2*W.dW[1]*W.dW[2]]
@@ -100,7 +100,7 @@ function test_compare_sample_mean_and_var(alg, Δ, m, samples=Int(1e6), p=Int(1e
     accept_step!(W,Δ,nothing,nothing)
     com = 1//2*W.dW[1]*W.dW[2]
     x = StochasticDiffEq.get_iterated_I(Δ, W.dW, W.dZ, alg, p, 1)[1,2]
-    
+
     push!(xs,x)
     push!(coms,com)
   end
@@ -119,7 +119,7 @@ end
     Random.seed!(seed)
     I = StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, alg, 1, 1)
     Random.seed!(seed)
-    A = LevyArea.levyarea(W.dW/√dt, 1, alg) 
+    A = LevyArea.levyarea(W.dW/√dt, 1, alg)
     @test dt*A + true_commute == I # because of correction with \mu term
     @test diag(A) == diag(zero(A))
     @test diag(true_commute) == diag(I)
@@ -131,7 +131,7 @@ end
 
     # test other StatsJ
     @time test_compare_sample_mean_and_var(alg, 1.0, 2)
-  end  
+  end
 end
 
 @testset "Simulate non-com. SDEs tests" begin
@@ -139,7 +139,7 @@ end
   f(u,p,t) = [0.0,0.0,0.0]
   g(u,p,t) = [1.0 0.0;0.0 1.0;0.0 u[1]]
   f!(du,u,p,t) = du .*= false
-  function g!(du,u,p,t) 
+  function g!(du,u,p,t)
     du[1,1] = 1.0
     du[2,2] = 1.0
     du[3,2] = u[1]
@@ -151,16 +151,16 @@ end
   prob! = SDEProblem(f!,g!,u₀,(0.0,1.0); noise_rate_prototype=zeros(3,2))
 
   sol = solve(prob, RKMilGeneral(;ii_approx=IICommutative()), dt=dt, adaptive=false)
-  @test sol.retcode == :Success
+  @test sol.retcode == ReturnCode.Success
   sol = solve(prob, RKMilGeneral(;ii_approx=IILevyArea()), dt=dt, adaptive=false)
-  @test sol.retcode == :Success
+  @test sol.retcode == ReturnCode.Success
   sol = solve(prob, RKMilGeneral(ii_approx=Fourier()), dt=dt, adaptive=false)
-  @test sol.retcode == :Success
+  @test sol.retcode == ReturnCode.Success
 
   sol = solve(prob!, RKMilGeneral(;ii_approx=IICommutative()), dt=dt, adaptive=false)
-  @test sol.retcode == :Success
+  @test sol.retcode == ReturnCode.Success
   sol = solve(prob!, RKMilGeneral(;ii_approx=IILevyArea()), dt=dt, adaptive=false)
-  @test sol.retcode == :Success
+  @test sol.retcode == ReturnCode.Success
   sol = solve(prob!, RKMilGeneral(ii_approx=Fourier()), dt=dt, adaptive=false)
-  @test sol.retcode == :Success
+  @test sol.retcode == ReturnCode.Success
 end

@@ -24,7 +24,7 @@ using DocStringExtensions
   import DiffEqBase: ODE_DEFAULT_NORM, ODE_DEFAULT_ISOUTOFDOMAIN,
          ODE_DEFAULT_PROG_MESSAGE, ODE_DEFAULT_UNSTABLE_CHECK
 
-  using DiffEqBase: DiffEqArrayOperator
+  using SciMLOperators: MatrixOperator
 
   using DiffEqBase: TimeGradientWrapper, UJacobianWrapper, TimeDerivativeWrapper, UDerivativeWrapper
 
@@ -51,15 +51,25 @@ using DocStringExtensions
 
   using DiffEqBase: check_error!, is_diagonal_noise, @..
 
-  using DiffEqBase: nlsolvefail, isnewton, set_new_W!, get_W, iipnlsolve, oopnlsolve, _vec, _reshape
+using OrdinaryDiffEq: nlsolvefail, isnewton, set_new_W!, get_W, _vec, _reshape
 
-  using DiffEqBase: NLSolver
+using OrdinaryDiffEq: NLSolver
 
-  using DiffEqBase: FastConvergence, Convergence, SlowConvergence, VerySlowConvergence, Divergence
+if isdefined(OrdinaryDiffEq,:FastConvergence)
+    using OrdinaryDiffEq:
+        FastConvergence, Convergence, SlowConvergence, VerySlowConvergence, Divergence
 
-  import DiffEqBase: calculate_residuals, calculate_residuals!, nlsolve_f, unwrap_cache, islinear
+    import OrdinaryDiffEq:
+        calculate_residuals, calculate_residuals!, nlsolve_f, unwrap_cache, islinear
 
-  import DiffEqBase: iip_get_uf, oop_get_uf, build_jac_config
+    using OrdinaryDiffEq: NLFunctional, NLAnderson, NLNewton
+else
+    using DiffEqBase:
+        FastConvergence, Convergence, SlowConvergence, VerySlowConvergence, Divergence
+
+    import DiffEqBase:
+        calculate_residuals, calculate_residuals!, nlsolve_f, unwrap_cache, islinear
+end
 
   import SciMLBase
 
@@ -69,8 +79,8 @@ using DocStringExtensions
 
   const CompiledFloats = Union{Float32,Float64}
 
-  import DiffEqJump
-  import DiffEqJump: JumpProblem
+  import JumpProcesses
+  import JumpProcesses: JumpProblem
 
   import Base.Threads
   @static if VERSION < v"1.3"
@@ -106,7 +116,6 @@ using DocStringExtensions
   include("cache_utils.jl")
   include("integrators/integrator_interface.jl")
   include("iterator_interface.jl")
-  include("composite_solution.jl")
   include("solve.jl")
   include("initdt.jl")
   include("perform_step/low_order.jl")
@@ -165,7 +174,7 @@ using DocStringExtensions
   export StochasticDiffEqRODEAlgorithm, StochasticDiffEqRODEAdaptiveAlgorithm,
          StochasticDiffEqRODECompositeAlgorithm
 
-  export RandomEM
+  export RandomEM, RandomTamedEM, RandomHeun
 
   export IteratedIntegralApprox, IICommutative, IILevyArea
 

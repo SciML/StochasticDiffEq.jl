@@ -848,6 +848,10 @@ end
 
 struct RandomEM <: StochasticDiffEqRODEAlgorithm end
 
+struct RandomHeun <: StochasticDiffEqRODEAlgorithm end
+
+struct RandomTamedEM <: StochasticDiffEqRODEAlgorithm end
+
 const SplitSDEAlgorithms = Union{IIF1M,IIF2M,IIF1Mil,SKenCarp,SplitEM}
 
 @doc raw"""
@@ -862,5 +866,6 @@ dv = f(v,u) dt - \gamma v dt + g(u) \sqrt{2\gamma} dW
 """
 struct BAOAB{T} <: StochasticDiffEqAlgorithm
   gamma::T
+  scale_noise::Bool
 end
-BAOAB(;gamma=1.0) = BAOAB(gamma)
+BAOAB(;gamma=1.0, scale_noise=true) = BAOAB(gamma, scale_noise)

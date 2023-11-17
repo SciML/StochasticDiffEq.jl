@@ -72,7 +72,7 @@ function alg_cache(alg::SRI,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype
   E₁ = zero(rate_prototype); E₂ = zero(rate_prototype); E₁temp = zero(rate_prototype)
   ftemp = zero(rate_prototype); gtemp = zero(rate_prototype)
 
-  if typeof(ΔW) <: Union{SArray,Number}
+  if ΔW isa Union{SArray,Number}
     chi1 = copy(ΔW)
     chi2 = copy(ΔW)
     chi3 = copy(ΔW)
@@ -118,7 +118,7 @@ alg_cache(alg::SRIW1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_r
 end
 
 function alg_cache(alg::SRIW1,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
-  if typeof(ΔW) <: Union{SArray,Number}
+  if ΔW isa Union{SArray,Number}
     chi1 = copy(ΔW)
     chi2 = copy(ΔW)
     chi3 = copy(ΔW)
@@ -417,7 +417,7 @@ end
 function alg_cache(alg::SRIW2,prob,u,ΔW,ΔZ,p,rate_prototype,
                    noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},
                    ::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
-  if typeof(ΔW) <: Union{SArray,Number}
+  if ΔW isa Union{SArray,Number}
     chi1 = copy(ΔW)
     chi2 = copy(ΔW)
     chi3 = copy(ΔW)
@@ -439,7 +439,7 @@ end
 function alg_cache(alg::SOSRI,prob,u,ΔW,ΔZ,p,rate_prototype,
                    noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},
                    ::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
-  if typeof(ΔW) <: Union{SArray,Number}
+  if ΔW isa Union{SArray,Number}
     chi1 = copy(ΔW)
     chi2 = copy(ΔW)
     chi3 = copy(ΔW)
@@ -461,7 +461,7 @@ end
 function alg_cache(alg::SOSRI2,prob,u,ΔW,ΔZ,p,rate_prototype,
                    noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},
                    ::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
-  if typeof(ΔW) <: Union{SArray,Number}
+  if ΔW isa Union{SArray,Number}
     chi1 = copy(ΔW)
     chi2 = copy(ΔW)
     chi3 = copy(ΔW)

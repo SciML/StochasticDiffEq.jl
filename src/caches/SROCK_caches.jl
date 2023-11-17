@@ -79,8 +79,13 @@ function alg_cache(alg::SROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_protot
   uᵢ₋₂ = zero(u)
   Gₛ = zero(noise_rate_prototype)
   Gₛ₁ = zero(noise_rate_prototype)
-  WikRange = false .* vec(ΔW)
-  vec_χ = false .* vec(ΔW)
+  if ΔW isa Union{SArray,Number}
+    WikRange = copy(ΔW)
+    vec_χ = copy(ΔW)
+  else
+    WikRange = false .* vec(ΔW)
+    vec_χ = false .* vec(ΔW)
+  end
   tmp  = uᵢ₋₂            # these 2 variables are dummied to use same memory
   fsalfirst = k
   atmp = zero(rate_prototype)
@@ -120,12 +125,16 @@ function alg_cache(alg::SROCKEM,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_proto
   uᵢ₋₁ = zero(u)
   uᵢ₋₂ = zero(u)
   Gₛ = zero(noise_rate_prototype)
-  if (!alg.strong_order_1 || is_diagonal_noise(prob) || typeof(ΔW) <: Number || length(ΔW) == 1)
+  if (!alg.strong_order_1 || is_diagonal_noise(prob) || ΔW isa Number || length(ΔW) == 1)
     Gₛ₁ = Gₛ
   else
     Gₛ₁ = zero(noise_rate_prototype)
   end
-  WikRange = false .* vec(ΔW)
+  if ΔW isa Union{SArray,Number}
+    WikRange = copy(ΔW)
+  else
+    WikRange = false .* vec(ΔW)
+  end
   tmp  = zero(u)             # these 3 variables are dummied to use same memory
   fsalfirst = k
   atmp = zero(rate_prototype)
@@ -164,7 +173,11 @@ function alg_cache(alg::SKSROCK,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_proto
   Gₛ = zero(noise_rate_prototype)
   tmp  = uᵢ₋₂             # Dummmy variables
   fsalfirst = k
-  WikRange = false .* vec(ΔW)
+  if ΔW isa Union{SArray,Number}
+    WikRange = copy(ΔW)
+  else
+    WikRange = false .* vec(ΔW)
+  end
   atmp = zero(rate_prototype)
   constantcache = SKSROCKConstantCache{typeof(t)}(u)
   SKSROCKCache(u,uprev,uᵢ₋₁,uᵢ₋₂,Gₛ,tmp,k,fsalfirst,WikRange,atmp,constantcache)
@@ -218,7 +231,7 @@ function alg_cache(alg::TangXiaoSROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rat
   uᵢ₋₁ = zero(u)
   uᵢ₋₂ = zero(u)
   Gₛ = zero(noise_rate_prototype)
-  if typeof(ΔW) <: Number || length(ΔW) == 1 || is_diagonal_noise(prob)
+  if ΔW isa Number || length(ΔW) == 1 || is_diagonal_noise(prob)
     Gₛ₁ = Gₛ
   else
     Gₛ₁ = zero(noise_rate_prototype)
@@ -284,7 +297,7 @@ function alg_cache(alg::KomBurSROCK2,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_
   Xₛ₋₃ = zero(noise_rate_prototype)
   vec_χ = false .* vec(ΔW)
   WikRange = false .* vec(ΔW)
-  if typeof(ΔW) <: Number || length(ΔW) == 1 || is_diagonal_noise(prob)
+  if ΔW isa Number || length(ΔW) == 1 || is_diagonal_noise(prob)
     Gₛ = Xₛ₋₁
     SXₛ₋₁ = utmp
     SXₛ₋₂ = utmp

@@ -37,8 +37,31 @@ sol = solve(prob,SRA())
 
 @test length(sol.W[1]) == 4
 
+f(du,u,p,t) = (du.=1.01u)
+g(du,u,p,t) = (du.=0.1)
+Z = WienerProcess(0.0, [0.0])
+prob = SDEProblem(f,g,[1.0],(0.0,1.0),noise=Z)
+
+sol = solve(prob,EM(),dt=1/100)
+
+@test sol.W == prob.noise
+@test objectid(prob.noise) != objectid(sol.W)
+@test objectid(prob.noise.u) == objectid(prob.noise.W) != objectid(sol.W.W) == objectid(sol.W.u)
+
+sol = solve(prob,EM(),dt=1/1000,alias_noise=false)
+
+@test sol.W == prob.noise
+@test objectid(prob.noise) == objectid(sol.W)
+@test objectid(prob.noise.u) == objectid(prob.noise.W) == objectid(sol.W.W) == objectid(sol.W.u)
+
+sol = solve(prob,EM(),dt=1/1000, alias_noise=true)
+
+@test sol.W == prob.noise
+@test objectid(prob.noise) != objectid(sol.W)
+@test objectid(prob.noise.u) == objectid(prob.noise.W) != objectid(sol.W.W) == objectid(sol.W.u)
+
 function g(du,u,p,t)
-  @test typeof(du) <: SparseMatrixCSC
+  @test du isa SparseMatrixCSC
   du[1,1] = 0.3u[1]
   du[1,2] = 0.6u[1]
   du[1,3] = 0.9u[1]
@@ -51,8 +74,10 @@ end
 prob = SDEProblem(f,g,ones(2),(0.0,1.0),noise_rate_prototype=sprand(2,4,1.0))
 
 sol = solve(prob,EM(),dt=1/1000)
-
 @test length(sol.W[1]) == 4
+
+sol2 = solve(prob,EM(),dt=1/1000)
+@test sol.W.curt ≈ sol2.W.curt ≈ 1.0
 
 ff = (u,p,t) -> exp(t)
 W = NoiseFunction(0.0,ff)
@@ -61,5 +86,30 @@ vol(u,p,t) = u
 dt = 0.01
 tspan = (0.0,1.0)
 u0 = 0.0
-prob = SDEProblem(drift,vol,u0,(0.0,1.0), noise=W)
+prob = SDEProblem(drift,vol,u0,tspan, noise=W)
 sol = solve(prob,EM(),dt=0.1)
+@test sol.W.curt ≈ last(tspan)
+sol2 = solve(prob,EM(),dt=0.1)
+@test sol2.W.curt ≈ last(tspan)
+tspan = (0.0,2.0)
+prob = SDEProblem(drift,vol,u0,tspan, noise=W)
+sol = solve(prob,EM(),dt=0.01)
+@test sol.W.curt ≈ last(tspan)
+
+@test typeof(sol.W) == typeof(prob.noise) && prob.noise isa NoiseFunction
+@test objectid(prob.noise) != objectid(sol.W)
+
+sol = solve(prob,EM(),dt=1/1000,alias_noise=false)
+@test objectid(prob.noise) == objectid(sol.W)
+
+sol = solve(prob,EM(),dt=0.01,alias_noise=true)
+@test sol.W.curt ≈ last(tspan)
+
+@test typeof(sol.W) == typeof(prob.noise) && prob.noise isa NoiseFunction
+@test objectid(prob.noise) != objectid(sol.W)
+
+sol = solve(prob,EM(),dt=0.01,alias_noise=false)
+@test sol.W.curt ≈ last(tspan)
+
+@test typeof(sol.W) == typeof(prob.noise) && prob.noise isa NoiseFunction
+@test objectid(prob.noise) == objectid(sol.W)

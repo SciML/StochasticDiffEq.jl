@@ -4,7 +4,7 @@
   integrator.u = uprev .+ tmp
 
   if integrator.opts.adaptive
-    if typeof(integrator.alg) <: TauLeaping
+    if integrator.alg isa TauLeaping
       oldrate = P.cache.currate
       newrate = P.cache.rate(integrator.u,p,t+dt)
       EEstcache = @. abs(newrate - oldrate) / max(50integrator.opts.reltol*oldrate,integrator.rate_constants/integrator.dt)
@@ -12,7 +12,7 @@
       if integrator.EEst <= 1
         P.cache.currate = newrate
       end
-    elseif typeof(integrator.alg) <: CaoTauLeaping
+    elseif integrator.alg isa CaoTauLeaping
       # Calculate τ as EEst
     end
   end
@@ -25,7 +25,7 @@ end
   @.. u = uprev + tmp
 
   if integrator.opts.adaptive
-    if typeof(integrator.alg) <: TauLeaping
+    if integrator.alg isa TauLeaping
       oldrate = P.cache.currate
       P.cache.rate(newrate,u,p,t+dt)
       @.. EEstcache =  abs(newrate - oldrate) / max(50integrator.opts.reltol*oldrate,integrator.rate_constants/integrator.dt)
@@ -33,7 +33,7 @@ end
       if integrator.EEst <= 1
         P.cache.currate .= newrate
       end
-    elseif typeof(integrator.alg) <: CaoTauLeaping
+    elseif integrator.alg isa CaoTauLeaping
       # Calculate τ as EEst
     end
   end

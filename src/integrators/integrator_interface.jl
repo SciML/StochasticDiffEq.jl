@@ -5,7 +5,7 @@
   if integrator.tdir*t < integrator.tdir*integrator.tprev
     error("Current interpolant only works between tprev and t")
   elseif t != integrator.t
-    if typeof(integrator.u) <: AbstractArray
+    if integrator.u isa AbstractArray
       integrator(integrator.u,t)
     else
       integrator.u = integrator(t)
@@ -74,6 +74,9 @@ jac_iter(integrator::StochasticCompositeCache) = Iterators.flatten(jac_iter(c) f
   push!(integrator.opts.tstops, integrator.tdir * t)
 end
 
+DiffEqBase.has_tstop(integrator::SDEIntegrator) = !isempty(integrator.opts.tstops)
+DiffEqBase.first_tstop(integrator::SDEIntegrator) = first(integrator.opts.tstops)
+DiffEqBase.pop_tstop!(integrator::SDEIntegrator) = pop!(integrator.opts.tstops)
 
 function DiffEqBase.add_saveat!(integrator::SDEIntegrator,t)
   integrator.tdir * (t - integrator.t) < 0 && error("Tried to add a saveat that is behind the current time. This is strictly forbidden")
@@ -277,7 +280,7 @@ function addat_noise!(integrator,cache,idxs)
 end
 
 
-function terminate!(integrator::SDEIntegrator, retcode = :Terminated)
+function terminate!(integrator::SDEIntegrator, retcode = ReturnCode.Terminated)
   integrator.sol = DiffEqBase.solution_new_retcode(integrator.sol, retcode)
   integrator.opts.tstops.valtree = typeof(integrator.opts.tstops.valtree)()
 end
@@ -321,7 +324,7 @@ function DiffEqBase.reinit!(integrator::SDEIntegrator,u0 = integrator.sol.prob.u
     if integrator.sol.u_analytic !== nothing
       resize!(integrator.sol.u_analytic,0)
     end
-    if typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm
+    if integrator.alg isa StochasticDiffEqCompositeAlgorithm
       resize!(integrator.sol.alg_choice,resize_start)
     end
     integrator.saveiter = resize_start

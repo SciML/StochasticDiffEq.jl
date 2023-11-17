@@ -41,7 +41,7 @@ end
       modify_dtnew_for_tstops!(integrator)
       reject_step!(integrator)
       integrator.dt = integrator.dtnew
-      integrator.sqdt = sqrt(abs(integrator.dt))
+      integrator.sqdt = integrator.tdir * sqrt(abs(integrator.dt))
     end
   end
 
@@ -99,7 +99,7 @@ last_step_failed(integrator::SDEIntegrator) =
       save_val = val
       copyat_or_push!(integrator.sol.t,integrator.saveiter,curt)
       copyat_or_push!(integrator.sol.u,integrator.saveiter,save_val,Val{false})
-      if typeof(integrator.alg) <: StochasticDiffEqCompositeAlgorithm
+      if integrator.alg isa StochasticDiffEqCompositeAlgorithm
         copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
       end
     else # ==t, just save
@@ -110,7 +110,7 @@ last_step_failed(integrator::SDEIntegrator) =
       else
         copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})
       end
-      if typeof(integrator.alg) <: Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}
+      if integrator.alg isa Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}
         copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
       end
     end
@@ -123,7 +123,7 @@ last_step_failed(integrator::SDEIntegrator) =
       copyat_or_push!(integrator.sol.u,integrator.saveiter,integrator.u[integrator.opts.save_idxs],Val{false})
     end
     copyat_or_push!(integrator.sol.t,integrator.saveiter,integrator.t)
-    if typeof(integrator.alg) <: Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}
+    if integrator.alg isa Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}
       copyat_or_push!(integrator.sol.alg_choice,integrator.saveiter,integrator.cache.current)
     end
   end
@@ -176,7 +176,7 @@ end
   if integrator.opts.progress && integrator.iter%integrator.opts.progress_steps==0
     @logmsg(LogLevel(-1),
     integrator.opts.progress_name,
-    _id = :StochasticDiffEq,
+    _id = integrator.opts.progress_id,
     message=integrator.opts.progress_message(integrator.dt,integrator.u,integrator.p,integrator.t),
     progress=integrator.t/integrator.sol.prob.tspan[2])
   end
@@ -227,7 +227,7 @@ end
   if integrator.opts.progress
     @logmsg(LogLevel(-1),
     integrator.opts.progress_name,
-    _id = :StochasticDiffEq,
+    _id = integrator.opts.progress_id,
     message=integrator.opts.progress_message(integrator.dt,integrator.u,integrator.p,integrator.t),
     progress="done")
   end
@@ -271,7 +271,7 @@ end
 @inline function handle_callback_modifiers!(integrator::SDEIntegrator)
   #integrator.reeval_fsal = true
   if integrator.P !== nothing && integrator.opts.adaptive
-    if typeof(integrator.cache) <: StochasticDiffEqMutableCache
+    if integrator.cache isa StochasticDiffEqMutableCache
       oldrate = integrator.P.cache.currate
       P.cache.rate(oldrate,u,p,t)
     else
@@ -292,7 +292,7 @@ end
 
   # Allow RSWM1 on Wiener Process to change dt
   !isnothing(integrator.W) && (integrator.dt = integrator.W.dt)
-  integrator.sqdt = @fastmath sqrt(abs(integrator.dt)) # It can change dt, like in RSwM1
+  integrator.sqdt = @fastmath integrator.tdir*sqrt(abs(integrator.dt)) # It can change dt, like in RSwM1
 end
 
 @inline function handle_tstop!(integrator)
@@ -323,7 +323,7 @@ end
       rmul!(integrator.ΔZ,scaling_factor)
     end
   else
-    if typeof(integrator.u) <: AbstractArray
+    if integrator.u isa AbstractArray
       integrator.ΔW .= scaling_factor.*integrator.noise(size(integrator.u),integrator)
       if alg_needs_extra_process(integrator.alg)
         integrator.ΔZ .= scaling_factor.*integrator.noise(size(integrator.u),integrator)
@@ -354,7 +354,7 @@ end
       end
     end
   else
-    if typeof(integrator.u) <: AbstractArray
+    if integrator.u isa AbstractArray
       if add1 != 0
         integrator.ΔWtilde = add1 .+ scaling.*integrator.noise(size(integrator.u),integrator)
       else
@@ -381,8 +381,8 @@ end
 nlsolve!(integrator, cache) = DiffEqBase.nlsolve!(cache.nlsolver, cache.nlsolver.cache, integrator)
 
 
-DiffEqBase.nlsolve_f(f, alg::StochasticDiffEqAlgorithm) = f isa SplitSDEFunction && issplit(alg) ? f.f1 : f
-DiffEqBase.nlsolve_f(integrator::SDEIntegrator) =
+OrdinaryDiffEq.nlsolve_f(f, alg::StochasticDiffEqAlgorithm) = f isa SplitSDEFunction && issplit(alg) ? f.f1 : f
+OrdinaryDiffEq.nlsolve_f(integrator::SDEIntegrator) =
   nlsolve_f(integrator.f, unwrap_alg(integrator, true))
 
 function iip_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
@@ -418,7 +418,7 @@ function oop_generate_W(alg,u,uprev,p,t,dt,f,uEltypeNoUnits)
     # get the operator
     J = islin ? nf.f : f.jac(uprev, p, t)
     if !isa(J, DiffEqBase.AbstractDiffEqLinearOperator)
-      J = DiffEqArrayOperator(J)
+      J = MatrixOperator(J)
     end
     W = WOperator{false}(f.mass_matrix, dt, J, u)
   else

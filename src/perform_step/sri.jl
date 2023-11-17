@@ -61,8 +61,8 @@ end
   @unpack t,dt,uprev,u,W,p,f = integrator
 
   sqrt3 = sqrt(3one(eltype(W.dW)))
-  if typeof(W.dW) <: Union{SArray,Number}
-    chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
+  if W.dW isa Union{SArray,Number}
+    chi1 = (W.dW.^2 - abs(dt))/2integrator.sqdt #I_(1,1)/sqrt(h)
     chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
     chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   else
@@ -168,8 +168,8 @@ end
   @unpack chi1,chi2,chi3,fH01o4,g₁o2,H0,H11,H12,H13,g₂o3,Fg₂o3,g₃o3,Tg₃o3,mg₁,E₁,E₂,fH01,fH02,g₁,g₂,g₃,g₄,tmp = cache
 
   sqrt3 = sqrt(3one(eltype(W.dW)))
-  if typeof(W.dW) <: Union{SArray,Number}
-    chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
+  if W.dW isa Union{SArray,Number}
+    chi1 = (W.dW.^2 - abs(dt))/2integrator.sqdt #I_(1,1)/sqrt(h)
     chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
     chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   else
@@ -221,7 +221,7 @@ end
 @muladd function perform_step!(integrator,cache::SRIW1ConstantCache)
   @unpack t,dt,uprev,u,W,p,f = integrator
   sqrt3 = sqrt(3one(eltype(W.dW)))
-  chi1 = @.. (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
+  chi1 = @.. (W.dW.^2 - abs(dt))/2integrator.sqdt #I_(1,1)/sqrt(h)
   chi2 = @.. (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
   chi3 = @.. (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   fH01 = dt*integrator.f(uprev,p,t)
@@ -264,12 +264,12 @@ end
   @unpack t,dt,uprev,u,W,p,f = integrator
   @unpack c₀,c₁,A₀,A₁,B₀,B₁,α,β₁,β₂,β₃,β₄,stages,H0,H1,error_terms = cache
   sqrt3 = sqrt(3one(eltype(W.dW)))
-  chi1 = .5*(W.dW.^2 - dt)/integrator.sqdt #I_(1,1)/sqrt(h)
+  chi1 = .5*(W.dW.^2 - abs(dt))/integrator.sqdt #I_(1,1)/sqrt(h)
   chi2 = .5*(W.dW + W.dZ/sqrt3) #I_(1,0)/h
   chi3 = 1/6 * (W.dW.^3 - 3*W.dW*dt)/dt #I_(1,1,1)/h
 
-  fill!(H0,zero(typeof(u)))
-  fill!(H1,zero(typeof(u)))
+  fill!(H0,zero(u))
+  fill!(H1,zero(u))
   @inbounds for i in 1:stages
     A0temp = zero(u)
     B0temp = zero(u)
@@ -321,7 +321,7 @@ end
   @unpack a021,a031,a032,a041,a042,a043,a121,a131,a132,a141,a142,a143,b021,b031,b032,b041,b042,b043,b121,b131,b132,b141,b142,b143,c02,c03,c04,c11,c12,c13,c14,α1,α2,α3,α4,beta11,beta12,beta13,beta14,beta21,beta22,beta23,beta24,beta31,beta32,beta33,beta34,beta41,beta42,beta43,beta44 = cache
 
   sqrt3 = sqrt(3one(eltype(W.dW)))
-  chi1 = (W.dW.^2 .- dt)/(2integrator.sqdt) #I_(1,1)/sqrt(h)
+  chi1 = (W.dW.^2 .- abs(dt))/(2integrator.sqdt) #I_(1,1)/sqrt(h)
   chi2 = (W.dW .+ W.dZ./sqrt3)./2 #I_(1,0)/h
   chi3 = (W.dW.^3 .- 3*W.dW*dt)/(6dt) #I_(1,1,1)/h
 
@@ -352,7 +352,7 @@ end
 
   E₁ = dt*(k1 + k2 + k3 + k4)
 
-  if typeof(integrator.alg) <: StochasticCompositeAlgorithm && typeof(integrator.alg.algs[1]) <: SOSRI2
+  if integrator.alg isa StochasticCompositeAlgorithm && integrator.alg.algs[1] isa SOSRI2
     ϱu = integrator.opts.internalnorm(k4 - k3, t)
     ϱd = integrator.opts.internalnorm(H03 - H02, t)
     integrator.eigen_est = ϱu/ϱd
@@ -377,8 +377,8 @@ end
 
   sqdt = integrator.sqdt
   sqrt3 = sqrt(3one(eltype(W.dW)))
-  if typeof(W.dW) <: Union{SArray,Number}
-    chi1 = (W.dW.^2 - dt)/2integrator.sqdt #I_(1,1)/sqrt(h)
+  if W.dW isa Union{SArray,Number}
+    chi1 = (W.dW.^2 - abs(dt))/2integrator.sqdt #I_(1,1)/sqrt(h)
     chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
     chi3 = (W.dW.^3 - 3W.dW*dt)/6dt #I_(1,1,1)/h
   else
@@ -407,7 +407,7 @@ end
   @.. tmp = uprev + dt*(a141*k1 + a142*k2 + a143*k3) + sqdt*(b141*g1 + b142*g2 + b143*g3)
   integrator.g(g4,tmp,p,t+c14*dt)
 
-  if typeof(integrator.alg) <: StochasticCompositeAlgorithm && typeof(integrator.alg.algs[1]) <: SOSRI2
+  if integrator.alg isa StochasticCompositeAlgorithm && integrator.alg.algs[1] isa SOSRI2
     @.. tmp = k4 - k3
     ϱu = integrator.opts.internalnorm(tmp, t)
     @.. tmp = H03 - H02

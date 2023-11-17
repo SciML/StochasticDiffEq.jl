@@ -223,7 +223,7 @@ function sde_interpolation!(vals,tvals,id,idxs,deriv,p,continuity::Symbol=:left)
     dt = ts[i₊] - ts[i₋]
     Θ = iszero(dt) ? oneunit(t) / oneunit(dt) : (t-ts[i₋]) / dt
 
-    if eltype(timeseries) <: AbstractArray
+    if eltype(vals) <: AbstractArray
       sde_interpolant!(vals[j],Θ,dt,timeseries[i₋],timeseries[i₊],idxs,deriv)
     else
       vals[j] = sde_interpolant(Θ,dt,timeseries[i₋],timeseries[i₊],idxs,deriv)

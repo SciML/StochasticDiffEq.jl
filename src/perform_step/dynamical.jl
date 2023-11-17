@@ -17,7 +17,7 @@ function initialize!(integrator, cache::BAOABConstantCache)
   u1 = integrator.uprev.x[2]
 
   verify_f2(integrator.f.f2, du1, u1, p, t, integrator, cache)
-  cache.k .= integrator.f.f1(du1,u1,p,t)
+  cache.k = integrator.f.f1(du1,u1,p,t)
 end
 
 function initialize!(integrator, cache::BAOABCache)
@@ -31,12 +31,12 @@ end
 
 @muladd function perform_step!(integrator,cache::BAOABConstantCache)
   @unpack t,dt,sqdt,uprev,u,p,W,f = integrator
-  @unpack k, half, c1, c2 = cache
+  @unpack half, c1, c2 = cache
   du1 = uprev.x[1]
   u1 = uprev.x[2]
 
   # B
-  du2 = du1 + half*dt*k
+  du2 = du1 + half*dt*cache.k
 
   # A
   u2 = u1 + half*dt*du2
@@ -49,8 +49,8 @@ end
   u = u2 + half*dt*du3
 
   # B
-  k .= f.f1(du3,u,p,t+dt)
-  du = du3 + half*dt*k
+  cache.k = f.f1(du3,u,p,t+dt)
+  du = du3 + half*dt*cache.k
 
   integrator.u = ArrayPartition((du, u))
 end

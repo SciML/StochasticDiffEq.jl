@@ -28,6 +28,7 @@ mutable struct SDEOptions{tTypeNoUnits,tType,Controller,F2,F3,F4,F5,F6,F7,tstops
   progress_steps::Int
   progress_name::String
   progress_message::F6
+  progress_id::Symbol
   timeseries_errors::Bool
   dense_errors::Bool
   delta::D

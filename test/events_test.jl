@@ -104,3 +104,16 @@ cb = ContinuousCallback(condition2,affect2!,nothing);
 prob = SDEProblem(HM_neuron!,HM_noise!,x0,(0.0,1999.9),params);
 sol  = solve(prob,ImplicitEM(),reltol = 1e-4, abstol = 1e-6,dense = true,callback=cb);
 sol  = solve(prob,SKenCarp(),reltol = 1e-4, abstol = 1e-6,dense = true,callback=cb);
+
+using DiffEqCallbacks
+
+function f(du,u,p,t)
+  du[1] = p[1] -u[1]
+end
+
+function g(du,u,p,t)
+  du[1] = p[2]
+end
+
+sprob = SDEProblem(f,g,[1.0],(0.0,10.0),[1.0,0.1])
+sol = solve(sprob,ImplicitEM(),callback=PositiveDomain())
