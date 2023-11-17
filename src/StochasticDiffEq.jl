@@ -32,7 +32,7 @@ using DocStringExtensions
 
   using Logging, SparseArrays
 
-  using LinearAlgebra, Random, FillArrays
+  using LinearAlgebra, Random
 
   import ForwardDiff.Dual
 
