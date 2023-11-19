@@ -113,3 +113,43 @@ end
 
     @test sol1[:] ≈ sol2[:]
 end
+
+@testset "IIP and OOP consistency" begin
+    f1_harmonic_iip(dv, v, u, p, t) = dv .= f1_harmonic(v, u, p, t)
+    f2_harmonic_iip(du, v, u, p, t) = du .= f2_harmonic(v, u, p, t)
+    g_iip(du, u, p, t) = du .= g(u, p, t)
+
+    u0 = zeros(1)
+    v0 = ones(1)
+
+    dt = 0.01
+    T = 1.5
+    t = 0:dt:T
+
+    brownian_values = cumsum([[zeros(length(u0))];
+        [sqrt(dt) * randn(length(u0)) for i in 1:(length(t)-1)]])
+    brownian_values2 = cumsum([[zeros(length(u0))];
+        [sqrt(dt) * randn(length(u0)) for i in 1:(length(t)-1)]])
+    W = NoiseGrid(t, brownian_values, brownian_values2)
+
+    ff_harmonic = DynamicalSDEFunction(f1_harmonic, f2_harmonic, g)
+    prob = DynamicalSDEProblem(ff_harmonic, v0, u0, (0.0, T), noise=W)
+
+    ff_harmonic_iip = DynamicalSDEFunction(f1_harmonic_iip, f2_harmonic_iip, g_iip)
+    prob_iip = DynamicalSDEProblem(ff_harmonic_iip, v0, u0, (0.0, T), noise=W)
+
+    sol = solve(prob, BAOAB(gamma=γ), dt=dt)
+    sol_iip = solve(prob_iip, BAOAB(gamma=γ), dt=dt)
+
+    @test sol.u ≈ sol_iip.u
+
+    sol = solve(prob, ABOBA(gamma=γ), dt=dt)
+    sol_iip = solve(prob_iip, ABOBA(gamma=γ), dt=dt)
+
+    @test sol.u ≈ sol_iip.u
+
+    sol = solve(prob, OBABO(gamma=γ), dt=dt)
+    sol_iip = solve(prob_iip, OBABO(gamma=γ), dt=dt)
+
+    @test sol.u ≈ sol_iip.u
+end
