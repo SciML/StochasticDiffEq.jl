@@ -6,29 +6,6 @@ f2_harmonic(v,u,p,t) = v
 g(u,p,t) = 1 .+zero(u)
 γ = 1
 
-@testset "Scalar u" begin
-    u0 = 0
-    v0 = 1
-
-    ff_harmonic = DynamicalSDEFunction(f1_harmonic,f2_harmonic,g)
-    prob1 = DynamicalSDEProblem(ff_harmonic,v0,u0,(0.0,1.5))
-
-    dts = (1/2) .^ (6:-1:3)
-
-    # Can't use NoiseGrid as noise is not generated with the correct size in convergence.jl. We require noise with shape of v.
-    sim1  = analyticless_test_convergence(dts,prob1,BAOAB(gamma=γ),(1/2)^10;trajectories=Int(1e5),use_noise_grid=false)
-    display(sim1.𝒪est)
-    @test abs(sim1.𝒪est[:weak_final]-2) < 0.5
-
-    sim1  = analyticless_test_convergence(dts,prob1,ABOBA(gamma=γ),(1/2)^10;trajectories=Int(1e5),use_noise_grid=false)
-    display(sim1.𝒪est)
-    @test abs(sim1.𝒪est[:weak_final]-2) < 0.5
-
-
-    sim1  = analyticless_test_convergence(dts,prob1,OBABO(gamma=γ),(1/2)^10;trajectories=Int(1e5),use_noise_grid=false)
-    display(sim1.𝒪est)
-    @test abs(sim1.𝒪est[:weak_final]-1.5) < 0.5
-end
 
 @testset "Vector u" begin
 
@@ -40,7 +17,7 @@ end
     g_iip(du,u,p,t) = du .= g(u,p,t)
 
     ff_harmonic = DynamicalSDEFunction(f1_harmonic,f2_harmonic,g)
-    prob1 = DynamicalSDEProblem(ff_harmonic,g,v0,u0,(0.0,5.0))
+    prob1 = DynamicalSDEProblem(ff_harmonic,v0,u0,(0.0,5.0))
     sol1 = solve(prob1,BAOAB(gamma=[γ,γ]);dt=1/10,save_noise=true)
 
     prob2 = DynamicalSDEProblem(f1_harmonic_iip,f2_harmonic_iip,g_iip,v0,u0,(0.0,5.0); noise=NoiseWrapper(sol1.W))

@@ -93,7 +93,7 @@ Defaults to solving the Ito problem, but RKMilCommute(interpretation=:Stratonovi
 Uses a 1.5/2.0 error estimate for adaptive time stepping.
 Default: ii_approx=IICommutative() does not approximate the Levy area.
 """
-struct RKMilCommute{T} <: StochasticDiffEqAdaptiveAlgorithm 
+struct RKMilCommute{T} <: StochasticDiffEqAdaptiveAlgorithm
   interpretation::Symbol
   ii_approx::T
 end
@@ -870,13 +870,32 @@ struct BAOAB{T} <: StochasticDiffEqAlgorithm
 end
 BAOAB(;gamma=1.0, scale_noise=true) = BAOAB(gamma, scale_noise)
 
+
+@doc raw"""
+Leimkuhler B., Matthews C., Robust and efficient configurational molecular sampling via
+Langevin dynamics, J. Chem. Phys. 138, 174102 (2013)
+DOI:10.1063/1.4802990
+
+```math
+du = vdt \\
+dv = f(v,u) dt - \gamma v dt + g(u) \sqrt{2\gamma} dW
+```
+"""
 struct ABOBA{T} <: StochasticDiffEqAlgorithm
   gamma::T
   scale_noise::Bool
 end
 ABOBA(;gamma=1.0, scale_noise=true) = ABOBA(gamma, scale_noise)
 
+@doc raw"""
+Leimkuhler B., Matthews C., Molecular Dynamics With Deterministic and Stochastic Numerical Methods,Interdisciplinary Applied Mathematics; Springer International Publishing: Cham, 2015; Vol. 39
+DOI:10.1007/978-3-319-16375-8
 
+```math
+du = vdt \\
+dv = f(v,u) dt - \gamma v dt + g(u) \sqrt{2\gamma} dW
+```
+"""
 struct OBABO{T} <: StochasticDiffEqAlgorithm
   gamma::T
   scale_noise::Bool

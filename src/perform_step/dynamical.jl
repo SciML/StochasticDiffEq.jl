@@ -31,7 +31,7 @@ end
 
 @muladd function perform_step!(integrator,cache::BAOABConstantCache)
   @unpack t,dt,sqdt,uprev,u,p,W,f = integrator
-  @unpack half, c1, c2 = cache
+  @unpack half, c2, σ = cache
   du1 = uprev.x[1]
   u1 = uprev.x[2]
 
@@ -43,10 +43,10 @@ end
 
   # O
   noise = integrator.g(u2,p,t+dt*half).*W.dW ./ sqdt
-  if typeof(c2) <: AbstractMatrix || typeof(noise) <: Number
-    du3 = c1*du2 + c2*noise
+  if typeof(σ) <: AbstractMatrix || typeof(noise) <: Number
+    du3 = c2*du2 + σ*noise
   else
-    du3 = c1.*du2 + c2.*noise
+    du3 = c2.*du2 + σ.*noise
   end
 
   # A
@@ -61,7 +61,7 @@ end
 
 @muladd function perform_step!(integrator,cache::BAOABCache)
   @unpack t,dt,sqdt,uprev,u,p,W,f = integrator
-  @unpack utmp, dumid, dutmp, dunoise, k, gtmp, noise, half, c1, c2 = cache
+  @unpack utmp, dumid, dutmp, dunoise, k, gtmp, noise, half, c2, σ = cache
   du1 = uprev.x[1]
   u1 = uprev.x[2]
 
@@ -74,12 +74,12 @@ end
   # O
   integrator.g(gtmp,utmp,p,t+dt*half)
   @.. noise = gtmp*W.dW / sqdt
-  if typeof(c2) <: AbstractMatrix
-      mul!(dutmp,c1,dumid)
-      mul!(dunoise,c2,noise)
+  if typeof(σ) <: AbstractMatrix
+      mul!(dutmp,c2,dumid)
+      mul!(dunoise,σ,noise)
       @.. dutmp+= dunoise
   else
-      @.. dutmp = c1*dumid + c2*noise
+      @.. dutmp = c2*dumid + σ*noise
   end
 
   # A
@@ -93,7 +93,7 @@ end
 
 @muladd function perform_step!(integrator,cache::ABOBAConstantCache)
   @unpack t,dt,sqdt,uprev,u,p,W,f = integrator
-  @unpack half, c₂, σ = cache
+  @unpack half, c2, σ = cache
   du1 = uprev.x[1]
   u1 = uprev.x[2]
 
@@ -105,9 +105,9 @@ end
   noise = integrator.g(u_mid,p,t+dt*half).*W.dW / sqdt
 
   if typeof(σ) <: AbstractMatrix || typeof(noise) <: Number
-    du = c₂ * (du1 + half*dt .* cache.k) .+ σ*noise .+ half * dt .*cache.k
+    du = c2 * (du1 + half*dt .* cache.k) .+ σ*noise .+ half * dt .*cache.k
   else
-    du = c₂ .* (du1 + half*dt .* cache.k) .+ σ.*noise .+ half * dt .*cache.k
+    du = c2 .* (du1 + half*dt .* cache.k) .+ σ.*noise .+ half * dt .*cache.k
   end
   # A: xt+1
   u = u_mid .+ half * dt .*du
@@ -118,7 +118,7 @@ end
 
 @muladd function perform_step!(integrator,cache::ABOBACache)
   @unpack t,dt,sqdt,uprev,u,p,W,f = integrator
-  @unpack utmp, dumid, dutmp, dunoise, k, gtmp, noise, half, c₂, σ = cache
+  @unpack utmp, dumid, dutmp, dunoise, k, gtmp, noise, half, c2, σ = cache
   du1 = uprev.x[1]
   u1 = uprev.x[2]
 
@@ -135,11 +135,11 @@ end
   @.. noise = gtmp*W.dW / sqdt
 
   if typeof(σ) <: AbstractMatrix
-      mul!(dutmp,c₂,dumid)
+      mul!(dutmp,c2,dumid)
       mul!(dunoise,σ,noise)
       @.. dutmp+=dunoise
   else
-      @.. dutmp = c₂*dumid + σ*noise
+      @.. dutmp = c2*dumid + σ*noise
   end
 
 
@@ -176,16 +176,16 @@ end
 
 @muladd function perform_step!(integrator,cache::OBABOConstantCache)
   @unpack t,dt,sqdt,uprev,u,p,W,f = integrator
-  @unpack half, c₂, σ = cache
+  @unpack half, c2, σ = cache
   du1 = uprev.x[1]
   u1 = uprev.x[2]
 
   # O
   noise = cache.gt.*W.dW ./ sqdt
   if typeof(σ) <: AbstractMatrix || typeof(noise) <: Number
-    du2 = c₂*du1 + σ*noise
+    du2 = c2*du1 + σ*noise
   else
-    du2 = c₂.*du1 + σ.*noise
+    du2 = c2.*du1 + σ.*noise
   end
 
   # B
@@ -202,9 +202,9 @@ end
   cache.gt = integrator.g(u,p,t+dt)
   noise = cache.gt.*W.dZ ./ sqdt # That should be a second noise
   if typeof(σ) <: AbstractMatrix || typeof(noise) <: Number
-    du = c₂*du3 + σ*noise
+    du = c2*du3 + σ*noise
   else
-    du = c₂.*du3 + σ.*noise
+    du = c2.*du3 + σ.*noise
   end
 
   integrator.u = ArrayPartition((du, u))
@@ -213,7 +213,7 @@ end
 
 @muladd function perform_step!(integrator,cache::OBABOCache)
   @unpack t,dt,sqdt,uprev,u,p,W,f = integrator
-  @unpack utmp, dumid, dutmp, dunoise, k, gtmp, noise, half, c₂, σ = cache
+  @unpack utmp, dumid, dutmp, dunoise, k, gtmp, noise, half, c2, σ = cache
   du1 = uprev.x[1]
   u1 = uprev.x[2]
 
@@ -221,11 +221,11 @@ end
   @.. noise = gtmp*W.dW / sqdt
 
   if typeof(σ) <: AbstractMatrix
-      mul!(dutmp,c₂,du1)
+      mul!(dutmp,c2,du1)
       mul!(dunoise,σ,noise)
       @.. dutmp+=dunoise
   else
-      @.. dutmp = c₂*du1 + σ*noise
+      @.. dutmp = c2*du1 + σ*noise
   end
 
   # B
@@ -245,11 +245,11 @@ end
   @.. noise = gtmp*W.dZ / sqdt  # That should be a second noise
 
   if typeof(σ) <: AbstractMatrix
-      mul!(u.x[1],c₂,dutmp)
+      mul!(u.x[1],c2,dutmp)
       mul!(dunoise,σ,noise)
       @.. u.x[1]+=dunoise
   else
-      @.. u.x[1] = c₂*dutmp + σ*noise
+      @.. u.x[1] = c2*dutmp + σ*noise
   end
 
 

@@ -41,6 +41,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
     @time @safetestset "Stiffness Detection Test" begin include("stiffness_detection_test.jl") end
     @time @safetestset "Adaptive SDE Linear Tests" begin include("adaptive/sde_linearadaptive_tests.jl") end
     @time @safetestset "Inplace RODESolution Interpolation Tests" begin include("inplace_interpolation.jl") end
+    @time @safetestset "Dynamical SDE Tests" begin include("sde/sde_dynamical.jl") end
   end
 
   if GROUP == "All" || GROUP == "Interface3"
@@ -59,7 +60,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
 
   if !is_APPVEYOR && (GROUP == "All" || GROUP == "AlgConvergence")
     @time @safetestset "Convergence Tests" begin include("sde/sde_convergence_tests.jl") end
-    @time @safetestset "Dynamical SDE Tests" begin include("sde/sde_dynamical.jl") end
+    @time @safetestset "Dynamical SDE Convergence Tests" begin include("sde/sde_convergence_dynamical.jl") end
   end
 
   if !is_APPVEYOR && GROUP == "AlgConvergence2"

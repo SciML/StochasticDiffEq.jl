@@ -5,8 +5,8 @@ abstract type StochasticDynamicalEqMutableCache <: StochasticDiffEqMutableCache 
 mutable struct BAOABConstantCache{uType,uEltypeNoUnits,uCoeffType, uCoeffMType} <: StochasticDynamicalEqConstantCache
   k::uType
   half::uEltypeNoUnits
-  c1::uCoeffType
-  c2::uCoeffMType
+  c2::uCoeffType
+  σ::uCoeffMType
 end
 @cache struct BAOABCache{uType,uEltypeNoUnits,rateNoiseType,uCoeffType, uCoeffMType,uTypeCombined} <: StochasticDynamicalEqMutableCache
   utmp::uType
@@ -17,21 +17,21 @@ end
   gtmp::rateNoiseType
   noise::uType
   half::uEltypeNoUnits
-  c1::uCoeffType
-  c2::uCoeffMType
+  c2::uCoeffType
+  σ::uCoeffMType
   tmp::uTypeCombined
 end
 
 function alg_cache(alg::BAOAB,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
   k = zero(rate_prototype.x[1])
   if typeof(alg.gamma) <: AbstractMatrix
-      c1 = exp(-alg.gamma*dt)
-      c2 = cholesky(I - alg.scale_noise*c1*transpose(c1)).U# if scale_noise == false, c2 = 1
+      c2 = exp(-alg.gamma*dt)
+      σ = cholesky(I - alg.scale_noise*c2*transpose(c2)).U# if scale_noise == false, c2 = 1
   else
-      c1 = exp.(-alg.gamma*dt)
-      c2 = sqrt.(1 .- alg.scale_noise*c1.^2)# if scale_noise == false, c2 = 1
+      c2 = exp.(-alg.gamma*dt)
+      σ = sqrt.(1 .- alg.scale_noise*c2.^2)# if scale_noise == false, c2 = 1
   end
-  BAOABConstantCache(k, uEltypeNoUnits(1//2),c1, c2)
+  BAOABConstantCache(k, uEltypeNoUnits(1//2),c2, c2)
 end
 
 function alg_cache(alg::BAOAB,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
@@ -47,16 +47,16 @@ function alg_cache(alg::BAOAB,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototy
   half = uEltypeNoUnits(1//2)
 
   if typeof(alg.gamma) <: AbstractMatrix
-      c1 = exp(-alg.gamma*dt)
-      c2 = cholesky(I - alg.scale_noise*c1*transpose(c1)).U# if scale_noise == false, c2 = 1
+      c2 = exp(-alg.gamma*dt)
+      σ = cholesky(I - alg.scale_noise*c2*transpose(c2)).U# if scale_noise == false, c2 = 1
   else
-      c1 = exp.(-alg.gamma*dt)
-      c2 = sqrt.(1 .- alg.scale_noise*c1.^2)# if scale_noise == false, c2 = 1
+      c2 = exp.(-alg.gamma*dt)
+      σ = sqrt.(1 .- alg.scale_noise*c2.^2)# if scale_noise == false, c2 = 1
   end
 
   tmp = zero(u)
 
-  BAOABCache(utmp, dumid, dutmp, dunoise, k, gtmp, noise, half, c1, c2, tmp)
+  BAOABCache(utmp, dumid, dutmp, dunoise, k, gtmp, noise, half, c2, σ, tmp)
 end
 
 
@@ -64,7 +64,7 @@ end
 mutable struct ABOBAConstantCache{uType,uEltypeNoUnits, uCoeffType, uCoeffMType} <: StochasticDynamicalEqConstantCache
   k::uType
   half::uEltypeNoUnits
-  c₂::uCoeffType
+  c2::uCoeffType
   σ::uCoeffMType
 end
 @cache struct ABOBACache{uType,uEltypeNoUnits,rateNoiseType,uCoeffType, uCoeffMType,uTypeCombined} <: StochasticDynamicalEqMutableCache
@@ -76,7 +76,7 @@ end
   gtmp::rateNoiseType
   noise::uType
   half::uEltypeNoUnits
-  c₂::uCoeffType
+  c2::uCoeffType
   σ::uCoeffMType
   tmp::uTypeCombined
 end
@@ -85,14 +85,14 @@ function alg_cache(alg::ABOBA,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototy
   k = zero(rate_prototype.x[1])
 
   if typeof(alg.gamma) <: AbstractMatrix
-      c₂ = exp(-alg.gamma*dt)
-      σ = cholesky(I - alg.scale_noise*c₂*transpose(c₂)).U
+      c2 = exp(-alg.gamma*dt)
+      σ = cholesky(I - alg.scale_noise*c2*transpose(c2)).U
   else
-      c₂ = exp.(-alg.gamma*dt)
-      σ = sqrt.(1 .- alg.scale_noise*c₂.^2)
+      c2 = exp.(-alg.gamma*dt)
+      σ = sqrt.(1 .- alg.scale_noise*c2.^2)
   end
    # if scale_noise == false, c2 = 1
-  ABOBAConstantCache(k, uEltypeNoUnits(1//2), c₂, σ)
+  ABOBAConstantCache(k, uEltypeNoUnits(1//2), c2, σ)
 end
 
 function alg_cache(alg::ABOBA,prob,u,ΔW,ΔZ,p,rate_prototype, noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
@@ -108,16 +108,16 @@ function alg_cache(alg::ABOBA,prob,u,ΔW,ΔZ,p,rate_prototype, noise_rate_protot
   half = uEltypeNoUnits(1//2)
 
   if typeof(alg.gamma) <: AbstractMatrix
-      c₂ = exp(-alg.gamma*dt)
-      σ = cholesky(I - alg.scale_noise*c₂*transpose(c₂)).U
+      c2 = exp(-alg.gamma*dt)
+      σ = cholesky(I - alg.scale_noise*c2*transpose(c2)).U
   else
-      c₂ = exp.(-alg.gamma*dt)
-      σ = sqrt.(1 .- alg.scale_noise*c₂.^2)
+      c2 = exp.(-alg.gamma*dt)
+      σ = sqrt.(1 .- alg.scale_noise*c2.^2)
   end
 
   tmp = zero(u)
 
-  ABOBACache(utmp, dumid, dutmp, dunoise, k, gtmp, noise, half, c₂, σ, tmp)
+  ABOBACache(utmp, dumid, dutmp, dunoise, k, gtmp, noise, half, c2, σ, tmp)
 end
 
 
@@ -127,7 +127,7 @@ mutable struct OBABOConstantCache{uType,rateNoiseType, uEltypeNoUnits, uCoeffTyp
   k::uType
   gt::rateNoiseType
   half::uEltypeNoUnits
-  c₂::uCoeffType
+  c2::uCoeffType
   σ::uCoeffMType
 end
 
@@ -140,7 +140,7 @@ end
   gtmp::rateNoiseType
   noise::uType
   half::uEltypeNoUnits
-  c₂::uCoeffType
+  c2::uCoeffType
   σ::uCoeffMType
   tmp::uTypeCombined
 end
@@ -151,14 +151,14 @@ function alg_cache(alg::OBABO,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototy
   half=uEltypeNoUnits(1//2)
 
   if typeof(alg.gamma) <: AbstractMatrix
-      c₂ = exp(-alg.gamma*half*dt)
-      σ = cholesky(I - alg.scale_noise*c₂*transpose(c₂)).U
+      c2 = exp(-alg.gamma*half*dt)
+      σ = cholesky(I - alg.scale_noise*c2*transpose(c2)).U
   else
-      c₂ = exp.(-alg.gamma*half*dt)
-      σ = sqrt.(1 .- alg.scale_noise*c₂.^2)
+      c2 = exp.(-alg.gamma*half*dt)
+      σ = sqrt.(1 .- alg.scale_noise*c2.^2)
   end
    # if scale_noise == false, c2 = 1
-  OBABOConstantCache(k, gt, half, c₂, σ)
+  OBABOConstantCache(k, gt, half, c2, σ)
 end
 
 function alg_cache(alg::OBABO,prob,u,ΔW,ΔZ,p,rate_prototype, noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
@@ -175,14 +175,14 @@ function alg_cache(alg::OBABO,prob,u,ΔW,ΔZ,p,rate_prototype, noise_rate_protot
   half = uEltypeNoUnits(1//2)
 
   if typeof(alg.gamma) <: AbstractMatrix
-      c₂ = exp(-alg.gamma*half*dt)
-      σ = cholesky(I - alg.scale_noise*c₂*transpose(c₂)).U
+      c2 = exp(-alg.gamma*half*dt)
+      σ = cholesky(I - alg.scale_noise*c2*transpose(c2)).U
   else
-      c₂ = exp.(-alg.gamma*half*dt)
-      σ = sqrt.(1 .- alg.scale_noise*c₂.^2)
+      c2 = exp.(-alg.gamma*half*dt)
+      σ = sqrt.(1 .- alg.scale_noise*c2.^2)
   end
 
   tmp = zero(u)
 
-  OBABOCache(utmp, dumid, dutmp, dunoise, k, gtmp, noise, half, c₂, σ, tmp)
+  OBABOCache(utmp, dumid, dutmp, dunoise, k, gtmp, noise, half, c2, σ, tmp)
 end
