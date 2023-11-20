@@ -7,7 +7,7 @@ steps:
         - "WeakConvergence2"
         - "WeakConvergence3"
         - "WeakConvergence6"
-        - "WeakConvergence7
+        - "WeakConvergence7"
         - "WeakAdaptiveCPU"
     env:
       GROUP: "{{matrix}}"
