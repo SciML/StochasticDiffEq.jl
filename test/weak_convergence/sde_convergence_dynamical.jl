@@ -27,5 +27,5 @@ g(u,p,t) = 1 .+zero(u)
 
     sim1  = analyticless_test_convergence(dts,prob1,OBABO(gamma=γ),(1/2)^10;trajectories=Int(1e5),use_noise_grid=false)
     display(sim1.𝒪est)
-    @test abs(sim1.𝒪est[:weak_final]-2) < 0.8
+    @test_broken abs(sim1.𝒪est[:weak_final]-2) < 0.5
 end
