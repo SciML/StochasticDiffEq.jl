@@ -16,16 +16,16 @@ g(u,p,t) = 1 .+zero(u)
     dts = (1/2) .^ (6:-1:3)
 
     # Can't use NoiseGrid as noise is not generated with the correct size in convergence.jl. We require noise with shape of v.
-    sim1  = analyticless_test_convergence(dts,prob1,BAOAB(gamma=γ),(1/2)^10;trajectories=Int(1e5),use_noise_grid=false)
+    sim1  = analyticless_test_convergence(dts,prob1,BAOAB(gamma=γ),(1/2)^10;trajectories=Int(1e5),use_noise_grid=false,verbose=false)
     display(sim1.𝒪est)
     @test abs(sim1.𝒪est[:weak_final]-2) < 0.5
 
-    sim1  = analyticless_test_convergence(dts,prob1,ABOBA(gamma=γ),(1/2)^10;trajectories=Int(1e5),use_noise_grid=false)
+    sim1  = analyticless_test_convergence(dts,prob1,ABOBA(gamma=γ),(1/2)^10;trajectories=Int(1e5),use_noise_grid=false,verbose=false)
     display(sim1.𝒪est)
     @test abs(sim1.𝒪est[:weak_final]-2) < 0.5
 
 
-    sim1  = analyticless_test_convergence(dts,prob1,OBABO(gamma=γ),(1/2)^10;trajectories=Int(1e5),use_noise_grid=false)
+    sim1  = analyticless_test_convergence(dts,prob1,OBABO(gamma=γ),(1/2)^10;trajectories=Int(1e5),use_noise_grid=false,verbose=false)
     display(sim1.𝒪est)
-    @test_broken abs(sim1.𝒪est[:weak_final]-2) < 0.5
+    @test abs(sim1.𝒪est[:weak_final]-2) < 0.5
 end
