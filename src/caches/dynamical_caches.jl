@@ -20,7 +20,7 @@ end
 function alg_cache(alg::BAOAB,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototype,jump_rate_prototype,::Type{uEltypeNoUnits},::Type{uBottomEltypeNoUnits},::Type{tTypeNoUnits},uprev,f,t,dt,::Type{Val{false}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
   k = zero(rate_prototype.x[1])
   c1 = exp(-alg.gamma*dt)
-  c2 = sqrt(1 - alg.scale_noise*c1^2) # if scale_noise == false, c2 = 1
+  c2 = alg.scale_noise ? sqrt((1 - c1^2)/abs(dt)) : 1 # if scale_noise == false, c2 = 1
   BAOABConstantCache(k, uEltypeNoUnits(1//2), uEltypeNoUnits(c1), uEltypeNoUnits(c2))
 end
 
@@ -34,7 +34,7 @@ function alg_cache(alg::BAOAB,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_prototy
 
   half = uEltypeNoUnits(1//2)
   c1 = exp(-alg.gamma*dt)
-  c2 = sqrt(1 - alg.scale_noise*c1^2) # if scale_noise == false, c2 = 1
+  c2 = alg.scale_noise ? sqrt((1 - c1^2)/abs(dt)) : 1 # if scale_noise == false, c2 = 1
 
   tmp = zero(u)
 
