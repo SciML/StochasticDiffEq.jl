@@ -169,7 +169,7 @@ end
 
   export TauLeaping, CaoTauLeaping
 
-  export BAOAB
+  export BAOAB, ABOBA, OBABO
 
   export StochasticDiffEqRODEAlgorithm, StochasticDiffEqRODEAdaptiveAlgorithm,
          StochasticDiffEqRODECompositeAlgorithm

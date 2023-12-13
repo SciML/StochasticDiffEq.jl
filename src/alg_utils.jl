@@ -122,6 +122,8 @@ alg_order(alg::TauLeaping) = 1 // 1
 alg_order(alg::CaoTauLeaping) = 1 // 1
 
 alg_order(alg::BAOAB) = 1 // 1
+alg_order(alg::ABOBA) = 2 // 1
+alg_order(alg::OBABO) = 2 // 1
 
 alg_order(alg::SKenCarp) = 2 // 1
 alg_order(alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = maximum(alg_order.(alg.algs))
@@ -225,6 +227,8 @@ alg_compatible(prob::DiffEqBase.AbstractSDEProblem, alg::IIF1M) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem, alg::IIF2M) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem, alg::Union{StochasticDiffEqCompositeAlgorithm,StochasticDiffEqRODECompositeAlgorithm}) = max((alg_compatible(prob, a) for a in alg.algs)...)
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem, alg::BAOAB) = is_diagonal_noise(prob)
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem, alg::ABOBA) = is_diagonal_noise(prob)
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem, alg::OBABO) = is_diagonal_noise(prob)
 
 function alg_compatible(prob::JumpProblem, alg::Union{StochasticDiffEqJumpAdaptiveAlgorithm,StochasticDiffEqJumpAlgorithm})
     prob.prob isa DiscreteProblem
@@ -259,6 +263,7 @@ alg_needs_extra_process(alg::RS2) = true
 alg_needs_extra_process(alg::PL1WM) = true
 alg_needs_extra_process(alg::NON) = true
 alg_needs_extra_process(alg::NON2) = true
+alg_needs_extra_process(alg::OBABO) = true
 
 OrdinaryDiffEq._alg_autodiff(alg::StochasticDiffEqNewtonAlgorithm{CS,AD,FDT,ST,CJ,Controller}) where {CS,AD,FDT,ST,CJ,Controller} = Val{AD}()
 OrdinaryDiffEq._alg_autodiff(alg::StochasticDiffEqNewtonAdaptiveAlgorithm{CS,AD,FDT,ST,CJ,Controller}) where {CS,AD,FDT,ST,CJ,Controller} = Val{AD}()
