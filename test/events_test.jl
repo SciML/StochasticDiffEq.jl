@@ -8,7 +8,7 @@ function g(du,u,p,t)
   nothing
 end
 
-function condtion(u,t,integrator) # Event when event_f(u,p,t,k) == 0
+function condition(u,t,integrator) # Event when event_f(u,p,t,k) == 0
   u[1]
 end
 
@@ -18,7 +18,7 @@ function affect_neg!(integrator)
 end
 
 # Continuous callback
-callback = ContinuousCallback(condtion,affect!,affect_neg!)
+callback = ContinuousCallback(condition,affect!,affect_neg!)
 
 u0 = [50.0,0.0]
 tspan = (0.0,15.0)
