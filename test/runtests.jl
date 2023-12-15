@@ -15,6 +15,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
 
 @time begin
   if GROUP == "All" || GROUP == "Interface1"
+    @time @safetestset "Quality Assurance" begin include("qa.jl") end
     @time @safetestset "First Rand Tests" begin include("first_rand_test.jl") end
     @time @safetestset "Inference Tests" begin include("inference_test.jl") end
     @time @safetestset "Linear RODE Tests" begin include("rode_linear_tests.jl") end
