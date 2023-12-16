@@ -42,7 +42,7 @@ end
   u2 = u1 + half*dt*du2
 
   # O
-  noise = integrator.g(u2,p,t+dt*half).*W.dW / sqdt
+  noise = integrator.g(u2,p,t+dt*half).*W.dW
   du3 = c1*du2 + c2*noise
 
   # A
@@ -69,7 +69,7 @@ end
 
   # O
   integrator.g(gtmp,utmp,p,t+dt*half)
-  @.. noise = gtmp*W.dW / sqdt
+  @.. noise = gtmp*W.dW
   @.. dutmp = c1*dutmp + c2*noise
 
   # A
