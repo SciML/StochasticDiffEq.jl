@@ -44,12 +44,3 @@ mutable struct SDEIntegrator{algType,IIP,uType,uEltype,tType,tdirType,P2,eigenTy
   q11::tTypeNoUnits
   stats::DiffEqBase.Stats
 end
-
-function Base.getproperty(integ::SDEIntegrator, s::Symbol)
-    if s === :destats
-        @warn "destats has been deprecated for stats"
-        getfield(integ,:stats)
-    else
-        getfield(integ,s)
-    end
-end
