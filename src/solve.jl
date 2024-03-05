@@ -62,7 +62,7 @@ function DiffEqBase.__init(
   initialize_save = true,
   progress=false,progress_steps=1000,progress_name="SDE",
   progress_message = ODE_DEFAULT_PROG_MESSAGE,
-  progress_id= progress ? gensym("StochasticDiffEq") : :StochasticDiffEq,
+  progress_id= :StochasticDiffEq,
   userdata=nothing,
   initialize_integrator=true,
   seed = UInt64(0), alias_u0=false, alias_jumps = Threads.threadid()==1,
