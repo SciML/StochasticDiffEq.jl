@@ -3,18 +3,22 @@ function stepsize_controller!(integrator::SDEIntegrator, controller::PIControlle
     integrator.q11 = DiffEqBase.value(DiffEqBase.fastpow(integrator.EEst,controller.beta1))
     integrator.q = DiffEqBase.value(integrator.q11/DiffEqBase.fastpow(integrator.qold,controller.beta2))
     @fastmath integrator.q = DiffEqBase.value(max(inv(integrator.opts.qmax),min(inv(integrator.opts.qmin),integrator.q/integrator.opts.gamma)))
+    nothing
 end
 
 @inline function step_accept_controller!(integrator::SDEIntegrator, alg)
     step_accept_controller!(integrator, integrator.opts.controller, alg)
+    nothing
 end
 
 function step_accept_controller!(integrator::SDEIntegrator, controller::PIController, alg)
     integrator.dtnew = DiffEqBase.value(integrator.dt/integrator.q) * oneunit(integrator.dt)
+    nothing
 end
 
 function step_reject_controller!(integrator::SDEIntegrator, controller::PIController, alg)
     integrator.dtnew = integrator.dt/min(inv(integrator.opts.qmin),integrator.q11/integrator.opts.gamma)
+    nothing
 end
 
 
@@ -29,6 +33,7 @@ end
 
 function step_reject_controller!(integrator::SDEIntegrator, alg::TauLeaping)
     integrator.dt = integrator.opts.gamma * integrator.dt / integrator.EEst
+    nothing
 end
 
 
