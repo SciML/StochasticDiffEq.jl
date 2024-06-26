@@ -345,6 +345,12 @@ function DiffEqBase.__init(
           W = WienerProcess!(t,rand_prototype,rand_prototype2,
                             save_everystep=save_noise,
                             rng = Xorshifts.Xoroshiro128Plus(_seed))
+        elseif alg isa W2Ito1
+            m = 2
+            rand_prototype2 = zeros(eltype(rand_prototype), Int(m))
+            W = WienerProcess!(t, rand_prototype, rand_prototype2,
+                        save_everystep=save_noise,
+                        rng=Xorshifts.Xoroshiro128Plus(_seed))
         else
           W = WienerProcess!(t,rand_prototype,rand_prototype,
                             save_everystep=save_noise,
@@ -393,6 +399,12 @@ function DiffEqBase.__init(
           W = WienerProcess(t,rand_prototype,rand_prototype2,
                                 save_everystep=save_noise,
                                 rng = Xorshifts.Xoroshiro128Plus(_seed))
+        elseif alg isa W2Ito1
+            m = 2
+            rand_prototype2 = zeros(eltype(rand_prototype), Int(m))
+            W = WienerProcess(t, rand_prototype, rand_prototype2,
+                              save_everystep=save_noise,
+                              rng=Xorshifts.Xoroshiro128Plus(_seed))
         else
           W = WienerProcess(t,rand_prototype,rand_prototype,
                              save_everystep=save_noise,
