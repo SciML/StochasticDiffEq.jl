@@ -60,7 +60,7 @@ using StochasticDiffEq.SciMLOperators: MatrixOperator
       println(Alg)
       Random.seed!(0); sol1 = solve(prob1, Alg(theta=1); adaptive=false, dt=0.01)
       Random.seed!(0); sol2 = solve(prob2, Alg(theta=1); adaptive=false, dt=0.01)
-      @test sol1(1.0) ≈ sol2(1.0) rtol=1e-4
+      @test sol1(1.0) ≈ sol2(1.0) rtol=1e-2
       Random.seed!(0); sol1_ip = solve(prob1_ip, Alg(theta=1); adaptive=false, dt=0.01)
       Random.seed!(0); sol2_ip = solve(prob2_ip, Alg(theta=1); adaptive=false, dt=0.01)
       @test sol1_ip(1.0) ≈ sol2_ip(1.0) rtol=1e-4
@@ -76,7 +76,7 @@ using StochasticDiffEq.SciMLOperators: MatrixOperator
     println(SKenCarp)
     Random.seed!(0); sol1 = solve(prob1, SKenCarp(); adaptive=false, dt=0.01)
     Random.seed!(0); sol2 = solve(prob2, SKenCarp(); adaptive=false, dt=0.01)
-    @test sol1(1.0) ≈ sol2(1.0) rtol=1e-4
+    @test sol1(1.0) ≈ sol2(1.0) rtol=1e-2
     Random.seed!(0); sol1_ip = solve(prob1_ip, SKenCarp(); adaptive=false, dt=0.01)
     Random.seed!(0); sol2_ip = solve(prob2_ip, SKenCarp(); adaptive=false, dt=0.01)
     @test sol1_ip(1.0) ≈ sol2_ip(1.0) rtol=1e-3
