@@ -17,8 +17,7 @@ using StochasticDiffEq.SciMLOperators: MatrixOperator
                       jac=(u,p,t) -> A)
     prob = SDEProblem(fun, u0, tspan)
     integrator = init(prob, ImplicitEM(theta=1); adaptive=false, dt=dt)
-    W = integrator.cache.nlsolver.cache.W
-    calc_W!(W, integrator, integrator.cache.nlsolver, integrator.cache, dtgamma, false)
+    W = calc_W(integrator, integrator.cache.nlsolver, integrator.cache, dtgamma, false)
     @test convert(AbstractMatrix, W) ≈ concrete_W
     @test W \ u0 ≈ concrete_W \ u0
 
