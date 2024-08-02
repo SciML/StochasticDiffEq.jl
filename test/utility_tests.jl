@@ -29,7 +29,7 @@ using StochasticDiffEq.SciMLOperators: MatrixOperator
     prob = SDEProblem(fun, u0, tspan)
     integrator = init(prob, ImplicitEM(theta=1); adaptive=false, dt=dt)
     W = integrator.cache.nlsolver.cache.W
-    calc_W!(W, integrator, integrator.cache.nlsolver, integrator.cache, dtgamma, true)
+    calc_W!(W, integrator, integrator.cache.nlsolver, integrator.cache, dtgamma, #=repeat_step=#false, #=W_transform=#true)
 
     # Did not update because it's an array operator
     # We don't want to build Jacobians when we have operators!
