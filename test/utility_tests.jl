@@ -8,7 +8,7 @@ using StochasticDiffEq.SciMLOperators: MatrixOperator
     mm = [2.0 0.0; 0.0 1.0]
     u0 = [1.0, 1.0]; tmp = zeros(2)
     tspan = (0.0,1.0); dt = 0.01; dtgamma = 0.5dt
-    concrete_W = -mm + dtgamma * A
+    concrete_W = -mm/dtgamma + A
 
     # Out-of-place
     _f = (u,p,t) -> A*u; _g = (u,p,t) -> σ*u
@@ -17,7 +17,7 @@ using StochasticDiffEq.SciMLOperators: MatrixOperator
                       jac=(u,p,t) -> A)
     prob = SDEProblem(fun, u0, tspan)
     integrator = init(prob, ImplicitEM(theta=1); adaptive=false, dt=dt)
-    W = calc_W(integrator, integrator.cache.nlsolver, dtgamma, false)
+    W = calc_W(integrator, integrator.cache.nlsolver, dtgamma, true)
     @test convert(AbstractMatrix, W) ≈ concrete_W
     @test W \ u0 ≈ concrete_W \ u0
 
@@ -29,7 +29,7 @@ using StochasticDiffEq.SciMLOperators: MatrixOperator
     prob = SDEProblem(fun, u0, tspan)
     integrator = init(prob, ImplicitEM(theta=1); adaptive=false, dt=dt)
     W = integrator.cache.nlsolver.cache.W
-    calc_W!(W, integrator, integrator.cache.nlsolver, integrator.cache, dtgamma, false)
+    calc_W!(W, integrator, integrator.cache.nlsolver, integrator.cache, dtgamma, true)
 
     # Did not update because it's an array operator
     # We don't want to build Jacobians when we have operators!
@@ -37,7 +37,7 @@ using StochasticDiffEq.SciMLOperators: MatrixOperator
     ldiv!(tmp, lu!(integrator.cache.nlsolver.cache.W), u0); @test tmp != concrete_W \ u0
 
     # But jacobian2W! will update the cache
-    StochasticDiffEq.OrdinaryDiffEq.jacobian2W!(integrator.cache.nlsolver.cache.W._concrete_form, mm, dtgamma, integrator.cache.nlsolver.cache.W.J.A, false)
+    StochasticDiffEq.OrdinaryDiffEq.jacobian2W!(integrator.cache.nlsolver.cache.W._concrete_form, mm, dtgamma, integrator.cache.nlsolver.cache.W.J.A, true)
     @test convert(AbstractMatrix, integrator.cache.nlsolver.cache.W) == concrete_W
     ldiv!(tmp, lu!(integrator.cache.nlsolver.cache.W), u0); @test tmp == concrete_W \ u0
   end
