@@ -283,7 +283,7 @@ function DiffEqBase.__init(
   uprev = recursivecopy(u)
 
   if !(uType <: AbstractArray)
-    rand_prototype = zero(u/u) # Strip units and type info
+    rand_prototype = zero(u ./ u) # Strip units and type info
     randType = typeof(rand_prototype)
   else
     randElType = uBottomEltypeNoUnits # Strip units and type info
