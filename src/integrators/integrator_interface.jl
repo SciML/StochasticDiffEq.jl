@@ -390,3 +390,7 @@ function DiffEqBase.set_u!(integrator::SDEIntegrator, u)
   integrator.u = u
   u_modified!(integrator, true)
 end
+
+DiffEqBase.get_tstops(integ::SDEIntegrator) = integ.opts.tstops
+DiffEqBase.get_tstops_array(integ::SDEIntegrator) = get_tstops(integ).valtree
+DiffEqBase.get_tstops_max(integ::SDEIntegrator) = maximum(get_tstops_array(integ))
