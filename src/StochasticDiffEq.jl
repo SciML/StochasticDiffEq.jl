@@ -47,7 +47,8 @@ using DocStringExtensions
                      resize_non_user_cache!,deleteat_non_user_cache!,addat_non_user_cache!,
                      terminate!,get_du, get_dt,get_proposed_dt,set_proposed_dt!,
                      u_modified!,savevalues!,add_tstop!,add_saveat!,set_reltol!,
-                     set_abstol!, postamble!, last_step_failed, has_Wfact, has_jac
+                     set_abstol!, postamble!, last_step_failed, has_Wfact, has_jac,
+                     get_tstops, get_tstops_array, get_tstops_max
 
   using DiffEqBase: check_error!, is_diagonal_noise, @..
 
