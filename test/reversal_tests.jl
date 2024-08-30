@@ -19,14 +19,14 @@ Stratonovich_solver = [
   # non-stiff methods
   EulerHeun(),
   LambaEulerHeun(),
-  RKMil(interpretation=:Stratonovich),
-  RKMilCommute(interpretation=:Stratonovich),
-  RKMilGeneral(interpretation=:Stratonovich),
+  RKMil(interpretation=AlgorithmInterpretation.Stratonovich),
+  RKMilCommute(interpretation=AlgorithmInterpretation.Stratonovich),
+  RKMilGeneral(interpretation=AlgorithmInterpretation.Stratonovich),
   # S-Rock methods
-  SROCK1(interpretation=:Stratonovich),
+  SROCK1(interpretation=AlgorithmInterpretation.Stratonovich),
   # stiff methods
   ImplicitEulerHeun(),
-  ImplicitRKMil(interpretation=:Stratonovich),
+  ImplicitRKMil(interpretation=AlgorithmInterpretation.Stratonovich),
   ISSEulerHeun(),
 ]
 

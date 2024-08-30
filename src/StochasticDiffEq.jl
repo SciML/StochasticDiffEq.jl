@@ -73,6 +73,7 @@ else
 end
 
   import SciMLBase
+  import EnumX
 
   using SparseDiffTools: forwarddiff_color_jacobian!, ForwardColorJacCache
 
