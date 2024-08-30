@@ -133,8 +133,6 @@ beta1_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm
 
 isdtchangeable(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = true
 
-EnumX.@enumx AlgorithmInterpretation Ito Stratonovich
-
 SciMLBase.alg_interpretation(alg::StochasticDiffEqAlgorithm) = AlgorithmInterpretation.Ito
 SciMLBase.alg_interpretation(alg::EulerHeun) = AlgorithmInterpretation.Stratonovich
 SciMLBase.alg_interpretation(alg::LambaEulerHeun) = AlgorithmInterpretation.Stratonovich

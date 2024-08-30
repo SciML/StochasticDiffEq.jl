@@ -91,6 +91,8 @@ end
     seed_multiplier() = 1
   end
 
+  EnumX.@enumx AlgorithmInterpretation Ito Stratonovich
+
   include("misc_utils.jl")
   include("algorithms.jl")
   include("options_type.jl")
