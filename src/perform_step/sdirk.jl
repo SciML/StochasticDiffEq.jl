@@ -24,14 +24,14 @@
   end
 
   if cache isa ImplicitRKMilConstantCache || integrator.opts.adaptive == true
-    if alg_interpretation(alg) == :Ito ||
+    if SciMLBase.alg_interpretation(alg) == :Ito ||
        cache isa ImplicitEMConstantCache
       K = @.. uprev + dt * ftmp
       utilde =  K + L*integrator.sqdt
       ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
       mil_correction = ggprime .* (integrator.W.dW.^2 .- abs(dt))./2
       gtmp += mil_correction
-    elseif alg_interpretation(alg) == :Stratonovich ||
+    elseif SciMLBase.alg_interpretation(alg) == :Stratonovich ||
            cache isa ImplicitEulerHeunConstantCache
       utilde = uprev + L*integrator.sqdt
       ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
@@ -154,12 +154,12 @@ end
 
   if cache isa ImplicitRKMilCache
     gtmp3 = cache.gtmp3
-    if alg_interpretation(alg) == :Ito
+    if SciMLBase.alg_interpretation(alg) == :Ito
       @.. z = uprev + dt * tmp + integrator.sqdt * gtmp
       integrator.g(gtmp3,z,p,t)
       @.. gtmp3 = (gtmp3-gtmp)/(integrator.sqdt) # ggprime approximation
       @.. gtmp2 += gtmp3*(dW.^2 - abs(dt))/2
-    elseif alg_interpretation(alg) == :Stratonovich
+    elseif SciMLBase.alg_interpretation(alg) == :Stratonovich
       @.. z = uprev + integrator.sqdt * gtmp
       integrator.g(gtmp3,z,p,t)
       @.. gtmp3 = (gtmp3-gtmp)/(integrator.sqdt) # ggprime approximation
