@@ -14,7 +14,7 @@
   cosh_inv = log(ω₀ + Sqrt_ω)             # arcosh(ω₀)
   ω₁ = (Sqrt_ω*cosh(mdeg*cosh_inv))/(mdeg*sinh(mdeg*cosh_inv))
 
-  if SciMLBase.alg_interpretation(integrator.alg) == AlgorithmInterpretation.Stratonovich
+  if SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Stratonovich
     α  = cosh(mdeg*cosh_inv)/(2*ω₀*cosh((mdeg-1)*cosh_inv))
     γ  = 1/(2*α)
     β  = -γ
@@ -42,7 +42,7 @@
     k = integrator.f(uᵢ₋₁,p,tᵢ₋₁)
 
     u = dt*μ*k + ν*uᵢ₋₁ + κ*uᵢ₋₂
-    if (i > mdeg - 2) && SciMLBase.alg_interpretation(integrator.alg) == AlgorithmInterpretation.Stratonovich
+    if (i > mdeg - 2) && SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Stratonovich
       if i == mdeg - 1
         gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
         if W.dW isa Number || !is_diagonal_noise(integrator.sol.prob)
@@ -58,7 +58,7 @@
           u .+= (β .* gₘ₋₂ .+ γ .* gₘ₋₁) .* W.dW
         end
       end
-    elseif (i == mdeg) && SciMLBase.alg_interpretation(integrator.alg) == AlgorithmInterpretation.Ito
+    elseif (i == mdeg) && SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Ito
       if W.dW isa Number
         gₘ₋₂ = integrator.g(uᵢ₋₁,p,tᵢ₋₁)
         uᵢ₋₂ = uᵢ₋₁ + sqrt(abs(dt))*gₘ₋₂
@@ -105,7 +105,7 @@ end
   cosh_inv = log(ω₀ + Sqrt_ω)             # arcosh(ω₀)
   ω₁ = (Sqrt_ω*cosh(mdeg*cosh_inv))/(mdeg*sinh(mdeg*cosh_inv))
 
-  if SciMLBase.alg_interpretation(integrator.alg) == AlgorithmInterpretation.Stratonovich
+  if SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Stratonovich
     α  = cosh(mdeg*cosh_inv)/(2*ω₀*cosh((mdeg-1)*cosh_inv))
     γ  = 1/(2*α)
     β  = -γ
@@ -132,7 +132,7 @@ end
     κ = - Tᵢ₋₂/Tᵢ
     integrator.f(k,uᵢ₋₁,p,tᵢ₋₁)
     @.. u = dt*μ*k + ν*uᵢ₋₁ + κ*uᵢ₋₂
-    if (i > mdeg - 2) && SciMLBase.alg_interpretation(integrator.alg) == AlgorithmInterpretation.Stratonovich
+    if (i > mdeg - 2) && SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Stratonovich
       if i == mdeg - 1
         integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁)
         if W.dW isa Number || is_diagonal_noise(integrator.sol.prob)
@@ -152,7 +152,7 @@ end
           @.. u += γ*k
         end
       end
-    elseif (i == mdeg) && SciMLBase.alg_interpretation(integrator.alg) == AlgorithmInterpretation.Ito
+    elseif (i == mdeg) && SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Ito
       if W.dW isa Number || is_diagonal_noise(integrator.sol.prob)
         integrator.g(gₘ₋₂,uᵢ₋₁,p,tᵢ₋₁)
         @.. uᵢ₋₂ = uᵢ₋₁ + sqrt(abs(dt))*gₘ₋₂

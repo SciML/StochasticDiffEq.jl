@@ -22,16 +22,16 @@ sim  = test_convergence(dts,prob,ImplicitEulerHeun(theta=1),trajectories=Int(5e2
 sim  = test_convergence(dts,prob,ImplicitEulerHeun(symplectic=true),trajectories=Int(5e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
-sim = test_convergence(dts,prob,RKMil(interpretation=AlgorithmInterpretation.Stratonovich),trajectories=Int(5e2))
+sim = test_convergence(dts,prob,RKMil(interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich),trajectories=Int(5e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.2
 
-sim = test_convergence(dts,prob,RKMilGeneral(interpretation=AlgorithmInterpretation.Stratonovich),trajectories=Int(5e2))
+sim = test_convergence(dts,prob,RKMilGeneral(interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich),trajectories=Int(5e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.2
 
-sim  = test_convergence(dts,prob,ImplicitRKMil(interpretation=AlgorithmInterpretation.Stratonovich),trajectories=Int(5e2))
+sim  = test_convergence(dts,prob,ImplicitRKMil(interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich),trajectories=Int(5e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
-sim  = test_convergence(dts,prob,SROCK1(interpretation=AlgorithmInterpretation.Stratonovich),trajectories=Int(2e2))
+sim  = test_convergence(dts,prob,SROCK1(interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich),trajectories=Int(2e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.15
 
 sim  = test_convergence(dts,prob,KomBurSROCK2(),trajectories=Int(2e2))
@@ -61,25 +61,25 @@ sim  = test_convergence(dts,prob,ImplicitEulerHeun(symplectic=true),trajectories
 
 println("RKMils")
 
-sim = test_convergence(dts,prob,RKMil(interpretation=AlgorithmInterpretation.Stratonovich),trajectories=Int(1e2))
+sim = test_convergence(dts,prob,RKMil(interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich),trajectories=Int(1e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.2
 
-sim = test_convergence(dts,prob,RKMilGeneral(interpretation=AlgorithmInterpretation.Stratonovich),trajectories=Int(1e2))
+sim = test_convergence(dts,prob,RKMilGeneral(interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich),trajectories=Int(1e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.2
 
-sim  = test_convergence(dts,prob,ImplicitRKMil(interpretation=AlgorithmInterpretation.Stratonovich),
+sim  = test_convergence(dts,prob,ImplicitRKMil(interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich),
                         trajectories=Int(1e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
-sim  = test_convergence(dts,prob,ImplicitRKMil(theta=1,interpretation=AlgorithmInterpretation.Stratonovich),
+sim  = test_convergence(dts,prob,ImplicitRKMil(theta=1,interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich),
                         trajectories=Int(1e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
-sim  = test_convergence(dts,prob,ImplicitRKMil(symplectic=true,interpretation=AlgorithmInterpretation.Stratonovich),
+sim  = test_convergence(dts,prob,ImplicitRKMil(symplectic=true,interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich),
                         trajectories=Int(1e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
-sim  = test_convergence(dts,prob,SROCK1(interpretation=AlgorithmInterpretation.Stratonovich),trajectories=Int(1e2))
+sim  = test_convergence(dts,prob,SROCK1(interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich),trajectories=Int(1e2))
 @test abs(sim.𝒪est[:l2]-1) < 0.1
 
 sim  = test_convergence(dts,prob,KomBurSROCK2(),trajectories=Int(2e2))
