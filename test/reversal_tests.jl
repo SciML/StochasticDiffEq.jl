@@ -3,6 +3,7 @@ using Random
 using SDEProblemLibrary
 # automatically construct SDE transformation for Ito reversal
 using ModelingToolkit
+import SciMLBase
 
 # tested solvers
 additive_noise_solver = [

@@ -1,4 +1,5 @@
 using StochasticDiffEq, Test
+import SciMLBase
 
 function f(du, u, p, t)
     du[1] = u[1]

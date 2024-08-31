@@ -1,4 +1,5 @@
 using StochasticDiffEq, DiffEqCallbacks, DiffEqNoiseProcess, Test, Random
+import SciMLBase
 
 Random.seed!(100)
 # Definitions according to vector/matrix representations of operators from QuantumOptics
