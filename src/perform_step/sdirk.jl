@@ -24,21 +24,21 @@
   end
 
   if cache isa ImplicitRKMilConstantCache || integrator.opts.adaptive == true
-    if SciMLBase.alg_interpretation(alg) == :Ito ||
+    if SciMLBase.alg_interpretation(alg) == SciMLBase.AlgorithmInterpretation.Ito ||
        cache isa ImplicitEMConstantCache
       K = @.. uprev + dt * ftmp
       utilde =  K + L*integrator.sqdt
       ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
       mil_correction = ggprime .* (integrator.W.dW.^2 .- abs(dt))./2
       gtmp += mil_correction
-    elseif SciMLBase.alg_interpretation(alg) == :Stratonovich ||
+    elseif SciMLBase.alg_interpretation(alg) == SciMLBase.AlgorithmInterpretation.Stratonovich ||
            cache isa ImplicitEulerHeunConstantCache
       utilde = uprev + L*integrator.sqdt
       ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
       mil_correction = ggprime.*(integrator.W.dW.^2)./2
       gtmp += mil_correction
     else
-      error("Alg interpretation invalid. Use either :Ito or :Stratonovich")
+      error("Algorithm interpretation invalid. Use either SciMLBase.AlgorithmInterpretation.Ito or SciMLBase.AlgorithmInterpretation.Stratonovich")
     end
   end
 
@@ -154,18 +154,18 @@ end
 
   if cache isa ImplicitRKMilCache
     gtmp3 = cache.gtmp3
-    if SciMLBase.alg_interpretation(alg) == :Ito
+    if SciMLBase.alg_interpretation(alg) == SciMLBase.AlgorithmInterpretation.Ito
       @.. z = uprev + dt * tmp + integrator.sqdt * gtmp
       integrator.g(gtmp3,z,p,t)
       @.. gtmp3 = (gtmp3-gtmp)/(integrator.sqdt) # ggprime approximation
       @.. gtmp2 += gtmp3*(dW.^2 - abs(dt))/2
-    elseif SciMLBase.alg_interpretation(alg) == :Stratonovich
+    elseif SciMLBase.alg_interpretation(alg) == SciMLBase.AlgorithmInterpretation.Stratonovich
       @.. z = uprev + integrator.sqdt * gtmp
       integrator.g(gtmp3,z,p,t)
       @.. gtmp3 = (gtmp3-gtmp)/(integrator.sqdt) # ggprime approximation
       @.. gtmp2 += gtmp3*(dW.^2)/2
     else
-      error("Alg interpretation invalid. Use either :Ito or :Stratonovich")
+      error("Algorithm interpretation invalid. Use either SciMLBase.AlgorithmInterpretation.Ito or SciMLBase.AlgorithmInterpretation.Stratonovich")
     end
   end
 

@@ -208,16 +208,16 @@ end
   K = @.. uprev + dt * du1
   L = integrator.g(uprev,p,t)
   mil_correction = zero(u)
-  if SciMLBase.alg_interpretation(integrator.alg) == :Ito
+  if SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Ito
     utilde =  K + L*integrator.sqdt
     ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
     mil_correction = ggprime.*(W.dW.^2 .- abs(dt))./2
-  elseif SciMLBase.alg_interpretation(integrator.alg) == :Stratonovich
+  elseif SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Stratonovich
     utilde = uprev + L*integrator.sqdt
     ggprime = (integrator.g(utilde,p,t).-L)./(integrator.sqdt)
     mil_correction = ggprime.*(W.dW.^2)./2
   else
-    error("Alg interpretation invalid. Use either :Ito or :Stratonovich")
+    error("Algorithm interpretation invalid. Use either SciMLBase.AlgorithmInterpretation.Ito or SciMLBase.AlgorithmInterpretation.Stratonovich")
   end
   u = K+L.*W.dW+mil_correction
 
@@ -241,16 +241,16 @@ end
   integrator.g(L,uprev,p,t)
   @.. K = uprev + dt * du1
   @.. du2 = zero(eltype(u)) # This makes it safe to re-use the array
-  if SciMLBase.alg_interpretation(integrator.alg) == :Ito
+  if SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Ito
     @.. tmp = K + integrator.sqdt * L
     integrator.g(du2,tmp,p,t)
     @.. tmp = (du2-L)/(2integrator.sqdt)*(W.dW.^2 - abs(dt))
-  elseif SciMLBase.alg_interpretation(integrator.alg) == :Stratonovich
+  elseif SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Stratonovich
     @.. tmp = uprev + integrator.sqdt * L
     integrator.g(du2,tmp,p,t)
     @.. tmp = (du2-L)/(2integrator.sqdt)*(W.dW.^2)
   else
-    error("Alg interpretation invalid. Use either :Ito or :Stratonovich")
+    error("Algorithm interpretation invalid. Use either SciMLBase.AlgorithmInterpretation.Ito or SciMLBase.AlgorithmInterpretation.Stratonovich")
   end
   @.. u = K+L*W.dW + tmp
   if integrator.opts.adaptive
@@ -275,7 +275,7 @@ end
   J = get_iterated_I(dt, dW, W.dZ, Jalg)
 
   mil_correction = zero(u)
-  if SciMLBase.alg_interpretation(integrator.alg) == :Ito
+  if SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Ito
     if dW isa Number || is_diagonal_noise(integrator.sol.prob)
       J = J .- 1//2 .* abs(dt)
     else
@@ -289,7 +289,7 @@ end
   K = uprev + dt*du1
 
   if is_diagonal_noise(integrator.sol.prob)
-    tmp = (SciMLBase.alg_interpretation(integrator.alg) == :Ito ? K : uprev) .+ integrator.sqdt .* L
+    tmp = (SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Ito ? K : uprev) .+ integrator.sqdt .* L
     gtmp = integrator.g(tmp,p,t)
     Dgj = (gtmp - L)/sqdt
     ggprime_norm = integrator.opts.internalnorm(Dgj,t)
@@ -343,7 +343,7 @@ end
   J = Jalg.J
 
   @.. mil_correction = zero(u)
-  if SciMLBase.alg_interpretation(integrator.alg) == :Ito
+  if SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Ito
     if dW isa Number || is_diagonal_noise(integrator.sol.prob)
       @.. J -= 1 // 2 * abs(dt)
     else
@@ -357,7 +357,7 @@ end
   @.. K = uprev + dt*du1
 
   if is_diagonal_noise(integrator.sol.prob)
-    tmp .= (SciMLBase.alg_interpretation(integrator.alg) == :Ito ? K : uprev) .+ integrator.sqdt .* L
+    tmp .= (SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Ito ? K : uprev) .+ integrator.sqdt .* L
     integrator.g(gtmp,tmp,p,t)
     @.. Dgj = (gtmp - L)/sqdt
     ggprime_norm = integrator.opts.internalnorm(Dgj,t)
@@ -397,7 +397,7 @@ end
 
   J = get_iterated_I(dt, dW, W.dZ, Jalg, integrator.alg.p, integrator.alg.c, alg_order(integrator.alg))
 
-  if SciMLBase.alg_interpretation(integrator.alg) == :Ito
+  if SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Ito
     if dW isa Number || is_diagonal_noise(integrator.sol.prob)
       J = J .- 1//2 .* abs(dt)
     else
@@ -413,7 +413,7 @@ end
 
   if dW isa Number || is_diagonal_noise(integrator.sol.prob)
     K = @.. uprev + dt*du₁
-    utilde = (SciMLBase.alg_interpretation(integrator.alg) == :Ito ? K : uprev) + L*integrator.sqdt
+    utilde = (SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Ito ? K : uprev) + L*integrator.sqdt
     ggprime = (integrator.g(utilde,p,t) .- L) ./ (integrator.sqdt)
     mil_correction = ggprime .* J
     u = K + L .* dW + mil_correction
@@ -467,7 +467,7 @@ end
   @.. mil_correction = zero(eltype(u))
   ggprime_norm = zero(eltype(ggprime))
 
-  if SciMLBase.alg_interpretation(integrator.alg) == :Ito
+  if SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Ito
     if dW isa Number || is_diagonal_noise(integrator.sol.prob)
       @.. J -= 1 // 2 * abs(dt)
     else
@@ -478,7 +478,7 @@ end
   if dW isa Number || is_diagonal_noise(integrator.sol.prob)
     @.. K = uprev + dt*du₁
     @.. du₂ = zero(eltype(u))
-    tmp .= (SciMLBase.alg_interpretation(integrator.alg) == :Ito ? K : uprev) .+ integrator.sqdt .* L
+    tmp .= (SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Ito ? K : uprev) .+ integrator.sqdt .* L
     integrator.g(du₂,tmp,p,t)
     @.. ggprime = (du₂ - L)/sqdt
     ggprime_norm = integrator.opts.internalnorm(ggprime,t)
