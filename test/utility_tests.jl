@@ -17,7 +17,7 @@ using StochasticDiffEq.SciMLOperators: MatrixOperator
                       jac=(u,p,t) -> A)
     prob = SDEProblem(fun, u0, tspan)
     integrator = init(prob, ImplicitEM(theta=1); adaptive=false, dt=dt)
-    W = calc_W(integrator, integrator.cache.nlsolver, dtgamma, #=repeat_step=#false, #=W_transform=#true)
+    W = calc_W(integrator, integrator.cache.nlsolver, dtgamma, #=repeat_step=#false)
     @test convert(AbstractMatrix, W) ≈ concrete_W
     @test W \ u0 ≈ concrete_W \ u0
 
@@ -29,7 +29,7 @@ using StochasticDiffEq.SciMLOperators: MatrixOperator
     prob = SDEProblem(fun, u0, tspan)
     integrator = init(prob, ImplicitEM(theta=1); adaptive=false, dt=dt)
     W = integrator.cache.nlsolver.cache.W
-    calc_W!(W, integrator, integrator.cache.nlsolver, integrator.cache, dtgamma, #=repeat_step=#false, #=W_transform=#true)
+    calc_W!(W, integrator, integrator.cache.nlsolver, integrator.cache, dtgamma, #=repeat_step=#false)
 
     # Did not update because it's an array operator
     # We don't want to build Jacobians when we have operators!
