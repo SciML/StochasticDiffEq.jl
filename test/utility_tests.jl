@@ -1,7 +1,14 @@
 using StochasticDiffEq, LinearAlgebra, SparseArrays, Random, LinearSolve, Test
 using StochasticDiffEq.OrdinaryDiffEq: WOperator, calc_W!, calc_W
 using StochasticDiffEq.SciMLOperators: MatrixOperator
+using OrdinaryDiffEq
 
+#horid nasty hack to deal with temporary calc_W refactor
+# if there is a method that takes a W_transform argument, define the version that doesn't to set W_transform to true
+if hasmethod(calc_W, (Any, Any, Any, Any, Any))
+    OrdinaryDiffEq.calc_W(integ, nlsolver, dgamma, repeat_step::Bool) = OrdinaryDiffEq.calc_W(integ, nlsolver, dgamma, repeat_step, true)
+    OrdinaryDiffEq.calc_W!(integ, nlsolver, cache, dgamma, repeat_step::Bool) = OrdinaryDiffEq.calc_W(integ, nlsolver, dgamma, cacherepeat_step, true)
+end
 @testset "Derivative Utilities" begin
   @testset "calc_W!" begin
     A = [-1.0 0.0; 0.0 -0.5]; σ = [0.9 0.0; 0.0 0.8]
@@ -17,7 +24,7 @@ using StochasticDiffEq.SciMLOperators: MatrixOperator
                       jac=(u,p,t) -> A)
     prob = SDEProblem(fun, u0, tspan)
     integrator = init(prob, ImplicitEM(theta=1); adaptive=false, dt=dt)
-    W = calc_W(integrator, integrator.cache.nlsolver, dtgamma, #=repeat_step=#false, #=W_transform=#true)
+    W = calc_W(integrator, integrator.cache.nlsolver, dtgamma, #=repeat_step=#false)
     @test convert(AbstractMatrix, W) ≈ concrete_W
     @test W \ u0 ≈ concrete_W \ u0
 
@@ -29,7 +36,7 @@ using StochasticDiffEq.SciMLOperators: MatrixOperator
     prob = SDEProblem(fun, u0, tspan)
     integrator = init(prob, ImplicitEM(theta=1); adaptive=false, dt=dt)
     W = integrator.cache.nlsolver.cache.W
-    calc_W!(W, integrator, integrator.cache.nlsolver, integrator.cache, dtgamma, #=repeat_step=#false, #=W_transform=#true)
+    calc_W!(W, integrator, integrator.cache.nlsolver, integrator.cache, dtgamma, #=repeat_step=#false)
 
     # Did not update because it's an array operator
     # We don't want to build Jacobians when we have operators!
