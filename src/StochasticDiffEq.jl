@@ -35,6 +35,8 @@ using DocStringExtensions
   using LinearAlgebra, Random
 
   import ForwardDiff.Dual
+  
+  import FastPower
 
   import DiffEqBase: step!, initialize!, DEAlgorithm,
                      AbstractSDEAlgorithm, AbstractRODEAlgorithm, DEIntegrator, AbstractDiffEqInterpolation,
