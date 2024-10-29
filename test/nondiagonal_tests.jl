@@ -130,6 +130,7 @@ prototype = zeros(2,2)
 iip_prob = SDEProblem{true}(f, g, u0, tspan, noise_rate_prototype = prototype)
 @test !(solve(iip_prob, EM(), dt = 0.1)[end] ≈ ones(2))
 @test !(solve(iip_prob, SOSRA())[end] ≈ ones(2))
+@test !(solve(iip_prob, SRA3())[end] ≈ ones(2))
 
 # Out of place regression tests
 
