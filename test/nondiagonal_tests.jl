@@ -108,8 +108,48 @@ prob = SDEProblem(f_morenoise,g_morenoise,ones(2),(0.0,1.0),
                   noise_rate_prototype=zeros(2,4))
 
 sol =solve(prob,dt=1/2^(3),EM())
+sol =solve(prob,dt=1/2^(3),SRA())
 sol =solve(prob,dt=1/2^(3),ISSEM())
 sol =solve(prob,dt=1/2^(3),ImplicitEM())
 sol =solve(prob,dt=1/2^(3),EulerHeun())
 sol =solve(prob,dt=1/2^(3),ImplicitEulerHeun())
 sol =solve(prob,dt=1/2^(3),ISSEulerHeun())
+
+
+f(du, u, p, t) = du .= u
+function g(du, u, p, t)
+    du .= [-0.80 -0.3; -0.8 0.3]
+end
+
+u0 = ones(2)
+dt = 1//2^(4)
+tspan = (0., 1.)
+
+prototype = zeros(2,2)
+
+iip_prob = SDEProblem{true}(f, g, u0, tspan, noise_rate_prototype = prototype)
+@test !(solve(iip_prob, EM(), dt = 0.1)[end] ≈ ones(2))
+@test !(solve(iip_prob, SOSRA())[end] ≈ ones(2))
+
+# Out of place regression tests
+
+f(u, p, t) = u
+function g(u, p, t)
+    return [-0.80 -0.3; -0.8 0.3]
+end
+
+u0 = ones(2)
+dt = 1//2^(4)
+tspan = (0., 1.)
+
+prototype = zeros(2,2)
+
+oop_prob = SDEProblem{false}(f, g, u0, tspan, noise_rate_prototype = prototype)
+oop_sol = solve(oop_prob, EM(), dt = dt)
+oop_sol = solve(oop_prob, SOSRA())
+sol =solve(oop_prob,dt=1/2^(3),EM())
+sol =solve(oop_prob,dt=1/2^(3),ISSEM())
+@test_broken sol =solve(oop_prob,dt=1/2^(3),ImplicitEM())
+sol =solve(oop_prob,dt=1/2^(3),EulerHeun())
+@test_broken sol =solve(oop_prob,dt=1/2^(3),ImplicitEulerHeun())
+sol =solve(oop_prob,dt=1/2^(3),ISSEulerHeun())

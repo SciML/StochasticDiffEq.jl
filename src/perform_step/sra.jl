@@ -178,20 +178,34 @@ end
   g1 = integrator.g(uprev,p,t+c11*dt)
   k1 = integrator.f(uprev,p,t)
 
-  H01 = uprev + dt*a21*k1 + b21*chi2.*g1
+  if is_diagonal_noise(integrator.sol.prob)
+    H01 = uprev + dt*a21*k1 + b21*chi2.*g1
+  else
+    H01 = uprev + dt*a21*k1 + b21*g1*chi2
+  end
 
   g2 = integrator.g(H01,p,t+c12*dt)
   k2 = integrator.f(H01,p,t+c02*dt)
 
-  H02 = uprev + dt*(a31*k1 + a32*k2) + chi2.*(b31*g1 + b32*g2)
+  if is_diagonal_noise(integrator.sol.prob)
+    H02 = uprev + dt*(a31*k1 + a32*k2) + chi2.*(b31*g1 + b32*g2)
+  else
+    H02 = uprev + dt*(a31*k1 + a32*k2) + (b31*g1 + b32*g2)*chi2
+  end
+
 
   g3 = integrator.g(H02,p,t+c13*dt)
   k3 = integrator.f(H02,p,t+c03*dt)
 
   E₁ = dt*(α1*k1 + α2*k2 + α3*k3)
-  E₂ = chi2.*(beta21*g1 + beta22*g2 + beta23*g3)
 
-  u = uprev + E₁ + E₂ + W.dW.*(beta11*g1 + beta12*g2 + beta13*g3)
+  if is_diagonal_noise(integrator.sol.prob)
+    E₂ = chi2.*(beta21*g1 + beta22*g2 + beta23*g3)
+    u = uprev + E₁ + E₂ + W.dW.*(beta11*g1 + beta12*g2 + beta13*g3)
+  else
+    E₂ = (beta21*g1 + beta22*g2 + beta23*g3)*chi2
+    u = uprev + E₁ + E₂ + (beta11*g1 + beta12*g2 + beta13*g3)*W.dW
+  end
 
   if integrator.alg isa StochasticCompositeAlgorithm && integrator.alg.algs[1] isa SOSRA2
     ϱu = integrator.opts.internalnorm(k3 - k2, t)
@@ -255,7 +269,7 @@ end
     mul!(E₂,gtmp,chi2)
     @.. gtmp = beta11*g1 + beta12*g2 + beta13*g3
     mul!(E₁,gtmp,W.dW)
-    u = uprev + dt*(α1*k1 + α2*k2 + α3*k3) + E₂ + E₁
+    @.. u = uprev + dt*(α1*k1 + α2*k2 + α3*k3) + E₂ + E₁
   end
 
   if integrator.alg isa StochasticCompositeAlgorithm && integrator.alg.algs[1] isa SOSRA2
