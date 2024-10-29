@@ -14,7 +14,7 @@ using DocStringExtensions
          beta2_default, beta1_default, gamma_default,
          qmin_default, qmax_default, qsteady_min_default, qsteady_max_default,
          stepsize_controller!, accept_step_controller, step_accept_controller!,
-         step_reject_controller!, PIController, DummyController
+         step_reject_controller!, PIController, DummyController, issplit
 
   using UnPack, RecursiveArrayTools, DataStructures
   using DiffEqNoiseProcess, Random, ArrayInterface
@@ -35,6 +35,8 @@ using DocStringExtensions
   using LinearAlgebra, Random
 
   import ForwardDiff.Dual
+  
+  import FastPower
 
   import DiffEqBase: step!, initialize!, DEAlgorithm,
                      AbstractSDEAlgorithm, AbstractRODEAlgorithm, DEIntegrator, AbstractDiffEqInterpolation,
@@ -47,7 +49,8 @@ using DocStringExtensions
                      resize_non_user_cache!,deleteat_non_user_cache!,addat_non_user_cache!,
                      terminate!,get_du, get_dt,get_proposed_dt,set_proposed_dt!,
                      u_modified!,savevalues!,add_tstop!,add_saveat!,set_reltol!,
-                     set_abstol!, postamble!, last_step_failed, has_Wfact, has_jac
+                     set_abstol!, postamble!, last_step_failed, has_Wfact, has_jac,
+                     get_tstops, get_tstops_array, get_tstops_max
 
   using DiffEqBase: check_error!, is_diagonal_noise, @..
 

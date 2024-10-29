@@ -1,4 +1,5 @@
 using StochasticDiffEq, DiffEqCallbacks, DiffEqNoiseProcess, Test, Random
+import SciMLBase
 
 Random.seed!(100)
 # Definitions according to vector/matrix representations of operators from QuantumOptics
@@ -44,20 +45,20 @@ let
     out1 = SavedValues(Float64,ComplexF64)
     scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
 
-    solve(prob1, RKMil{:Stratonovich}(), dt=1e-4, callback=scb1, seed = i, adaptive = false)
+    solve(prob1, RKMil{SciMLBase.AlgorithmInterpretation.Stratonovich}(), dt=1e-4, callback=scb1, seed = i, adaptive = false)
     avg1 .+= out1.saveval ./ Ntraj
 
     out1 = SavedValues(Float64,ComplexF64)
     scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
 
-    solve(prob1, RKMil{:Stratonovich}(), tstops = T, callback=scb1,
+    solve(prob1, RKMil{SciMLBase.AlgorithmInterpretation.Stratonovich}(), tstops = T, callback=scb1,
           save_everystep=false, save_start=false)
     avg2 .+= out1.saveval ./ Ntraj
 
     out1 = SavedValues(Float64,ComplexF64)
     scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
 
-    solve(prob2, RKMil{:Stratonovich}(), tstops = T, callback=scb1,
+    solve(prob2, RKMil{SciMLBase.AlgorithmInterpretation.Stratonovich}(), tstops = T, callback=scb1,
           save_everystep=false, save_start=false)
     avg3 .+= out1.saveval ./ Ntraj
   end
@@ -88,20 +89,20 @@ let
     out1 = SavedValues(Float64,ComplexF64)
     scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
 
-    solve(prob1, RKMilGeneral(interpretation = :Stratonovich), dt=1e-4, callback=scb1, seed = i, adaptive = false)
+    solve(prob1, RKMilGeneral(interpretation = SciMLBase.AlgorithmInterpretation.Stratonovich), dt=1e-4, callback=scb1, seed = i, adaptive = false)
     avg1 .+= out1.saveval ./ Ntraj
 
     out1 = SavedValues(Float64,ComplexF64)
     scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
 
-    solve(prob1, RKMilGeneral(interpretation = :Stratonovich), tstops = T, callback=scb1,
+    solve(prob1, RKMilGeneral(interpretation = SciMLBase.AlgorithmInterpretation.Stratonovich), tstops = T, callback=scb1,
           save_everystep=false, save_start=false)
     avg2 .+= out1.saveval ./ Ntraj
 
     out1 = SavedValues(Float64,ComplexF64)
     scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
 
-    solve(prob2, RKMilGeneral(interpretation = :Stratonovich), tstops = T, callback=scb1,
+    solve(prob2, RKMilGeneral(interpretation = SciMLBase.AlgorithmInterpretation.Stratonovich), tstops = T, callback=scb1,
           save_everystep=false, save_start=false)
     avg3 .+= out1.saveval ./ Ntraj
   end

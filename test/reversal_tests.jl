@@ -3,6 +3,7 @@ using Random
 using SDEProblemLibrary
 # automatically construct SDE transformation for Ito reversal
 using ModelingToolkit
+import SciMLBase
 
 # tested solvers
 additive_noise_solver = [
@@ -19,14 +20,14 @@ Stratonovich_solver = [
   # non-stiff methods
   EulerHeun(),
   LambaEulerHeun(),
-  RKMil(interpretation=:Stratonovich),
-  RKMilCommute(interpretation=:Stratonovich),
-  RKMilGeneral(interpretation=:Stratonovich),
+  RKMil(interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich),
+  RKMilCommute(interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich),
+  RKMilGeneral(interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich),
   # S-Rock methods
-  SROCK1(interpretation=:Stratonovich),
+  SROCK1(interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich),
   # stiff methods
   ImplicitEulerHeun(),
-  ImplicitRKMil(interpretation=:Stratonovich),
+  ImplicitRKMil(interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich),
   ISSEulerHeun(),
 ]
 

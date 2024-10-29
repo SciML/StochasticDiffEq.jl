@@ -21,8 +21,9 @@ jobs:
           - AlgConvergence3
           - WeakConvergence1
         version:
+          - 'lts'
           - '1'
-          - '1.6'
+          - 'pre'
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v2

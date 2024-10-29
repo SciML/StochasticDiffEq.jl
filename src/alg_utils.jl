@@ -134,22 +134,22 @@ beta1_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm
 
 isdtchangeable(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = true
 
-alg_interpretation(alg::StochasticDiffEqAlgorithm) = :Ito
-alg_interpretation(alg::EulerHeun) = :Stratonovich
-alg_interpretation(alg::LambaEulerHeun) = :Stratonovich
-alg_interpretation(alg::KomBurSROCK2) = :Stratonovich
-alg_interpretation(alg::RKMil{interpretation}) where {interpretation} = interpretation
-alg_interpretation(alg::SROCK1{interpretation,E}) where {interpretation,E} = interpretation
-alg_interpretation(alg::RKMilCommute) = alg.interpretation
-alg_interpretation(alg::RKMilGeneral) = alg.interpretation
-alg_interpretation(alg::ImplicitRKMil{CS,AD,F,P,FDT,ST,CJ,N,T2,Controller,interpretation}) where {CS,AD,F,P,FDT,ST,CJ,N,T2,Controller,interpretation} = interpretation
+SciMLBase.alg_interpretation(alg::StochasticDiffEqAlgorithm) = SciMLBase.AlgorithmInterpretation.Ito
+SciMLBase.alg_interpretation(alg::EulerHeun) = SciMLBase.AlgorithmInterpretation.Stratonovich
+SciMLBase.alg_interpretation(alg::LambaEulerHeun) = SciMLBase.AlgorithmInterpretation.Stratonovich
+SciMLBase.alg_interpretation(alg::KomBurSROCK2) = SciMLBase.AlgorithmInterpretation.Stratonovich
+SciMLBase.alg_interpretation(alg::RKMil{interpretation}) where {interpretation} = interpretation
+SciMLBase.alg_interpretation(alg::SROCK1{interpretation,E}) where {interpretation,E} = interpretation
+SciMLBase.alg_interpretation(alg::RKMilCommute) = alg.interpretation
+SciMLBase.alg_interpretation(alg::RKMilGeneral) = alg.interpretation
+SciMLBase.alg_interpretation(alg::ImplicitRKMil{CS,AD,F,P,FDT,ST,CJ,N,T2,Controller,interpretation}) where {CS,AD,F,P,FDT,ST,CJ,N,T2,Controller,interpretation} = interpretation
 
-alg_interpretation(alg::RS1) = :Stratonovich
-alg_interpretation(alg::RS2) = :Stratonovich
+SciMLBase.alg_interpretation(alg::RS1) = SciMLBase.AlgorithmInterpretation.Stratonovich
+SciMLBase.alg_interpretation(alg::RS2) = SciMLBase.AlgorithmInterpretation.Stratonovich
 
-alg_interpretation(alg::NON) = :Stratonovich
-alg_interpretation(alg::COM) = :Stratonovich
-alg_interpretation(alg::NON2) = :Stratonovich
+SciMLBase.alg_interpretation(alg::NON) = SciMLBase.AlgorithmInterpretation.Stratonovich
+SciMLBase.alg_interpretation(alg::COM) = SciMLBase.AlgorithmInterpretation.Stratonovich
+SciMLBase.alg_interpretation(alg::NON2) = SciMLBase.AlgorithmInterpretation.Stratonovich
 
 alg_compatible(prob, alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = true
 alg_compatible(prob, alg::StochasticDiffEqAlgorithm) = false

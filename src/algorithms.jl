@@ -77,11 +77,11 @@ Springer. Berlin Heidelberg (2011)
 
 RKMil: Nonstiff Method
 An explicit Runge-Kutta discretization of the strong order 1.0 Milstein method.
-Defaults to solving the Ito problem, but RKMil(interpretation=:Stratonovich) makes it solve the Stratonovich problem.
+Defaults to solving the Ito problem, but RKMil(interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich) makes it solve the Stratonovich problem.
 Only handles scalar and diagonal noise.
 """
 struct RKMil{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
-RKMil(;interpretation=:Ito) = RKMil{interpretation}()
+RKMil(;interpretation=SciMLBase.AlgorithmInterpretation.Ito) = RKMil{interpretation}()
 
 """
 Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
@@ -89,37 +89,37 @@ Springer. Berlin Heidelberg (2011)
 
 RKMilCommute: Nonstiff Method
 An explicit Runge-Kutta discretization of the strong order 1.0 Milstein method for commutative noise problems.
-Defaults to solving the Ito problem, but RKMilCommute(interpretation=:Stratonovich) makes it solve the Stratonovich problem.
+Defaults to solving the Ito problem, but RKMilCommute(interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich) makes it solve the Stratonovich problem.
 Uses a 1.5/2.0 error estimate for adaptive time stepping.
 Default: ii_approx=IICommutative() does not approximate the Levy area.
 """
-struct RKMilCommute{T} <: StochasticDiffEqAdaptiveAlgorithm
-  interpretation::Symbol
+struct RKMilCommute{T} <: StochasticDiffEqAdaptiveAlgorithm 
+  interpretation::SciMLBase.AlgorithmInterpretation.T
   ii_approx::T
 end
-RKMilCommute(;interpretation=:Ito, ii_approx=IICommutative()) = RKMilCommute(interpretation,ii_approx)
+RKMilCommute(;interpretation=SciMLBase.AlgorithmInterpretation.Ito, ii_approx=IICommutative()) = RKMilCommute(interpretation,ii_approx)
 
 """
 Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
 Springer. Berlin Heidelberg (2011)
 
 RKMilGeneral: Nonstiff Method
-RKMilGeneral(;interpretation=:Ito, ii_approx=IILevyArea()
+RKMilGeneral(;interpretation=SciMLBase.AlgorithmInterpretation.Ito, ii_approx=IILevyArea()
 An explicit Runge-Kutta discretization of the strong order 1.0 Milstein method for general non-commutative noise problems.
-Allows for a choice of interpretation between :Ito and :Stratonovich.
+Allows for a choice of interpretation between SciMLBase.AlgorithmInterpretation.Ito and SciMLBase.AlgorithmInterpretation.Stratonovich.
 Allows for a choice of iterated integral approximation.
 Default: ii_approx=IILevyArea() uses LevyArea.jl to choose optimal algorithm. See
 Kastner, F. and Rößler, A., arXiv: 2201.08424
 Kastner, F. and Rößler, A., LevyArea.jl, 10.5281/ZENODO.5883748, https://github.com/stochastics-uni-luebeck/LevyArea.jl
 """
 struct RKMilGeneral{T, TruncationType} <: StochasticDiffEqAdaptiveAlgorithm
-  interpretation::Symbol
+  interpretation::SciMLBase.AlgorithmInterpretation.T
   ii_approx::T
   c::Int
   p::TruncationType
 end
 
-function RKMilGeneral(;interpretation=:Ito,ii_approx=IILevyArea(), c=1, p=nothing, dt=nothing)
+function RKMilGeneral(;interpretation=SciMLBase.AlgorithmInterpretation.Ito,ii_approx=IILevyArea(), c=1, p=nothing, dt=nothing)
   γ = 1//1
   p==true && (p = Int(floor(c*dt^(1//1-2//1*γ)) + 1))
   RKMilGeneral{typeof(ii_approx), typeof(p)}(interpretation, ii_approx, c, p)
@@ -160,13 +160,13 @@ struct WangLi3SMil_F <: StochasticDiffEqAlgorithm end
 """
 SROCK1: S-ROCK Method
 Is a fixed step size stabilized explicit method for stiff problems.
-Defaults to solving th Ito problem but SROCK1(interpretation=:Stratonovich) can make it solve the Stratonovich problem.
+Defaults to solving th Ito problem but SROCK1(interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich) can make it solve the Stratonovich problem.
 Strong order of convergence is 0.5 and weak order 1, but is optimised to get order 1 in case os scalar/diagonal noise.
 """
 struct SROCK1{interpretation,E} <: StochasticDiffEqAlgorithm
   eigen_est::E
 end
-SROCK1(;interpretation=:Ito,eigen_est=nothing) = SROCK1{interpretation,typeof(eigen_est)}(eigen_est)
+SROCK1(;interpretation=SciMLBase.AlgorithmInterpretation.Ito,eigen_est=nothing) = SROCK1{interpretation,typeof(eigen_est)}(eigen_est)
 
 # Weak Order 2
 for Alg in [:SROCK2, :KomBurSROCK2, :SROCKC2]
@@ -714,7 +714,7 @@ ImplicitEulerHeun(;chunk_size=0,autodiff=true,diff_type=Val{:central},
 ImplicitRKMil: Stiff Method
 An order 1.0 drift-implicit method.
 This is a theta method which defaults to theta=1 or the Trapezoid method on the drift term.
-Defaults to solving the Ito problem, but ImplicitRKMil(interpretation=:Stratonovich) makes it solve the Stratonovich problem.
+Defaults to solving the Ito problem, but ImplicitRKMil(interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich) makes it solve the Stratonovich problem.
 This method defaults to symplectic=false, but when true and theta=1/2 this is the implicit Midpoint method on the drift term and is symplectic in distribution.
 Handles diagonal and scalar noise. Uses a 1.5/2.0 heuristic for adaptive time stepping.
 """
@@ -734,7 +734,7 @@ ImplicitRKMil(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           extrapolant=:constant,
                           theta = 1,symplectic = false,
                           new_jac_conv_bound = 1e-3,
-                          controller = :Predictive,interpretation=:Ito) =
+                          controller = :Predictive,interpretation=SciMLBase.AlgorithmInterpretation.Ito) =
                           ImplicitRKMil{chunk_size,autodiff,
                           typeof(linsolve),typeof(precs),diff_type,
                           OrdinaryDiffEq._unwrap_val(standardtag),
