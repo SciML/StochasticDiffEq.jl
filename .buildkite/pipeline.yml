@@ -81,5 +81,6 @@ steps:
     if: build.message !~ /\[skip tests\]/
 
 env:
+  debug_plugin: "true"
   JULIA_PKG_SERVER: "" # it often struggles with our large artifacts
   # SECRET_CODECOV_TOKEN: "..."
