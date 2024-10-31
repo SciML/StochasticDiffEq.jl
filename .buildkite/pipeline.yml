@@ -12,7 +12,7 @@ steps:
       GROUP: "{{matrix}}"
     plugins:
       - JuliaCI/julia#v1:
-          version: "lts"
+          version: "1.10"
       - JuliaCI/julia-test#v1:
           coverage: false
           julia_args: "--threads=auto"
@@ -33,7 +33,7 @@ steps:
       GROUP: "{{matrix}}"
     plugins:
       - JuliaCI/julia#v1:
-          version: "lts"
+          version: "1.10"
       - JuliaCI/julia-test#v1:
           coverage: false
           julia_args: "--threads=auto"
@@ -54,7 +54,7 @@ steps:
       GROUP: "{{matrix}}"
     plugins:
       - JuliaCI/julia#v1:
-          version: "lts"
+          version: "1.10"
       - JuliaCI/julia-test#v1:
           coverage: false
           julia_args: "--threads=auto"
@@ -69,7 +69,7 @@ steps:
   - label: "WeakAdaptiveGPU"
     plugins:
       - JuliaCI/julia#v1:
-          version: "lts"
+          version: "1.10"
       - JuliaCI/julia-test#v1:
           coverage: false
     agents:
