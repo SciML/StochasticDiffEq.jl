@@ -20,6 +20,7 @@ steps:
       os: "linux"
       queue: "juliaecosystem"
       arch: "x86_64"
+      debug_plugin: "true"
     timeout_in_minutes: 240
     # Don't run Buildkite if the commit message includes the text [skip tests]
     if: build.message !~ /\[skip tests\]/
@@ -81,6 +82,5 @@ steps:
     if: build.message !~ /\[skip tests\]/
 
 env:
-  debug_plugin: "true"
   JULIA_PKG_SERVER: "" # it often struggles with our large artifacts
   # SECRET_CODECOV_TOKEN: "..."
