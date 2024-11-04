@@ -256,4 +256,4 @@ sim1 = test_convergence(dts,ensemble_prob,PL1WMA(),
 @test abs(sim1.𝒪est[:weak_final]-2) < 0.3 # order is 1.9494776704064316
 println("PL1WMA:", sim1.𝒪est[:weak_final])
 
-@test all([sim.solutions[i] ≈ sim1.solutions[i] for i in 1:numtraj])
+@test all([all([sim.solutions[i][j] ≈ sim1.solutions[i][j] for j in 1:length(sim.solutions[i])]) for i in 1:numtraj])
