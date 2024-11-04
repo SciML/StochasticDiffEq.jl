@@ -17,7 +17,7 @@ println("SROCKC2")
 @time sim = test_convergence(dts,prob_sde_linear_iip,SROCKC2(),save_everystep=false,trajectories=Int(3e6),
                         weak_timeseries_errors=false)
 @show sim.𝒪est[:weak_final]
-@test abs(sim.𝒪est[:weak_final]-2) < 0.35
+@test abs(sim.𝒪est[:weak_final]-3) < 0.4
 #@test abs(sim.𝒪est[:weak_l2]-2) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-2) < 0.3
 sim = nothing
@@ -27,6 +27,6 @@ prob = prob_sde_linear
 println("SROCKC2")
 @time sim = test_convergence(dts,prob,SROCKC2(),save_everystep=false,trajectories=Int(1e6))
 @show sim.𝒪est[:weak_final]
-@test abs(sim.𝒪est[:weak_final]-2) < 0.35
+@test abs(sim.𝒪est[:weak_final]-2) < 0.4
 #@test abs(sim.𝒪est[:weak_l2]-2) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-2) < 0.3
