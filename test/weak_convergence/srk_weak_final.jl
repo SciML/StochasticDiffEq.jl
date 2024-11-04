@@ -38,7 +38,7 @@ seeds = rand(UInt, numtraj)
 
 prob = SDEProblem(f,g,u₀,tspan)
 ensemble_prob = EnsembleProblem(prob;
-        output_func = (sol,i) -> (h1(asinh(sol[end])),false),
+        output_func = (sol,i) -> (h1(asinh(sol.u[end])),false),
         prob_func = prob_func
         )
 
@@ -157,7 +157,7 @@ h1(z) = z^3-6*z^2+8*z
 
 prob = SDEProblem(f1!,g1!,u₀,tspan)
 ensemble_prob = EnsembleProblem(prob;
-        output_func = (sol,i) -> (h1(asinh(sol[end][1])),false),
+        output_func = (sol,i) -> (h1(asinh(sol.u[end][1])),false),
         prob_func = prob_func
         )
 

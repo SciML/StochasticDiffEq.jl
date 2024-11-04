@@ -25,7 +25,7 @@ prob = SDEProblem{false}(f,σ,u0,(0.0,1.0),noise = NoiseWrapper(sol.W))
 
 sol2 = solve(prob,EM(),dt=1/10)
 
-@test sol[end][:] ≈ sol2[end][:]
+@test sol.u[end][:] ≈ sol2[end][:]
 
 ################################################################################
 

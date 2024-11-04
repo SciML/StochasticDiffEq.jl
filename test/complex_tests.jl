@@ -15,7 +15,7 @@ implicit_noautodiff = [SKenCarp(autodiff=false), ImplicitEulerHeun(autodiff=fals
 
   for alg in Iterators.flatten((explicit, implicit_noautodiff))
     sol = solve(prob, alg)
-    @test eltype(sol[end]) == ComplexF64
+    @test eltype(sol.u[end]) == ComplexF64
   end
 
   # currently broken
@@ -34,7 +34,7 @@ end
 
   for alg in Iterators.flatten((explicit, implicit_noautodiff))
     sol = solve(prob, alg)
-    @test eltype(sol[end]) == ComplexF64
+    @test eltype(sol.u[end]) == ComplexF64
   end
 
   # currently broken
