@@ -25,7 +25,7 @@ function reduction(u,batch,I)
 end
 
 function output_func(sol,i)
-  #h1(asinh(sol[end][1])),false
+  #h1(asinh(sol.u[end][1])),false
   h1.(asinh.(sol)),false
 end
 

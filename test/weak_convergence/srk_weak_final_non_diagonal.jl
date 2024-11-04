@@ -42,7 +42,7 @@ h2(z) = z^2 # but apply it only to u[1]
 
 prob = SDEProblem(f2!,g2!,u₀,tspan,noise_rate_prototype=zeros(2,2))
 ensemble_prob = EnsembleProblem(prob;
-        output_func = (sol,i) -> (h2(sol[end][1]),false),
+        output_func = (sol,i) -> (h2(sol.u[end][1]),false),
         prob_func = prob_func
         )
 

@@ -2318,3 +2318,167 @@ function alg_cache(alg::SMEB,prob,u,ΔW,ΔZ,p,rate_prototype,
 
   SIESMECache(u,uprev,W2,W3,tab,k0,k1,g0,g1,g2,tmpu)
 end
+
+
+
+
+
+# Tang & Xiao: DOI 10.1007/s10543-016-0618-9 W2Ito1 and W2Ito2 methods
+
+struct W2Ito1ConstantCache{T} <: StochasticDiffEqConstantCache
+    # hard-coded version
+    a021::T
+    a031::T
+    a032::T
+
+    a121::T
+    a131::T
+    #a132::T
+
+    #a221::T
+    #a231::T
+    #a232::T
+
+    b021::T
+    b031::T
+    #b032::T
+
+    b121::T
+    b131::T
+    #b132::T
+
+    b221::T
+    #b222::T
+    #b223::T
+    #b231::T
+    #b232::T
+    #b233::T
+
+    α1::T
+    α2::T
+    α3::T
+
+    beta01::T
+    beta02::T
+    beta03::T
+
+    beta11::T
+    #beta12::T
+    beta13::T
+
+    #quantile(Normal(),1/6)
+    NORMAL_ONESIX_QUANTILE::T
+end
+
+
+
+function W2Ito1ConstantCache(::Type{T}, ::Type{T2}) where {T,T2}
+
+    a021 = convert(T, 1 // 2)
+    a031 = convert(T, -1)
+    a032 = convert(T, 2)
+
+    a121 = convert(T, 1 // 4)
+    a131 = convert(T, 1 // 4)
+
+    b021 = convert(T, (6 - sqrt(6)) / 10)
+    b031 = convert(T, (3 + 2 * sqrt(6)) / 5)
+
+    b121 = convert(T, 1 // 2)
+    b131 = convert(T, -1 // 2)
+
+    b221 = convert(T, 1)
+
+    α1 = convert(T, 1 // 6)
+    α2 = convert(T, 2 // 3)
+    α3 = convert(T, 1 // 6)
+
+    beta01 = convert(T, -1)
+    beta02 = convert(T, 1)
+    beta03 = convert(T, 1)
+
+    beta11 = convert(T, 2)
+    beta13 = convert(T, -2)
+
+    NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
+
+    W2Ito1ConstantCache(a021, a031, a032, a121, a131, b021, b031, b121, b131, b221, α1, α2, α3, beta01, beta02, beta03, beta11, beta13, NORMAL_ONESIX_QUANTILE)
+end
+
+
+function alg_cache(alg::W2Ito1, prob, u, ΔW, ΔZ, p, rate_prototype, noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits}, ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt, ::Type{Val{false}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
+    W2Ito1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+end
+
+@cache struct W2Ito1Cache{uType,randType,tabType,rateNoiseType,rateType,possibleRateType} <: StochasticDiffEqMutableCache
+    u::uType
+    uprev::uType
+    uhat::uType
+
+    _dW::randType
+    _dZ::randType
+    chi1::randType
+
+    tab::tabType
+
+    g1::rateNoiseType
+    g2::rateNoiseType
+    g3::rateNoiseType
+
+    k1::rateType
+    k2::rateType
+    k3::rateType
+
+    H02::uType
+    H03::uType
+    H12::Vector{uType}
+    H13::Vector{uType}
+
+    tmp1::possibleRateType
+    tmpg::rateNoiseType
+
+    tmp::uType
+    resids::uType
+
+end
+
+function alg_cache(alg::W2Ito1, prob, u, ΔW, ΔZ, p, rate_prototype,
+    noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
+    ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt, ::Type{Val{true}}) where {uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits}
+    if ΔW isa Union{SArray,Number}
+        _dW = copy(ΔW)
+        _dZ = zeros(eltype(ΔW), 2)
+        chi1 = copy(ΔW)
+    else
+        _dW = zero(ΔW)
+        _dZ = zeros(eltype(ΔW), 2)
+        chi1 = zero(ΔW)
+    end
+    m = length(ΔW)
+    tab = W2Ito1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+    g1 = zero(noise_rate_prototype)
+    g2 = zero(noise_rate_prototype)
+    g3 = zero(noise_rate_prototype)
+    k1 = zero(rate_prototype)
+    k2 = zero(rate_prototype)
+    k3 = zero(rate_prototype)
+
+    H02 = zero(u)
+    H03 = zero(u)
+    H12 = Vector{typeof(u)}()
+    H13 = Vector{typeof(u)}()
+
+    for k = 1:m
+        push!(H12, zero(u))
+        push!(H13, zero(u))
+    end
+
+    tmp1 = zero(rate_prototype)
+    tmpg = zero(noise_rate_prototype)
+
+    uhat = copy(uprev)
+    tmp = zero(u)
+    resids = zero(u)
+
+    W2Ito1Cache(u, uprev, uhat, _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2, k3, H02, H03, H12, H13, tmp1, tmpg, tmp, resids)
+end
