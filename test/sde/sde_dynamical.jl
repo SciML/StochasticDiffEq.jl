@@ -42,7 +42,7 @@ end
     dts = (1/2) .^ (8:-1:4)
 
     # Can't use NoiseGrid as noise is not generated with the correct size in convergence.jl. We require noise with shape of v.
-    sim1  = analyticless_test_convergence(dts,prob1,BAOAB(gamma=γ),(1/2)^10;trajectories=Int(1e2),use_noise_grid=false)
+    sim1  = analyticless_test_convergence(dts,prob1,BAOAB(gamma=γ),(1/2)^10;trajectories=Int(1e3),use_noise_grid=false)
     @test abs(sim1.𝒪est[:weak_final]-1) < 0.3
 end
 
@@ -82,6 +82,6 @@ end
     dts = (1/2) .^ (8:-1:4)
 
     # Can't use NoiseGrid as noise is not generated with the correct size in convergence.jl. We require noise with shape of v.
-    sim1  = analyticless_test_convergence(dts,prob1,BAOAB(gamma=γ,scale_noise=false),(1/2)^10;trajectories=Int(1e2),use_noise_grid=false)
+    sim1  = analyticless_test_convergence(dts,prob1,BAOAB(gamma=γ,scale_noise=false),(1/2)^10;trajectories=Int(1e3),use_noise_grid=false)
     @test abs(sim1.𝒪est[:weak_final]-1) < 0.3
 end
