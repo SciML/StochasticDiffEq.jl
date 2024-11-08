@@ -1,4 +1,4 @@
-@inline function DiffEqBase.change_t_via_interpolation!(integrator::SDEIntegrator,t,modify_save_endpoint::Type{Val{T}}=Val{false}) where T
+@inline function DiffEqBase.change_t_via_interpolation!(integrator::SDEIntegrator,t,modify_save_endpoint::Type{Val{T}}=Val{false},reinitialize_alg=nothing) where T
   # Can get rid of an allocation here with a function
   # get_tmp_arr(integrator.cache) which gives a pointer to some
   # cache array which can be modified.
