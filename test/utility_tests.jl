@@ -44,7 +44,7 @@ end
     ldiv!(tmp, lu!(integrator.cache.nlsolver.cache.W), u0); @test tmp != concrete_W \ u0
 
     # But jacobian2W! will update the cache
-    StochasticDiffEq.OrdinaryDiffEq.jacobian2W!(integrator.cache.nlsolver.cache.W._concrete_form, mm, dtgamma, integrator.cache.nlsolver.cache.W.J.A, true)
+    StochasticDiffEq.OrdinaryDiffEq.jacobian2W!(integrator.cache.nlsolver.cache.W._concrete_form, mm, dtgamma, integrator.cache.nlsolver.cache.W.J.A)
     @test convert(AbstractMatrix, integrator.cache.nlsolver.cache.W) == concrete_W
     ldiv!(tmp, lu!(integrator.cache.nlsolver.cache.W), u0); @test tmp == concrete_W \ u0
   end
