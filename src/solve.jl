@@ -230,6 +230,7 @@ function DiffEqBase.__init(
   d_discontinuities_internal = OrdinaryDiffEq.initialize_d_discontinuities(tType, d_discontinuities, tspan)
 
   ### Algorithm-specific defaults ###
+  save_idxs, saved_subsystem = SciMLBase.get_save_idxs_and_saved_subsystem(prob, save_idxs)
   # if save_idxs === nothing
   #   ksEltype = Vector{rateType}
   # else
@@ -538,12 +539,12 @@ function DiffEqBase.__init(
   if alg isa Union{StochasticDiffEqCompositeAlgorithm,
                           StochasticDiffEqRODECompositeAlgorithm}
     sol = DiffEqBase.build_solution(prob,alg,ts,timeseries,W=W,
-                                    stats = stats,
+                                    stats = stats, saved_subsystem = saved_subsystem,
                                     calculate_error = false, alg_choice=alg_choice,
                                     interp = id, dense = dense, seed = _seed)
   else
     sol = DiffEqBase.build_solution(prob,alg,ts,timeseries,W=W,
-                                    stats = stats,
+                                    stats = stats, saved_subsystem = saved_subsystem,
                                     calculate_error = false,
                                     interp = id, dense = dense, seed = _seed)
   end
