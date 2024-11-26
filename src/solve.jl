@@ -602,6 +602,7 @@ function DiffEqBase.__init(
                   QT(qoldinit),q11,stats,initializealg)
 
   if initialize_integrator
+    DiffEqBase.initialize_dae!(integrator)
     initialize_callbacks!(integrator, initialize_save)
     initialize!(integrator,integrator.cache)
     save_start && alg isa Union{StochasticDiffEqCompositeAlgorithm,
