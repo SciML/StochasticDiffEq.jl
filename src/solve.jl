@@ -66,6 +66,7 @@ function DiffEqBase.__init(
   userdata=nothing,
   initialize_integrator=true,
   seed = UInt64(0), alias_u0=false, alias_jumps = Threads.threadid()==1,
+  initializealg = SDEDefaultInit(),
   kwargs...) where recompile_flag
 
   prob = concrete_prob(_prob)
@@ -587,7 +588,8 @@ function DiffEqBase.__init(
                   uBottomEltype,tType,typeof(tdir),typeof(p),
                   typeof(eigen_est),QT,
                   uEltypeNoUnits,typeof(W),typeof(P),rateType,typeof(sol),typeof(cache),
-                  FType,GType,CType,typeof(opts),typeof(noise),typeof(last_event_error),typeof(callback_cache),typeof(rate_constants)}(
+                  FType,GType,CType,typeof(opts),typeof(noise),typeof(last_event_error),typeof(callback_cache),typeof(rate_constants),
+                  typeof(initializealg)}(
                   f,g,c,noise,uprev,tprev,t,u,p,tType(dt),tType(dt),tType(dt),dtcache,tspan[2],tdir,
                   just_hit_tstop,do_error_check,isout,event_last_time,
                   vector_event_last_time,last_event_error,accept_step,
@@ -597,7 +599,7 @@ function DiffEqBase.__init(
                   alg,sol,
                   cache,callback_cache,tType(dt),W,P,rate_constants,
                   opts,iter,success_iter,eigen_est,EEst,q,
-                  QT(qoldinit),q11,stats)
+                  QT(qoldinit),q11,stats,initializealg)
 
   if initialize_integrator
     initialize_callbacks!(integrator, initialize_save)
