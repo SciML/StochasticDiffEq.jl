@@ -58,6 +58,8 @@ using OrdinaryDiffEq: nlsolvefail, isnewton, set_new_W!, get_W, _vec, _reshape
 
 using OrdinaryDiffEq: NLSolver
 
+import OrdinaryDiffEqCore
+
 if isdefined(OrdinaryDiffEq,:FastConvergence)
     using OrdinaryDiffEq:
         FastConvergence, Convergence, SlowConvergence, VerySlowConvergence, Divergence
