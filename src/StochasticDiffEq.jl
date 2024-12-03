@@ -41,7 +41,7 @@ using DocStringExtensions
   import DiffEqBase: step!, initialize!, DEAlgorithm,
                      AbstractSDEAlgorithm, AbstractRODEAlgorithm, DEIntegrator, AbstractDiffEqInterpolation,
                      DECache, AbstractSDEIntegrator, AbstractRODEIntegrator, AbstractContinuousCallback,
-                     Tableau
+                     Tableau, AbstractSDDEIntegrator
 
   # Integrator Interface
   import DiffEqBase: resize!,deleteat!,addat!,full_cache,user_cache,u_cache,du_cache,
