@@ -9,6 +9,8 @@ using DocStringExtensions
   using Reexport
   @reexport using DiffEqBase
 
+  import ADTypes
+
   import OrdinaryDiffEq
   import OrdinaryDiffEq: default_controller, isstandard, ispredictive,
          beta2_default, beta1_default, gamma_default,
