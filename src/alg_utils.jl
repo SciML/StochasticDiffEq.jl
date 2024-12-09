@@ -9,6 +9,31 @@ SciMLBase.forwarddiffs_model(alg::Union{StochasticDiffEqNewtonAlgorithm,
     StochasticDiffEqNewtonAdaptiveAlgorithm,StochasticDiffEqJumpNewtonAdaptiveAlgorithm,
     StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm}) = OrdinaryDiffEq.alg_autodiff(alg)
 
+# Required for initialization, because ODECore._initialize_dae! calls it during
+# OverrideInit
+OrdinaryDiffEqCore.has_autodiff(::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm,StochasticDiffEqJumpAlgorithm}) = false
+for T in [
+    StochasticDiffEqNewtonAlgorithm, StochasticDiffEqNewtonAdaptiveAlgorithm,
+    StochasticDiffEqJumpNewtonAdaptiveAlgorithm,
+    StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm]
+    @eval OrdinaryDiffEqCore.has_autodiff(::$T) = true
+end
+
+_alg_autodiff(::StochasticDiffEqNewtonAlgorithm{T, AD}) where {T, AD} = Val{AD}()
+_alg_autodiff(::StochasticDiffEqNewtonAdaptiveAlgorithm{T, AD}) where {T, AD} = Val{AD}()
+_alg_autodiff(::StochasticDiffEqJumpNewtonAdaptiveAlgorithm{T, AD}) where {T, AD} = Val{AD}()
+_alg_autodiff(::StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{T, AD}) where {T, AD} = Val{AD}()
+
+function OrdinaryDiffEqCore.alg_autodiff(alg)
+    ad = _alg_autodiff(alg)
+    if ad == Val(false)
+        return ADTypes.AutoFiniteDiff()
+    elseif ad == Val(true)
+        return ADTypes.AutoForwardDiff()
+    else
+        return SciMLBase._unwrap_val(ad)
+    end
+end
 
 isadaptive(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = false
 isadaptive(alg::Union{StochasticDiffEqAdaptiveAlgorithm,StochasticDiffEqRODEAdaptiveAlgorithm,StochasticDiffEqJumpAdaptiveAlgorithm,StochasticDiffEqJumpDiffusionAdaptiveAlgorithm}) = true
