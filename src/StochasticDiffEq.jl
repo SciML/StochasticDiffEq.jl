@@ -9,6 +9,8 @@ using DocStringExtensions
   using Reexport
   @reexport using DiffEqBase
 
+  import ADTypes
+
   import OrdinaryDiffEq
   import OrdinaryDiffEq: default_controller, isstandard, ispredictive,
          beta2_default, beta1_default, gamma_default,
@@ -41,7 +43,7 @@ using DocStringExtensions
   import DiffEqBase: step!, initialize!, DEAlgorithm,
                      AbstractSDEAlgorithm, AbstractRODEAlgorithm, DEIntegrator, AbstractDiffEqInterpolation,
                      DECache, AbstractSDEIntegrator, AbstractRODEIntegrator, AbstractContinuousCallback,
-                     Tableau
+                     Tableau, AbstractSDDEIntegrator
 
   # Integrator Interface
   import DiffEqBase: resize!,deleteat!,addat!,full_cache,user_cache,u_cache,du_cache,
@@ -57,6 +59,8 @@ using DocStringExtensions
 using OrdinaryDiffEq: nlsolvefail, isnewton, set_new_W!, get_W, _vec, _reshape
 
 using OrdinaryDiffEq: NLSolver
+
+import OrdinaryDiffEqCore
 
 if isdefined(OrdinaryDiffEq,:FastConvergence)
     using OrdinaryDiffEq:
@@ -119,6 +123,7 @@ end
   include("cache_utils.jl")
   include("integrators/integrator_interface.jl")
   include("iterator_interface.jl")
+  include("initialize_dae.jl")
   include("solve.jl")
   include("initdt.jl")
   include("perform_step/low_order.jl")
