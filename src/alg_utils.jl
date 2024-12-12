@@ -24,7 +24,7 @@ _alg_autodiff(::StochasticDiffEqNewtonAdaptiveAlgorithm{T, AD}) where {T, AD} = 
 _alg_autodiff(::StochasticDiffEqJumpNewtonAdaptiveAlgorithm{T, AD}) where {T, AD} = Val{AD}()
 _alg_autodiff(::StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{T, AD}) where {T, AD} = Val{AD}()
 
-function OrdinaryDiffEqCore.alg_autodiff(alg)
+function OrdinaryDiffEqCore.alg_autodiff(alg::Union{StochasticDiffEqAlgorithm, StochasticDiffEqRODEAlgorithm})
     ad = _alg_autodiff(alg)
     if ad == Val(false)
         return ADTypes.AutoFiniteDiff()
