@@ -70,6 +70,51 @@ function DiffEqBase.__init(
   initializealg = SDEDefaultInit(),
   kwargs...) where recompile_flag
 
+  use_old_kwargs = haskey(kwargs, :alias_u0) || haskey(kwargs, :alias_jumps) || haskey(kwargs, :alias_noise)
+
+  if use_old_kwargs
+    aliases = ODEAliasSpecifier()
+    if haskey(kwargs, :alias_u0)
+      message = "`alias_u0` keyword argument is deprecated, to set `alias_u0`,
+      please use an SDEAliasSpecifier or RODEAliasSpecifier, e.g. `solve(prob, alias = SDEAliasSpecifier(alias_u0 = true))`"
+      Base.depwarn(message, :init)
+      Base.depwarn(message, :solve)
+      alias_u0 = values(kwargs).alias_u0
+    else
+      alias_u0 = nothing
+    end
+
+    if haskey(kwargs, :alias_jumps)
+      message = "`alias_jumps` keyword argument is deprecated, to set `alias_jumps`,
+      please use an SDEAliasSpecifier or RODEAliasSpecifier, e.g. `solve(prob, alias = SDEAliasSpecifier(alias_jumps = true))`"
+      Base.depwarn(message, :init)
+      Base.depwarn(message, :solve)
+      alias_jumps = values(kwargs).alias_jumps
+    else
+      alias_jumps = nothing
+    end
+
+    if haskey(kwargs, :alias_noise)
+      message = "`alias_noise` keyword argument is deprecated, to set `alias_noise`,
+      please use an SDEAliasSpecifier, e.g. `solve(prob, alias = SDEAliasSpecifier(alias_noise = true))`"
+      Base.depwarn(message, :init)
+      Base.depwarn(message, :solve)
+      alias_noise = values(kwargs).alias_noise
+    else
+      alias_noise = nothing
+    end
+  
+    aliases = SDEAliasSpecifier(alias_u0 = alias_u0, alias_jumps = alias_jumps, alias_noise = alias_noise)
+
+  else
+    # If alias isa Bool, all fields of SDEAliasSpecifier set to alias
+    if alias isa Bool
+      aliases = SDEAliasSpecifier(alias=alias)
+    elseif alias isa SDEAliasSpecifier || alias isa RODEAliasSpecifier
+      aliases = alias
+    end
+  end
+
   prob = concrete_prob(_prob)
 
   _seed = if iszero(seed)
@@ -83,6 +128,7 @@ function DiffEqBase.__init(
   end
 
   if _prob isa JumpProblem
+    alias_jumps = isnothing(aliases.alias_jumps) ? Threads.threadid() == 1 : aliases.alias_jumps
     if !alias_jumps
       _prob = JumpProcesses.resetted_jump_problem(_prob, _seed)
     elseif _seed !== 0
@@ -146,29 +192,6 @@ function DiffEqBase.__init(
                                              auto.stiffalgfirst,
                                              auto.switch_max
                                             ))
-  end
-
-  use_old_kwargs = haskey(kwargs, :alias_u0) || haskey(kwargs, :alias_jumps) || haskey(kwargs, :alias_noise)
-
-  if use_old_kwargs
-    aliases = ODEAliasSpecifier()
-    if haskey(kwargs, :alias_u0)
-      message = "`alias_u0` keyword argument is deprecated, to set `alias_u0`,
-      please use an SDEAliasSpecifier or RODEAliasSpecifier, e.g. `solve(prob, alias = SDEAliasSpecifier(alias_u0 = true))"
-      Base.depwarn(message, :init)
-      Base.depwarn(message, :solve)
-      aliases = SDEAliasSpecifier(alias_u0=values(kwargs).alias_u0)
-    else
-      aliases = SDEAliasSpecifier(alias_u0=nothing)
-    end
-
-  else
-    # If alias isa Bool, all fields of SDEAliasSpecifier set to alias
-    if alias isa Bool
-      aliases = SDEAliasSpecifier(alias=alias)
-    elseif alias isa SDEAliasSpecifier || alias isa RODEAliasSpecifier
-      aliases = alias
-    end
   end
 
   if isnothing(aliases.alias_f) || aliases.alias_f
