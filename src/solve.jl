@@ -65,7 +65,7 @@ function DiffEqBase.__init(
   progress_id= :StochasticDiffEq,
   userdata=nothing,
   initialize_integrator=true,
-  seed = UInt64(0), alias_u0=false, alias_jumps = Threads.threadid()==1,
+  seed = UInt64(0),
   alias = nothing,
   initializealg = SDEDefaultInit(),
   kwargs...) where recompile_flag
@@ -104,13 +104,13 @@ function DiffEqBase.__init(
       alias_noise = nothing
     end
   
-    aliases = SDEAliasSpecifier(alias_u0 = alias_u0, alias_jumps = alias_jumps, alias_noise = alias_noise)
+    aliases = SciMLBase.SDEAliasSpecifier(alias_u0 = alias_u0, alias_jumps = alias_jumps, alias_noise = alias_noise)
 
   else
     # If alias isa Bool, all fields of SDEAliasSpecifier set to alias
     if alias isa Bool
-      aliases = SDEAliasSpecifier(alias=alias)
-    elseif alias isa SDEAliasSpecifier || alias isa RODEAliasSpecifier
+      aliases = SciMLBase.SDEAliasSpecifier(alias=alias)
+    elseif alias isa SciMLBase.SDEAliasSpecifier || alias isa SciMLBase.RODEAliasSpecifier
       aliases = alias
     end
   end
