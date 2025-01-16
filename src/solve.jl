@@ -113,8 +113,8 @@ function DiffEqBase.__init(
     # If alias isa Bool, all fields of SDEAliasSpecifier set to alias
     if alias isa Bool
       aliases = is_sde ? SciMLBase.SDEAliasSpecifier(;alias) : SciMLBase.RODEAliasSpecifier(;alias)
-    elseif alias isa SciMLBase.SDEAliasSpecifier || alias isa SciMLBase.RODEAliasSpecifier
-      aliases = alias
+    elseif alias isa SciMLBase.SDEAliasSpecifier || alias isa SciMLBase.RODEAliasSpecifier || isnothing(alias)
+      aliases = is_sde ? SciMLBase.SDEAliasSpecifier() : SciMLBase.RODEAliasSpecifier()
     end
   end
 
