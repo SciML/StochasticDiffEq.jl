@@ -70,6 +70,8 @@ function DiffEqBase.__init(
   initializealg = SDEDefaultInit(),
   kwargs...) where recompile_flag
 
+  is_sde = _prob isa SDEProblem 
+
   use_old_kwargs = haskey(kwargs, :alias_u0) || haskey(kwargs, :alias_jumps) || haskey(kwargs, :alias_noise)
 
   if use_old_kwargs
@@ -104,12 +106,13 @@ function DiffEqBase.__init(
       alias_noise = nothing
     end
   
-    aliases = SciMLBase.SDEAliasSpecifier(alias_u0 = alias_u0, alias_jumps = alias_jumps, alias_noise = alias_noise)
+    aliases = is_sde ? SciMLBase.SDEAliasSpecifier(;alias_u0, alias_jumps) :
+      SciMLBase.RODEAliasSpecifier(;alias_u0, alias_jumps, alias_noise)
 
   else
     # If alias isa Bool, all fields of SDEAliasSpecifier set to alias
     if alias isa Bool
-      aliases = SciMLBase.SDEAliasSpecifier(alias=alias)
+      aliases = is_sde ? SciMLBase.SDEAliasSpecifier(;alias) : SciMLBase.RODEAliasSpecifier(;alias)
     elseif alias isa SciMLBase.SDEAliasSpecifier || alias isa SciMLBase.RODEAliasSpecifier
       aliases = alias
     end
