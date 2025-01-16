@@ -8,5 +8,13 @@ using SciMLBase
 
 @test_nowarn solve(prob_sde_linear, EM(), dt = 0.1, alias = SciMLBase.SDEAliasSpecifier(alias_u0 = true))
 
+function f3(u, p, t, W)
+    2u * sin(W)
+end
+u0 = 1.00
+tspan = (0.0, 5.0)
+prob = RODEProblem(f3, u0, tspan)
 
+@test_warn x -> contains("`alias_u0`", x) sol = solve(prob, RandomEM(), dt=1 / 100)
 
+@test_nowarn solve(prob_sde_linear, EM(), dt=0.1, alias=SciMLBase.RODEAliasSpecifier(alias_u0=true))
