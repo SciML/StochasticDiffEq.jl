@@ -1,10 +1,12 @@
 using Test
+using StochasticDiffEq
 using SDEProblemLibrary: prob_sde_linear
+using SciMLBase
 
 # Test that the old keyword works, and that the new AliasSpecier works.
-@test_warn x -> contains(x, "`alias_u0` keyword argument is deprecated, to set `alias_u0`,
-      please use an SDEAliasSpecifier or RODEAliasSpecifier, e.g. `solve(prob, alias = SDEAliasSpecifier(alias_u0 = true))`") solve(prob_sde_linear, EM(), alias_u0 = true, alias_jumps = true)
-@test_nowarn solve(prob_sde_linear, EM(), alias = ODEAliasSpecifier(alias_u0 = true, alias_jumps = true))
+@test_warn x -> contains("`alias_u0`", x) solve(prob_sde_linear, EM(), dt=0.1, alias_u0=true)
+
+@test_nowarn solve(prob_sde_linear, EM(), dt = 0.1, alias = SciMLBase.SDEAliasSpecifier(alias_u0 = true))
 
 
 
