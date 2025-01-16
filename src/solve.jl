@@ -66,6 +66,7 @@ function DiffEqBase.__init(
   userdata=nothing,
   initialize_integrator=true,
   seed = UInt64(0), alias_u0=false, alias_jumps = Threads.threadid()==1,
+  alias = nothing,
   initializealg = SDEDefaultInit(),
   kwargs...) where recompile_flag
 
@@ -147,18 +148,51 @@ function DiffEqBase.__init(
                                             ))
   end
 
-  f = prob.f
-  p = prob.p
+  use_old_kwargs = haskey(kwargs, :alias_u0) || haskey(kwargs, :alias_jumps) || haskey(kwargs, :alias_noise)
+
+  if use_old_kwargs
+    aliases = ODEAliasSpecifier()
+    if haskey(kwargs, :alias_u0)
+      message = "`alias_u0` keyword argument is deprecated, to set `alias_u0`,
+      please use an SDEAliasSpecifier or RODEAliasSpecifier, e.g. `solve(prob, alias = SDEAliasSpecifier(alias_u0 = true))"
+      Base.depwarn(message, :init)
+      Base.depwarn(message, :solve)
+      aliases = SDEAliasSpecifier(alias_u0=values(kwargs).alias_u0)
+    else
+      aliases = SDEAliasSpecifier(alias_u0=nothing)
+    end
+
+  else
+    # If alias isa Bool, all fields of SDEAliasSpecifier set to alias
+    if alias isa Bool
+      aliases = SDEAliasSpecifier(alias=alias)
+    elseif alias isa SDEAliasSpecifier || alias isa RODEAliasSpecifier
+      aliases = alias
+    end
+  end
+
+  if isnothing(aliases.alias_f) || aliases.alias_f
+    f = prob.f
+  else
+    f = deepcopy(prob.f)
+  end
+
+  if isnothing(aliases.alias_p) || aliases.alias_p
+    p = prob.p
+  else
+    p = recursivecopy(prob.p)
+  end
+
+  if !isnothing(aliases.alias_u0) && aliases.alias_u0
+    u = prob.u0
+  else
+    u = recursivecopy(prob.u0)
+  end
+
   g = prob isa DiffEqBase.AbstractSDEProblem ? prob.g : nothing
 
   if prob.u0 isa Tuple
     u = ArrayPartition(prob.u0,Val{true})
-  else
-    if alias_u0
-      u = prob.u0
-    else
-      u = recursivecopy(prob.u0)
-    end
   end
 
   uType = typeof(u)
