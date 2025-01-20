@@ -65,9 +65,58 @@ function DiffEqBase.__init(
   progress_id= :StochasticDiffEq,
   userdata=nothing,
   initialize_integrator=true,
-  seed = UInt64(0), alias_u0=false, alias_jumps = Threads.threadid()==1,
+  seed = UInt64(0),
+  alias = nothing,
   initializealg = SDEDefaultInit(),
   kwargs...) where recompile_flag
+
+  is_sde = _prob isa SDEProblem 
+
+  use_old_kwargs = haskey(kwargs, :alias_u0) || haskey(kwargs, :alias_jumps) || haskey(kwargs, :alias_noise)
+
+  if use_old_kwargs
+    aliases = ODEAliasSpecifier()
+    if haskey(kwargs, :alias_u0)
+      message = "`alias_u0` keyword argument is deprecated, to set `alias_u0`,
+      please use an SDEAliasSpecifier or RODEAliasSpecifier, e.g. `solve(prob, alias = SDEAliasSpecifier(alias_u0 = true))`"
+      Base.depwarn(message, :init)
+      Base.depwarn(message, :solve)
+      alias_u0 = values(kwargs).alias_u0
+    else
+      alias_u0 = nothing
+    end
+
+    if haskey(kwargs, :alias_jumps)
+      message = "`alias_jumps` keyword argument is deprecated, to set `alias_jumps`,
+      please use an SDEAliasSpecifier or RODEAliasSpecifier, e.g. `solve(prob, alias = SDEAliasSpecifier(alias_jumps = true))`"
+      Base.depwarn(message, :init)
+      Base.depwarn(message, :solve)
+      alias_jumps = values(kwargs).alias_jumps
+    else
+      alias_jumps = nothing
+    end
+
+    if haskey(kwargs, :alias_noise)
+      message = "`alias_noise` keyword argument is deprecated, to set `alias_noise`,
+      please use an SDEAliasSpecifier, e.g. `solve(prob, alias = SDEAliasSpecifier(alias_noise = true))`"
+      Base.depwarn(message, :init)
+      Base.depwarn(message, :solve)
+      alias_noise = values(kwargs).alias_noise
+    else
+      alias_noise = nothing
+    end
+  
+    aliases = is_sde ? SciMLBase.SDEAliasSpecifier(;alias_u0, alias_jumps) :
+      SciMLBase.RODEAliasSpecifier(;alias_u0, alias_jumps, alias_noise)
+
+  else
+    # If alias isa Bool, all fields of SDEAliasSpecifier set to alias
+    if alias isa Bool
+      aliases = is_sde ? SciMLBase.SDEAliasSpecifier(;alias) : SciMLBase.RODEAliasSpecifier(;alias)
+    elseif alias isa SciMLBase.SDEAliasSpecifier || alias isa SciMLBase.RODEAliasSpecifier || isnothing(alias)
+      aliases = is_sde ? SciMLBase.SDEAliasSpecifier() : SciMLBase.RODEAliasSpecifier()
+    end
+  end
 
   prob = concrete_prob(_prob)
 
@@ -82,6 +131,7 @@ function DiffEqBase.__init(
   end
 
   if _prob isa JumpProblem
+    alias_jumps = isnothing(aliases.alias_jumps) ? Threads.threadid() == 1 : aliases.alias_jumps
     if !alias_jumps
       _prob = JumpProcesses.resetted_jump_problem(_prob, _seed)
     elseif _seed !== 0
@@ -147,18 +197,28 @@ function DiffEqBase.__init(
                                             ))
   end
 
-  f = prob.f
-  p = prob.p
+  if isnothing(aliases.alias_f) || aliases.alias_f
+    f = prob.f
+  else
+    f = deepcopy(prob.f)
+  end
+
+  if isnothing(aliases.alias_p) || aliases.alias_p
+    p = prob.p
+  else
+    p = recursivecopy(prob.p)
+  end
+
+  if !isnothing(aliases.alias_u0) && aliases.alias_u0
+    u = prob.u0
+  else
+    u = recursivecopy(prob.u0)
+  end
+
   g = prob isa DiffEqBase.AbstractSDEProblem ? prob.g : nothing
 
   if prob.u0 isa Tuple
     u = ArrayPartition(prob.u0,Val{true})
-  else
-    if alias_u0
-      u = prob.u0
-    else
-      u = recursivecopy(prob.u0)
-    end
   end
 
   uType = typeof(u)
