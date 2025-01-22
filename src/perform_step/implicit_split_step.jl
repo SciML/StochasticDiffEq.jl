@@ -5,7 +5,7 @@
   alg = unwrap_alg(integrator, true)
   theta = alg.theta
   alg.symplectic ? a = dt / 2 : a = theta * dt
-  OrdinaryDiffEq.markfirststage!(nlsolver)
+  OrdinaryDiffEqNonlinearSolve.markfirststage!(nlsolver)
 
   # TODO: Stochastic extrapolants?
   u = uprev
@@ -32,8 +32,8 @@
   end
   nlsolver.tmp = tmp
 
-  z = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
-  OrdinaryDiffEq.nlsolvefail(nlsolver) && return nothing
+  z = OrdinaryDiffEqNonlinearSolve.nlsolve!(nlsolver, integrator, cache, repeat_step)
+  OrdinaryDiffEqNonlinearSolve.nlsolvefail(nlsolver) && return nothing
 
   if alg.symplectic
     u = tmp + z
@@ -63,7 +63,7 @@
       # This means the Jacobian was never computed!
       J = f.jac(uprev, p, t)
     else
-      J = OrdinaryDiffEq.calc_J(integrator, nlsolver.cache)
+      J = OrdinaryDiffEqDifferentiation.calc_J(integrator, nlsolver.cache)
     end
     Ed = dt * (dt * J * ftmp) / 2
 
@@ -114,13 +114,13 @@ end
   @unpack gtmp, gtmp2, dW_cache, nlsolver, k, dz = cache
   @unpack z, tmp = nlsolver
 
-  J = (OrdinaryDiffEq.isnewton(nlsolver) ? nlsolver.cache.J : nothing)
+  J = (OrdinaryDiffEqCore.isnewton(nlsolver) ? nlsolver.cache.J : nothing)
   alg = unwrap_alg(integrator, true)
   alg.symplectic ? a = dt / 2 : a = alg.theta * dt
   dW = integrator.W.dW
   mass_matrix = integrator.f.mass_matrix
   theta = alg.theta
-  OrdinaryDiffEq.markfirststage!(nlsolver)
+  OrdinaryDiffEqNonlinearSolve.markfirststage!(nlsolver)
 
   repeat_step = false
 
@@ -157,7 +157,7 @@ end
       # This means the Jacobian was never computed!
       f.jac(J, uprev, p, t)
     else
-      OrdinaryDiffEq.calc_J!(J, integrator, nlsolver.cache)
+        OrdinaryDiffEqDifferentiation.calc_J!(J, integrator, nlsolver.cache)
     end
 
     mul!(vec(z), J, vec(tmp))
@@ -216,8 +216,8 @@ end
     @.. tmp = uprev + dt * (1 - theta) * tmp
   end
   nlsolver.c = a
-  z = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
-  OrdinaryDiffEq.nlsolvefail(nlsolver) && return
+  z = OrdinaryDiffEqNonlinearSolve.nlsolve!(nlsolver, integrator, cache, repeat_step)
+OrdinaryDiffEqNonlinearSolve.nlsolvefail(nlsolver) && return
 
   if alg.symplectic
     @.. u = uprev + z

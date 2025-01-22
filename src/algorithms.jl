@@ -93,7 +93,7 @@ Defaults to solving the Ito problem, but RKMilCommute(interpretation=SciMLBase.A
 Uses a 1.5/2.0 error estimate for adaptive time stepping.
 Default: ii_approx=IICommutative() does not approximate the Levy area.
 """
-struct RKMilCommute{T} <: StochasticDiffEqAdaptiveAlgorithm 
+struct RKMilCommute{T} <: StochasticDiffEqAdaptiveAlgorithm
   interpretation::SciMLBase.AlgorithmInterpretation.T
   ii_approx::T
 end
@@ -658,7 +658,7 @@ struct ImplicitEM{CS,AD,F,F2,P,FDT,ST,CJ,T2,Controller} <: StochasticDiffEqNewto
 end
 ImplicitEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           standardtag = Val{true}(),concrete_jac = nothing,
-                          precs = OrdinaryDiffEq.DEFAULT_PRECS,
+                          precs = OrdinaryDiffEqCore.DEFAULT_PRECS,
                           linsolve=nothing,nlsolve=NLNewton(),
                           extrapolant=:constant,
                           theta = 1,symplectic=false,
@@ -666,8 +666,8 @@ ImplicitEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           controller = :Predictive) =
                           ImplicitEM{chunk_size,autodiff,
                           typeof(linsolve),typeof(nlsolve),typeof(precs),diff_type,
-                          OrdinaryDiffEq._unwrap_val(standardtag),
-                          OrdinaryDiffEq._unwrap_val(concrete_jac),
+                          SciMLBase._unwrap_val(standardtag),
+                          SciMLBase._unwrap_val(concrete_jac),
                           typeof(new_jac_conv_bound),controller}(
                           linsolve,nlsolve,precs,
                           symplectic ? 1/2 : theta,
@@ -693,7 +693,7 @@ struct ImplicitEulerHeun{CS,AD,F,P,FDT,ST,CJ,N,T2,Controller} <: StochasticDiffE
 end
 ImplicitEulerHeun(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           standardtag = Val{true}(),concrete_jac = nothing,
-                          precs = OrdinaryDiffEq.DEFAULT_PRECS,
+                          precs = OrdinaryDiffEqCore.DEFAULT_PRECS,
                           linsolve=nothing,nlsolve=NLNewton(),
                           extrapolant=:constant,
                           theta = 1,symplectic = false,
@@ -701,8 +701,8 @@ ImplicitEulerHeun(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           controller = :Predictive) =
                           ImplicitEulerHeun{chunk_size,autodiff,
                           typeof(linsolve),typeof(precs),diff_type,
-                          OrdinaryDiffEq._unwrap_val(standardtag),
-                          OrdinaryDiffEq._unwrap_val(concrete_jac),
+                          SciMLBase._unwrap_val(standardtag),
+                          SciMLBase._unwrap_val(concrete_jac),
                           typeof(nlsolve),
                           typeof(new_jac_conv_bound),controller}(
                           linsolve,nlsolve,precs,
@@ -729,7 +729,7 @@ struct ImplicitRKMil{CS,AD,F,P,FDT,ST,CJ,N,T2,Controller,interpretation} <: Stoc
 end
 ImplicitRKMil(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           standardtag = Val{true}(),concrete_jac = nothing,
-                          precs = OrdinaryDiffEq.DEFAULT_PRECS,
+                          precs = OrdinaryDiffEqCore.DEFAULT_PRECS,
                           linsolve=nothing,nlsolve=NLNewton(),
                           extrapolant=:constant,
                           theta = 1,symplectic = false,
@@ -737,8 +737,8 @@ ImplicitRKMil(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                           controller = :Predictive,interpretation=SciMLBase.AlgorithmInterpretation.Ito) =
                           ImplicitRKMil{chunk_size,autodiff,
                           typeof(linsolve),typeof(precs),diff_type,
-                          OrdinaryDiffEq._unwrap_val(standardtag),
-                          OrdinaryDiffEq._unwrap_val(concrete_jac),
+                          SciMLBase._unwrap_val(standardtag),
+                          SciMLBase._unwrap_val(concrete_jac),
                           typeof(nlsolve),typeof(new_jac_conv_bound),
                           controller,interpretation}(
                           linsolve,nlsolve,precs,
@@ -764,7 +764,7 @@ struct ISSEM{CS,AD,F,P,FDT,ST,CJ,N,T2,Controller} <: StochasticDiffEqNewtonAdapt
 end
 ISSEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                        standardtag = Val{true}(),concrete_jac = nothing,
-                       precs = OrdinaryDiffEq.DEFAULT_PRECS,
+                       precs = OrdinaryDiffEqCore.DEFAULT_PRECS,
                        linsolve=nothing,nlsolve=NLNewton(),
                        extrapolant=:constant,
                        theta = 1,symplectic=false,
@@ -772,8 +772,8 @@ ISSEM(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                        controller = :Predictive) =
                        ISSEM{chunk_size,autodiff,
                        typeof(linsolve),typeof(precs),diff_type,
-                       OrdinaryDiffEq._unwrap_val(standardtag),
-                       OrdinaryDiffEq._unwrap_val(concrete_jac),
+                       SciMLBase._unwrap_val(standardtag),
+                       SciMLBase._unwrap_val(concrete_jac),
                        typeof(nlsolve),
                        typeof(new_jac_conv_bound),controller}(
                        linsolve,nlsolve,precs,
@@ -799,7 +799,7 @@ struct ISSEulerHeun{CS,AD,F,P,FDT,ST,CJ,N,T2,Controller} <: StochasticDiffEqNewt
 end
 ISSEulerHeun(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                       standardtag = Val{true}(),concrete_jac = nothing,
-                      precs = OrdinaryDiffEq.DEFAULT_PRECS,
+                      precs = OrdinaryDiffEqCore.DEFAULT_PRECS,
                       linsolve=nothing,nlsolve=NLNewton(),
                       extrapolant=:constant,
                       theta = 1,symplectic=false,
@@ -807,8 +807,8 @@ ISSEulerHeun(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                       controller = :Predictive) =
                       ISSEulerHeun{chunk_size,autodiff,
                       typeof(linsolve),typeof(precs),diff_type,
-                      OrdinaryDiffEq._unwrap_val(standardtag),
-                      OrdinaryDiffEq._unwrap_val(concrete_jac),
+                      SciMLBase._unwrap_val(standardtag),
+                      SciMLBase._unwrap_val(concrete_jac),
                       typeof(nlsolve),typeof(new_jac_conv_bound),controller}(
                       linsolve,nlsolve,precs,
                       symplectic ? 1/2 : theta,
@@ -831,13 +831,13 @@ end
 
 SKenCarp(;chunk_size=0,autodiff=true,diff_type=Val{:central},
                    standardtag = Val{true}(),concrete_jac = nothing,
-                   precs = OrdinaryDiffEq.DEFAULT_PRECS,
+                   precs = OrdinaryDiffEqCore.DEFAULT_PRECS,
                    linsolve=nothing,nlsolve=NLNewton(),
                    smooth_est=true,extrapolant=:min_correct,
                    new_jac_conv_bound = 1e-3,controller = :Predictive,
                    ode_error_est = true) =
  SKenCarp{chunk_size,autodiff,typeof(linsolve),typeof(precs),diff_type,
-        OrdinaryDiffEq._unwrap_val(standardtag),OrdinaryDiffEq._unwrap_val(concrete_jac),
+        SciMLBase._unwrap_val(standardtag),SciMLBase._unwrap_val(concrete_jac),
         typeof(nlsolve),typeof(new_jac_conv_bound),controller}(
         linsolve,nlsolve,precs,smooth_est,extrapolant,new_jac_conv_bound,
         ode_error_est)

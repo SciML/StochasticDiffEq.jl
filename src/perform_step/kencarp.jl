@@ -5,7 +5,7 @@
   @unpack ea21,ea31,ea32,ea41,ea42,ea43,eb1,eb2,eb3,eb4,ebtilde1,ebtilde2,ebtilde3,ebtilde4 = cache.tab
   @unpack nb021,nb043 = cache.tab
   alg = unwrap_alg(integrator, true)
-  OrdinaryDiffEq.markfirststage!(nlsolver)
+  OrdinaryDiffEqNonlinearSolve.markfirststage!(nlsolver)
 
   sqrt3 = sqrt(3one(eltype(integrator.W.dW)))
   chi2 = (integrator.W.dW + integrator.W.dZ/sqrt3)/2 #I_(1,0)/h
@@ -42,8 +42,8 @@
   end
   nlsolver.z = z₂
 
-  z₂ = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
-  OrdinaryDiffEq.nlsolvefail(nlsolver) && return
+  z₂ = OrdinaryDiffEqNonlinearSolve.nlsolve!(nlsolver, integrator, cache, repeat_step)
+OrdinaryDiffEqNonlinearSolve.nlsolvefail(nlsolver) && return
 
   ################################## Solve Step 3
 
@@ -64,8 +64,8 @@
   end
   nlsolver.z = z₃
 
-  z₃ = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
-  OrdinaryDiffEq.nlsolvefail(nlsolver) && return
+  z₃ = OrdinaryDiffEqNonlinearSolve.nlsolve!(nlsolver, integrator, cache, repeat_step)
+OrdinaryDiffEqNonlinearSolve.nlsolvefail(nlsolver) && return
 
   ################################## Solve Step 4
 
@@ -89,8 +89,8 @@
   end
   nlsolver.z = z₄
 
-  z₄ = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
-  OrdinaryDiffEq.nlsolvefail(nlsolver) && return
+  z₄ = OrdinaryDiffEqNonlinearSolve.nlsolve!(nlsolver, integrator, cache, repeat_step)
+OrdinaryDiffEqNonlinearSolve.nlsolvefail(nlsolver) && return
 
   u = tmp + γ*z₄
   g4 = g(uprev,p,t+dt)
@@ -115,7 +115,7 @@
         tmp = btilde1*z₁ + btilde2*z₂ + btilde3*z₃ + btilde4*z₄ + chi2*(g1-g4)
       end
       if alg.smooth_est # From Shampine
-        E₁ = OrdinaryDiffEq._reshape(OrdinaryDiffEq.get_W(nlsolver) \OrdinaryDiffEq._vec(tmp), axes(tmp))
+        E₁ = DiffEqBase._reshape(OrdinaryDiffEqDifferentiation.get_W(nlsolver) \DiffEqBase._vec(tmp), axes(tmp))
       else
         E₁ = tmp
       end
@@ -143,7 +143,7 @@ end
   @unpack ebtilde1,ebtilde2,ebtilde3,ebtilde4 = cache.tab
   @unpack nb021,nb043 = cache.tab
   alg = unwrap_alg(integrator, true)
-  OrdinaryDiffEq.markfirststage!(nlsolver)
+  OrdinaryDiffEqNonlinearSolve.markfirststage!(nlsolver)
 
   repeat_step = false
 
@@ -206,9 +206,9 @@ end
   nlsolver.z = z₂
   nlsolver.c = 2γ
 
-  z₂ = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
-  OrdinaryDiffEq.nlsolvefail(nlsolver) && return
-  OrdinaryDiffEq.isnewton(nlsolver) && OrdinaryDiffEq.set_new_W!(nlsolver, false)
+  z₂ = OrdinaryDiffEqNonlinearSolve.nlsolve!(nlsolver, integrator, cache, repeat_step)
+OrdinaryDiffEqNonlinearSolve.nlsolvefail(nlsolver) && return
+  OrdinaryDiffEqCore.isnewton(nlsolver) && OrdinaryDiffEqCore.set_new_W!(nlsolver, false)
 
   ################################## Solve Step 3
 
@@ -227,8 +227,8 @@ end
   end
   nlsolver.z = z₃
   nlsolver.c = c3
-  z₃ = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
-  OrdinaryDiffEq.nlsolvefail(nlsolver) && return
+  z₃ = OrdinaryDiffEqNonlinearSolve.nlsolve!(nlsolver, integrator, cache, repeat_step)
+OrdinaryDiffEqNonlinearSolve.nlsolvefail(nlsolver) && return
 
   ################################## Solve Step 4
 
@@ -251,8 +251,8 @@ end
 
   nlsolver.z = z₄
   nlsolver.c = one(nlsolver.c)
-  z₄ = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
-  OrdinaryDiffEq.nlsolvefail(nlsolver) && return
+  z₄ = OrdinaryDiffEqNonlinearSolve.nlsolve!(nlsolver, integrator, cache, repeat_step)
+OrdinaryDiffEqNonlinearSolve.nlsolvefail(nlsolver) && return
 
   g(g4,u,p,t+dt)
 
@@ -291,9 +291,9 @@ end
         @.. g1 = btilde1*z₁  + btilde2*z₂  + btilde3*z₃ + btilde4*z₄
       end
       if alg.smooth_est # From Shampine
-        linres = OrdinaryDiffEq.dolinsolve(integrator, nlsolver.cache.linsolve;
-                                            b = OrdinaryDiffEq._vec(g1),
-                                            linu = OrdinaryDiffEq._vec(E₁))
+        linres = OrdinaryDiffEqDifferentiation.dolinsolve(integrator, nlsolver.cache.linsolve;
+                                            b = DiffEqBase._vec(g1),
+                                            linu = DiffEqBase._vec(E₁))
       else
         E₁ .= dz
       end

@@ -70,7 +70,7 @@ function DiffEqBase.__init(
   initializealg = SDEDefaultInit(),
   kwargs...) where recompile_flag
 
-  is_sde = _prob isa SDEProblem 
+  is_sde = _prob isa SDEProblem
 
   use_old_kwargs = haskey(kwargs, :alias_u0) || haskey(kwargs, :alias_jumps) || haskey(kwargs, :alias_noise)
 
@@ -105,7 +105,7 @@ function DiffEqBase.__init(
     else
       alias_noise = nothing
     end
-  
+
     aliases = is_sde ? SciMLBase.SDEAliasSpecifier(;alias_u0, alias_jumps) :
       SciMLBase.RODEAliasSpecifier(;alias_u0, alias_jumps, alias_noise)
 
@@ -286,9 +286,9 @@ function DiffEqBase.__init(
     noise_rate_prototype = nothing
   end
 
-  tstops_internal = OrdinaryDiffEq.initialize_tstops(tType, tstops, d_discontinuities, tspan)
-  saveat_internal = OrdinaryDiffEq.initialize_saveat(tType, saveat, tspan)
-  d_discontinuities_internal = OrdinaryDiffEq.initialize_d_discontinuities(tType, d_discontinuities, tspan)
+  tstops_internal = OrdinaryDiffEqCore.initialize_tstops(tType, tstops, d_discontinuities, tspan)
+  saveat_internal = OrdinaryDiffEqCore.initialize_saveat(tType, saveat, tspan)
+  d_discontinuities_internal = OrdinaryDiffEqCore.initialize_d_discontinuities(tType, d_discontinuities, tspan)
 
   ### Algorithm-specific defaults ###
   save_idxs, saved_subsystem = SciMLBase.get_save_idxs_and_saved_subsystem(prob, save_idxs)
