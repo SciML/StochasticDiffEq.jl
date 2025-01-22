@@ -5,7 +5,7 @@
   @unpack t,dt,uprev,u,p,P,c,f = integrator
   @unpack nlsolver = cache
   alg = unwrap_alg(integrator, true)
-  OrdinaryDiffEq.markfirststage!(nlsolver)
+  OrdinaryDiffEqNonlinearSolve.markfirststage!(nlsolver)
 
   theta = alg.theta
   alg.symplectic ? a = dt/2 : a = theta*dt
@@ -65,8 +65,8 @@
   end
 
   nlsolver.tmp = tmp
-  z = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
-  OrdinaryDiffEq.nlsolvefail(nlsolver) && return nothing
+  z = OrdinaryDiffEqNonlinearSolve.nlsolve!(nlsolver, integrator, cache, repeat_step)
+OrdinaryDiffEqNonlinearSolve.nlsolvefail(nlsolver) && return nothing
 
   if alg.symplectic
     u = uprev + z + gtmp
@@ -77,9 +77,9 @@
 
   if integrator.opts.adaptive
 
-    if !OrdinaryDiffEq.isnewton(nlsolver)
+    if !OrdinaryDiffEqCore.isnewton(nlsolver)
       is_compos = isa(integrator.alg, StochasticDiffEqCompositeAlgorithm)
-      J = OrdinaryDiffEq.calc_J(integrator, nlsolver.cache)
+      J = OrdinaryDiffEqDifferentiation.calc_J(integrator, nlsolver.cache)
     end
 
     Ed = _reshape(dt*(nlsolver.cache.J*_vec(ftmp))/2, axes(ftmp))
@@ -108,14 +108,14 @@ end
   @unpack gtmp,gtmp2,nlsolver = cache
   @unpack z,tmp = nlsolver
   @unpack k,dz = nlsolver.cache # alias to reduce memory
-  J = (OrdinaryDiffEq.isnewton(nlsolver) ? nlsolver.cache.J : nothing)
+  J = (OrdinaryDiffEqCore.isnewton(nlsolver) ? nlsolver.cache.J : nothing)
   alg = unwrap_alg(integrator, true)
   alg.symplectic ? a = dt/2 : a = alg.theta*dt
   dW = integrator.W.dW
   mass_matrix = integrator.f.mass_matrix
   theta = alg.theta
 
-  OrdinaryDiffEq.markfirststage!(nlsolver)
+  OrdinaryDiffEqNonlinearSolve.markfirststage!(nlsolver)
 
   repeat_step = false
 
@@ -197,8 +197,8 @@ end
       @.. tmp = uprev + dt*(1-theta)*tmp + gtmp2
     end
   end
-  z = OrdinaryDiffEq.nlsolve!(nlsolver, integrator, cache, repeat_step)
-  OrdinaryDiffEq.nlsolvefail(nlsolver) && return
+  z = OrdinaryDiffEqNonlinearSolve.nlsolve!(nlsolver, integrator, cache, repeat_step)
+OrdinaryDiffEqNonlinearSolve.nlsolvefail(nlsolver) && return
 
   if alg.symplectic
     @.. u = uprev + z + gtmp2

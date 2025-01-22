@@ -309,9 +309,9 @@ function DiffEqBase.reinit!(integrator::SDEIntegrator,u0 = integrator.sol.prob.u
 
   tType = typeof(integrator.t)
   tspan = (tType(t0), tType(tf))
-  integrator.opts.tstops = OrdinaryDiffEq.initialize_tstops(tType, tstops, d_discontinuities, tspan)
-  integrator.opts.saveat = OrdinaryDiffEq.initialize_saveat(tType, saveat, tspan)
-  integrator.opts.d_discontinuities = OrdinaryDiffEq.initialize_d_discontinuities(tType, d_discontinuities, tspan)
+  integrator.opts.tstops = OrdinaryDiffEqCore.initialize_tstops(tType, tstops, d_discontinuities, tspan)
+  integrator.opts.saveat = OrdinaryDiffEqCore.initialize_saveat(tType, saveat, tspan)
+  integrator.opts.d_discontinuities = OrdinaryDiffEqCore.initialize_d_discontinuities(tType, d_discontinuities, tspan)
 
   if erase_sol
     if integrator.opts.save_start

@@ -11,8 +11,8 @@ using DocStringExtensions
 
   import ADTypes
 
-  import OrdinaryDiffEq
-  import OrdinaryDiffEq: default_controller, isstandard, ispredictive,
+  import OrdinaryDiffEqCore
+  import OrdinaryDiffEqCore: default_controller, isstandard, ispredictive,
          beta2_default, beta1_default, gamma_default,
          qmin_default, qmax_default, qsteady_min_default, qsteady_max_default,
          stepsize_controller!, accept_step_controller, step_accept_controller!,
@@ -37,7 +37,7 @@ using DocStringExtensions
   using LinearAlgebra, Random
 
   import ForwardDiff.Dual
-  
+
   import FastPower
 
   import DiffEqBase: step!, initialize!, DEAlgorithm,
@@ -56,20 +56,23 @@ using DocStringExtensions
 
   using DiffEqBase: check_error!, is_diagonal_noise, @..
 
-using OrdinaryDiffEq: nlsolvefail, isnewton, set_new_W!, get_W, _vec, _reshape
+using OrdinaryDiffEqNonlinearSolve: nlsolvefail, isnewton
+using OrdinaryDiffEqCore: set_new_W!, get_W, _vec, _reshape
 
-using OrdinaryDiffEq: NLSolver
+using OrdinaryDiffEqNonlinearSolve: NLSolver
 
 import OrdinaryDiffEqCore
+import OrdinaryDiffEqDifferentiation
+import OrdinaryDiffEqNonlinearSolve
 
-if isdefined(OrdinaryDiffEq,:FastConvergence)
-    using OrdinaryDiffEq:
+if isdefined(OrdinaryDiffEqCore,:FastConvergence)
+    using OrdinaryDiffEqCore:
         FastConvergence, Convergence, SlowConvergence, VerySlowConvergence, Divergence
 
-    import OrdinaryDiffEq:
+    import OrdinaryDiffEqCore:
         calculate_residuals, calculate_residuals!, nlsolve_f, unwrap_cache, islinear
 
-    using OrdinaryDiffEq: NLFunctional, NLAnderson, NLNewton
+    using OrdinaryDiffEqNonlinearSolve: NLFunctional, NLAnderson, NLNewton
 else
     using DiffEqBase:
         FastConvergence, Convergence, SlowConvergence, VerySlowConvergence, Divergence

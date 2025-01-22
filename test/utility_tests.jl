@@ -1,13 +1,13 @@
 using StochasticDiffEq, LinearAlgebra, SparseArrays, Random, LinearSolve, Test
-using StochasticDiffEq.OrdinaryDiffEq: WOperator, calc_W!, calc_W
+using StochasticDiffEq.OrdinaryDiffEqDifferentiation: WOperator, calc_W!, calc_W
 using StochasticDiffEq.SciMLOperators: MatrixOperator
 using OrdinaryDiffEq
 
 #horid nasty hack to deal with temporary calc_W refactor
 # if there is a method that takes a W_transform argument, define the version that doesn't to set W_transform to true
 if hasmethod(calc_W, (Any, Any, Any, Any, Any))
-    OrdinaryDiffEq.calc_W(integ, nlsolver, dgamma, repeat_step::Bool) = OrdinaryDiffEq.calc_W(integ, nlsolver, dgamma, repeat_step, true)
-    OrdinaryDiffEq.calc_W!(integ, nlsolver, cache, dgamma, repeat_step::Bool) = OrdinaryDiffEq.calc_W(integ, nlsolver, dgamma, cacherepeat_step, true)
+    OrdinaryDiffEqDifferentiation.calc_W(integ, nlsolver, dgamma, repeat_step::Bool) = OrdinaryDiffEqDifferentiation.calc_W(integ, nlsolver, dgamma, repeat_step, true)
+    OrdinaryDiffEqDifferentiation.calc_W!(integ, nlsolver, cache, dgamma, repeat_step::Bool) = OrdinaryDiffEqDifferentiation.calc_W(integ, nlsolver, dgamma, cacherepeat_step, true)
 end
 @testset "Derivative Utilities" begin
   @testset "calc_W!" begin
@@ -44,7 +44,7 @@ end
     ldiv!(tmp, lu!(integrator.cache.nlsolver.cache.W), u0); @test tmp != concrete_W \ u0
 
     # But jacobian2W! will update the cache
-    StochasticDiffEq.OrdinaryDiffEq.jacobian2W!(integrator.cache.nlsolver.cache.W._concrete_form, mm, dtgamma, integrator.cache.nlsolver.cache.W.J.A)
+    StochasticDiffEq.OrdinaryDiffEqDifferentiation.jacobian2W!(integrator.cache.nlsolver.cache.W._concrete_form, mm, dtgamma, integrator.cache.nlsolver.cache.W.J.A)
     @test convert(AbstractMatrix, integrator.cache.nlsolver.cache.W) == concrete_W
     ldiv!(tmp, lu!(integrator.cache.nlsolver.cache.W), u0); @test tmp == concrete_W \ u0
   end

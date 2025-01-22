@@ -20,7 +20,7 @@ implicit_noautodiff = [SKenCarp(autodiff=false), ImplicitEulerHeun(autodiff=fals
 
   # currently broken
   for alg in implicit_autodiff
-    @test_throws StochasticDiffEq.OrdinaryDiffEq.FirstAutodiffJacError solve(prob, alg)
+    @test_throws StochasticDiffEq.OrdinaryDiffEqDifferentiation.FirstAutodiffJacError solve(prob, alg)
   end
 end
 
