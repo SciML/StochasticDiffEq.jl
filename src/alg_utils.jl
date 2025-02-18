@@ -23,6 +23,7 @@ _alg_autodiff(::StochasticDiffEqNewtonAlgorithm{T, AD}) where {T, AD} = Val{AD}(
 _alg_autodiff(::StochasticDiffEqNewtonAdaptiveAlgorithm{T, AD}) where {T, AD} = Val{AD}()
 _alg_autodiff(::StochasticDiffEqJumpNewtonAdaptiveAlgorithm{T, AD}) where {T, AD} = Val{AD}()
 _alg_autodiff(::StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{T, AD}) where {T, AD} = Val{AD}()
+_alg_autodiff(alg::StochasticCompositeAlgorithm) = _alg_autodiff(alg.algs[end])
 
 function OrdinaryDiffEqCore.alg_autodiff(alg::Union{StochasticDiffEqAlgorithm, StochasticDiffEqRODEAlgorithm})
     ad = _alg_autodiff(alg)
