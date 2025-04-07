@@ -847,7 +847,45 @@ SKenCarp(;chunk_size=0,autodiff=true,diff_type=Val{:central},
 
 # Jumps
 
-gillespie2001 = """@article{gillespie2001approximate,
+function TauLeaping_docstring(
+        description::String,
+        name::String;
+        references::String = "",
+        extra_keyword_description::String = "",
+        extra_keyword_default::String = "")
+    keyword_default = """
+        adaptive = true,
+        """ * "\n" * extra_keyword_default
+
+    keyword_default_description = """
+    - `adaptive`: Boolean to enable/disable adaptive step sizing. When `true`, the step size `τ` is adjusted dynamically based on error estimates or bounds. Defaults to `true`.
+    """ * "\n" * extra_keyword_description
+
+    docstring = """
+    $description
+
+    ### Algorithm Type
+    Stochastic Jump Method
+
+    ### References
+    $references
+
+    ### Keyword Arguments
+    $keyword_default_description
+
+    ### Default Values
+    $keyword_default
+    """
+    return docstring
+end
+
+@doc TauLeaping_docstring(
+    "An explicit tau-leaping method for stochastic jump processes with optional post-leap step size adaptivity. " *
+    "This algorithm approximates the stochastic simulation algorithm (SSA) by advancing the system state over " *
+    "a fixed time step `τ` using Poisson-distributed jump counts based on initial propensities. When `adaptive=true`, " *
+    "it adjusts `τ` dynamically based on post-leap error estimates derived from propensity changes.",
+    "TauLeaping",
+    references = """@article{gillespie2001approximate,
     title={Approximate accelerated stochastic simulation of chemically reacting systems},
     author={Gillespie, Daniel T},
     journal={The Journal of Chemical Physics},
@@ -855,9 +893,33 @@ gillespie2001 = """@article{gillespie2001approximate,
     number={4},
     pages={1716--1733},
     year={2001},
-    publisher={AIP Publishing}}"""
+    publisher={AIP Publishing}}""",
+    extra_keyword_description = """
+    - `dtmax`: Maximum allowed step size.
+    - `dtmin`: Minimum allowed step size.
+    - `qmax`: Maximum step size increase factor.
+    - `qmin`: Minimum step size reduction factor.
+    - `gamma`: Safety factor for step size adjustment.
+    """,
+    extra_keyword_default = """
+    dtmax = 10.0,
+    dtmin = 1e-6
+    """)
+struct TauLeaping <: StochasticDiffEqJumpAdaptiveAlgorithm
+    adaptive::Bool
+end
 
-cao2006 = """@article{cao2006efficient,
+function TauLeaping(; adaptive=true)
+    TauLeaping(adaptive)
+end
+
+@doc TauLeaping_docstring(
+    "An adaptive tau-leaping method for stochastic jump processes that selects the step size `τ` prior to each leap " *
+    "based on bounds on the expected change in state variables. Introduced by Cao et al., this method ensures stability " *
+    "and accuracy by constraining the relative change in propensities, controlled by the `epsilon` parameter. " *
+    "When `adaptive=false`, a fixed step size is used.",
+    "CaoTauLeaping",
+    references = """@article{cao2006efficient,
     title={Efficient step size selection for the tau-leaping simulation method},
     author={Cao, Yang and Gillespie, Daniel T and Petzold, Linda R},
     journal={The Journal of Chemical Physics},
@@ -865,70 +927,25 @@ cao2006 = """@article{cao2006efficient,
     number={4},
     pages={044109},
     year={2006},
-    publisher={AIP Publishing}}"""
-
-extra_keyword_description = """
+    publisher={AIP Publishing}}""",
+    extra_keyword_description = """
+    - `epsilon`: Tolerance parameter controlling the relative change in state variables for step size selection.
     - `dtmax`: Maximum allowed step size.
     - `dtmin`: Minimum allowed step size.
-    - `controller`: Step size controller type (e.g., `:Standard`, `:PI`).
-"""
-
-extra_keyword_default = """
+    """,
+    extra_keyword_default = """
+    epsilon = 0.03,
     dtmax = 10.0,
-    dtmin = 1e-6,
-    controller = :Standard
-"""
-
-@doc """
-    TauLeaping(; adaptive=true)
-
-An explicit tau-leaping method for stochastic jump processes with optional post-leap step size adaptivity.
-This algorithm approximates the stochastic simulation algorithm (SSA) by advancing the system state over
-a fixed time step `τ` using Poisson-distributed jump counts based on initial propensities. When `adaptive=true`,
-it adjusts `τ` dynamically based on post-leap error estimates derived from propensity changes.
-
-### Algorithm Type
-Explicit Tau-Leaping Method with Post-Leap Adaptivity
-
-### References
-$(gillespie2001)
-
-### Additional Keyword Arguments
-$(extra_keyword_description)
-
-### Default Values
-$(extra_keyword_default)
-"""
-struct TauLeaping <: StochasticDiffEqJumpAdaptiveAlgorithm
-  adaptive::Bool
-end
-TauLeaping(; adaptive=true) = TauLeaping(adaptive)
-
-@doc """
-    CaoTauLeaping(; adaptive=true, epsilon=0.03)
-
-An adaptive tau-leaping method for stochastic jump processes that selects the step size `τ` prior to each leap
-based on bounds on the expected change in state variables. Introduced by Cao et al., this method ensures stability
-and accuracy by constraining the relative change in propensities, controlled by the `epsilon` parameter.
-When `adaptive=false`, a fixed step size is used.
-
-### Algorithm Type
-Adaptive Pre-Leap Tau-Leaping Method
-
-### References
-$(cao2006)
-
-### Additional Keyword Arguments
-$(extra_keyword_description)
-
-### Default Values
-$(extra_keyword_default)
-"""
+    dtmin = 1e-6
+    """)
 struct CaoTauLeaping <: StochasticDiffEqJumpAdaptiveAlgorithm
-  adaptive::Bool
-  epsilon::Float64
+    adaptive::Bool
+    epsilon::Float64
 end
-CaoTauLeaping(; adaptive=true, epsilon=0.03) = CaoTauLeaping(adaptive, epsilon)
+
+function CaoTauLeaping(; adaptive=true, epsilon=0.03)
+    CaoTauLeaping(adaptive, epsilon)
+end
 
 ################################################################################
 
