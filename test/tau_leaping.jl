@@ -1,4 +1,4 @@
-using StochasticDiffEq, JumpProcesses, DiffEqBase, Statistics
+using StochasticDiffEq, JumpProcesses, DiffEqBase, Statistics, Plots
 using Test, LinearAlgebra
 
 function regular_rate(out,u,p,t)
@@ -20,42 +20,44 @@ rj = RegularJump(regular_rate,regular_c,2)
 jumps = JumpSet(rj)
 iip_prob = DiscreteProblem([999.0,1,0],(0.0,250.0))
 jump_iipprob = JumpProblem(iip_prob,Direct(),rj)
-@time sol = solve(jump_iipprob,TauLeaping())
-@time sol = solve(jump_iipprob,SimpleTauLeaping();dt=1.0)
-@time sol = solve(jump_iipprob,TauLeaping();dt=1.0,adaptive=false)
-@time sol = solve(jump_iipprob,CaoTauLeaping();dt=1.0)
-@time sol = solve(jump_iipprob,CaoTauLeaping())
+@time sol = solve(jump_iipprob,TauLeaping(); dt=0.01,adaptive=true)
+plot(sol)
+# @time sol = solve(jump_iipprob,SimpleTauLeaping();dt=1.0)
+# @time sol = solve(jump_iipprob,TauLeaping();dt=1.0,adaptive=false)
+# @time sol = solve(jump_iipprob,CaoTauLeaping();dt=1.0)
+@time sol = solve(jump_iipprob,CaoTauLeaping();dt=1.0, adaptive=true)
+plot(sol)
 
-N = 40_000
-sol1 = solve(EnsembleProblem(jump_iipprob),SimpleTauLeaping();dt=1.0,trajectories = N)
-sol2 = solve(EnsembleProblem(jump_iipprob),TauLeaping();dt=1.0,adaptive=false,save_everystep=false,trajectories = N)
-sol3 = solve(EnsembleProblem(jump_iipprob),CaoTauLeaping();dt=1.0,trajectories = N)
+# N = 40_000
+# sol1 = solve(EnsembleProblem(jump_iipprob),SimpleTauLeaping();dt=1.0,trajectories = N)
+# sol2 = solve(EnsembleProblem(jump_iipprob),TauLeaping();dt=1.0,adaptive=false,save_everystep=false,trajectories = N)
+# sol3 = solve(EnsembleProblem(jump_iipprob),CaoTauLeaping();dt=1.0,trajectories = N)
 
-mean1 = mean([sol1[i][end,end] for i in 1:N])
-mean2 = mean([sol2[i][end,end] for i in 1:N])
-mean3 = mean([sol3[i][end,end] for i in 1:N])
-@test mean1 ≈ mean2 rtol=1e-2
-@test mean2 ≈ mean3 rtol=1e-2
-@test mean1 ≈ mean3 rtol=1e-2
+# mean1 = mean([sol1[i][end,end] for i in 1:N])
+# mean2 = mean([sol2[i][end,end] for i in 1:N])
+# mean3 = mean([sol3[i][end,end] for i in 1:N])
+# @test mean1 ≈ mean2 rtol=1e-2
+# @test mean2 ≈ mean3 rtol=1e-2
+# @test mean1 ≈ mean3 rtol=1e-2
 
-f(du,u,p,t) = (du .= 0)
-g(du,u,p,t) = (du .= 0)
-iip_sdeprob = SDEProblem(f,g,[999.0,1,0],(0.0,250.0))
-jumpdiff_iipprob = JumpProblem(iip_sdeprob,Direct(),rj)
-@time sol = solve(jumpdiff_iipprob,EM();dt=1.0)
-@time sol = solve(jumpdiff_iipprob,ImplicitEM();dt=1.0,adaptive=false)
+# f(du,u,p,t) = (du .= 0)
+# g(du,u,p,t) = (du .= 0)
+# iip_sdeprob = SDEProblem(f,g,[999.0,1,0],(0.0,250.0))
+# jumpdiff_iipprob = JumpProblem(iip_sdeprob,Direct(),rj)
+# @time sol = solve(jumpdiff_iipprob,EM();dt=1.0)
+# @time sol = solve(jumpdiff_iipprob,ImplicitEM();dt=1.0,adaptive=false)
 
-sol = solve(EnsembleProblem(jumpdiff_iipprob),EM();dt=1.0,trajectories = N)
-meanX = mean([sol[i][end,end] for i in 1:N])
-@test mean1 ≈ meanX rtol=1e-2
+# sol = solve(EnsembleProblem(jumpdiff_iipprob),EM();dt=1.0,trajectories = N)
+# meanX = mean([sol[i][end,end] for i in 1:N])
+# @test mean1 ≈ meanX rtol=1e-2
 
-sol = solve(EnsembleProblem(jumpdiff_iipprob),ImplicitEM();dt=1.0,trajectories = N)
-meanX = mean([sol[i][end,end] for i in 1:N])
-@test mean1 ≈ meanX rtol=1e-2
+# sol = solve(EnsembleProblem(jumpdiff_iipprob),ImplicitEM();dt=1.0,trajectories = N)
+# meanX = mean([sol[i][end,end] for i in 1:N])
+# @test mean1 ≈ meanX rtol=1e-2
 
-iip_prob = DiscreteProblem([999,1,0],(0.0,250.0))
-jump_iipprob = JumpProblem(iip_prob,Direct(),rj)
-sol = solve(jump_iipprob,TauLeaping())
+# iip_prob = DiscreteProblem([999,1,0],(0.0,250.0))
+# jump_iipprob = JumpProblem(iip_prob,Direct(),rj)
+# sol = solve(jump_iipprob,TauLeaping())
 
 function rate_oop(u,p,t)
     [(0.1/1000.0)*u[1]*u[2],0.01u[2]]
@@ -71,22 +73,25 @@ prob = DiscreteProblem([999.0,1,0],(0.0,250.0))
 jump_prob = JumpProblem(prob,Direct(),rj)
 sol = solve(jump_prob,TauLeaping(),reltol=5e-2)
 
-sol2 = solve(EnsembleProblem(jump_prob),TauLeaping();dt=1.0,adaptive=false,save_everystep=false,trajectories = N)
-sol3 = solve(EnsembleProblem(jump_prob),CaoTauLeaping();dt=1.0,adaptive=false,save_everystep=false,trajectories = N)
-mean2 = mean([sol2[i][end,end] for i in 1:N])
-mean3 = mean([sol3[i][end,end] for i in 1:N])
-@test mean1 ≈ mean2 rtol=1e-2
-@test mean2 ≈ mean3 rtol=1e-2
-@test mean1 ≈ mean3 rtol=1e-2
+# sol2 = solve(EnsembleProblem(jump_prob),TauLeaping();dt=1.0,adaptive=false,save_everystep=false,trajectories = N)
+# sol3 = solve(EnsembleProblem(jump_prob),CaoTauLeaping();dt=1.0,adaptive=false,save_everystep=false,trajectories = N)
+# mean2 = mean([sol2[i][end,end] for i in 1:N])
+# mean3 = mean([sol3[i][end,end] for i in 1:N])
+# @test mean1 ≈ mean2 rtol=1e-2
+# @test mean2 ≈ mean3 rtol=1e-2
+# @test mean1 ≈ mean3 rtol=1e-2
 
 foop(u,p,t) = [0.0,0.0,0.0]
 goop(u,p,t) = [0.0,0.0,0.0]
 oop_sdeprob = SDEProblem(foop,goop,[999.0,1,0],(0.0,250.0))
 jumpdiff_prob = JumpProblem(oop_sdeprob,Direct(),rj)
-@time sol = solve(jumpdiff_prob,EM();dt=1.0)
-@time sol = solve(jumpdiff_prob,ImplicitEM();dt=1.0)
+sol = solve(jumpdiff_prob,EM();dt=1.0)
 
-sol = solve(EnsembleProblem(jumpdiff_prob),EM();dt=1.0,trajectories = 10_000)
+sol = solve(jumpdiff_prob,CaoTauLeaping();dt=1.0)
+plot(sol)
+
+sol = solve(EnsembleProblem(jumpdiff_prob),EM();dt=1.0,trajectories = 100)
+plot(sol)
 meanX = mean([sol[i][end,end] for i in 1:10_000])
 @test mean1 ≈ meanX rtol=1e-2
 

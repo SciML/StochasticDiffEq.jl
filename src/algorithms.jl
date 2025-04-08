@@ -897,9 +897,6 @@ end
     extra_keyword_description = """
     - `dtmax`: Maximum allowed step size.
     - `dtmin`: Minimum allowed step size.
-    - `qmax`: Maximum step size increase factor.
-    - `qmin`: Minimum step size reduction factor.
-    - `gamma`: Safety factor for step size adjustment.
     """,
     extra_keyword_default = """
     dtmax = 10.0,
