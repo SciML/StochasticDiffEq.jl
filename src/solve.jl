@@ -67,7 +67,7 @@ function DiffEqBase.__init(
   initialize_integrator=true,
   seed = UInt64(0),
   alias = nothing,
-  initializealg = SDEDefaultInit(),
+  initializealg = OrdinaryDiffEqCore.DefaultInit(),
   kwargs...) where recompile_flag
 
   is_sde = _prob isa SDEProblem
