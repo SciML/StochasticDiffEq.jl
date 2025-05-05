@@ -25,11 +25,11 @@ fout(u, t, integrator) = abs2(u[1]) - abs2(u[2])
 
 # Define the problems -- note the difference in noise
 prob1 = SDEProblem{true}(f_qm, g_qm, u0, (T[1], T[end]),
-        noise=StochasticDiffEq.RealWienerProcess(0.0, 0.0,
+        noise=StochasticDiffEq.RealWienerProcess(0.0, 0.0, 0.0,
         rswm = DiffEqNoiseProcess.RSWM(adaptivealg=:RSwM1)))
 
 prob2 = SDEProblem{true}(f_qm, g_qm, u0, (T[1], T[end]),
-        noise=StochasticDiffEq.RealWienerProcess(0.0, 0.0,
+        noise=StochasticDiffEq.RealWienerProcess(0.0, 0.0, 0.0,
         rswm = DiffEqNoiseProcess.RSWM(adaptivealg=:RSwM3)))
 
 # Simple averaging
