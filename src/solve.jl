@@ -492,7 +492,13 @@ function DiffEqBase.__init(
       =#
     end
   elseif prob isa DiffEqBase.AbstractRODEProblem
+
     W = (!haskey(kwargs, :alias_noise) || kwargs[:alias_noise] === true) ? copy(prob.noise) : prob.noise
+
+    if alg_needs_extra_process(alg) && (!hasproperty(W,:dZ) || W.dZ === nothing)
+        error("Higher order solver requires extra Brownian process Z. Thus `WienerProcess(t, W0)` is insufficient, you must use `WienerProcess(t, W0, Z0)` where `Z` is another Brownian process")
+    end
+    
     if W.reset
       # Reseed
       if W isa Union{NoiseProcess, NoiseTransport} && W.reseed
