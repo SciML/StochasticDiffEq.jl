@@ -1,4 +1,4 @@
-using StochasticDiffEq, DiffEqNoiseProcesses, ForwardDiff
+using StochasticDiffEq, DiffEqNoiseProcess, ForwardDiff
 using Test
 
 u0=1/2
