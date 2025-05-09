@@ -29,10 +29,14 @@ jump_iipprob = JumpProblem(iip_prob,Direct(),rj)
 N = 40_000
 sol1 = solve(EnsembleProblem(jump_iipprob),SimpleTauLeaping();dt=1.0,trajectories = N)
 sol2 = solve(EnsembleProblem(jump_iipprob),TauLeaping();dt=1.0,adaptive=false,save_everystep=false,trajectories = N)
+sol3 = solve(EnsembleProblem(jump_iipprob),CaoTauLeaping();dt=1.0,trajectories = N)
 
 mean1 = mean([sol1[i][end,end] for i in 1:N])
 mean2 = mean([sol2[i][end,end] for i in 1:N])
+mean3 = mean([sol3[i][end,end] for i in 1:N])
 @test mean1 ≈ mean2 rtol=1e-2
+@test mean2 ≈ mean3 rtol=1e-2
+@test mean1 ≈ mean3 rtol=1e-2
 
 f(du,u,p,t) = (du .= 0)
 g(du,u,p,t) = (du .= 0)
@@ -68,8 +72,12 @@ jump_prob = JumpProblem(prob,Direct(),rj)
 sol = solve(jump_prob,TauLeaping(),reltol=5e-2)
 
 sol2 = solve(EnsembleProblem(jump_prob),TauLeaping();dt=1.0,adaptive=false,save_everystep=false,trajectories = N)
+sol3 = solve(EnsembleProblem(jump_prob),CaoTauLeaping();dt=1.0,adaptive=false,save_everystep=false,trajectories = N)
 mean2 = mean([sol2[i][end,end] for i in 1:N])
+mean3 = mean([sol3[i][end,end] for i in 1:N])
 @test mean1 ≈ mean2 rtol=1e-2
+@test mean2 ≈ mean3 rtol=1e-2
+@test mean1 ≈ mean3 rtol=1e-2
 
 foop(u,p,t) = [0.0,0.0,0.0]
 goop(u,p,t) = [0.0,0.0,0.0]
