@@ -83,8 +83,6 @@ end
 
   import SciMLBase
 
-  using SparseDiffTools: forwarddiff_color_jacobian!, ForwardColorJacCache
-
   using LevyArea
 
   const CompiledFloats = Union{Float32,Float64}
