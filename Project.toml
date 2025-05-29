@@ -1,7 +1,7 @@
 name = "StochasticDiffEq"
 uuid = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
 authors = ["Chris Rackauckas <accounts@chrisrackauckas.com>"]
-version = "6.79.0"
+version = "6.80.0"
 
 [deps]
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
@@ -52,7 +52,7 @@ MuladdMacro = "0.2.1"
 NLsolve = "4"
 OrdinaryDiffEq = "6.87"
 OrdinaryDiffEqCore = "1.12.1"
-OrdinaryDiffEqDifferentiation = "1"
+OrdinaryDiffEqDifferentiation = "1.9"
 OrdinaryDiffEqNonlinearSolve = "1"
 Random = "1.6"
 RandomNumbers = "1.5.3"
