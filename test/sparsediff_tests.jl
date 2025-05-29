@@ -3,7 +3,6 @@ using StochasticDiffEq
 using SparseArrays
 using LinearAlgebra
 
-#https://github.com/JuliaDiffEq/SparseDiffTools.jl/blob/master/test/test_integration.jl
 function f(dx,x,p,t)
   for i in 2:length(x)-1
     dx[i] = x[i-1] - 2x[i] + x[i+1]
