@@ -3,3 +3,7 @@
 *.jl.mem
 Manifest.toml
 .vscode/
+
+# Documentation build output
+docs/build/
+docs/site/
