@@ -18,7 +18,74 @@ abstract type StochasticDiffEqJumpDiffusionAdaptiveAlgorithm <: StochasticDiffEq
 abstract type StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{CS,AD,FDT,ST,CJ,Controller} <: StochasticDiffEqJumpDiffusionAdaptiveAlgorithm end
 
 abstract type IteratedIntegralApprox end
+
+"""
+    IICommutative <: IteratedIntegralApprox
+
+Iterated integral approximation for commutative noise.
+
+This approximation method is used when the noise terms commute, allowing for simplified
+computation of iterated stochastic integrals. For commutative noise, only simple stochastic
+integrals ∫₀ᵗ dWₛ are needed, and the Lévy area terms vanish.
+
+## When to Use
+- When noise terms satisfy the commutativity condition: `g_i * ∂g_j/∂x_i = g_j * ∂g_i/∂x_j`
+- For diagonal noise SDEs where cross-terms are zero
+- When computational efficiency is more important than handling general non-commutative noise
+
+## Algorithm Properties
+- Assumes zero Lévy area (A_ij = 0 for i ≠ j)
+- Only computes simple stochastic integrals
+- Exact for truly commutative noise structures
+
+!!! warning
+    If used on a non-commutative noise problem, this will limit the strong convergence to 0.5,
+    regardless of the chosen solver's theoretical order.
+
+## References
+- Kloeden, P.E., Platen, E., "Numerical Solution of Stochastic Differential Equations", Springer (1992)
+- Added in PR #459 with the integration of LevyArea.jl package
+"""
 struct IICommutative <:  IteratedIntegralApprox end
+
+"""
+    IILevyArea <: IteratedIntegralApprox
+
+Iterated integral approximation using full Lévy area calculation.
+
+This method computes the full Lévy area terms for non-commutative noise, including the
+double integrals ∫₀ᵗ ∫₀ˢ dWᵤdWₛ required for higher-order methods. Uses the LevyArea.jl
+package which automatically selects optimal algorithms based on problem characteristics.
+
+## When to Use
+- For general non-commutative noise problems
+- When high accuracy is required for methods of strong order > 0.5
+- For problems where noise terms do not commute
+- With RKMilGeneral and other high-order methods
+
+## Algorithm Properties
+- Computes full Lévy area terms A_ij via double stochastic integrals
+- Automatically selects optimal algorithm: Fourier(), Milstein(), Wiktorsson(), or MronRoe()
+- Selection based on Brownian process dimension and step size
+- Required for achieving theoretical convergence rates with non-commutative noise
+
+## Computational Cost
+- More expensive than IICommutative due to Lévy area calculations
+- Cost scales with the number of Brownian motions
+- Optimized algorithm selection minimizes computational overhead
+
+!!! caution
+    May introduce bias with adaptive time-stepping methods due to the dependency of
+    random number generation on the step size. Use with fixed-step methods when
+    maximum accuracy is required.
+
+## References
+- Kastner, F. and Rößler, A., "LevyArea.jl: Lévy area simulation in Julia", 
+  Journal of Open Source Software (2023)
+- Wiktorsson, M. "Joint characteristic function and simultaneous simulation of 
+  iterated Itô integrals for multiple independent Brownian motions" (2001)
+- Implemented via LevyArea.jl package integration (PR #459)
+"""
 struct IILevyArea <:  IteratedIntegralApprox end
 
 ################################################################################
@@ -766,23 +833,53 @@ end
 """
     PCEuler(ggprime; theta=1/2, eta=1/2)
 
-Predictor Corrector Euler
+**PCEuler: Predictor-Corrector Euler Method (Nonstiff)**
 
-# Arguments
-- `ggprime::Function`:
-  For scalar problems, `ggprime` ``= b\\partial_x(b)``
-  For multi-dimensional problems
-  `bbprime_k` ``= \\sum_{j=1...M, i=1...D} b^(j)_i \\partial_i b^(j)_k``
-  where ``b^(j)`` correspond to the noise vector due to the j'th noise channel.
-  If problem is in place - a in place ggprime should be supplied - and
-  vice versa for not in place speicification of problem.
-- `theta::Real`:
-  Degree of implicitness in the drift term. Set to 0.5 by default.
-- `eta::Real`:
-  Degree of implicitness in the diffusion term. Set to 0.5 by default.
+A predictor-corrector variant of the Euler-Maruyama method requiring analytic derivatives
+of the diffusion term, with adjustable implicitness parameters for drift-diffusion coupling.
 
-Reference: Stochastics and Dynamics, Vol. 8, No. 3 (2008) 561–581
-Note that the original paper has a typo in the definition of ggprime...
+## Method Properties
+- **Strong Order**: 0.5 (in the Itô sense)
+- **Weak Order**: 1.0  
+- **Time stepping**: Fixed time step only
+- **Noise types**: General noise with available derivative information
+- **SDE interpretation**: Itô only
+
+## Parameters
+- `ggprime::Function`: The required derivative of the diffusion term
+  - For scalar problems: `ggprime = g * ∂g/∂x`
+  - For multi-dimensional problems: `ggprime_k = Σ_{j=1...M, i=1...D} g^(j)_i * ∂g^(j)_k/∂x_i`
+  - where `g^(j)` corresponds to the noise vector due to the j-th noise channel
+  - Must match the in-place/out-of-place specification of the problem
+- `theta::Real = 0.5`: Degree of implicitness in the drift term (default: 0.5)
+- `eta::Real = 0.5`: Degree of implicitness in the diffusion term (default: 0.5)
+
+## When to Use
+- Problems requiring specific drift-diffusion coupling
+- When analytical ggprime function is available
+- Specialized predictor-corrector applications
+- When the derivative `g*g'` provides stability or accuracy benefits
+
+## Algorithm Description
+The method uses a predictor-corrector approach with the specific requirement of
+computing the derivative of the diffusion coefficient. This additional information
+allows for improved handling of drift-diffusion interactions through the adjustable
+parameters θ and η.
+
+## Limitations
+- Requires analytical computation of ggprime (cannot be approximated)
+- Fixed time step only (no adaptive versions available)
+- Limited to Itô interpretation
+
+## References
+- Jentzen, A., Kloeden, P.E., "The numerical approximation of stochastic partial differential equations", 
+  Milan J. Math. 77, 205–244 (2009). https://doi.org/10.1007/s00032-009-0100-0
+- Originally introduced in PR #88 (commit 42e2510) by Tatsuhiro Onodera (2018)
+
+!!! warning
+    The derivative `ggprime` must be computed analytically for correctness. 
+    The original paper contains a typo in the definition of ggprime - this 
+    implementation follows the corrected formulation.
 """
 PCEuler(ggprime; theta=1/2, eta=1/2) = PCEuler(theta,eta,ggprime)
 
