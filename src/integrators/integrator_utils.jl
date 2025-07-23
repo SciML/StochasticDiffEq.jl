@@ -21,6 +21,19 @@ end
 @inline function loopheader!(integrator::SDEIntegrator)
   # Apply right after iterators / callbacks
 
+  # For the first step, adjust dt for tstops before perform_step!
+  if integrator.iter == 0 && !isempty(integrator.opts.tstops)
+    modify_dt_for_tstops!(integrator)
+    # Sync the noise process with the adjusted dt
+    if !isnothing(integrator.W)
+      integrator.W.dt = integrator.dt
+      # Recalculate noise for the adjusted dt
+      DiffEqNoiseProcess.accept_step!(integrator.W, integrator.dt, integrator.u, integrator.p, false)
+      DiffEqNoiseProcess.setup_next_step!(integrator.W, integrator.u, integrator.p)
+    end
+    integrator.sqdt = integrator.tdir * sqrt(abs(integrator.dt))
+  end
+
   # Accept or reject the step
   if integrator.iter > 0
     if ((integrator.opts.adaptive && integrator.accept_step) ||
@@ -292,7 +305,13 @@ end
   accept_step!(integrator,true)
 
   # Allow RSWM1 on Wiener Process to change dt
-  !isnothing(integrator.W) && (integrator.dt = integrator.W.dt)
+  # But preserve dt if it was adjusted for tstops
+  if !isnothing(integrator.W) && isempty(integrator.opts.tstops)
+    integrator.dt = integrator.W.dt
+  elseif !isnothing(integrator.W) && !isempty(integrator.opts.tstops)
+    # Sync the Wiener process dt with the tstop-adjusted dt
+    integrator.W.dt = integrator.dt
+  end
   integrator.sqdt = @fastmath integrator.tdir*sqrt(abs(integrator.dt)) # It can change dt, like in RSwM1
 end
 
