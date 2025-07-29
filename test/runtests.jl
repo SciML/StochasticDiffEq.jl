@@ -36,7 +36,7 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV,"APPVEYOR")
     @time @safetestset "Linear SDE Tests" begin include("sde/sde_linear_tests.jl") end
     @time @safetestset "Two-dimensional Linear SDE Tests" begin include("sde/sde_twodimlinear_tests.jl") end
     @time @safetestset "Element-wise Tolerances Tests" begin include("tolerances_tests.jl") end
-    @time @safetestset "Zero'd Noise Tests" begin include("zerod_noise_test.jl") end
+    @time @safetestset "Zeroed Noise Tests" begin include("zeroed_noise_test.jl") end
     @time @safetestset "Scalar Tests" begin include("scalar_noise.jl") end
     @time @safetestset "Stiffness Detection Test" begin include("stiffness_detection_test.jl") end
     @time @safetestset "Adaptive SDE Linear Tests" begin include("adaptive/sde_linearadaptive_tests.jl") end
