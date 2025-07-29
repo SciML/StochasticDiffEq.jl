@@ -43,36 +43,39 @@ sol = solve(prob)
 StochasticDiffEq.jl provides several categories of solvers optimized for different types of problems:
 
 ### Nonstiff Solvers
-- **Basic Methods**: Euler-Maruyama, Heun methods
-- **SRA/SRI Methods**: High-order adaptive methods (SOSRI, SOSRA)
-- **High Weak Order**: Methods optimized for weak convergence (DRI1)
-- **Commutative Noise**: Specialized methods for commuting noise terms
 
-### Stiff Solvers  
-- **Implicit Methods**: Drift-implicit methods for stiff problems
-- **Split-Step Methods**: Methods handling stiffness in diffusion
-- **Stabilized Methods**: SROCK-type methods for parabolic PDEs
+  - **Basic Methods**: Euler-Maruyama, Heun methods
+  - **SRA/SRI Methods**: High-order adaptive methods (SOSRI, SOSRA)
+  - **High Weak Order**: Methods optimized for weak convergence (DRI1)
+  - **Commutative Noise**: Specialized methods for commuting noise terms
+
+### Stiff Solvers
+
+  - **Implicit Methods**: Drift-implicit methods for stiff problems
+  - **Split-Step Methods**: Methods handling stiffness in diffusion
+  - **Stabilized Methods**: SROCK-type methods for parabolic PDEs
 
 ### Jump-Diffusion
-- **Tau-Leaping**: Methods for jump-diffusion processes
+
+  - **Tau-Leaping**: Methods for jump-diffusion processes
 
 ## Recommended Methods
 
 For most users, we recommend starting with these methods:
 
-- **General Purpose**: `SOSRI()` - Excellent for diagonal/scalar Itô SDEs
-- **Additive Noise**: `SOSRA()` - Optimal for problems with additive noise  
-- **Stiff Problems**: `SKenCarp()` - Best for stiff problems with additive noise
-- **Commutative Noise**: `RKMilCommute()` - For multi-dimensional commutative noise
-- **High Efficiency**: `EM()` - When computational speed is most important
+  - **General Purpose**: `SOSRI()` - Excellent for diagonal/scalar Itô SDEs
+  - **Additive Noise**: `SOSRA()` - Optimal for problems with additive noise
+  - **Stiff Problems**: `SKenCarp()` - Best for stiff problems with additive noise
+  - **Commutative Noise**: `RKMilCommute()` - For multi-dimensional commutative noise
+  - **High Efficiency**: `EM()` - When computational speed is most important
 
 ## Advanced Features
 
-- Adaptive time stepping with sophisticated error control
-- Support for all noise types (diagonal, non-diagonal, additive, scalar)
-- Both Itô and Stratonovich interpretations
-- Integration with the broader DifferentialEquations.jl ecosystem
-- GPU compatibility for high-performance computing
-- Extensive callback and event handling capabilities
+  - Adaptive time stepping with sophisticated error control
+  - Support for all noise types (diagonal, non-diagonal, additive, scalar)
+  - Both Itô and Stratonovich interpretations
+  - Integration with the broader DifferentialEquations.jl ecosystem
+  - GPU compatibility for high-performance computing
+  - Extensive callback and event handling capabilities
 
 See the individual solver pages for detailed information about each method's properties, when to use them, and their theoretical foundations.
