@@ -71,3 +71,14 @@ MTK = "MTK"
 ODE = "ODE"
 PDE = "PDE"
 SDE = "SDE"
+
+# StochasticDiffEq-specific terms
+IIF = "IIF"  # Integro-Integral-Form methods
+iif = "iif"  # Integro-Integral-Form methods (lowercase)
+SIE = "SIE"  # Stochastic Integral Equation methods  
+SME = "SME"  # Stochastic Modified Euler methods
+strat = "strat"  # Stratonovich integration
+extrapolant = "extrapolant"  # Result of extrapolation (mathematical term)
+Numer = "Numer"  # Journal abbreviation for "Numerical" (SIAM J. Numer. Anal.)
+currate = "currate"  # Current rate (legitimate variable name)
+typ = "typ"  # Type abbreviation (common Julia convention)

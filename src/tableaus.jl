@@ -1426,7 +1426,7 @@ struct KomoriNON2{T} <: Tableau
 end
 
 function constructNON2(T=Float64)
-  # gamme is a free parameter
+  # gamma is a free parameter
   γ =  1
   c0 = [1//6;1//3;1//3;1//6]
   cj = [1//8;3//8;3//8;1//8]

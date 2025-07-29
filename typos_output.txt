@@ -1,0 +1,98 @@
+error: `resetted` should be `reset`
+  --> src/solve.jl:136:29
+    |
+136 |       _prob = JumpProcesses.resetted_jump_problem(_prob, _seed)
+    |                             ^^^^^^^^
+    |
+error: `currate` should be `curate`
+  --> src/solve.jl:535:65
+    |
+535 |       alg_control_rate(alg) && adaptive && P.cache.rate(P.cache.currate,u,p,tspan[1])
+    |                                                                 ^^^^^^^
+    |
+error: `currate` should be `curate`
+  --> src/solve.jl:542:53
+    |
+542 |       alg_control_rate(alg) && adaptive && (P.cache.currate = P.cache.rate(u,p,tspan[1]))
+    |                                                     ^^^^^^^
+    |
+error: `typ` should be `typo`, `type`
+  --> src/integrators/integrator_interface.jl:51:5
+   |
+51 | for typ in (StochasticDiffEqAlgorithm,StochasticDiffEqNewtonAdaptiveAlgorithm)
+   |     ^^^
+   |
+error: `typ` should be `typo`, `type`
+  --> src/integrators/integrator_interface.jl:52:75
+   |
+52 |   @eval @inline DiffEqBase.get_tmp_cache(integrator::SDEIntegrator, alg::$typ, cache::StochasticDiffEqConstantCache) = nothing
+   |                                                                           ^^^
+   |
+error: `currate` should be `curate`
+  --> src/integrators/integrator_utils.jl:276:36
+    |
+276 |       oldrate = integrator.P.cache.currate
+    |                                    ^^^^^^^
+    |
+error: `currate` should be `curate`
+  --> src/integrators/integrator_utils.jl:279:26
+    |
+279 |       integrator.P.cache.currate = P.cache.rate(u,p,t)
+    |                          ^^^^^^^
+    |
+error: `gamme` should be `gamma`, `game`
+  --> src/tableaus.jl:1429:5
+     |
+1429 |   # gamme is a free parameter
+     |     ^^^^^
+     |
+error: `Dummmy` should be `Dummy`
+  --> src/caches/SROCK_caches.jl:174:29
+    |
+174 |   tmp  = uᵢ₋₂             # Dummmy variables
+    |                             ^^^^^^
+    |
+error: `constrant` should be `constraint`
+  --> src/perform_step/implicit_split_step.jl:139:57
+    |
+139 |     @.. z = zero(eltype(u)) # Justified by ODE solvers, constrant extrapolation when IM
+    |                                                         ^^^^^^^^^
+    |
+error: `constrant` should be `constraint`
+  --> src/perform_step/sdirk.jl:179:57
+    |
+179 |     @.. z = zero(eltype(u)) # Justified by ODE solvers, constrant extrapolation when IM
+    |                                                         ^^^^^^^^^
+    |
+error: `currate` should be `curate`
+  --> src/perform_step/tau_leaping.jl:8:25
+  |
+8 |       oldrate = P.cache.currate
+  |                         ^^^^^^^
+  |
+error: `currate` should be `curate`
+  --> src/perform_step/tau_leaping.jl:13:17
+   |
+13 |         P.cache.currate = newrate
+   |                 ^^^^^^^
+   |
+error: `currate` should be `curate`
+  --> src/perform_step/tau_leaping.jl:29:25
+   |
+29 |       oldrate = P.cache.currate
+   |                         ^^^^^^^
+   |
+error: `currate` should be `curate`
+  --> src/perform_step/tau_leaping.jl:34:17
+   |
+34 |         P.cache.currate .= newrate
+   |                 ^^^^^^^
+   |
+error: `zerod` should be `zeroed`
+  --> test/zerod_noise_test.jl:1
+error: `zerod` should be `zeroed`
+  --> test/runtests.jl:39:60
+   |
+39 |     @time @safetestset "Zero'd Noise Tests" begin include("zerod_noise_test.jl") end
+   |                                                            ^^^^^
+   |

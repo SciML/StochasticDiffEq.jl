@@ -133,7 +133,7 @@ function DiffEqBase.__init(
   if _prob isa JumpProblem
     alias_jumps = isnothing(aliases.alias_jumps) ? Threads.threadid() == 1 : aliases.alias_jumps
     if !alias_jumps
-      _prob = JumpProcesses.resetted_jump_problem(_prob, _seed)
+      _prob = JumpProcesses.reset_jump_problem(_prob, _seed)
     elseif _seed !== 0
       JumpProcesses.reset_jump_problem!(_prob, _seed)
     end

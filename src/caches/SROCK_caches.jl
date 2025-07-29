@@ -171,7 +171,7 @@ function alg_cache(alg::SKSROCK,prob,u,ΔW,ΔZ,p,rate_prototype,noise_rate_proto
   uᵢ₋₁ = zero(u)
   uᵢ₋₂ = zero(u)
   Gₛ = zero(noise_rate_prototype)
-  tmp  = uᵢ₋₂             # Dummmy variables
+  tmp  = uᵢ₋₂             # Dummy variables
   fsalfirst = k
   if ΔW isa Union{SArray,Number}
     WikRange = copy(ΔW)

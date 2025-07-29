@@ -176,7 +176,7 @@ end
   ##############################################################################
 
   if alg.symplectic
-    @.. z = zero(eltype(u)) # Justified by ODE solvers, constrant extrapolation when IM
+    @.. z = zero(eltype(u)) # Justified by ODE solvers, constraint extrapolation when IM
   else
     @.. z = dt*tmp # linear extrapolation
   end
