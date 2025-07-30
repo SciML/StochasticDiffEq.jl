@@ -26,7 +26,7 @@ prob = SDEProblem(f,g,u0,tspan)
 
 sol = solve(prob,SRIW1(),callback=callback,adaptive=false,dt=3/4)
 
-@test minimum(sol[1,:]) > -1e-12 && minimum(sol[1,:]) < 1e-12
+@test minimum([u[1] for u in sol.u]) > -1e-12 && minimum([u[1] for u in sol.u]) < 1e-12
 
 sol = solve(prob,SRIW1(),callback=callback,save_everystep=false)
 t = sol.t[end÷2] # this is the callback time point

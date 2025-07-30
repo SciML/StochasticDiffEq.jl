@@ -39,7 +39,7 @@ sol = solve(prob,SRIW1(),callback=callback)
 using Plots; pyplot()
 p1 = plot(sol,vars=(0,1),plotdensity=10000,title="Amount of X in Cell 1")
 scatter!(sol,denseplot=false)
-p2 = plot(sol.t,map((x)->length(x),sol[:]),lw=3,
+p2 = plot(sol.t,map((x)->length(x),sol.u),lw=3,
      ylabel="Number of Cells",xlabel="Time")
 plot(p1,p2,layout=(2,1),size=(600,1000))
 =#
