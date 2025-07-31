@@ -12,7 +12,7 @@ sol = solve(prob,SplitEM(),dt=1/10,save_noise=true)
 prob = SDEProblem{false}(f,σ,1/2,(0.0,1.0),noise = NoiseWrapper(sol.W))
 sol2 = solve(prob,EM(),dt=1/10)
 
-@test sol[:] ≈ sol2[:]
+@test sol.u ≈ sol2.u
 
 u0 = rand(4)
 
