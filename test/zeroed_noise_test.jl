@@ -14,13 +14,13 @@ prob = SDEProblem{true}(f, g, u0, (0.0, 0.1))
 sol_ito = solve(prob, RKMil{SciMLBase.AlgorithmInterpretation.Ito}())
 @test length(sol_ito) < 100
 
-sol_strato = solve(prob, RKMil{SciMLBase.AlgorithmInterpretation.Stratonovich}(); dt=1e-2)
+sol_strato = solve(prob, RKMil{SciMLBase.AlgorithmInterpretation.Stratonovich}(); dt = 1e-2)
 @test length(sol_strato) < 100
 
 sol_ito = solve(prob, RKMil())
 @test length(sol_ito) < 100
 
-sol_strato = solve(prob, RKMil(interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich); dt=1e-2)
+sol_strato = solve(prob, RKMil(interpretation = SciMLBase.AlgorithmInterpretation.Stratonovich); dt = 1e-2)
 @test length(sol_strato) < 100
 
 sol_leh = solve(prob, LambaEulerHeun())

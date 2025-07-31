@@ -25,12 +25,12 @@ fout(u, t, integrator) = abs2(u[1]) - abs2(u[2])
 
 # Define the problems -- note the difference in noise
 prob1 = SDEProblem{true}(f_qm, g_qm, u0, (T[1], T[end]),
-        noise=StochasticDiffEq.RealWienerProcess(0.0, 0.0, 0.0,
-        rswm = DiffEqNoiseProcess.RSWM(adaptivealg=:RSwM1)))
+    noise = StochasticDiffEq.RealWienerProcess(0.0, 0.0, 0.0,
+        rswm = DiffEqNoiseProcess.RSWM(adaptivealg = :RSwM1)))
 
 prob2 = SDEProblem{true}(f_qm, g_qm, u0, (T[1], T[end]),
-        noise=StochasticDiffEq.RealWienerProcess(0.0, 0.0, 0.0,
-        rswm = DiffEqNoiseProcess.RSWM(adaptivealg=:RSwM3)))
+    noise = StochasticDiffEq.RealWienerProcess(0.0, 0.0, 0.0,
+        rswm = DiffEqNoiseProcess.RSWM(adaptivealg = :RSwM3)))
 
 # Simple averaging
 Ntraj = 1000
@@ -39,29 +39,34 @@ avg2 = zeros(size(T)...)
 avg3 = zeros(size(T)...)
 
 let
-  global avg1,avg2,avg3
-  for i=1:Ntraj
+    global avg1, avg2, avg3
+    for i in 1:Ntraj
+        out1 = SavedValues(Float64, ComplexF64)
+        scb1 = SavingCallback(
+            fout, out1, saveat = T, save_everystep = false, save_start = false)
 
-    out1 = SavedValues(Float64,ComplexF64)
-    scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
+        solve(prob1, RKMil{SciMLBase.AlgorithmInterpretation.Stratonovich}(),
+            dt = 1e-4, callback = scb1, seed = i, adaptive = false)
+        avg1 .+= out1.saveval ./ Ntraj
 
-    solve(prob1, RKMil{SciMLBase.AlgorithmInterpretation.Stratonovich}(), dt=1e-4, callback=scb1, seed = i, adaptive = false)
-    avg1 .+= out1.saveval ./ Ntraj
+        out1 = SavedValues(Float64, ComplexF64)
+        scb1 = SavingCallback(
+            fout, out1, saveat = T, save_everystep = false, save_start = false)
 
-    out1 = SavedValues(Float64,ComplexF64)
-    scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
+        solve(prob1, RKMil{SciMLBase.AlgorithmInterpretation.Stratonovich}(),
+            tstops = T, callback = scb1,
+            save_everystep = false, save_start = false)
+        avg2 .+= out1.saveval ./ Ntraj
 
-    solve(prob1, RKMil{SciMLBase.AlgorithmInterpretation.Stratonovich}(), tstops = T, callback=scb1,
-          save_everystep=false, save_start=false)
-    avg2 .+= out1.saveval ./ Ntraj
+        out1 = SavedValues(Float64, ComplexF64)
+        scb1 = SavingCallback(
+            fout, out1, saveat = T, save_everystep = false, save_start = false)
 
-    out1 = SavedValues(Float64,ComplexF64)
-    scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
-
-    solve(prob2, RKMil{SciMLBase.AlgorithmInterpretation.Stratonovich}(), tstops = T, callback=scb1,
-          save_everystep=false, save_start=false)
-    avg3 .+= out1.saveval ./ Ntraj
-  end
+        solve(prob2, RKMil{SciMLBase.AlgorithmInterpretation.Stratonovich}(),
+            tstops = T, callback = scb1,
+            save_everystep = false, save_start = false)
+        avg3 .+= out1.saveval ./ Ntraj
+    end
 end
 
 #=
@@ -74,7 +79,6 @@ plot!(T, avg3)
 @test maximum(avg1-avg2) < 0.02
 @test maximum(avg1-avg3) < 0.03
 
-
 #Adding Similar Tests for RKMilGeneral
 # Simple averaging
 Ntraj = 1000
@@ -83,29 +87,38 @@ avg2 = zeros(size(T)...)
 avg3 = zeros(size(T)...)
 
 let
-  global avg1,avg2,avg3
-  for i=1:Ntraj
+    global avg1, avg2, avg3
+    for i in 1:Ntraj
+        out1 = SavedValues(Float64, ComplexF64)
+        scb1 = SavingCallback(
+            fout, out1, saveat = T, save_everystep = false, save_start = false)
 
-    out1 = SavedValues(Float64,ComplexF64)
-    scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
+        solve(prob1,
+            RKMilGeneral(interpretation = SciMLBase.AlgorithmInterpretation.Stratonovich),
+            dt = 1e-4,
+            callback = scb1, seed = i, adaptive = false)
+        avg1 .+= out1.saveval ./ Ntraj
 
-    solve(prob1, RKMilGeneral(interpretation = SciMLBase.AlgorithmInterpretation.Stratonovich), dt=1e-4, callback=scb1, seed = i, adaptive = false)
-    avg1 .+= out1.saveval ./ Ntraj
+        out1 = SavedValues(Float64, ComplexF64)
+        scb1 = SavingCallback(
+            fout, out1, saveat = T, save_everystep = false, save_start = false)
 
-    out1 = SavedValues(Float64,ComplexF64)
-    scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
+        solve(prob1,
+            RKMilGeneral(interpretation = SciMLBase.AlgorithmInterpretation.Stratonovich),
+            tstops = T, callback = scb1,
+            save_everystep = false, save_start = false)
+        avg2 .+= out1.saveval ./ Ntraj
 
-    solve(prob1, RKMilGeneral(interpretation = SciMLBase.AlgorithmInterpretation.Stratonovich), tstops = T, callback=scb1,
-          save_everystep=false, save_start=false)
-    avg2 .+= out1.saveval ./ Ntraj
+        out1 = SavedValues(Float64, ComplexF64)
+        scb1 = SavingCallback(
+            fout, out1, saveat = T, save_everystep = false, save_start = false)
 
-    out1 = SavedValues(Float64,ComplexF64)
-    scb1 = SavingCallback(fout, out1, saveat=T, save_everystep=false, save_start=false)
-
-    solve(prob2, RKMilGeneral(interpretation = SciMLBase.AlgorithmInterpretation.Stratonovich), tstops = T, callback=scb1,
-          save_everystep=false, save_start=false)
-    avg3 .+= out1.saveval ./ Ntraj
-  end
+        solve(prob2,
+            RKMilGeneral(interpretation = SciMLBase.AlgorithmInterpretation.Stratonovich),
+            tstops = T, callback = scb1,
+            save_everystep = false, save_start = false)
+        avg3 .+= out1.saveval ./ Ntraj
+    end
 end
 
 #=

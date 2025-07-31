@@ -56,13 +56,13 @@ Most solvers accept parameters for customization:
 
 ```julia
 # Euler-Maruyama with step splitting
-sol = solve(prob, EM(split=true))
+sol = solve(prob, EM(split = true))
 
 # RKMilCommute with Stratonovich interpretation
-sol = solve(prob, RKMilCommute(interpretation=:Stratonovich))
+sol = solve(prob, RKMilCommute(interpretation = :Stratonovich))
 
 # Implicit methods with solver options
-sol = solve(prob, SKenCarp(linsolve=KrylovJL_GMRES()))
+sol = solve(prob, SKenCarp(linsolve = KrylovJL_GMRES()))
 ```
 
 ## Tolerances and Adaptive Stepping
@@ -70,36 +70,43 @@ sol = solve(prob, SKenCarp(linsolve=KrylovJL_GMRES()))
 Set absolute and relative tolerances:
 
 ```julia
-sol = solve(prob, SOSRI(), abstol=1e-6, reltol=1e-3)
+sol = solve(prob, SOSRI(), abstol = 1e-6, reltol = 1e-3)
 ```
 
 For fixed time stepping:
-```julia  
-sol = solve(prob, EM(), dt=0.01, adaptive=false)
+
+```julia
+sol = solve(prob, EM(), dt = 0.01, adaptive = false)
 ```
 
 ## Noise Types
 
 ### Diagonal Noise
+
 Most common case - each component has independent noise:
+
 ```julia
 function g!(du, u, p, t)
-    du[1] = σ₁ * u[1] 
+    du[1] = σ₁ * u[1]
     du[2] = σ₂ * u[2]
 end
 ```
 
-### Scalar Noise  
+### Scalar Noise
+
 Single noise source affects all components:
+
 ```julia
 function g!(du, u, p, t)
     du[1] = σ * u[1]
-    du[2] = σ * u[2]  
+    du[2] = σ * u[2]
 end
 ```
 
 ### Non-diagonal Noise
+
 Multiple noise sources with cross-terms:
+
 ```julia
 function g!(du, u, p, t)
     du[1] = σ₁₁ * u[1] + σ₁₂ * u[2]
@@ -108,7 +115,9 @@ end
 ```
 
 ### Additive Noise
+
 Noise independent of solution:
+
 ```julia
 function g!(du, u, p, t)
     du[1] = σ₁
@@ -122,29 +131,29 @@ Specify interpretation when creating problems or choosing solvers:
 
 ```julia
 # Itô interpretation (default)
-prob = SDEProblem(f!, g!, u0, tspan, interpretation=:Ito)
+prob = SDEProblem(f!, g!, u0, tspan, interpretation = :Ito)
 
 # Stratonovich interpretation  
-prob = SDEProblem(f!, g!, u0, tspan, interpretation=:Stratonovich)
+prob = SDEProblem(f!, g!, u0, tspan, interpretation = :Stratonovich)
 
 # Or at solver level
-sol = solve(prob, RKMil(interpretation=:Stratonovich))
+sol = solve(prob, RKMil(interpretation = :Stratonovich))
 ```
 
 ## Performance Tips
 
-1. **Use appropriate solvers**: Match solver to problem type
-2. **In-place functions**: Use `f!(du,u,p,t)` for better performance
-3. **Tolerances**: Don't make tolerances unnecessarily strict
-4. **Static arrays**: Use `StaticArrays.jl` for small systems
-5. **GPU**: Use `CuArrays.jl` for large problems
+ 1. **Use appropriate solvers**: Match solver to problem type
+ 2. **In-place functions**: Use `f!(du,u,p,t)` for better performance
+ 3. **Tolerances**: Don't make tolerances unnecessarily strict
+ 4. **Static arrays**: Use `StaticArrays.jl` for small systems
+ 5. **GPU**: Use `CuArrays.jl` for large problems
 
 ## Common Pitfalls
 
-1. **Wrong noise type**: Ensure solver supports your noise structure
-2. **Stiffness**: Use appropriate stiff solvers for stiff problems  
-3. **Commuting noise**: Use specialized solvers for better efficiency
-4. **High dimensions**: Consider weak convergence methods for Monte Carlo
+ 1. **Wrong noise type**: Ensure solver supports your noise structure
+ 2. **Stiffness**: Use appropriate stiff solvers for stiff problems
+ 3. **Commuting noise**: Use specialized solvers for better efficiency
+ 4. **High dimensions**: Consider weak convergence methods for Monte Carlo
 
 ## Integration with DifferentialEquations.jl
 
@@ -154,13 +163,13 @@ StochasticDiffEq.jl integrates with the broader ecosystem:
 using DifferentialEquations
 
 # Callbacks
-condition(u,t,integrator) = u[1] - 0.5
+condition(u, t, integrator) = u[1] - 0.5
 affect!(integrator) = terminate!(integrator)
 cb = ContinuousCallback(condition, affect!)
 
-sol = solve(prob, SOSRI(), callback=cb)
+sol = solve(prob, SOSRI(), callback = cb)
 
 # Ensemble simulations
 monte_prob = EnsembleProblem(prob)
-sim = solve(monte_prob, SOSRI(), EnsembleThreads(), trajectories=1000)
+sim = solve(monte_prob, SOSRI(), EnsembleThreads(), trajectories = 1000)
 ```
