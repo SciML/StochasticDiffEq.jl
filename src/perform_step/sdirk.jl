@@ -86,8 +86,7 @@
         if cache isa Union{ImplicitEMConstantCache, ImplicitEulerHeunConstantCache}
             En = mil_correction
         else
-            En = integrator.opts.internalnorm.(integrator.W.dW .^ 3, t) .*
-                 integrator.opts.internalnorm.(ggprime, t) .^ 2 ./ 6
+            En = integrator.opts.internalnorm.(integrator.W.dW .^ 3, t) .* integrator.opts.internalnorm.(ggprime, t) .^ 2 ./ 6
         end
 
         resids = calculate_residuals(Ed, En, uprev, u, integrator.opts.abstol,

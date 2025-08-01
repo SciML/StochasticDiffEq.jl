@@ -355,11 +355,9 @@ end
         end
     else
         if integrator.u isa AbstractArray
-            integrator.ΔW .= scaling_factor .*
-                             integrator.noise(size(integrator.u), integrator)
+            integrator.ΔW .= scaling_factor .* integrator.noise(size(integrator.u), integrator)
             if alg_needs_extra_process(integrator.alg)
-                integrator.ΔZ .= scaling_factor .*
-                                 integrator.noise(size(integrator.u), integrator)
+                integrator.ΔZ .= scaling_factor .* integrator.noise(size(integrator.u), integrator)
             end
         else
             integrator.ΔW = scaling_factor*integrator.noise(integrator)
@@ -389,21 +387,15 @@ end
     else
         if integrator.u isa AbstractArray
             if add1 != 0
-                integrator.ΔWtilde = add1 .+
-                                     scaling .*
-                                     integrator.noise(size(integrator.u), integrator)
+                integrator.ΔWtilde = add1 .+ scaling .* integrator.noise(size(integrator.u), integrator)
             else
-                integrator.ΔWtilde = scaling .*
-                                     integrator.noise(size(integrator.u), integrator)
+                integrator.ΔWtilde = scaling .* integrator.noise(size(integrator.u), integrator)
             end
             if alg_needs_extra_process(integrator.alg)
                 if add2 != 0
-                    integrator.ΔZtilde = add2 .+
-                                         scaling .*
-                                         integrator.noise(size(integrator.u), integrator)
+                    integrator.ΔZtilde = add2 .+ scaling .* integrator.noise(size(integrator.u), integrator)
                 else
-                    integrator.ΔZtilde = scaling .*
-                                         integrator.noise(size(integrator.u), integrator)
+                    integrator.ΔZtilde = scaling .* integrator.noise(size(integrator.u), integrator)
                 end
             end
         else
