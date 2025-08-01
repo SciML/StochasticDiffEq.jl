@@ -40,8 +40,7 @@ end
     elseif cache isa IIF1MConstantCache
         tmp = exp(A*dt)*(uprev + integrator.g(uprev, p, t)*W.dW)
     elseif cache isa IIF2MConstantCache
-        tmp = exp(A*dt)*(uprev + 0.5dt*integrator.f.f2(uprev, p, t) +
-                         integrator.g(uprev, p, t)*W.dW)
+        tmp = exp(A*dt)*(uprev + 0.5dt*integrator.f.f2(uprev, p, t) + integrator.g(uprev, p, t)*W.dW)
     end
 
     if integrator.iter > 1 && !integrator.u_modified
