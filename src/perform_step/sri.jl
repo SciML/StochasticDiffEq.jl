@@ -208,8 +208,7 @@ end
 
     @.. E₂ = chi2 * (2 * g₁ - Fg₂o3 - Tg₃o3) + chi3 * (2 * mg₁ + 5 * g₂o3 - Tg₃o3 + g₄)
 
-    @.. u = uprev + (fH01 + 2 * fH02) / 3 + W.dW * (mg₁ + Fg₂o3 + Tg₃o3) +
-            chi1 * (mg₁ + Fg₂o3 - g₃o3) + E₂
+    @.. u = uprev + (fH01 + 2 * fH02) / 3 + W.dW * (mg₁ + Fg₂o3 + Tg₃o3) + chi1 * (mg₁ + Fg₂o3 - g₃o3) + E₂
 
     if integrator.opts.adaptive
         @.. E₁ = fH01 + fH02
@@ -250,8 +249,7 @@ end
     mg₁ = -g₁
     E₂ = @.. chi2 * (2 * g₁ - Fg₂o3 - Tg₃o3) + chi3 * (2 * mg₁ + 5 * g₂o3 - Tg₃o3 + g₄)
 
-    u = uprev + (fH01 + 2fH02)/3 + W.dW .* (mg₁ + Fg₂o3 + Tg₃o3) +
-        chi1 .* (mg₁ + Fg₂o3 - g₃o3) + E₂
+    u = uprev + (fH01 + 2fH02)/3 + W.dW .* (mg₁ + Fg₂o3 + Tg₃o3) + chi1 .* (mg₁ + Fg₂o3 - g₃o3) + E₂
     if integrator.opts.adaptive
         E₁ = fH01 .+ fH02
 
@@ -348,18 +346,14 @@ end
     g3 = integrator.g(H12, p, t+c13*dt)
 
     H03 = uprev + dt*(a041*k1 + a042*k2 + a043*k3) + chi2 .* (b041*g1 + b042*g2 + b043*g3)
-    H13 = uprev + dt*(a141*k1 + a142*k2 + a143*k3) +
-          integrator.sqdt*(b141*g1 + b142*g2 + b143*g3)
+    H13 = uprev + dt*(a141*k1 + a142*k2 + a143*k3) + integrator.sqdt*(b141*g1 + b142*g2 + b143*g3)
 
     k4 = integrator.f(H03, p, t+c04*dt)
     g4 = integrator.g(H13, p, t+c14*dt)
 
-    E₂ = chi2 .* (beta31*g1 + beta32*g2 + beta33*g3 + beta34*g4) +
-         chi3 .* (beta41*g1 + beta42*g2 + beta43*g3 + beta44*g4)
+    E₂ = chi2 .* (beta31*g1 + beta32*g2 + beta33*g3 + beta34*g4) + chi3 .* (beta41*g1 + beta42*g2 + beta43*g3 + beta44*g4)
 
-    u = uprev + dt*(α1*k1 + α2*k2 + α3*k3 + α4*k4) + E₂ +
-        W.dW .* (beta11*g1 + beta12*g2 + beta13*g3 + beta14*g4) +
-        chi1 .* (beta21*g1 + beta22*g2 + beta23*g3 + beta24*g4)
+    u = uprev + dt*(α1*k1 + α2*k2 + α3*k3 + α4*k4) + E₂ + W.dW .* (beta11*g1 + beta12*g2 + beta13*g3 + beta14*g4) + chi1 .* (beta21*g1 + beta22*g2 + beta23*g3 + beta24*g4)
 
     E₁ = dt*(k1 + k2 + k3 + k4)
 
@@ -430,11 +424,8 @@ end
         integrator.eigen_est = ϱu/ϱd
     end
 
-    @.. E₂ = chi2*(beta31*g1 + beta32*g2 + beta33*g3 + beta34*g4) +
-             chi3*(beta41*g1 + beta42*g2 + beta43*g3 + beta44*g4)
-    @.. u = uprev + dt*(α1*k1 + α2*k2 + α3*k3 + α4*k4) + E₂ +
-            W.dW*(beta11*g1 + beta12*g2 + beta13*g3 + beta14*g4) +
-            chi1*(beta21*g1 + beta22*g2 + beta23*g3 + beta24*g4)
+    @.. E₂ = chi2*(beta31*g1 + beta32*g2 + beta33*g3 + beta34*g4) + chi3*(beta41*g1 + beta42*g2 + beta43*g3 + beta44*g4)
+    @.. u = uprev + dt*(α1*k1 + α2*k2 + α3*k3 + α4*k4) + E₂ + W.dW*(beta11*g1 + beta12*g2 + beta13*g3 + beta14*g4) + chi1*(beta21*g1 + beta22*g2 + beta23*g3 + beta24*g4)
 
     if integrator.opts.adaptive
         @.. E₁ = dt * (k1 + k2 + k3 + k4)

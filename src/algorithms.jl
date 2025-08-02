@@ -96,7 +96,7 @@ package which automatically selects optimal algorithms based on problem characte
   - Kastner, F., Rößler, A.: An analysis of approximation algorithms for iterated stochastic
     integrals and a Julia and MATLAB simulation toolbox. Numerical Algorithms 93, 27–66 (2023)
   - Wiktorsson, M. "Joint characteristic function and simultaneous simulation of
-    iterated Itô integrals for multiple independent Brownian motions" (2001)################################################################################
+    iterated Itô integrals for multiple independent Brownian motions" (2001)
   - Implemented via LevyArea.jl package integration (PR #459)
 """
 struct IILevyArea <: IteratedIntegralApprox end

@@ -195,9 +195,7 @@ end
 
     gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (W.dW isa Number) ||
                  (length(W.dW) == 1))
-    gen_prob && (vec_χ = 2 .*
-             floor.(false .* W.dW .+ 1//2 .+ oftype(W.dW, rand(W.rng, length(W.dW)))) .-
-             true)
+    gen_prob && (vec_χ = 2 .* floor.(false .* W.dW .+ 1//2 .+ oftype(W.dW, rand(W.rng, length(W.dW)))) .- true)
 
     alg = unwrap_alg(integrator, true)
     alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)

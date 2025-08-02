@@ -322,8 +322,7 @@ end
     if integrator.opts.adaptive
         En = integrator.opts.internalnorm(dW, t)^3*ggprime_norm^2 / 6
         du2 = integrator.f(K, p, t+dt)
-        tmp = integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2, t) +
-              En
+        tmp = integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2, t) + En
 
         tmp = calculate_residuals(tmp, uprev, u, integrator.opts.abstol,
             integrator.opts.reltol, integrator.opts.internalnorm, t)
