@@ -10,6 +10,7 @@ using Reexport
 @reexport using DiffEqBase
 
 import ADTypes
+using EnumX
 
 import OrdinaryDiffEqCore
 import OrdinaryDiffEqCore: default_controller, isstandard, ispredictive,
@@ -158,6 +159,7 @@ include("iterated_integrals.jl")
 include("SROCK_utils.jl")
 include("composite_algs.jl")
 include("weak_utils.jl")
+include("default_alg.jl")
 
 export StochasticDiffEqAlgorithm, StochasticDiffEqAdaptiveAlgorithm,
        StochasticCompositeAlgorithm

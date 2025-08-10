@@ -91,6 +91,9 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV, "APPVEYOR")
         @time @safetestset "Composite Tests" begin
             include("composite_algorithm_test.jl")
         end
+        @time @safetestset "Default Algorithm Tests" begin
+            include("default_alg_test.jl")
+        end
         @time @safetestset "Events Tests" begin
             include("events_test.jl")
         end
