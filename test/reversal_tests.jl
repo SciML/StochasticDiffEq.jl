@@ -126,7 +126,7 @@ end
     end
     sys = modelingtoolkitize(prob_forward)
     sys2 = stochastic_integral_transform(sys, -1 // 1)
-    fdrift = eval(generate_function(sys2)[i])
+    fdrift = eval(generate_rhs(sys2)[i])
     fdif = eval(generate_diffusion_function(sys2)[i])
 
     for solver in Ito_solver
