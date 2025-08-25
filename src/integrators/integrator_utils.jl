@@ -234,6 +234,7 @@ end
             copyat_or_push!(integrator.sol.u, integrator.saveiter,
                 integrator.u[integrator.opts.save_idxs], Val{false})
         end
+        SciMLBase.save_final_discretes!(integrator, integrator.opts.callback)
     end
     if (!isnothing(integrator.W) && integrator.W.curt != integrator.t) ||
        (!isnothing(integrator.P) && integrator.P.curt != integrator.t)
