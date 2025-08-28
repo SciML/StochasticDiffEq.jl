@@ -104,11 +104,25 @@ end
         # By linearity: 0.5*(gtmp1+gtmp2)*W.dW == 0.5*(gtmp2*W.dW) + 0.5*(gtmp1*W.dW).
         # Avoid forming (gtmp1 + gtmp2), which would allocate a temporary SparseMatrixCSC.
         # Use 5-arg mul! to accumulate directly into the cached vector (allocation-free).
-        mul!(nrtmp, gtmp2, W.dW, convert(eltype(nrtmp), 0.5), convert(eltype(nrtmp), 0.5))
+        _eh_accum_stage2!(nrtmp, gtmp2, W.dW)
     end
 
     dto2 = dt / 2
     @.. u = uprev + dto2 * (ftmp1 + ftmp2) + nrtmp
+end
+
+@inline function _eh_accum_stage2!(y, g2, dW)
+    mul!(y, g2, dW, convert(eltype(y), 0.5), convert(eltype(y), 0.5))
+    return nothing
+end
+
+@inline function _eh_accum_stage2!(
+        y::StridedVector{T},
+        g2::StridedMatrix{T},
+        dW::StridedVector{T}
+) where {T <: LinearAlgebra.BlasFloat}
+    LinearAlgebra.BLAS.gemv!('N', T(0.5), g2, dW, T(0.5), y)
+    return nothing
 end
 
 @muladd function perform_step!(integrator, cache::RandomEMConstantCache)

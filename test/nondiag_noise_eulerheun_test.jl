@@ -1,9 +1,11 @@
-using StochasticDiffEq, DiffEqNoiseProcess, SparseArrays, LinearAlgebra
+using StochasticDiffEq, DiffEqNoiseProcess, SparseArrays, LinearAlgebra,
+      AllocCheck
+using DiffEqBase: @..
 
 @testset "EulerHeun sparse noise: no per-step alloc" begin
 
     # Simple linear drift
-    f!(du, u, p, t) = (@. du = 0.999 * u)
+    f!(du, u, p, t) = (@.. du = 0.999 * u)
 
     # 2×2 identical-column block structure; g! only writes nzval of an existing sparsity pattern
     function sparse_proto(N)
@@ -54,9 +56,6 @@ using StochasticDiffEq, DiffEqNoiseProcess, SparseArrays, LinearAlgebra
 
     # Sparse g!
     function g!(G::SparseMatrixCSC{T}, u, p, t) where {T}
-        if nnz(G) < 4 * p.N
-            ensure_pattern!(G, p.N)
-        end
         c012 = T(0.12)
         c18 = T(1.8)
         @inbounds for i in 1:(p.N)
@@ -79,8 +78,11 @@ using StochasticDiffEq, DiffEqNoiseProcess, SparseArrays, LinearAlgebra
             f!, g!, ones(2N), (0.0, 1.0), p; noise_rate_prototype = A, noise = W)
         integ = init(prob, EulerHeun(); dt = 0.01, adaptive = false, save_on = false)
 
-        step!(integ) # warm-up
-        @test @allocated(step!(integ)) == 0
+        cache = integ.cache
+        allocs = AllocCheck.check_allocs(
+            StochasticDiffEq.perform_step!, (typeof(integ), typeof(cache))
+        )
+        @test isempty(allocs)
     end
 
     function make_integrator_dense(N)
@@ -91,8 +93,11 @@ using StochasticDiffEq, DiffEqNoiseProcess, SparseArrays, LinearAlgebra
             f!, g!, ones(2N), (0.0, 1.0), p; noise_rate_prototype = A, noise = W)
         integ = init(prob, EulerHeun(); dt = 0.01, adaptive = false, save_on = false)
 
-        step!(integ) # warm-up
-        @test @allocated(step!(integ)) == 0
+        cache = integ.cache
+        allocs = AllocCheck.check_allocs(
+            StochasticDiffEq.perform_step!, (typeof(integ), typeof(cache))
+        )
+        @test isempty(allocs)
     end
 
     make_integrator_dense(16)
