@@ -100,7 +100,7 @@ end
     if is_diagonal_noise(integrator.sol.prob)
         @.. nrtmp = W.dW * (gtmp1 + gtmp2) / 2
     else
-        mul!(nrtmp, gtmp2, W.dW, 0.5, 0.5)
+        mul!(nrtmp, gtmp2, W.dW, convert(eltype(nrtmp),0.5), convert(eltype(nrtmp),0.5))
     end
 
     dto2 = dt / 2
