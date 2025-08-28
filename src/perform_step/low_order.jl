@@ -98,7 +98,7 @@ end
     integrator.g(gtmp2, tmp, p, t+dt)
 
     if is_diagonal_noise(integrator.sol.prob)
-        @.. nrtmp = (0.5) * W.dW * (gtmp1 + gtmp2)
+        @.. nrtmp = W.dW * (gtmp1 + gtmp2) / 2
     else
         mul!(nrtmp, gtmp2, W.dW, 0.5, 0.5)
     end
