@@ -20,8 +20,14 @@ function alg_cache(alg::TauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
         ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     tmp = zero(u)
-    newrate = zero(jump_rate_prototype)
-    EEstcache = zero(jump_rate_prototype)
+    # Handle case where jump_rate_prototype is Nothing (for DiscreteProblem with TauLeaping)
+    if jump_rate_prototype === nothing
+        newrate = similar(u, 0)  # Empty array for discrete problems without jumps
+        EEstcache = similar(u, 0)
+    else
+        newrate = zero(jump_rate_prototype)
+        EEstcache = zero(jump_rate_prototype)
+    end
     TauLeapingCache(u, uprev, tmp, newrate, EEstcache)
 end
 

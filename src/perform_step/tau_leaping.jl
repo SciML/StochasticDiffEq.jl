@@ -1,9 +1,11 @@
 @muladd function perform_step!(integrator, cache::TauLeapingConstantCache)
     @unpack t, dt, uprev, u, W, p, P, c = integrator
-    tmp = c(uprev, p, t, P.dW, nothing)
+    # Handle case where P is Nothing (for pure discrete problems)
+    dW = P === nothing ? nothing : P.dW
+    tmp = c(uprev, p, t, dW, nothing)
     integrator.u = uprev .+ tmp
 
-    if integrator.opts.adaptive
+    if integrator.opts.adaptive && P !== nothing
         if integrator.alg isa TauLeaping
             oldrate = P.cache.currate
             newrate = P.cache.rate(integrator.u, p, t+dt)
@@ -22,10 +24,12 @@ end
 @muladd function perform_step!(integrator, cache::TauLeapingCache)
     @unpack t, dt, uprev, u, W, p, P, c = integrator
     @unpack tmp, newrate, EEstcache = cache
-    c(tmp, uprev, p, t, P.dW, nothing)
+    # Handle case where P is Nothing (for pure discrete problems)
+    dW = P === nothing ? nothing : P.dW
+    c(tmp, uprev, p, t, dW, nothing)
     @.. u = uprev + tmp
 
-    if integrator.opts.adaptive
+    if integrator.opts.adaptive && P !== nothing
         if integrator.alg isa TauLeaping
             oldrate = P.cache.currate
             P.cache.rate(newrate, u, p, t+dt)

@@ -345,6 +345,9 @@ function alg_compatible(prob::DiffEqBase.AbstractSDEProblem,
 end
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem, alg::BAOAB) = is_diagonal_noise(prob)
 
+# TauLeaping algorithms are compatible with DiscreteProblem (for JumpProcesses integration)
+alg_compatible(prob::DiscreteProblem, alg::StochasticDiffEqJumpAdaptiveAlgorithm) = true
+
 function alg_compatible(prob::JumpProblem,
         alg::Union{StochasticDiffEqJumpAdaptiveAlgorithm, StochasticDiffEqJumpAlgorithm})
     prob.prob isa DiscreteProblem

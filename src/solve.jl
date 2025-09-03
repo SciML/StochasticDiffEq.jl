@@ -18,8 +18,8 @@ concrete_prob(prob) = prob
 concrete_prob(prob::JumpProblem) = prob.prob
 
 function DiffEqBase.__init(
-        _prob::Union{DiffEqBase.AbstractRODEProblem, JumpProblem},
-        alg::Union{AbstractRODEAlgorithm, AbstractSDEAlgorithm}, timeseries_init = typeof(_prob.u0)[],
+        _prob::Union{DiffEqBase.AbstractRODEProblem, JumpProblem, DiscreteProblem},
+        alg::Union{AbstractRODEAlgorithm, AbstractSDEAlgorithm, StochasticDiffEqJumpAdaptiveAlgorithm}, timeseries_init = typeof(_prob.u0)[],
         ts_init = eltype(concrete_prob(_prob).tspan)[],
         ks_init = nothing,
         recompile::Type{Val{recompile_flag}} = Val{true};
@@ -527,8 +527,8 @@ function DiffEqBase.__init(
         elseif W.curt != t
             error("Starting time in the noise process is not the starting time of the simulation. The noise process should be re-initialized for repeated use")
         end
-    else # Only a jump problem
-        @assert _prob isa JumpProblem
+    else # Only a jump problem or discrete problem
+        @assert _prob isa Union{JumpProblem, DiscreteProblem}
         W = nothing
     end
 
