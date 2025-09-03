@@ -124,10 +124,10 @@ end
     else
         prob_forward = remake(prob, noise = W_forward, u0 = vec(prob.u0))
     end
-    sys = modelingtoolkitize(prob_forward)
+    sys = complete(modelingtoolkitize(prob_forward))
     sys2 = stochastic_integral_transform(sys, -1 // 1)
-    fdrift = eval(generate_rhs(sys2)[i])
-    fdif = eval(generate_diffusion_function(sys2)[i])
+    fdrift = generate_rhs(sys2; expression = Val{false})[i]
+    fdif = generate_diffusion_function(sys2; expression = Val{false})[i]
 
     for solver in Ito_solver
         println("solver: ", solver)
