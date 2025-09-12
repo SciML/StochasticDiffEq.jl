@@ -98,10 +98,13 @@ end
     integrator.g(gtmp2, tmp, p, t+dt)
 
     if is_diagonal_noise(integrator.sol.prob)
-        @.. nrtmp=(1/2)*W.dW*(gtmp1+gtmp2)
+        @.. nrtmp = W.dW * (gtmp1 + gtmp2) / 2
     else
-        @.. gtmp1 = (1/2)*(gtmp1+gtmp2)
-        mul!(nrtmp, gtmp1, W.dW)
+        # nrtmp already contains gtmp1 * W.dW from stage 1.
+        # By linearity: 0.5*(gtmp1+gtmp2)*W.dW == 0.5*(gtmp2*W.dW) + 0.5*(gtmp1*W.dW).
+        # Avoid forming (gtmp1 + gtmp2), which would allocate a temporary SparseMatrixCSC.
+        # Use 5-arg mul! to accumulate directly into the cached vector (allocation-free).
+        mul!(nrtmp, gtmp2, W.dW, convert(eltype(nrtmp), 0.5), convert(eltype(nrtmp), 0.5))
     end
 
     dto2 = dt / 2
