@@ -94,10 +94,13 @@ using DiffEqBase: @..
         integ = init(prob, EulerHeun(); dt = 0.01, adaptive = false, save_on = false)
 
         cache = integ.cache
-        allocs = AllocCheck.check_allocs(
-            StochasticDiffEq.perform_step!, (typeof(integ), typeof(cache))
-        )
-        @test isempty(allocs)
+
+        # Dense+BLAS: assert with `@allocated == 0` (not `check_allocs`).
+        # `check_allocs` flags throw-only branches in LinearAlgebra’s generic gemv!/mul!,
+        # while the BLAS hot path is allocation-free at runtime. We keep `check_allocs`
+        # for the sparse/non-diagonal tests.
+        StochasticDiffEq.perform_step!(integ, cache) # warm-up
+        @test @allocated(StochasticDiffEq.perform_step!(integ, cache)) == 0
     end
 
     make_integrator_dense(16)
