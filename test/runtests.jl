@@ -15,6 +15,9 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV, "APPVEYOR")
 
 @time begin
     if GROUP == "All" || GROUP == "Interface1"
+        @time @safetestset "Default Solver Tests" begin
+            include("default_solver_test.jl")
+        end
         @time @safetestset "First Rand Tests" begin
             include("first_rand_test.jl")
         end
