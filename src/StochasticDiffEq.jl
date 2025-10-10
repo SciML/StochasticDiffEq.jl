@@ -158,6 +158,7 @@ include("iterated_integrals.jl")
 include("SROCK_utils.jl")
 include("composite_algs.jl")
 include("weak_utils.jl")
+include("default_sde_alg.jl")
 
 export StochasticDiffEqAlgorithm, StochasticDiffEqAdaptiveAlgorithm,
        StochasticCompositeAlgorithm
