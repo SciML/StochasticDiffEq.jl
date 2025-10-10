@@ -11,7 +11,7 @@ function OrdinaryDiffEqCore._initialize_dae!(
         ::OrdinaryDiffEqCore.DefaultInit, isinplace)
     if SciMLBase.has_initializeprob(prob.f)
         OrdinaryDiffEqCore._initialize_dae!(integrator, prob, SciMLBase.OverrideInit(), isinplace)
-    elseif SciMLBase.__has_mass_matrix(prob.f)
+    elseif SciMLBase.__has_mass_matrix(prob.f) && !(prob.f.mass_matrix isa LinearAlgebra.UniformScaling)
         OrdinaryDiffEqCore._initialize_dae!(integrator, prob, SciMLBase.CheckInit(), isinplace)
     end
 end
