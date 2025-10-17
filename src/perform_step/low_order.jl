@@ -242,6 +242,7 @@ end
     @unpack t, dt, uprev, u, W, p, f = integrator
     integrator.f(du1, uprev, p, t)
     integrator.g(L, uprev, p, t)
+
     @.. K = uprev + dt * du1
     @.. du2 = zero(eltype(u)) # This makes it safe to re-use the array
     if SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Ito
