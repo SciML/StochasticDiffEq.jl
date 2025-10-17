@@ -75,7 +75,6 @@ function DiffEqBase.__init(
         kwargs...) where {recompile_flag}
     is_sde = _prob isa SDEProblem
 
-    println()
     use_old_kwargs = haskey(kwargs, :alias_u0) || haskey(kwargs, :alias_jumps) ||
                      haskey(kwargs, :alias_noise)
 
@@ -508,9 +507,6 @@ function DiffEqBase.__init(
             end
             =#
         end
-        # Reseed because initializing Xoroshiro128+ not equivalent to reseeding
-        Random.seed!(W.rng, _seed)
-
     elseif prob isa DiffEqBase.AbstractRODEProblem
         W = (!haskey(kwargs, :alias_noise) || kwargs[:alias_noise] === true) ?
             copy(prob.noise) : prob.noise
