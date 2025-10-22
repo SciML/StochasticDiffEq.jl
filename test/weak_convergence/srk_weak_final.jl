@@ -21,7 +21,7 @@ end
 
 @info "Scalar oop noise"
 
-numtraj = Int(2e6) # in the paper they use 1e9
+numtraj = Int(1e7) # in the paper they use 1e9
 u₀ = 0.0
 f(u, p, t) = 1//2*u+sqrt(u^2+1)
 g(u, p, t) = sqrt(u^2+1)
@@ -61,7 +61,7 @@ sim = test_convergence(dts, ensemble_prob, RI1(),
 @test abs(sim.𝒪est[:weak_final]-2) < 0.3
 println("RI1:", sim.𝒪est[:weak_final])
 
-numtraj = Int(1e6)
+numtraj = Int(1e7)
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -73,7 +73,7 @@ sim = test_convergence(dts, ensemble_prob, RI3(),
 @test abs(sim.𝒪est[:weak_final]-2) < 0.3
 println("RI3:", sim.𝒪est[:weak_final])
 
-numtraj = Int(2e6)
+numtraj = Int(1e7)
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -85,7 +85,7 @@ sim = test_convergence(dts, ensemble_prob, RI5(),
 @test abs(sim.𝒪est[:weak_final]-2) < 0.3
 println("RI5:", sim.𝒪est[:weak_final])
 
-numtraj = Int(2e6)
+numtraj = Int(1e7)
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -109,7 +109,7 @@ sim = test_convergence(dts, ensemble_prob, RDI1WM(),
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 println("RDI1WM:", sim.𝒪est[:weak_final])
 
-numtraj = Int(2e6)
+numtraj = Int(1e7)
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -193,7 +193,7 @@ sim = test_convergence(dts, ensemble_prob, RI1(),
 @test abs(sim.𝒪est[:weak_final]-2) < 0.4
 println("RI1:", sim.𝒪est[:weak_final])
 
-numtraj = Int(1e6)
+numtraj = Int(1e7)
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -205,7 +205,7 @@ sim = test_convergence(dts, ensemble_prob, RI3(),
 @test abs(sim.𝒪est[:weak_final]-2) < 0.3
 println("RI3:", sim.𝒪est[:weak_final])
 
-numtraj = Int(2e6)
+numtraj = Int(1e7)
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -217,7 +217,7 @@ sim = test_convergence(dts, ensemble_prob, RI5(),
 @test abs(sim.𝒪est[:weak_final]-2) < 0.3
 println("RI5:", sim.𝒪est[:weak_final])
 
-numtraj = Int(2e6)
+numtraj = Int(1e7)
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -241,7 +241,7 @@ sim = test_convergence(dts, ensemble_prob, RDI1WM(),
 @test abs(sim.𝒪est[:weak_final]-1) < 0.3
 println("RDI1WM:", sim.𝒪est[:weak_final])
 
-numtraj = Int(2e6)
+numtraj = Int(1e7)
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
