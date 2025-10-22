@@ -1,5 +1,4 @@
 using StochasticDiffEq, DiffEqNoiseProcess, Test, Random
-using Random
 using SDEProblemLibrary
 # automatically construct SDE transformation for Ito reversal
 using ModelingToolkit
@@ -118,7 +117,6 @@ end
 @testset "Ito Solver Reversal Tests ($(["out-of-place", "in-place"][i]))" for i in 1:2
     prob = (SDEProblemLibrary.prob_sde_linear,
         SDEProblemLibrary.prob_sde_2Dlinear)[i]
-
     if i == 1
         prob_forward = remake(prob, noise = W_forward)
     else

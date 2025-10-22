@@ -98,7 +98,7 @@ ftrue = Vector{}(undef, 2)
 ftrue[1] = f_true1
 ftrue[2] = f_true2
 
-numtraj = Int(1e5)
+numtraj = Int(1e6)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
