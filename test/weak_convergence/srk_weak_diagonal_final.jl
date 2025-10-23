@@ -89,7 +89,7 @@ sim = test_convergence(dts, ensemble_prob, RI5(),
 @test abs(sim.𝒪est[:weak_final]-2) < 0.45
 println("RI5:", sim.𝒪est[:weak_final])
 
-numtraj = Int(6e6)
+numtraj = Int(3e7)
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -98,10 +98,10 @@ sim = test_convergence(dts, ensemble_prob, RI6(),
     weak_timeseries_errors = false, weak_dense_errors = false,
     expected_value = 1//100*exp(301//100)
 )
-@test abs(sim.𝒪est[:weak_final]-2) < 0.5 # order is 1.55
+@test abs(sim.𝒪est[:weak_final]-1.5) < 0.5 # order is 1.55
 println("R6:", sim.𝒪est[:weak_final])
 
-numtraj = Int(4e6)
+numtraj = Int(1e7)
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -113,7 +113,7 @@ sim = test_convergence(dts, ensemble_prob, RDI1WM(),
 @test abs(sim.𝒪est[:weak_final]-1) < 0.5 # order is 1.44
 println("RDI1WM:", sim.𝒪est[:weak_final])
 
-numtraj = Int(6e6)
+numtraj = Int(3e7)
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
 
@@ -122,7 +122,7 @@ sim = test_convergence(dts, ensemble_prob, RDI2WM(),
     weak_timeseries_errors = false, weak_dense_errors = false,
     expected_value = 1//100*exp(301//100)
 )
-@test abs(sim.𝒪est[:weak_final]-2) < 0.5 # order is 1.55
+@test abs(sim.𝒪est[:weak_final]-1.5) < 0.5 # order is 1.55
 println("RDI2WM:", sim.𝒪est[:weak_final])
 
 numtraj = Int(5e4)

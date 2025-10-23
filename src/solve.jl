@@ -411,7 +411,7 @@ function DiffEqBase.__init(
                     rand_prototype2 .= false
                     W = WienerProcess!(t, rand_prototype, rand_prototype2,
                         save_everystep = save_noise,
-                        rng = Xorshifts.Xoroshiro128Plus(_seed))
+                        rng = Random.Xoshiro(_seed))
                 elseif alg isa RKMilGeneral
                     m = length(rand_prototype)
                     if alg.p != nothing
@@ -422,33 +422,33 @@ function DiffEqBase.__init(
                     end
                     W = WienerProcess!(t, rand_prototype, rand_prototype2,
                         save_everystep = save_noise,
-                        rng = Xorshifts.Xoroshiro128Plus(_seed))
+                        rng = Random.Xoshiro(_seed))
                 elseif alg isa W2Ito1
                     m = 2
                     rand_prototype2 = zeros(eltype(rand_prototype), Int(m))
                     W = WienerProcess!(t, rand_prototype, rand_prototype2,
                         save_everystep = save_noise,
-                        rng = Xorshifts.Xoroshiro128Plus(_seed))
+                        rng = Random.Xoshiro(_seed))
                 else
                     W = WienerProcess!(t, rand_prototype, rand_prototype,
                         save_everystep = save_noise,
-                        rng = Xorshifts.Xoroshiro128Plus(_seed))
+                        rng = Random.Xoshiro(_seed))
                 end
             else
                 W = WienerProcess!(t, rand_prototype,
                     save_everystep = save_noise,
-                    rng = Xorshifts.Xoroshiro128Plus(_seed))
+                    rng = Random.Xoshiro(_seed))
             end
             #=
             else
               if alg_needs_extra_process(alg)
                 W = SimpleWienerProcess!(t,rand_prototype,rand_prototype,
                                    save_everystep=save_noise,
-                                   rng = Xorshifts.Xoroshiro128Plus(_seed))
+                                   rng = Random.Xoshiro(_seed))
               else
                 W = SimpleWienerProcess!(t,rand_prototype,
                                    save_everystep=save_noise,
-                                   rng = Xorshifts.Xoroshiro128Plus(_seed))
+                                   rng = Random.Xoshiro(_seed))
               end
             end
             =#
@@ -465,7 +465,7 @@ function DiffEqBase.__init(
                     end
                     W = WienerProcess(t, rand_prototype, rand_prototype2,
                         save_everystep = save_noise,
-                        rng = Xorshifts.Xoroshiro128Plus(_seed))
+                        rng = Random.Xoshiro(_seed))
                 elseif alg isa RKMilGeneral
                     m = length(rand_prototype)
                     if rand_prototype isa Number || alg.p === nothing
@@ -476,33 +476,33 @@ function DiffEqBase.__init(
                     end
                     W = WienerProcess(t, rand_prototype, rand_prototype2,
                         save_everystep = save_noise,
-                        rng = Xorshifts.Xoroshiro128Plus(_seed))
+                        rng = Random.Xoshiro(_seed))
                 elseif alg isa W2Ito1
                     m = 2
                     rand_prototype2 = zeros(eltype(rand_prototype), Int(m))
                     W = WienerProcess(t, rand_prototype, rand_prototype2,
                         save_everystep = save_noise,
-                        rng = Xorshifts.Xoroshiro128Plus(_seed))
+                        rng = Random.Xoshiro(_seed))
                 else
                     W = WienerProcess(t, rand_prototype, rand_prototype,
                         save_everystep = save_noise,
-                        rng = Xorshifts.Xoroshiro128Plus(_seed))
+                        rng = Random.Xoshiro(_seed))
                 end
             else
                 W = WienerProcess(t, rand_prototype,
                     save_everystep = save_noise,
-                    rng = Xorshifts.Xoroshiro128Plus(_seed))
+                    rng = Random.Xoshiro(_seed))
             end
             #=
             else
               if alg_needs_extra_process(alg)
                 W = SimpleWienerProcess(t,rand_prototype,rand_prototype,
                                    save_everystep=save_noise,
-                                   rng = Xorshifts.Xoroshiro128Plus(_seed))
+                                   rng = Random.Xoshiro(_seed))
               else
                 W = SimpleWienerProcess(t,rand_prototype,
                                    save_everystep=save_noise,
-                                   rng = Xorshifts.Xoroshiro128Plus(_seed))
+                                   rng = Random.Xoshiro(_seed))
               end
             end
             =#
@@ -546,7 +546,7 @@ function DiffEqBase.__init(
             P = CompoundPoissonProcess!(_prob.regular_jump.rate, t, jump_prototype,
                 computerates = !alg_control_rate(alg) || !adaptive,
                 save_everystep = save_noise,
-                rng = Xorshifts.Xoroshiro128Plus(_seed))
+                rng = Random.Xoshiro(_seed))
             alg_control_rate(alg) && adaptive &&
                 P.cache.rate(P.cache.currate, u, p, tspan[1])
         else
@@ -554,7 +554,7 @@ function DiffEqBase.__init(
             P = CompoundPoissonProcess(_prob.regular_jump.rate, t, jump_prototype,
                 save_everystep = save_noise,
                 computerates = !alg_control_rate(alg) || !adaptive,
-                rng = Xorshifts.Xoroshiro128Plus(_seed))
+                rng = Random.Xoshiro(_seed))
             alg_control_rate(alg) && adaptive &&
                 (P.cache.currate = P.cache.rate(u, p, tspan[1]))
         end

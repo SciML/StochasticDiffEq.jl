@@ -21,7 +21,7 @@ end
 
 @info "Scalar noise"
 
-numtraj = Int(1e6) # in the paper they use 1e9
+numtraj = Int(2e6) # in the paper they use 1e9
 u₀ = 0.0
 f(u, p, t) = 1 // 2 * u + sqrt(u^2 + 1)
 g(u, p, t) = sqrt(u^2 + 1)
@@ -102,7 +102,7 @@ ensemble_prob = EnsembleProblem(prob;
     prob_func = prob_func
 )
 
-numtraj = Int(1e5)
+numtraj = Int(1e6)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -206,7 +206,7 @@ ensemble_prob = EnsembleProblem(prob;
     prob_func = prob_func
 )
 
-numtraj = Int(1e5)
+numtraj = Int(1e6)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)

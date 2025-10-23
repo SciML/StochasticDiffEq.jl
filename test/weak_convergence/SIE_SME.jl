@@ -21,7 +21,7 @@ end
 @info "Scalar oop noise"
 
 # PC exercise 14.2.2
-numtraj = Int(7e3)
+numtraj = Int(1e5)
 u₀ = 0.1
 f(u, p, t) = p[1]*u
 g(u, p, t) = p[2]*u
@@ -93,7 +93,7 @@ ensemble_prob = EnsembleProblem(prob;
     prob_func = prob_func
 )
 
-numtraj = Int(7e3)
+numtraj = Int(1e5)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
@@ -156,7 +156,7 @@ ensemble_prob = EnsembleProblem(prob;
     prob_func = prob_func
 )
 
-numtraj = Int(5e4)
+numtraj = Int(1e6)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
