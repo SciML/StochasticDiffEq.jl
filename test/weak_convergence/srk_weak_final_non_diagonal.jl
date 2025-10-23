@@ -117,7 +117,7 @@ sim = test_convergence(dts, ensemble_prob, RDI1WM(),
 @test_broken abs(sim.𝒪est[:weak_final]-2) < 0.3 # seems closer to 1.5?
 println("RDI1WM:", sim.𝒪est[:weak_final])
 
-numtraj = Int(2e6)
+numtraj = Int(1e7)
 seed = 10
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
