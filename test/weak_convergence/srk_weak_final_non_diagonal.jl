@@ -113,7 +113,7 @@ sim = test_convergence(dts, ensemble_prob, RDI1WM(),
     save_everystep = false, trajectories = numtraj, save_start = false, adaptive = false,
     weak_timeseries_errors = false, weak_dense_errors = false,
     expected_value = exp(-3.0)
-
+)
 @test_broken abs(sim.𝒪est[:weak_final]-1.5) < 0.3 # seems closer to 1.5?
 println("RDI1WM:", sim.𝒪est[:weak_final])
 
