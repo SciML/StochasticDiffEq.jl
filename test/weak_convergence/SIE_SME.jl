@@ -156,7 +156,7 @@ ensemble_prob = EnsembleProblem(prob;
     prob_func = prob_func
 )
 
-numtraj = Int(1e5)
+numtraj = Int(1e6)
 seed = 100
 Random.seed!(seed)
 seeds = rand(UInt, numtraj)
