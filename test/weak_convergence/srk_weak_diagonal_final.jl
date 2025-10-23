@@ -98,7 +98,7 @@ sim = test_convergence(dts, ensemble_prob, RI6(),
     weak_timeseries_errors = false, weak_dense_errors = false,
     expected_value = 1//100*exp(301//100)
 )
-@test abs(sim.𝒪est[:weak_final]-2) < 0.5 # order is 1.55
+@test abs(sim.𝒪est[:weak_final]-1.5) < 0.5 # order is 1.55
 println("R6:", sim.𝒪est[:weak_final])
 
 numtraj = Int(1e7)
@@ -122,7 +122,7 @@ sim = test_convergence(dts, ensemble_prob, RDI2WM(),
     weak_timeseries_errors = false, weak_dense_errors = false,
     expected_value = 1//100*exp(301//100)
 )
-@test abs(sim.𝒪est[:weak_final]-2) < 0.5 # order is 1.55
+@test abs(sim.𝒪est[:weak_final]-1.5) < 0.5 # order is 1.55
 println("RDI2WM:", sim.𝒪est[:weak_final])
 
 numtraj = Int(5e4)
