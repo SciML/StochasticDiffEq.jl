@@ -350,6 +350,11 @@ function alg_compatible(prob::JumpProblem,
     prob.prob isa DiscreteProblem
 end
 
+function alg_compatible(prob::DiscreteProblem,
+        alg::Union{StochasticDiffEqJumpAdaptiveAlgorithm, StochasticDiffEqJumpAlgorithm})
+    true
+end
+
 function alg_needs_extra_process(alg::Union{
         StochasticDiffEqAlgorithm, StochasticDiffEqRODEAlgorithm})
     false

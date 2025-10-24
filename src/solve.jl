@@ -1,4 +1,4 @@
-function DiffEqBase.__solve(prob::DiffEqBase.AbstractRODEProblem,
+function DiffEqBase.__solve(prob::Union{DiffEqBase.AbstractRODEProblem, DiffEqBase.AbstractODEProblem},
         alg::Union{AbstractRODEAlgorithm, AbstractSDEAlgorithm},
         timeseries = [], ts = [], ks = nothing, # needed for variable rate
         recompile::Type{Val{recompile_flag}} = Val{true};
@@ -18,7 +18,7 @@ concrete_prob(prob) = prob
 concrete_prob(prob::JumpProblem) = prob.prob
 
 function DiffEqBase.__init(
-        _prob::Union{DiffEqBase.AbstractRODEProblem, JumpProblem},
+        _prob::Union{DiffEqBase.AbstractRODEProblem, DiffEqBase.AbstractODEProblem, JumpProblem},
         alg::Union{AbstractRODEAlgorithm, AbstractSDEAlgorithm}, timeseries_init = typeof(_prob.u0)[],
         ts_init = eltype(concrete_prob(_prob).tspan)[],
         ks_init = nothing,
@@ -527,8 +527,8 @@ function DiffEqBase.__init(
         elseif W.curt != t
             error("Starting time in the noise process is not the starting time of the simulation. The noise process should be re-initialized for repeated use")
         end
-    else # Only a jump problem
-        @assert _prob isa JumpProblem
+    else # Only a jump problem or discrete problem
+        @assert _prob isa JumpProblem || _prob isa DiscreteProblem
         W = nothing
     end
 
@@ -572,7 +572,7 @@ function DiffEqBase.__init(
         jump_prototype, uEltypeNoUnits, uBottomEltypeNoUnits,
         tTypeNoUnits, uprev, f, t, dt, Val{isinplace(_prob)})
 
-    if _prob isa JumpProblem && prob isa DiscreteProblem && prob isa Integer
+    if _prob isa JumpProblem && prob isa DiscreteProblem && eltype(prob.u0) <: Integer
         id = DiffEqBase.ConstantInterpolation(ts, timeseries)
     else
         id = LinearInterpolationData(timeseries, ts)
