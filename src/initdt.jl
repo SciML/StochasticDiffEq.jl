@@ -5,6 +5,11 @@ function sde_determine_initdt(u0::uType, t::tType, tdir, dtmax, abstol, reltol,
         return tdir*dtmax/1e6
     end
 
+    # DiscreteProblem doesn't have noise function g, skip SDE-specific dt determination
+    if prob isa DiffEqBase.AbstractDiscreteProblem
+        return tdir*dtmax/1e6
+    end
+
     f = prob.f
     g = prob.g
     p = prob.p
