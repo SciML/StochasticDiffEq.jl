@@ -123,6 +123,7 @@ end
         prob_forward = remake(prob, noise = W_forward, u0 = vec(prob.u0))
     end
     sys = complete(modelingtoolkitize(prob_forward))
+    mtkps = MTKParameters(sys, [])
     sys2 = stochastic_integral_transform(sys, -1 // 1)
     fdrift = generate_rhs(sys2; expression = Val{false})[i]
     fdif = generate_diffusion_function(sys2; expression = Val{false})[i]
@@ -137,7 +138,7 @@ end
         end
         prob_reverse = remake(
             prob_forward, f = SDEFunction(fdrift, fdif), noise = W_reverse,
-            tspan = reverse(prob.tspan), u0 = _u0)
+            tspan = reverse(prob.tspan), u0 = _u0, p = mtkps)
         sol_reverse = solve(prob_reverse, solver, dt = dt, adaptive = false)
 
         if i == 1
