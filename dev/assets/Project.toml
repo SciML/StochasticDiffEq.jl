@@ -2,5 +2,8 @@
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 StochasticDiffEq = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
 
+[sources]
+StochasticDiffEq = {path = "/home/chrisrackauckas/github-runners/deepsea3-17/_work/StochasticDiffEq.jl/StochasticDiffEq.jl"}
+
 [compat]
 Documenter = "0.27, 1"
