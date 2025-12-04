@@ -32,11 +32,28 @@ end
 struct NLSOLVEJL_SETUP{CS, AD} end
 Base.@pure NLSOLVEJL_SETUP(; chunk_size = 0, autodiff = true) = NLSOLVEJL_SETUP{
     chunk_size, autodiff}()
-(::NLSOLVEJL_SETUP)(f, u0; kwargs...) = (res = NLsolve.nlsolve(f, u0; kwargs...); res.zero)
+
+# Wrapper to store the function for use with SimpleNonlinearSolve
+struct IIFNLSolveFunc{F}
+    f::F
+end
+
+function (p::NLSOLVEJL_SETUP{CS, AD})(f_wrapper::IIFNLSolveFunc, u0; kwargs...) where {
+        CS, AD}
+    f = f_wrapper.f
+    # Create a NonlinearProblem-compatible function
+    # The IIF methods use f(resid, u) signature (in-place)
+    nlf = NonlinearFunction{true}((resid, u, p) -> (f(resid, u); nothing))
+    prob = NonlinearProblem(nlf, u0)
+    ad = AD ? AutoForwardDiff() : AutoFiniteDiff()
+    alg = SimpleTrustRegion(; autodiff = ad)
+    sol = solve(prob, alg)
+    return sol.u
+end
+
 function (p::NLSOLVEJL_SETUP{CS, AD})(::Type{Val{:init}}, f, u0_prototype) where {CS, AD}
-    AD ? autodiff = :forward : autodiff = :central
-    OnceDifferentiable(f, u0_prototype, u0_prototype, autodiff,
-        ForwardDiff.Chunk(determine_chunksize(u0_prototype, CS)))
+    # Return a wrapper that stores the function
+    IIFNLSolveFunc(f)
 end
 
 get_chunksize(x) = 0

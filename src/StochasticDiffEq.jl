@@ -21,7 +21,7 @@ import OrdinaryDiffEqCore: default_controller, isstandard, ispredictive,
 
 using UnPack, RecursiveArrayTools, DataStructures
 using DiffEqNoiseProcess, Random, ArrayInterface
-using NLsolve, ForwardDiff, StaticArrays, MuladdMacro, FiniteDiff, Base.Threads
+using SimpleNonlinearSolve, ForwardDiff, StaticArrays, MuladdMacro, FiniteDiff, Base.Threads
 using Adapt
 
 import DiffEqBase: ODE_DEFAULT_NORM, ODE_DEFAULT_ISOUTOFDOMAIN,
