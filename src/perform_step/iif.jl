@@ -31,8 +31,8 @@ end
 @muladd function perform_step!(
         integrator, cache::Union{
             IIF1MConstantCache, IIF2MConstantCache, IIF1MilConstantCache})
-    @unpack t, dt, uprev, u, W, p, f = integrator
-    @unpack uhold, rhs, nl_rhs = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
+    (; uhold, rhs, nl_rhs) = cache
     alg = unwrap_alg(integrator, true)
     A = integrator.f.f1(u, p, t)
     if cache isa IIF1MilConstantCache
@@ -89,9 +89,9 @@ function (f::RHS_IIF2)(resid, u)
 end
 
 @muladd function perform_step!(integrator, cache::Union{IIF1MCache, IIF2MCache})
-    @unpack rtmp1, rtmp2, rtmp3, tmp, noise_tmp = cache
-    @unpack uhold, rhs, nl_rhs = cache
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    (; rtmp1, rtmp2, rtmp3, tmp, noise_tmp) = cache
+    (; uhold, rhs, nl_rhs) = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
     alg = unwrap_alg(integrator, true)
     uidx = eachindex(u)
 
@@ -129,9 +129,9 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::IIF1MilCache)
-    @unpack rtmp1, rtmp2, rtmp3, tmp, noise_tmp = cache
-    @unpack uhold, rhs, nl_rhs = cache
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    (; rtmp1, rtmp2, rtmp3, tmp, noise_tmp) = cache
+    (; uhold, rhs, nl_rhs) = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
     alg = unwrap_alg(integrator, true)
 
     dW = W.dW;
@@ -152,7 +152,7 @@ end
         end
     else #Milstein correction
         rtmp2 = M*rtmp2 # mul!(rtmp2,M,gtmp)
-        @unpack gtmp, gtmp2 = cache
+        (; gtmp, gtmp2) = cache
         #error("Milstein correction does not work.")
         mul!(rtmp3, rtmp2, W.dW)
         I = zeros(length(dW), length(dW));

@@ -2,8 +2,8 @@
         cache::Union{ImplicitEMConstantCache,
             ImplicitEulerHeunConstantCache,
             ImplicitRKMilConstantCache})
-    @unpack t, dt, uprev, u, p, P, c, f = integrator
-    @unpack nlsolver = cache
+    (; t, dt, uprev, u, p, P, c, f) = integrator
+    (; nlsolver) = cache
     alg = unwrap_alg(integrator, true)
     OrdinaryDiffEqNonlinearSolve.markfirststage!(nlsolver)
 
@@ -103,10 +103,10 @@ end
         cache::Union{ImplicitEMCache,
             ImplicitEulerHeunCache,
             ImplicitRKMilCache})
-    @unpack t, dt, uprev, u, p, P, c, f = integrator
-    @unpack gtmp, gtmp2, nlsolver = cache
-    @unpack z, tmp = nlsolver
-    @unpack k, dz = nlsolver.cache # alias to reduce memory
+    (; t, dt, uprev, u, p, P, c, f) = integrator
+    (; gtmp, gtmp2, nlsolver) = cache
+    (; z, tmp) = nlsolver
+    (; k, dz) = nlsolver.cache # alias to reduce memory
     J = (OrdinaryDiffEqCore.isnewton(nlsolver) ? nlsolver.cache.J : nothing)
     alg = unwrap_alg(integrator, true)
     alg.symplectic ? a = dt/2 : a = alg.theta*dt

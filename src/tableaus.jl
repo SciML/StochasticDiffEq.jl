@@ -335,7 +335,7 @@ checkSRIOrder(RosslerSRI)
 Determines whether the order conditions are met via the tableaus of the SRI method.
 """
 function checkSRIOrder(RosslerSRI; tol = 1e-6)
-    @unpack c₀, c₁, A₀, A₁, B₀, B₁, α, β₁, β₂, β₃, β₄ = RosslerSRI
+    (; c₀, c₁, A₀, A₁, B₀, B₁, α, β₁, β₂, β₃, β₄) = RosslerSRI
     e = ones(size(α))
     conditions = Vector{Bool}(undef, 25)
     conditions[1] = abs(dot(α, e)-1)<tol
@@ -372,7 +372,7 @@ checkSRAOrder(RosslerSRI)
 Determines whether the order conditions are met via the tableaus of the SRA method.
 """
 function checkSRAOrder(SRA; tol = 1e-6)
-    @unpack c₀, c₁, A₀, B₀, α, β₁, β₂ = SRA
+    (; c₀, c₁, A₀, B₀, α, β₁, β₂) = SRA
     e = ones(size(α))
     conditions = Vector{Bool}(undef, 8)
     conditions[1] = abs(dot(α, e)-1)<tol
@@ -998,7 +998,7 @@ function constructRDI4WM(T = Float64, T2 = Float64)
 end
 
 function checkRIOrder(RI; tol = 1e-6, ps = 2)
-    @unpack c₀, c₁, c₂, A₀, A₁, A₂, B₀, B₁, B₂, α, β₁, β₂, β₃, β₄ = RI
+    (; c₀, c₁, c₂, A₀, A₁, A₂, B₀, B₁, B₂, α, β₁, β₂, β₃, β₄) = RI
     e = ones(size(α))
     if ps == 2
         conditions = Vector{Bool}(undef, 59) # 9 conditions for first order, 59 in total
@@ -1189,7 +1189,7 @@ function constructRS2(T = Float64, T2 = Float64)
 end
 
 function checkRSOrder(RS; tol = 1e-6, ps = 2)
-    @unpack c₀, c₁, c₂, A₀, A₁, A₂, B₀, B₁, B₂, B₂, B₃, α, β₁, β₂ = RS
+    (; c₀, c₁, c₂, A₀, A₁, A₂, B₀, B₁, B₂, B₂, B₃, α, β₁, β₂) = RS
     e = ones(size(α))
     if ps == 2
         conditions = Vector{Bool}(undef, 55) # 6 conditions for first order, 55 in total
@@ -1335,11 +1335,11 @@ end
 
 function checkNONOrder(NON; tol = 1e-6)
     if NON isa KomoriNON
-        @unpack c0, cj, cjl, clj, α00, α0j, αj0, αjj, αjl, αjljj, αljjl = NON
+        (; c0, cj, cjl, clj, α00, α0j, αj0, αjj, αjl, αjljj, αljjl) = NON
     elseif NON isa KomoriNON2
-        @unpack c0, cj, ckj, α00, α0j, αj0, αjj, αjl, αkjjl = NON
+        (; c0, cj, ckj, α00, α0j, αj0, αjj, αjl, αkjjl) = NON
     else
-        @unpack c0, cj, α00, α0j, αj0, αjj, αjl = NON
+        (; c0, cj, α00, α0j, αj0, αjj, αjl) = NON
     end
     e = ones(size(c0))
 

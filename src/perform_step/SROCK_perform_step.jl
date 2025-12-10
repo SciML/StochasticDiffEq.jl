@@ -1,5 +1,5 @@
 @muladd function perform_step!(integrator, cache::SROCK1ConstantCache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    (; t, dt, uprev, u, W, p, f) = integrator
 
     alg = unwrap_alg(integrator, true)
     alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
@@ -95,8 +95,8 @@
 end
 
 @muladd function perform_step!(integrator, cache::SROCK1Cache)
-    @unpack uᵢ₋₁, uᵢ₋₂, k, gₘ₋₁, gₘ₋₂ = cache
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    (; uᵢ₋₁, uᵢ₋₂, k, gₘ₋₁, gₘ₋₂) = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
     ccache = cache.constantcache
     alg = unwrap_alg(integrator, true)
     alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
@@ -190,8 +190,8 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::SROCK2ConstantCache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
-    @unpack recf, recf2, mα, mσ, mτ = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
+    (; recf, recf2, mα, mσ, mτ) = cache
 
     gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (W.dW isa Number) ||
                  (length(W.dW) == 1))
@@ -323,11 +323,11 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::SROCK2Cache)
-    @unpack uᵢ, uₓ, uᵢ₋₁, uᵢ₋₂, k, Gₛ, Gₛ₁, vec_χ, WikRange = cache
+    (; uᵢ, uₓ, uᵢ₋₁, uᵢ₋₂, k, Gₛ, Gₛ₁, vec_χ, WikRange) = cache
 
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    (; t, dt, uprev, u, W, p, f) = integrator
 
-    @unpack recf, recf2, mα, mσ, mτ = cache.constantcache
+    (; recf, recf2, mα, mσ, mτ) = cache.constantcache
     ccache = cache.constantcache
     gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (W.dW isa Number) ||
                  (length(W.dW) == 1))
@@ -476,7 +476,7 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::SROCKEMConstantCache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    (; t, dt, uprev, u, W, p, f) = integrator
 
     alg = unwrap_alg(integrator, true)
     alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
@@ -567,8 +567,8 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::SROCKEMCache)
-    @unpack uᵢ₋₁, uᵢ₋₂, tmp, k, Gₛ, Gₛ₁, WikRange = cache
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    (; uᵢ₋₁, uᵢ₋₂, tmp, k, Gₛ, Gₛ₁, WikRange) = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
     ccache = cache.constantcache
     alg = unwrap_alg(integrator, true)
     alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
@@ -662,7 +662,7 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::SKSROCKConstantCache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    (; t, dt, uprev, u, W, p, f) = integrator
 
     alg = unwrap_alg(integrator, true)
     alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
@@ -747,8 +747,8 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::SKSROCKCache)
-    @unpack uᵢ₋₁, uᵢ₋₂, k, Gₛ, WikRange = cache
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    (; uᵢ₋₁, uᵢ₋₂, k, Gₛ, WikRange) = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
 
     ccache = cache.constantcache
     alg = unwrap_alg(integrator, true)
@@ -838,8 +838,8 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::TangXiaoSROCK2ConstantCache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
-    @unpack recf, recf2, mα, mσ, mτ, mn̂, c1, c2 = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
+    (; recf, recf2, mα, mσ, mτ, mn̂, c1, c2) = cache
 
     n̂ = mn̂[integrator.alg.version_num]
 
@@ -1000,9 +1000,9 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::TangXiaoSROCK2Cache)
-    @unpack uᵢ, uₓ, uᵢ₋₁, uᵢ₋₂, Û₁, Û₂, k, Gₛ, Gₛ₁ = cache
-    @unpack t, dt, uprev, u, W, p, f = integrator
-    @unpack recf, recf2, mα, mσ, mτ, mn̂, c1, c2 = cache.constantcache
+    (; uᵢ, uₓ, uᵢ₋₁, uᵢ₋₂, Û₁, Û₂, k, Gₛ, Gₛ₁) = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
+    (; recf, recf2, mα, mσ, mτ, mn̂, c1, c2) = cache.constantcache
 
     n̂ = mn̂[integrator.alg.version_num]
     ccache = cache.constantcache
@@ -1148,8 +1148,8 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::KomBurSROCK2ConstantCache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
-    @unpack recf, mσ, mτ, mδ = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
+    (; recf, mσ, mτ, mδ) = cache
 
     gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (W.dW isa Number) ||
                  (length(W.dW) == 1))
@@ -1345,10 +1345,10 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::KomBurSROCK2Cache)
-    @unpack utmp, uᵢ₋₁, uᵢ₋₂, k, yₛ₋₁, yₛ₋₂, yₛ₋₃, SXₛ₋₁, SXₛ₋₂,
-    SXₛ₋₃, Gₛ, Xₛ₋₁, Xₛ₋₂, Xₛ₋₃, vec_χ = cache
-    @unpack t, dt, uprev, u, W, p, f = integrator
-    @unpack recf, mσ, mτ, mδ = cache.constantcache
+    (; utmp, uᵢ₋₁, uᵢ₋₂, k, yₛ₋₁, yₛ₋₂, yₛ₋₃, SXₛ₋₁, SXₛ₋₂,
+    SXₛ₋₃, Gₛ, Xₛ₋₁, Xₛ₋₂, Xₛ₋₃, vec_χ) = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
+    (; recf, mσ, mτ, mδ) = cache.constantcache
 
     ccache = cache.constantcache
     gen_prob = !((is_diagonal_noise(integrator.sol.prob)) || (W.dW isa Number) ||
@@ -1572,8 +1572,8 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::SROCKC2ConstantCache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
-    @unpack recf, mσ, mτ = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
+    (; recf, mσ, mτ) = cache
 
     alg = unwrap_alg(integrator, true)
     alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
@@ -1655,10 +1655,10 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::SROCKC2Cache)
-    @unpack uᵢ, tmp, uᵢ₋₁, uᵢ₋₂, k, Gₛ, Gₛ₁, WikRange = cache
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    (; uᵢ, tmp, uᵢ₋₁, uᵢ₋₂, k, Gₛ, Gₛ₁, WikRange) = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
 
-    @unpack recf, mσ, mτ = cache.constantcache
+    (; recf, mσ, mτ) = cache.constantcache
     ccache = cache.constantcache
 
     alg = unwrap_alg(integrator, true)

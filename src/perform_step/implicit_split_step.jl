@@ -1,7 +1,7 @@
 @muladd function perform_step!(integrator, cache::Union{
         ISSEMConstantCache, ISSEulerHeunConstantCache})
-    @unpack t, dt, uprev, u, p, f = integrator
-    @unpack nlsolver = cache
+    (; t, dt, uprev, u, p, f) = integrator
+    (; nlsolver) = cache
     alg = unwrap_alg(integrator, true)
     theta = alg.theta
     alg.symplectic ? a = dt / 2 : a = theta * dt
@@ -110,9 +110,9 @@
 end
 
 @muladd function perform_step!(integrator, cache::Union{ISSEMCache, ISSEulerHeunCache})
-    @unpack t, dt, uprev, u, p, f = integrator
-    @unpack gtmp, gtmp2, dW_cache, nlsolver, k, dz = cache
-    @unpack z, tmp = nlsolver
+    (; t, dt, uprev, u, p, f) = integrator
+    (; gtmp, gtmp2, dW_cache, nlsolver, k, dz) = cache
+    (; z, tmp) = nlsolver
 
     J = (OrdinaryDiffEqCore.isnewton(nlsolver) ? nlsolver.cache.J : nothing)
     alg = unwrap_alg(integrator, true)

@@ -12,7 +12,7 @@ function throwex(integrator)
 end
 
 function initialize!(integrator, cache::BAOABConstantCache)
-    @unpack t, dt, uprev, u, p, W = integrator
+    (; t, dt, uprev, u, p, W) = integrator
     du1 = integrator.uprev.x[1]
     u1 = integrator.uprev.x[2]
 
@@ -21,7 +21,7 @@ function initialize!(integrator, cache::BAOABConstantCache)
 end
 
 function initialize!(integrator, cache::BAOABCache)
-    @unpack t, dt, uprev, u, p, W = integrator
+    (; t, dt, uprev, u, p, W) = integrator
     du1 = integrator.uprev.x[1]
     u1 = integrator.uprev.x[2]
 
@@ -30,8 +30,8 @@ function initialize!(integrator, cache::BAOABCache)
 end
 
 @muladd function perform_step!(integrator, cache::BAOABConstantCache)
-    @unpack t, dt, sqdt, uprev, u, p, W, f = integrator
-    @unpack half, c1, c2 = cache
+    (; t, dt, sqdt, uprev, u, p, W, f) = integrator
+    (; half, c1, c2) = cache
     du1 = uprev.x[1]
     u1 = uprev.x[2]
 
@@ -56,8 +56,8 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::BAOABCache)
-    @unpack t, dt, sqdt, uprev, u, p, W, f = integrator
-    @unpack utmp, dutmp, k, gtmp, noise, half, c1, c2 = cache
+    (; t, dt, sqdt, uprev, u, p, W, f) = integrator
+    (; utmp, dutmp, k, gtmp, noise, half, c1, c2) = cache
     du1 = uprev.x[1]
     u1 = uprev.x[2]
 

@@ -1,11 +1,11 @@
 @muladd function perform_step!(integrator, cache::SKenCarpConstantCache)
-    @unpack t, dt, uprev, u, g, p, f = integrator
-    @unpack nlsolver = cache
-    @unpack γ, a31, a32, a41, a42, a43, btilde1, btilde2, btilde3, btilde4, c3, α31,
-    α32 = cache.tab
-    @unpack ea21, ea31, ea32, ea41, ea42, ea43, eb1, eb2, eb3, eb4,
-    ebtilde1, ebtilde2, ebtilde3, ebtilde4 = cache.tab
-    @unpack nb021, nb043 = cache.tab
+    (; t, dt, uprev, u, g, p, f) = integrator
+    (; nlsolver) = cache
+    (; γ, a31, a32, a41, a42, a43, btilde1, btilde2, btilde3, btilde4, c3, α31,
+    α32) = cache.tab
+    (; ea21, ea31, ea32, ea41, ea42, ea43, eb1, eb2, eb3, eb4,
+    ebtilde1, ebtilde2, ebtilde3, ebtilde4) = cache.tab
+    (; nb021, nb043) = cache.tab
     alg = unwrap_alg(integrator, true)
     OrdinaryDiffEqNonlinearSolve.markfirststage!(nlsolver)
 
@@ -139,16 +139,16 @@
 end
 
 @muladd function perform_step!(integrator, cache::SKenCarpCache)
-    @unpack t, dt, uprev, u, g, p, f = integrator
-    @unpack z₁, z₂, z₃, z₄, k1, k2, k3, k4, atmp = cache
-    @unpack g1, g4, chi2, nlsolver = cache
-    @unpack z, tmp = nlsolver
-    @unpack k, dz = nlsolver.cache # alias to reduce memory
-    @unpack γ, a31, a32, a41, a42, a43, btilde1, btilde2, btilde3, btilde4, c3, α31,
-    α32 = cache.tab
-    @unpack ea21, ea31, ea32, ea41, ea42, ea43, eb1, eb2, eb3, eb4 = cache.tab
-    @unpack ebtilde1, ebtilde2, ebtilde3, ebtilde4 = cache.tab
-    @unpack nb021, nb043 = cache.tab
+    (; t, dt, uprev, u, g, p, f) = integrator
+    (; z₁, z₂, z₃, z₄, k1, k2, k3, k4, atmp) = cache
+    (; g1, g4, chi2, nlsolver) = cache
+    (; z, tmp) = nlsolver
+    (; k, dz) = nlsolver.cache # alias to reduce memory
+    (; γ, a31, a32, a41, a42, a43, btilde1, btilde2, btilde3, btilde4, c3, α31,
+    α32) = cache.tab
+    (; ea21, ea31, ea32, ea41, ea42, ea43, eb1, eb2, eb3, eb4) = cache.tab
+    (; ebtilde1, ebtilde2, ebtilde3, ebtilde4) = cache.tab
+    (; nb021, nb043) = cache.tab
     alg = unwrap_alg(integrator, true)
     OrdinaryDiffEqNonlinearSolve.markfirststage!(nlsolver)
 
@@ -247,7 +247,7 @@ end
         # z₄ is storage for the g1*chi2 from earlier
         @.. tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + ea41*k1 + ea42*k2 + ea43*k3 + nb043*z₄
     else
-        @unpack α41, α42 = cache.tab
+        (; α41, α42) = cache.tab
         # z₄ is storage for the g1*chi2
         @.. tmp = uprev + a41*z₁ + a42*z₂ + a43*z₃ + nb043*z₄
     end
