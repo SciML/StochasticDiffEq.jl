@@ -1001,7 +1001,7 @@ parameters θ and η.
     Milan J. Math. 77, 205–244 (2009). https://doi.org/10.1007/s00032-009-0100-0
   - Originally introduced in PR #88 (commit 42e2510) by Tatsuhiro Onodera (2018)
 
-!!! warning################################################################################
+!!! warning
 
     The derivative `ggprime` must be computed analytically for correctness.# Rossler
     The original paper contains a typo in the definition of ggprime - this
