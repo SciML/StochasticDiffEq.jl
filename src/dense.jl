@@ -105,7 +105,7 @@ Get the value at tvals where the solution is known at the
 times ts (sorted), with values timeseries and derivatives ks
 """
 function sde_interpolation(tvals, id, idxs, deriv, p, continuity::Symbol = :left)
-    @unpack ts, timeseries = id
+    (; ts, timeseries) = id
     @inbounds tdir = sign(ts[end]-ts[1])
     idx = sortperm(tvals, rev = tdir<0)
 
@@ -150,7 +150,7 @@ Get the value at tval where the solution is known at the
 times ts (sorted), with values timeseries and derivatives ks
 """
 function sde_interpolation(tval::Number, id, idxs, deriv, p, continuity::Symbol = :left)
-    @unpack ts, timeseries = id
+    (; ts, timeseries) = id
     @inbounds tdir = sign(ts[end]-ts[1])
 
     if continuity === :left
@@ -177,7 +177,7 @@ end
 
 function sde_interpolation!(
         out, tval::Number, id, idxs, deriv, p, continuity::Symbol = :left)
-    @unpack ts, timeseries = id
+    (; ts, timeseries) = id
     @inbounds tdir = sign(ts[end]-ts[1])
 
     if continuity === :left
@@ -203,7 +203,7 @@ function sde_interpolation!(
 end
 
 function sde_interpolation!(vals, tvals, id, idxs, deriv, p, continuity::Symbol = :left)
-    @unpack ts, timeseries = id
+    (; ts, timeseries) = id
     @inbounds tdir = sign(ts[end]-ts[1])
     idx = sortperm(tvals, rev = tdir<0)
 

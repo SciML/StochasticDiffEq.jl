@@ -19,7 +19,7 @@ import OrdinaryDiffEqCore: default_controller, isstandard, ispredictive,
                            step_accept_controller!,
                            step_reject_controller!, PIController, DummyController, issplit
 
-using UnPack, RecursiveArrayTools, DataStructures
+using RecursiveArrayTools, DataStructures
 using DiffEqNoiseProcess, Random, ArrayInterface
 using SimpleNonlinearSolve, ForwardDiff, StaticArrays, MuladdMacro, FiniteDiff, Base.Threads
 using Adapt

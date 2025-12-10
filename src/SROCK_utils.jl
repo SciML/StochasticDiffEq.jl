@@ -2,7 +2,7 @@
 # (absolute value wise) by power iteration.
 function maxeig!(integrator, cache::StochasticDiffEqConstantCache)
     isfirst = integrator.iter == 1 || integrator.u_modified
-    @unpack t, dt, uprev, u, p = integrator
+    (; t, dt, uprev, u, p) = integrator
     maxiter = 50
     safe = 1.2
     fsalfirst = integrator.f(uprev, p, t)
@@ -73,7 +73,7 @@ end
 
 function maxeig!(integrator, cache::StochasticDiffEqMutableCache)
     isfirst = integrator.iter == 1 || integrator.u_modified
-    @unpack t, dt, uprev, u, p = integrator
+    (; t, dt, uprev, u, p) = integrator
     fz, z, fsalfirst = cache.atmp, cache.tmp, cache.fsalfirst
     integrator.f(fsalfirst, uprev, p, t)
     ccache = cache.constantcache

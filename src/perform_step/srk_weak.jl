@@ -1,8 +1,8 @@
 @muladd function perform_step!(integrator, cache::DRI1ConstantCache)
-    @unpack a021, a031, a032, a121, a131, b021, b031, b121, b131, b221, b222, b223, b231,
+    (; a021, a031, a032, a121, a131, b021, b031, b121, b131, b221, b222, b223, b231,
     b232, b233, α1, α2, α3, c02, c03, c12, c13, beta11, beta12, beta13, beta22,
-    beta23, beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE = cache
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    beta23, beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE) = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
 
     # define three-point distributed random variables
     dW_scaled = W.dW / sqrt(dt)
@@ -171,13 +171,13 @@
 end
 
 @muladd function perform_step!(integrator, cache::DRI1Cache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
-    @unpack _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2, k3, H02, H03, H12,
-    H13, H22, H23, tmp1, tmpg, uhat, tmp, resids = cache
-    @unpack a021,
+    (; t, dt, uprev, u, W, p, f) = integrator
+    (; _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2, k3, H02, H03, H12,
+    H13, H22, H23, tmp1, tmpg, uhat, tmp, resids) = cache
+    (; a021,
     a031, a032, a121, a131, b021, b031, b121, b131, b221, b222, b223, b231, b232,
     b233, α1, α2, α3, c02, c03, c12, c13, beta11, beta12, beta13, beta22, beta23,
-    beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE = cache.tab
+    beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE) = cache.tab
 
     m = length(W.dW)
     sq3dt = sqrt(3*dt)
@@ -328,12 +328,12 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::DRI1NMCache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
-    @unpack _dW, chi1, tab, g1, g2, g3, k1, k2, k3, H02, H03,
-    H12, H13, tmp1, tmpg, uhat, tmp, resids = cache
-    @unpack a021, a031, a032, a121, a131, b021, b031, b121, b131, b221, b222, b223, b231,
+    (; t, dt, uprev, u, W, p, f) = integrator
+    (; _dW, chi1, tab, g1, g2, g3, k1, k2, k3, H02, H03,
+    H12, H13, tmp1, tmpg, uhat, tmp, resids) = cache
+    (; a021, a031, a032, a121, a131, b021, b031, b121, b131, b221, b222, b223, b231,
     b232, b233, α1, α2, α3, c02, c03, c12, c13, beta11, beta12, beta13, beta22,
-    beta23, beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE = tab
+    beta23, beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE) = tab
 
     m = length(W.dW)
     sq3dt = sqrt(3*dt)
@@ -435,8 +435,8 @@ end
 
 # Roessler SRK for first order weak approx
 @muladd function perform_step!(integrator, cache::RDI1WMConstantCache)
-    @unpack a021, b021, α1, α2, c02, beta11, NORMAL_ONESIX_QUANTILE = cache
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    (; a021, b021, α1, α2, c02, beta11, NORMAL_ONESIX_QUANTILE) = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
 
     # define three-point distributed random variables
     dW_scaled = W.dW / sqrt(dt)
@@ -480,9 +480,9 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::RDI1WMCache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
-    @unpack _dW, chi1, tab, g1, k1, k2, H02, tmp1 = cache
-    @unpack a021, b021, α1, α2, c02, beta11, NORMAL_ONESIX_QUANTILE = tab
+    (; t, dt, uprev, u, W, p, f) = integrator
+    (; _dW, chi1, tab, g1, k1, k2, H02, tmp1) = cache
+    (; a021, b021, α1, α2, c02, beta11, NORMAL_ONESIX_QUANTILE) = tab
 
     m = length(W.dW)
     sq3dt = sqrt(3*dt)
@@ -529,10 +529,10 @@ end
 # Stratonovich sense
 
 @muladd function perform_step!(integrator, cache::RSConstantCache)
-    @unpack a021, a031, a032, a131, a141, b031, b032, b121, b131, b132, b141, b142, b143,
+    (; a021, a031, a032, a131, a141, b031, b032, b121, b131, b132, b141, b142, b143,
     b221, b231, b331, b332, b341, b342, α1, α2, α3, α4, c02, c03, c13, c14,
-    beta11, beta12, beta13, beta14, beta22, beta23, NORMAL_ONESIX_QUANTILE = cache
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    beta11, beta12, beta13, beta14, beta22, beta23, NORMAL_ONESIX_QUANTILE) = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
 
     # define three-point distributed random variables
     dW_scaled = W.dW / sqrt(dt)
@@ -719,12 +719,12 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::RSCache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
-    @unpack _dW, _dZ, chi1, tab, g1, g2, g3, g4, k1, k2, k3, H02,
-    H03, H12, H13, H14, H22, H23, tmp1, tmpg = cache
-    @unpack a021, a031, a032, a131, a141, b031, b032, b121, b131, b132, b141, b142, b143,
+    (; t, dt, uprev, u, W, p, f) = integrator
+    (; _dW, _dZ, chi1, tab, g1, g2, g3, g4, k1, k2, k3, H02,
+    H03, H12, H13, H14, H22, H23, tmp1, tmpg) = cache
+    (; a021, a031, a032, a131, a141, b031, b032, b121, b131, b132, b141, b142, b143,
     b221, b231, b331, b332, b341, b342, α1, α2, α3, α4, c02, c03, c13, c14,
-    beta11, beta12, beta13, beta14, beta22, beta23, NORMAL_ONESIX_QUANTILE = tab
+    beta11, beta12, beta13, beta14, beta22, beta23, NORMAL_ONESIX_QUANTILE) = tab
 
     m = length(W.dW)
     sq3dt = sqrt(3*dt)
@@ -915,8 +915,8 @@ end
 
 # PL1WM
 @muladd function perform_step!(integrator, cache::PL1WMConstantCache)
-    @unpack NORMAL_ONESIX_QUANTILE = cache
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    (; NORMAL_ONESIX_QUANTILE) = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
 
     m = length(W.dW)
     sq3dt = sqrt(3*dt)
@@ -1015,9 +1015,9 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::PL1WMCache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
-    @unpack _dW, _dZ, chi1, tab, g1, k1, k2, Y, Yp, Ym, tmp1, tmpg1, tmpg2, Ulp, Ulm = cache
-    @unpack NORMAL_ONESIX_QUANTILE = cache.tab
+    (; t, dt, uprev, u, W, p, f) = integrator
+    (; _dW, _dZ, chi1, tab, g1, k1, k2, Y, Yp, Ym, tmp1, tmpg1, tmpg2, Ulp, Ulm) = cache
+    (; NORMAL_ONESIX_QUANTILE) = cache.tab
 
     m = length(W.dW)
     sq3dt = sqrt(3*dt)
@@ -1121,8 +1121,8 @@ end
 
 # PL1WMA
 @muladd function perform_step!(integrator, cache::PL1WMAConstantCache)
-    @unpack NORMAL_ONESIX_QUANTILE = cache
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    (; NORMAL_ONESIX_QUANTILE) = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
 
     sq3dt = sqrt(3*dt)
     # define three-point distributed random variables
@@ -1150,9 +1150,9 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::PL1WMACache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
-    @unpack _dW, chi1, tab, g1, k1, k2, Y, tmp1 = cache
-    @unpack NORMAL_ONESIX_QUANTILE = cache.tab
+    (; t, dt, uprev, u, W, p, f) = integrator
+    (; _dW, chi1, tab, g1, k1, k2, Y, tmp1) = cache
+    (; NORMAL_ONESIX_QUANTILE) = cache.tab
 
     sq3dt = sqrt(3*dt)
     # define three-point distributed random variables
@@ -1181,11 +1181,11 @@ end
 
 # NON
 @muladd function perform_step!(integrator, cache::NONConstantCache)
-    @unpack c01,
+    (; c01,
     c02, c03, c04, cj1, cj2, cj3, cj4, cjl2, cjl3, clj2, clj3, a0021, a0032, a0043,
     aj021, aj041, a0j21, a0j31, a0j32, a0j41, ajj21, ajj31, ajj32, ajj41, ajj42, ajj43,
-    ajl31, ajl32, ajl41, ajl42, ajljj31, aljjl21, aljjl31, NORMAL_ONESIX_QUANTILE = cache
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    ajl31, ajl32, ajl41, ajl42, ajljj31, aljjl21, aljjl31, NORMAL_ONESIX_QUANTILE) = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
 
     m = length(W.dW)
     # define three-point distributed random variables
@@ -1428,13 +1428,13 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::NONCache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
-    @unpack _dW, _dZ, chi1, tab, gtmp, ktmp, Y100, Y200, Y300,
-    Y400, Y1jajb, Y2jajb, Y3jajb, Y4jajb, tmpu = cache
-    @unpack c01,
+    (; t, dt, uprev, u, W, p, f) = integrator
+    (; _dW, _dZ, chi1, tab, gtmp, ktmp, Y100, Y200, Y300,
+    Y400, Y1jajb, Y2jajb, Y3jajb, Y4jajb, tmpu) = cache
+    (; c01,
     c02, c03, c04, cj1, cj2, cj3, cj4, cjl2, cjl3, clj2, clj3, a0021, a0032, a0043, aj021,
     aj041, a0j21, a0j31, a0j32, a0j41, ajj21, ajj31, ajj32, ajj41, ajj42, ajj43, ajl31,
-    ajl32, ajl41, ajl42, ajljj31, aljjl21, aljjl31, NORMAL_ONESIX_QUANTILE = cache.tab
+    ajl32, ajl41, ajl42, ajljj31, aljjl21, aljjl31, NORMAL_ONESIX_QUANTILE) = cache.tab
 
     m = length(W.dW)
     # define three-point distributed random variables
@@ -1656,10 +1656,10 @@ end
 
 # COM
 @muladd function perform_step!(integrator, cache::COMConstantCache)
-    @unpack c01, c02, c03, c04, cj1, cj2, cj3, cj4, a0021, a0032, a0043, aj021,
+    (; c01, c02, c03, c04, cj1, cj2, cj3, cj4, a0021, a0032, a0043, aj021,
     aj041, a0j21, a0j31, a0j32, a0j41, ajj21, ajj31, ajj32, ajj41, ajj42,
-    ajj43, ajl31, ajl32, ajl41, ajl42, NORMAL_ONESIX_QUANTILE = cache
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    ajj43, ajl31, ajl32, ajl41, ajl42, NORMAL_ONESIX_QUANTILE) = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
 
     m = length(W.dW)
     _dW = W.dW
@@ -1798,12 +1798,12 @@ end
 
 # COM
 @muladd function perform_step!(integrator, cache::COMCache)
-    @unpack _dW, tab, gtmp, ktmp, Y10, Y20, Y30, Y40, Y1j, Y2j, Y3j, Y4j, tmpu,
-    tmpu2 = cache
-    @unpack c01, c02, c03, c04, cj1, cj2, cj3, cj4, a0021, a0032, a0043, aj021,
+    (; _dW, tab, gtmp, ktmp, Y10, Y20, Y30, Y40, Y1j, Y2j, Y3j, Y4j, tmpu,
+    tmpu2) = cache
+    (; c01, c02, c03, c04, cj1, cj2, cj3, cj4, a0021, a0032, a0043, aj021,
     aj041, a0j21, a0j31, a0j32, a0j41, ajj21, ajj31, ajj32, ajj41, ajj42,
-    ajj43, ajl31, ajl32, ajl41, ajl42, NORMAL_ONESIX_QUANTILE = cache.tab
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    ajj43, ajl31, ajl32, ajl41, ajl42, NORMAL_ONESIX_QUANTILE) = cache.tab
+    (; t, dt, uprev, u, W, p, f) = integrator
 
     m = length(W.dW)
     @.. _dW = W.dW
@@ -1951,10 +1951,10 @@ end
 
 # NON2
 @muladd function perform_step!(integrator, cache::NON2ConstantCache)
-    @unpack c01, c02, c03, c04, cj1, cj2, cj3, cj4, a0021, a0032, a0043, aj021,
+    (; c01, c02, c03, c04, cj1, cj2, cj3, cj4, a0021, a0032, a0043, aj021,
     aj041, a0j21, a0j31, a0j32, a0j41, ajj21, ajj31, ajj32, ajj41, ajj42,
-    ajj43, ajl31, ajl32, ajl41, ajl42, γ, NORMAL_ONESIX_QUANTILE = cache
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    ajj43, ajl31, ajl32, ajl41, ajl42, γ, NORMAL_ONESIX_QUANTILE) = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
 
     m = length(W.dW)
     #_dW = W.dW
@@ -2114,12 +2114,12 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::NON2Cache)
-    @unpack _dW, _dZ, chi1, Ihat2, tab, gtmp, gtmp1, ktmp, Y10, Y20,
-    Y30, Y40, Y1j, Y2j, Y3j, Y4j, tmpu, tmpu2 = cache
-    @unpack c01, c02, c03, c04, cj1, cj2, cj3, cj4, a0021, a0032, a0043, aj021, aj041,
+    (; _dW, _dZ, chi1, Ihat2, tab, gtmp, gtmp1, ktmp, Y10, Y20,
+    Y30, Y40, Y1j, Y2j, Y3j, Y4j, tmpu, tmpu2) = cache
+    (; c01, c02, c03, c04, cj1, cj2, cj3, cj4, a0021, a0032, a0043, aj021, aj041,
     a0j21, a0j31, a0j32, a0j41, ajj21, ajj31, ajj32, ajj41, ajj42, ajj43,
-    ajl31, ajl32, ajl41, ajl42, γ, NORMAL_ONESIX_QUANTILE = cache.tab
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    ajl31, ajl32, ajl41, ajl42, γ, NORMAL_ONESIX_QUANTILE) = cache.tab
+    (; t, dt, uprev, u, W, p, f) = integrator
 
     m = length(W.dW)
     @.. _dW = W.dW
@@ -2294,9 +2294,9 @@ end
 
 # SIE / SME
 @muladd function perform_step!(integrator, cache::SIESMEConstantCache)
-    @unpack α1, α2, γ1, λ1, λ2, λ3, µ1, µ2, µ3, µ0, µbar0, λ0, λbar0, ν1, ν2, β2, β3, δ2,
-    δ3 = cache
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    (; α1, α2, γ1, λ1, λ2, λ3, µ1, µ2, µ3, µ0, µbar0, λ0, λbar0, ν1, ν2, β2, β3, δ2,
+    δ3) = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
 
     W2 = @. (W.dW)^2/integrator.sqdt
     W3 = @. ν2*(W.dW)^3/dt
@@ -2338,10 +2338,10 @@ end
 
 # SIE / SME
 @muladd function perform_step!(integrator, cache::SIESMECache)
-    @unpack W2, W3, tab, k0, k1, g0, g1, g2, tmpu = cache
-    @unpack α1, α2, γ1, λ1, λ2, λ3, µ1, µ2, µ3, µ0, µbar0,
-    λ0, λbar0, ν1, ν2, β2, β3, δ2, δ3 = cache.tab
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    (; W2, W3, tab, k0, k1, g0, g1, g2, tmpu) = cache
+    (; α1, α2, γ1, λ1, λ2, λ3, µ1, µ2, µ3, µ0, µbar0,
+    λ0, λbar0, ν1, ν2, β2, β3, δ2, δ3) = cache.tab
+    (; t, dt, uprev, u, W, p, f) = integrator
 
     @. W2 = (W.dW)^2/integrator.sqdt
     @. W3 = ν2*(W.dW)^3/dt
@@ -2383,9 +2383,9 @@ function W2Ito_I2(_dW, xi, eta2, k, l)
 end
 
 @muladd function perform_step!(integrator, cache::W2Ito1ConstantCache)
-    @unpack a021, a031, a032, a121, a131, b021, b031, b121, b131, b221, α1, α2, α3,
-    beta01, beta02, beta03, beta11, beta13, NORMAL_ONESIX_QUANTILE = cache
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    (; a021, a031, a032, a121, a131, b021, b031, b121, b131, b221, α1, α2, α3,
+    beta01, beta02, beta03, beta11, beta13, NORMAL_ONESIX_QUANTILE) = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
 
     # define three-point distributed random variables
     dW_scaled = W.dW / sqrt(dt)
@@ -2512,11 +2512,11 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::W2Ito1Cache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
-    @unpack _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2, k3, H02, H03,
-    H12, H13, tmp1, tmpg, uhat, tmp, resids = cache
-    @unpack a021, a031, a032, a121, a131, b021, b031, b121, b131, b221, α1, α2, α3, beta01,
-    beta02, beta03, beta11, beta13, NORMAL_ONESIX_QUANTILE = cache.tab
+    (; t, dt, uprev, u, W, p, f) = integrator
+    (; _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2, k3, H02, H03,
+    H12, H13, tmp1, tmpg, uhat, tmp, resids) = cache
+    (; a021, a031, a032, a121, a131, b021, b031, b121, b131, b221, α1, α2, α3, beta01,
+    beta02, beta03, beta11, beta13, NORMAL_ONESIX_QUANTILE) = cache.tab
 
     m = length(W.dW)
     sq3dt = sqrt(3 * dt)

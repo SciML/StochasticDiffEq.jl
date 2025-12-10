@@ -31,7 +31,7 @@ function get_iterated_I(dt, dW, dZ, alg::JDiagonal_oop, p = nothing, c = 1, γ =
 end
 
 function get_iterated_I!(dt, dW, dZ, alg::JDiagonal_iip, p = nothing, c = 1, γ = 1//1)
-    @unpack J = alg
+    (; J) = alg
     if dW isa Number
         alg.J = 1//2 .* dW .^ 2
     else
@@ -46,7 +46,7 @@ function get_iterated_I(dt, dW, dZ, alg::JCommute_oop, p = nothing, c = 1, γ = 
 end
 
 function get_iterated_I!(dt, dW, dZ, alg::JCommute_iip, p = nothing, c = 1, γ = 1//1)
-    @unpack J = alg
+    (; J) = alg
     mul!(J, vec(dW), vec(dW)')
     @.. J *= 1//2
     return nothing
@@ -76,7 +76,7 @@ end
 
 function get_iterated_I!(
         dt, dW, dZ, alg::IteratedIntegralAlgorithm_iip, p = nothing, c = 1, γ = 1//1)
-    @unpack J, levyalg = alg
+    (; J, levyalg) = alg
     if isnothing(p)
         ε = c * dt^(γ + 1//2)
         p = terms_needed(length(dW), dt, ε, levyalg, MaxL2())

@@ -344,7 +344,7 @@ struct SRAConstantCache{VType1, VType2, MType, uType} <: StochasticDiffEqConstan
 end
 
 function SRAConstantCache(tableau, rate_prototype)
-    @unpack c₀, c₁, A₀, B₀, α, β₁, β₂ = tableau
+    (; c₀, c₁, A₀, B₀, α, β₁, β₂) = tableau
     stages = length(α)
     H0 = Vector{typeof(rate_prototype)}(undef, stages)
     SRAConstantCache(c₀, c₁, A₀', B₀', α, β₁, β₂, stages, H0)

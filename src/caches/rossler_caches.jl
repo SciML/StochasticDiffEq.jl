@@ -17,7 +17,7 @@ struct SRIConstantCache{VType1, VType2, MType, uType} <: StochasticDiffEqConstan
 end
 
 function SRIConstantCache(tableau, rate_prototype, error_terms)
-    @unpack c₀, c₁, A₀, A₁, B₀, B₁, α, β₁, β₂, β₃, β₄ = tableau
+    (; c₀, c₁, A₀, A₁, B₀, B₁, α, β₁, β₂, β₃, β₄) = tableau
     stages = length(α)
     H0 = Array{typeof(rate_prototype)}(undef, stages)
     H1 = Array{typeof(rate_prototype)}(undef, stages)

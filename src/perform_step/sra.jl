@@ -1,5 +1,5 @@
 @muladd function perform_step!(integrator, cache::SRA1ConstantCache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    (; t, dt, uprev, u, W, p, f) = integrator
     gpdt = integrator.g(uprev, p, t+dt)
     sqrt3 = sqrt(3one(eltype(W.dW)))
     chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
@@ -21,8 +21,8 @@ end
 
 #=
 @muladd function perform_step!(integrator,cache::SRA1Cache)
-  @unpack chi2,tmp1,E₁,E₂,gt,k₁,k₂,gpdt,tmp = cache
-  @unpack t,dt,uprev,u,W,p,f = integrator
+  (; chi2,tmp1,E₁,E₂,gt,k₁,k₂,gpdt,tmp) = cache
+  (; t,dt,uprev,u,W,p,f) = integrator
   integrator.g(t,uprev,gt)
   integrator.g(t+dt,uprev,gpdt)
   integrator.f(t,uprev,k₁); k₁*=dt
@@ -48,8 +48,8 @@ end
 =#
 
 @muladd function perform_step!(integrator, cache::SRA1Cache)
-    @unpack chi2, tmp1, E₁, E₂, gt, k₁, k₂, gpdt, tmp = cache
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    (; chi2, tmp1, E₁, E₂, gt, k₁, k₂, gpdt, tmp) = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
     integrator.g(gt, uprev, p, t)
     integrator.g(gpdt, uprev, p, t+dt)
     integrator.f(k₁, uprev, p, t);
@@ -94,8 +94,8 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::SRA2ConstantCache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
-    @unpack a21, b21, c02, c11, c12, α1, α2, beta12, beta21, beta22 = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
+    (; a21, b21, c02, c11, c12, α1, α2, beta12, beta21, beta22) = cache
     sqrt3 = sqrt(3one(eltype(W.dW)))
     chi2 = 0.5*(W.dW + W.dZ/sqrt3) #I_(1,0)/h
 
@@ -123,9 +123,9 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::SRA2Cache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
-    @unpack chi2, tab, g1, g2, k1, k2, E₁, E₂, tmp = cache
-    @unpack a21, b21, c02, c11, c12, α1, α2, beta12, beta21, beta22 = cache.tab
+    (; t, dt, uprev, u, W, p, f) = integrator
+    (; chi2, tab, g1, g2, k1, k2, E₁, E₂, tmp) = cache
+    (; a21, b21, c02, c11, c12, α1, α2, beta12, beta21, beta22) = cache.tab
     H01 = E₁
     sqrt3 = sqrt(3one(eltype(W.dW)))
     if W.dW isa Union{SArray, Number}
@@ -169,9 +169,9 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::ThreeStageSRAConstantCache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
-    @unpack a21, a31, a32, b21, b31, b32, c02, c03, c11, c12, c13, α1, α2,
-    α3, beta11, beta12, beta13, beta21, beta22, beta23 = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
+    (; a21, a31, a32, b21, b31, b32, c02, c03, c11, c12, c13, α1, α2,
+    α3, beta11, beta12, beta13, beta21, beta22, beta23) = cache
     sqrt3 = sqrt(3one(eltype(W.dW)))
     chi2 = 0.5*(W.dW .+ W.dZ/sqrt3) #I_(1,0)/h
 
@@ -224,10 +224,10 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::ThreeStageSRACache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
-    @unpack chi2, tab, g1, g2, g3, k1, k2, k3, E₁, E₂, tmp, gtmp = cache
-    @unpack a21, a31, a32, b21, b31, b32, c02, c03, c11, c12, c13, α1, α2, α3,
-    beta11, beta12, beta13, beta21, beta22, beta23 = cache.tab
+    (; t, dt, uprev, u, W, p, f) = integrator
+    (; chi2, tab, g1, g2, g3, k1, k2, k3, E₁, E₂, tmp, gtmp) = cache
+    (; a21, a31, a32, b21, b31, b32, c02, c03, c11, c12, c13, α1, α2, α3,
+    beta11, beta12, beta13, beta21, beta22, beta23) = cache.tab
 
     H01 = E₁;
     H02 = E₁
@@ -295,9 +295,9 @@ end
 
 #=
 @muladd function perform_step!(integrator,cache::SRACache)
-  @unpack t,dt,uprev,u,W,p,f = integrator
-  @unpack H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂,tmp = cache
-  @unpack c₀,c₁,A₀,B₀,α,β₁,β₂,stages = cache.tab
+  (; t,dt,uprev,u,W,p,f) = integrator
+  (; H0,A0temp,B0temp,ftmp,gtmp,chi2,atemp,btemp,E₁,E₁temp,E₂,tmp) = cache
+  (; c₀,c₁,A₀,B₀,α,β₁,β₂,stages) = cache.tab
   @.. chi2 = .5*(W.dW + W.dZ/sqrt3) #I_(1,0)/h
   for i in 1:stages
     fill!(H0[i],zero(eltype(integrator.u)))
@@ -341,9 +341,9 @@ end
 =#
 
 @muladd function perform_step!(integrator, cache::SRACache)
-    @unpack t, dt, uprev, u, W, p, f = integrator
-    @unpack H0, A0temp, B0temp, ftmp, gtmp, chi2, atemp, btemp, E₁, E₁temp, E₂, tmp = cache
-    @unpack c₀, c₁, A₀, B₀, α, β₁, β₂, stages = cache.tab
+    (; t, dt, uprev, u, W, p, f) = integrator
+    (; H0, A0temp, B0temp, ftmp, gtmp, chi2, atemp, btemp, E₁, E₁temp, E₂, tmp) = cache
+    (; c₀, c₁, A₀, B₀, α, β₁, β₂, stages) = cache.tab
     sqrt3 = sqrt(3one(eltype(W.dW)))
     if W.dW isa Union{SArray, Number}
         chi2 = (W.dW + W.dZ/sqrt3)/2 #I_(1,0)/h
@@ -409,8 +409,8 @@ end
 end
 
 @muladd function perform_step!(integrator, cache::SRAConstantCache)
-    @unpack c₀, c₁, A₀, B₀, α, β₁, β₂, stages, H0 = cache
-    @unpack t, dt, uprev, u, W, p, f = integrator
+    (; c₀, c₁, A₀, B₀, α, β₁, β₂, stages, H0) = cache
+    (; t, dt, uprev, u, W, p, f) = integrator
     sqrt3 = sqrt(3one(eltype(W.dW)))
     chi2 = 0.5*(W.dW + W.dZ/sqrt3) #I_(1,0)/h
     H0[:]=fill(zero(u), stages)
