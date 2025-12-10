@@ -2931,7 +2931,7 @@ Automatically adjusts tau based on:
   - Jump rate variations
   - Solution stability requirements
 
-## References################################################################################
+## References
 
   - Cao, Y., Gillespie, D.T., Petzold, L.R., "Efficient step size selection for the tau-leaping method"# Etc.
 """
