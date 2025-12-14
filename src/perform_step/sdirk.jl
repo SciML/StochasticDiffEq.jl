@@ -86,7 +86,8 @@
         if cache isa Union{ImplicitEMConstantCache, ImplicitEulerHeunConstantCache}
             En = mil_correction
         else
-            En = integrator.opts.internalnorm.(integrator.W.dW .^ 3, t) .* integrator.opts.internalnorm.(ggprime, t) .^ 2 ./ 6
+            En = integrator.opts.internalnorm.(integrator.W.dW .^ 3, t) .*
+                 integrator.opts.internalnorm.(ggprime, t) .^ 2 ./ 6
         end
 
         resids = calculate_residuals(Ed, En, uprev, u, integrator.opts.abstol,
@@ -186,17 +187,19 @@ end
     if alg.symplectic
         #@.. u = uprev + z/2 + gtmp2/2
         if P !== nothing
-            @.. tmp = uprev + gtmp2/2 + k
+            @.. nlsolver.tmp = uprev + gtmp2/2 + k
         else
-            @.. tmp = uprev + gtmp2/2
+            @.. nlsolver.tmp = uprev + gtmp2/2
         end
     else
         #@.. u = uprev + dt*(1-theta)*tmp + theta*z + gtmp2
+        # Use dz as temporary to avoid corrupting tmp (which contains f(uprev))
         if P !== nothing
-            @.. tmp = uprev + dt*(1-theta)*tmp + gtmp2 + k
+            @.. dz = uprev + dt*(1-theta)*tmp + gtmp2 + k
         else
-            @.. tmp = uprev + dt*(1-theta)*tmp + gtmp2
+            @.. dz = uprev + dt*(1-theta)*tmp + gtmp2
         end
+        @.. nlsolver.tmp = dz
     end
     z = OrdinaryDiffEqNonlinearSolve.nlsolve!(nlsolver, integrator, cache, repeat_step)
     OrdinaryDiffEqNonlinearSolve.nlsolvefail(nlsolver) && return
@@ -204,7 +207,7 @@ end
     if alg.symplectic
         @.. u = uprev + z + gtmp2
     else
-        @.. u = tmp + theta*z
+        @.. u = dz + theta*z
     end
 
     if integrator.opts.adaptive
@@ -213,12 +216,13 @@ end
             f.jac(J, uprev, p, t)
         end
 
-        mul!(vec(z), J, vec(tmp))
-        @.. k = dt*dt*z/2
-
-        # k is Ed
-        # dz is En
+        # k is Ed (drift error)
+        # dz is En (noise error)
+        # NOTE: tmp preserved with f(uprev) for drift error computation
         if cache isa Union{ImplicitEMCache, ImplicitEulerHeunCache}
+            # Compute drift error for ImplicitEM/ImplicitEulerHeun
+            mul!(vec(z), J, vec(tmp))
+            @.. k = dt*dt*z/2
             dW_cache = cache.dW_cache
             if !is_diagonal_noise(integrator.sol.prob)
                 g_sized = norm(gtmp, 2)
@@ -260,9 +264,13 @@ end
             end
 
         elseif cache isa ImplicitRKMilCache
-            # gtmp3 is ggprime
+            gtmp3 = cache.gtmp3
+            # Compute noise error using ggprime (stored in gtmp3)
             @.. dz = integrator.opts.internalnorm(dW^3, t)*integrator.opts.internalnorm(gtmp3, t)^2 /
                      6
+            # Compute drift error using tmp (which contains f(uprev))
+            mul!(vec(z), J, vec(tmp))
+            @.. k = dt*dt*z/2
         end
 
         calculate_residuals!(tmp, k, dz, uprev, u, integrator.opts.abstol,
