@@ -1,14 +1,26 @@
 function DiffEqBase.__solve(prob::DiffEqBase.AbstractRODEProblem,
-        alg::Union{AbstractRODEAlgorithm, AbstractSDEAlgorithm},
-        timeseries = [], ts = [], ks = nothing, # needed for variable rate
-        recompile::Type{Val{recompile_flag}} = Val{true};
-        kwargs...) where {recompile_flag}
-    integrator = DiffEqBase.__init(prob, alg, timeseries, ts, recompile; kwargs...)
+        alg::Union{StochasticDiffEqAlgorithm, StochasticDiffEqRODEAlgorithm};
+        kwargs...)
+    integrator = DiffEqBase.__init(prob, alg; kwargs...)
     solve!(integrator)
     if prob isa DiffEqBase.AbstractRODEProblem &&
        typeof(prob.noise) == typeof(integrator.sol.W) &&
        (!haskey(kwargs, :alias_noise) || kwargs[:alias_noise] === true)
         copy!(prob.noise, integrator.sol.W)
+    end
+    integrator.sol
+end
+
+# More specific method for JumpProblem to win over JumpProcesses.jl's ambiguity fix dispatch
+function DiffEqBase.__solve(prob::JumpProblem,
+        alg::Union{StochasticDiffEqAlgorithm, StochasticDiffEqRODEAlgorithm};
+        kwargs...)
+    integrator = DiffEqBase.__init(prob, alg; kwargs...)
+    solve!(integrator)
+    if concrete_prob(prob) isa DiffEqBase.AbstractRODEProblem &&
+       typeof(concrete_prob(prob).noise) == typeof(integrator.sol.W) &&
+       (!haskey(kwargs, :alias_noise) || kwargs[:alias_noise] === true)
+        copy!(concrete_prob(prob).noise, integrator.sol.W)
     end
     integrator.sol
 end
@@ -19,10 +31,7 @@ concrete_prob(prob::JumpProblem) = prob.prob
 
 function DiffEqBase.__init(
         _prob::Union{DiffEqBase.AbstractRODEProblem, JumpProblem},
-        alg::Union{AbstractRODEAlgorithm, AbstractSDEAlgorithm}, timeseries_init = typeof(_prob.u0)[],
-        ts_init = eltype(concrete_prob(_prob).tspan)[],
-        ks_init = nothing,
-        recompile::Type{Val{recompile_flag}} = Val{true};
+        alg::Union{StochasticDiffEqAlgorithm, StochasticDiffEqRODEAlgorithm};
         saveat = (),
         tstops = (),
         d_discontinuities = (),
@@ -72,7 +81,7 @@ function DiffEqBase.__init(
         seed = UInt64(0),
         alias = nothing,
         initializealg = OrdinaryDiffEqCore.DefaultInit(),
-        kwargs...) where {recompile_flag}
+        kwargs...)
     is_sde = _prob isa SDEProblem
 
     use_old_kwargs = haskey(kwargs, :alias_u0) || haskey(kwargs, :alias_jumps) ||
@@ -313,14 +322,14 @@ function DiffEqBase.__init(
     #   ksEltype = Vector{typeof(ks_prototype)}
     # end
 
-    # Have to convert incase passed in wrong.
+    # Initialize timeseries and ts vectors
     if save_idxs === nothing
-        timeseries = convert(Vector{uType}, timeseries_init)
+        timeseries = Vector{uType}()
     else
         u_initial = u[save_idxs]
-        timeseries = convert(Vector{typeof(u_initial)}, timeseries_init)
+        timeseries = Vector{typeof(u_initial)}()
     end
-    ts = convert(Vector{tType}, ts_init)
+    ts = Vector{tType}()
 
     alg_choice = alg isa StochasticDiffEqCompositeAlgorithm ? Int[] : ()
 
@@ -637,19 +646,11 @@ function DiffEqBase.__init(
             interp = id, dense = dense, seed = _seed)
     end
 
-    if recompile_flag == true
-        FType = typeof(f)
-        GType = typeof(g)
-        CType = typeof(c)
-        SolType = typeof(sol)
-        cacheType = typeof(cache)
-    else
-        FType = Function
-        GType = Function
-        CType = Function
-        SolType = DiffEqBase.AbstractRODESolution
-        cacheType = StochasticDiffEqCache
-    end
+    FType = typeof(f)
+    GType = typeof(g)
+    CType = typeof(c)
+    SolType = typeof(sol)
+    cacheType = typeof(cache)
 
     tprev = t
     dtcache = tType(dt)
