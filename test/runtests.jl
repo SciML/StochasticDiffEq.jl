@@ -100,6 +100,9 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV, "APPVEYOR")
         @time @safetestset "Issue 636 - ImplicitRKMil Zero Noise" begin
             include("issue636_implicit_rkmil_zero_noise.jl")
         end
+        @time @safetestset "Zero Noise Convergence" begin
+            include("zero_noise_convergence.jl")
+        end
         @time @safetestset "Cache Tests" begin
             include("cache_test.jl")
         end
