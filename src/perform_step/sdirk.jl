@@ -82,7 +82,7 @@
             J = OrdinaryDiffEqDifferentiation.calc_J(integrator, nlsolver.cache)
         end
 
-        Ed = _reshape(dt*(nlsolver.cache.J*_vec(ftmp))/2, axes(ftmp))
+        Ed = _reshape(dt*dt*(nlsolver.cache.J*_vec(ftmp))/2, axes(ftmp))
         if cache isa Union{ImplicitEMConstantCache, ImplicitEulerHeunConstantCache}
             En = mil_correction
         else
@@ -216,7 +216,7 @@ end
         end
 
         mul!(vec(z), J, vec(fsalfirst))
-        @.. k = dt*z/2
+        @.. k = dt*dt*z/2
 
         # k is Ed
         # dz is En
