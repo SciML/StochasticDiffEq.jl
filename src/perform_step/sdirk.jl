@@ -82,11 +82,12 @@
             J = OrdinaryDiffEqDifferentiation.calc_J(integrator, nlsolver.cache)
         end
 
-        Ed = _reshape(dt*(nlsolver.cache.J*_vec(ftmp))/2, axes(ftmp))
+        Ed = _reshape(dt*dt*(nlsolver.cache.J*_vec(ftmp))/2, axes(ftmp))
         if cache isa Union{ImplicitEMConstantCache, ImplicitEulerHeunConstantCache}
             En = mil_correction
         else
-            En = integrator.opts.internalnorm.(integrator.W.dW .^ 3, t) .* integrator.opts.internalnorm.(ggprime, t) .^ 2 ./ 6
+            En = integrator.opts.internalnorm.(integrator.W.dW .^ 3, t) .*
+                 integrator.opts.internalnorm.(ggprime, t) .^ 2 ./ 6
         end
 
         resids = calculate_residuals(Ed, En, uprev, u, integrator.opts.abstol,
@@ -104,7 +105,7 @@ end
             ImplicitEulerHeunCache,
             ImplicitRKMilCache})
     (; t, dt, uprev, u, p, P, c, f) = integrator
-    (; gtmp, gtmp2, nlsolver) = cache
+    (; fsalfirst, gtmp, gtmp2, nlsolver) = cache
     (; z, tmp) = nlsolver
     (; k, dz) = nlsolver.cache # alias to reduce memory
     J = (OrdinaryDiffEqCore.isnewton(nlsolver) ? nlsolver.cache.J : nothing)
@@ -133,6 +134,7 @@ end
 
     integrator.g(gtmp, uprev, p, t)
     integrator.f(tmp, uprev, p, t)
+    copyto!(fsalfirst, tmp) # Save f(uprev) for error estimation before tmp is overwritten
 
     if is_diagonal_noise(integrator.sol.prob)
         @.. gtmp2 = gtmp*dW
@@ -213,7 +215,7 @@ end
             f.jac(J, uprev, p, t)
         end
 
-        mul!(vec(z), J, vec(tmp))
+        mul!(vec(z), J, vec(fsalfirst))
         @.. k = dt*dt*z/2
 
         # k is Ed
@@ -227,7 +229,7 @@ end
             end
 
             if cache isa ImplicitEMCache
-                @.. z = uprev + dt * tmp + integrator.sqdt * g_sized
+                @.. z = uprev + dt * fsalfirst + integrator.sqdt * g_sized
 
                 if !is_diagonal_noise(integrator.sol.prob)
                     integrator.g(gtmp, z, p, t)
