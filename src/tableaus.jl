@@ -657,7 +657,6 @@ end
 
 Holds the Butcher tableaus for a Roessler RI method. (high weak order)
 """
-
 struct RoesslerRI{T, T2} <: Tableau
     c₀::Vector{T2}
     c₁::Vector{T2}
@@ -1077,7 +1076,6 @@ end
 
 Holds the Butcher tableaus for a Roessler RS method. (high weak order in Stratonovich sense)
 """
-
 struct RoesslerRS{T, T2} <: Tableau
     c₀::Vector{T2}
     c₁::Vector{T2}
@@ -1262,7 +1260,6 @@ end
 
 Holds the Butcher tableau for Komori's NON method. (second weak order in Stratonovich sense)
 """
-
 struct KomoriNON{T} <: Tableau
     c0::Vector{T}
     cj::Vector{T}

@@ -707,7 +707,16 @@ end
 
 # Weak Order 2
 
-"""
+for Alg in [:SROCK2, :KomBurSROCK2, :SROCKC2]
+    @eval begin
+        struct $Alg{E} <: StochasticDiffEqAlgorithm
+            eigen_est::E
+        end
+        $Alg(; eigen_est = nothing) = $Alg(eigen_est)
+    end
+end
+
+@doc """
     SROCK2(;eigen_est=nothing)
 
 **SROCK2: Second-Order Stabilized Runge-Kutta Chebyshev Method**
@@ -727,9 +736,9 @@ Second-order stabilized explicit method with weak order 2.0 for mildly stiff SDE
 
 ## References
 - Second-order ROCK methods for stochastic problems
-"""
+""" SROCK2
 
-"""
+@doc """
     KomBurSROCK2(;eigen_est=nothing)
 
 **KomBurSROCK2: Komori-Burrage Second-Order SROCK Method**
@@ -749,9 +758,9 @@ Alternative second-order stabilized method with different coefficients and stabi
 
 ## References
 - Komori and Burrage stabilized methods
-"""
+""" KomBurSROCK2
 
-"""
+@doc """
     SROCKC2(;eigen_est=nothing)
 
 **SROCKC2: Conservative Second-Order SROCK Method**
@@ -771,16 +780,7 @@ Conservative second-order stabilized method designed for robust performance.
 
 ## References
 - Conservative ROCK methods for stochastic problems
-"""
-
-for Alg in [:SROCK2, :KomBurSROCK2, :SROCKC2]
-    @eval begin
-        struct $Alg{E} <: StochasticDiffEqAlgorithm
-            eigen_est::E
-        end
-        $Alg(; eigen_est = nothing) = $Alg(eigen_est)
-    end
-end
+""" SROCKC2
 
 # ROCK stabilization for EM
 """
