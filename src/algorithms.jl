@@ -51,7 +51,7 @@ integrals ∫₀ᵗ dWₛ are needed, and the Lévy area terms vanish.
 
 ## References
 
-  - Kloeden, P.E., Platen, E., "Numerical Solution of Stochastic Differential Equations", Springer (1992)
+  - Kloeden, P.E., Platen, E., "Numerical Solution of Stochastic Differential Equations", Springer (1992). ISBN: 978-3-540-54062-5. DOI: 10.1007/978-3-662-12616-5
   - Added in PR #459 with the integration of LevyArea.jl package
 """
 struct IICommutative <: IteratedIntegralApprox end
@@ -145,7 +145,7 @@ When `split=true`, the method uses step splitting which can improve stability fo
 
 ## References
 
-  - Kloeden, P.E., Platen, E., "Numerical Solution of Stochastic Differential Equations", Springer (1992)
+  - Kloeden, P.E., Platen, E., "Numerical Solution of Stochastic Differential Equations", Springer (1992). ISBN: 978-3-540-54062-5. DOI: 10.1007/978-3-662-12616-5
 """
 struct EM{split} <: StochasticDiffEqAlgorithm end
 EM(split = true) = EM{split}()
@@ -230,7 +230,7 @@ u_{n+1} = u_n + f(u_n,p,t_n)Δt + g(u_n + 0.5*g(u_n,p,t_n)ΔW_n, p, t_n)ΔW_n
 
 ## References
 
-  - Kloeden, P.E., Platen, E., "Numerical Solution of Stochastic Differential Equations", Springer (1992)
+  - Kloeden, P.E., Platen, E., "Numerical Solution of Stochastic Differential Equations", Springer (1992). ISBN: 978-3-540-54062-5. DOI: 10.1007/978-3-662-12616-5
 """
 struct EulerHeun <: StochasticDiffEqAlgorithm end
 """
@@ -314,9 +314,6 @@ Adaptive version of EulerHeun method with error estimation for automatic step si
 struct LambaEulerHeun <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
-Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
-Springer. Berlin Heidelberg (2011)
-
     SimplifiedEM()
 
 **SimplifiedEM: Simplified Euler-Maruyama Method (High Weak Order)**
@@ -359,9 +356,6 @@ Simplified version of the Euler-Maruyama method optimized for weak convergence w
 struct SimplifiedEM <: StochasticDiffEqAlgorithm end
 
 """
-Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
-Springer. Berlin Heidelberg (2011)
-
     RKMil(;interpretation=AlgorithmInterpretation.Ito)
 
 **RKMil: Runge-Kutta Milstein Method (Nonstiff)**
@@ -405,16 +399,13 @@ where g'(u,t) is the derivative of g with respect to u.
 
 ## References
 
-  - Kloeden, P.E., Platen, E., "Numerical Solution of Stochastic Differential Equations", Springer (1992)
+  - Kloeden, P.E., Platen, E., "Numerical Solution of Stochastic Differential Equations", Springer (1992). ISBN: 978-3-540-54062-5. DOI: 10.1007/978-3-662-12616-5
   - Milstein, G.N., "Numerical Integration of Stochastic Differential Equations"
 """
 struct RKMil{interpretation} <: StochasticDiffEqAdaptiveAlgorithm end
 RKMil(; interpretation = SciMLBase.AlgorithmInterpretation.Ito) = RKMil{interpretation}()
 
 """
-Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
-Springer. Berlin Heidelberg (2011)
-
     RKMilCommute(;interpretation=AlgorithmInterpretation.Ito, ii_approx=IICommutative())
 
 **RKMilCommute: Runge-Kutta Milstein for Commutative Noise (Nonstiff) - Recommended for Commutative Noise**
@@ -458,6 +449,7 @@ Extends the Milstein method to handle multiple commutative noise sources efficie
 ## References
 
   - Kloeden, P.E., Platen, E., "Numerical Solution of Stochastic Differential Equations", Springer (1992)
+  - Kloeden, P.E., Platen, E., "Numerical Solution of Stochastic Differential Equations." Springer. Berlin Heidelberg (2011)
 """
 struct RKMilCommute{T} <: StochasticDiffEqAdaptiveAlgorithm
     interpretation::SciMLBase.AlgorithmInterpretation.T
@@ -468,9 +460,6 @@ function RKMilCommute(; interpretation = SciMLBase.AlgorithmInterpretation.Ito, 
 end
 
 """
-Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
-Springer. Berlin Heidelberg (2011)
-
     RKMilGeneral(;interpretation=AlgorithmInterpretation.Ito, ii_approx=IILevyArea(), c=1, p=nothing, dt=nothing)
 
 **RKMilGeneral: General Runge-Kutta Milstein Method (Nonstiff)**
@@ -516,6 +505,7 @@ Uses LevyArea.jl for efficient computation of iterated integrals:
 
 ## References
 
+  - Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations. Springer. Berlin Heidelberg (2011)
   - Kastner, F. and Rößler, A., "LevyArea.jl: A Julia package for Lévy area computation", arXiv:2201.08424
   - LevyArea.jl: https://github.com/stochastics-uni-luebeck/LevyArea.jl
 """
@@ -1014,10 +1004,6 @@ PCEuler(ggprime; theta = 1/2, eta = 1/2) = PCEuler(theta, eta, ggprime)
 # Rossler
 
 """
-Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
-Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
-DOI:10.1137/09076636X
-
     SRA(;tableau=constructSRA1())
 
 **SRA: Configurable Stochastic Runge-Kutta for Additive Noise (Nonstiff)**
@@ -1050,7 +1036,7 @@ Configurable adaptive strong order 1.5 method for additive noise problems with c
 
 ## References
 
-  - Rößler A., "Runge–Kutta Methods for the Strong Approximation of Solutions of Stochastic Differential Equations", SIAM J. Numer. Anal., 48 (3), pp. 922–952
+  - Rößler A., "Runge–Kutta Methods for the Strong Approximation of Solutions of Stochastic Differential Equations", SIAM J. Numer. Anal., 48 (3), pp. 922–952. DOI: 10.1137/09076636X.
 """
 struct SRA{TabType} <: StochasticDiffEqAdaptiveAlgorithm
     tableau::TabType
@@ -1058,10 +1044,6 @@ end
 SRA(; tableau = constructSRA1()) = SRA(tableau)
 
 """
-Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
-Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
-DOI:10.1137/09076636X
-
     SRI(;tableau=constructSRIW1(), error_terms=4)
 
 **SRI: Configurable Stochastic Runge-Kutta for Itô SDEs (Nonstiff)**
@@ -1095,7 +1077,7 @@ Configurable adaptive strong order 1.5 method for diagonal/scalar Itô SDEs with
 
 ## References
 
-  - Rößler A., "Runge–Kutta Methods for the Strong Approximation of Solutions of Stochastic Differential Equations", SIAM J. Numer. Anal., 48 (3), pp. 922–952
+  - Rößler A., "Runge–Kutta Methods for the Strong Approximation of Solutions of Stochastic Differential Equations", SIAM J. Numer. Anal., 48 (3), pp. 922–952. DOI: 10.1137/09076636X.
 """
 struct SRI{TabType} <: StochasticDiffEqAdaptiveAlgorithm
     tableau::TabType
@@ -1104,10 +1086,6 @@ end
 SRI(; tableau = constructSRIW1(), error_terms = 4) = SRI(tableau, error_terms)
 
 """
-Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
-Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
-DOI:10.1137/09076636X
-
     SRIW1()
 
 **SRIW1: Stochastic Runge-Kutta W1 Method (Nonstiff)**
@@ -1137,15 +1115,11 @@ Adaptive stochastic Runge-Kutta method with strong order 1.5 and weak order 2.0 
 
 ## References
 
-  - Rößler A., "Runge–Kutta Methods for the Strong Approximation of Solutions of Stochastic Differential Equations", SIAM J. Numer. Anal., 48 (3), pp. 922–952
+  - Rößler A., "Runge–Kutta Methods for the Strong Approximation of Solutions of Stochastic Differential Equations", SIAM J. Numer. Anal., 48 (3), pp. 922–952. DOI: 10.1137/09076636X.
 """
 struct SRIW1 <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
-Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
-Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
-DOI:10.1137/09076636X
-
     SRIW2()
 
 **SRIW2: Stochastic Runge-Kutta W2 Method (Nonstiff)**
@@ -1175,7 +1149,7 @@ Adaptive stochastic Runge-Kutta method with strong order 1.5 and weak order 3.0 
 
 ## References
 
-  - Rößler A., "Runge–Kutta Methods for the Strong Approximation of Solutions of Stochastic Differential Equations", SIAM J. Numer. Anal., 48 (3), pp. 922–952
+  - Rößler A., "Runge–Kutta Methods for the Strong Approximation of Solutions of Stochastic Differential Equations", SIAM J. Numer. Anal., 48 (3), pp. 922–952. DOI: 10.1137/09076636X.
 """
 struct SRIW2 <: StochasticDiffEqAdaptiveAlgorithm end
 """
@@ -1252,10 +1226,6 @@ Alternative stability-optimized adaptive strong order 1.5 method with different 
 struct SOSRI2 <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
-Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
-Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
-DOI:10.1137/09076636X
-
     SRA1()
 
 **SRA1: Stochastic Runge-Kutta A1 Method (Nonstiff)**
@@ -1289,15 +1259,11 @@ where diffusion σ doesn't depend on solution u.
 
 ## References
 
-  - Rößler A., "Runge–Kutta Methods for the Strong Approximation of Solutions of Stochastic Differential Equations", SIAM J. Numer. Anal., 48 (3), pp. 922–952
+  - Rößler A., "Runge–Kutta Methods for the Strong Approximation of Solutions of Stochastic Differential Equations", SIAM J. Numer. Anal., 48 (3), pp. 922–952. DOI:10.1137/09076636X
 """
 struct SRA1 <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
-Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
-Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
-DOI:10.1137/09076636X
-
     SRA2()
 
 **SRA2: Stochastic Runge-Kutta A2 Method (Nonstiff)**
@@ -1321,15 +1287,11 @@ Alternative adaptive strong order 1.5 method for additive noise problems with di
 
 ## References
 
-  - Rößler A., "Runge–Kutta Methods for the Strong Approximation of Solutions of Stochastic Differential Equations", SIAM J. Numer. Anal., 48 (3), pp. 922–952
+  - Rößler A., "Runge–Kutta Methods for the Strong Approximation of Solutions of Stochastic Differential Equations", SIAM J. Numer. Anal., 48 (3), pp. 922–952. DOI:10.1137/09076636X
 """
 struct SRA2 <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
-Rößler A., Runge–Kutta Methods for the Strong Approximation of Solutions of
-Stochastic Differential Equations, SIAM J. Numer. Anal., 48 (3), pp. 922–952.
-DOI:10.1137/09076636X
-
     SRA3()
 
 **SRA3: Stochastic Runge-Kutta A3 Method (Nonstiff)**
@@ -1364,7 +1326,7 @@ Adaptive strong order 1.5 method for additive noise problems with weak order 3.
 
 ## References
 
-  - Rößler A., "Runge–Kutta Methods for the Strong Approximation of Solutions of Stochastic Differential Equations", SIAM J. Numer. Anal., 48 (3), pp. 922–952
+  - Rößler A., "Runge–Kutta Methods for the Strong Approximation of Solutions of Stochastic Differential Equations", SIAM J. Numer. Anal., 48 (3), pp. 922–952. DOI:10.1137/09076636X
 """
 struct SRA3 <: StochasticDiffEqAdaptiveAlgorithm end
 """
@@ -1443,11 +1405,6 @@ struct SOSRA2 <: StochasticDiffEqAdaptiveAlgorithm end
 # Rossler second order for weak approx.
 
 """
-Debrabant, K. and Rößler A., Families of efficient second order Runge–Kutta methods
-for the weak approximation of Itô stochastic differential equations,
-Applied Numerical Mathematics 59, pp. 582–594 (2009)
-DOI:10.1016/j.apnum.2008.03.012
-
     DRI1()
 
 **DRI1: Debrabant-Rößler Implicit Method (High Weak Order)**
@@ -1485,16 +1442,11 @@ Adaptive high-order method optimized for weak convergence with minimized error c
 
 ## References
 
-  - Debrabant, K. and Rößler A., "Families of efficient second order Runge–Kutta methods for the weak approximation of Itô stochastic differential equations", Applied Numerical Mathematics 59, pp. 582–594 (2009)
+  - Debrabant, K. and Rößler A., "Families of efficient second order Runge–Kutta methods for the weak approximation of Itô stochastic differential equations", Applied Numerical Mathematics 59, pp. 582–594 (2009). DOI: 10.1016/j.apnum.2008.03.012
 """
 struct DRI1 <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
-Debrabant, K. and Rößler A., Families of efficient second order Runge–Kutta methods
-for the weak approximation of Itô stochastic differential equations,
-Applied Numerical Mathematics 59, pp. 582–594 (2009)
-DOI:10.1016/j.apnum.2008.03.012
-
     DRI1NM()
 
 **DRI1NM: Debrabant-Rößler Implicit Non-Mixing Method (High Weak Order)**
@@ -1537,15 +1489,11 @@ Each component depends only on itself (no coupling).
 
 ## References
 
-  - Debrabant, K. and Rößler A., "Families of efficient second order Runge–Kutta methods for the weak approximation of Itô stochastic differential equations", Applied Numerical Mathematics 59, pp. 582–594 (2009)
+  - Debrabant, K. and Rößler A., "Families of efficient second order Runge–Kutta methods for the weak approximation of Itô stochastic differential equations", Applied Numerical Mathematics 59, pp. 582–594 (2009). DOI: 10.1016/j.apnum.2008.03.012.
 """
 struct DRI1NM <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
-Rößler A., Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations,
-SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
-DOI:10.1137/060673308
-
     RI1()
 
 **RI1: Rößler Implicit Method 1 (High Weak Order)**
@@ -1570,15 +1518,11 @@ Adaptive weak order 2.0 method for Itô SDEs with deterministic order 3.
 
 ## References
 
-  - Rößler A., "Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations", SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
+  - Rößler A., "Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations", SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009). DOI: 10.1137/060673308.
 """
 struct RI1 <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
-Rößler A., Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations,
-SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
-DOI:10.1137/060673308
-
     RI3()
 
 **RI3: Rößler Implicit Method 3 (High Weak Order)**
@@ -1602,15 +1546,11 @@ Alternative adaptive weak order 2.0 method with different stability characterist
 
 ## References
 
-  - Rößler A., "Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations", SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
+  - Rößler A., "Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations", SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009). DOI: 10.1137/060673308
 """
 struct RI3 <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
-Rößler A., Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations,
-SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
-DOI:10.1137/060673308
-
     RI5()
 
 **RI5: Rößler Implicit Method 5 (High Weak Order)**
@@ -1634,15 +1574,11 @@ Another variant in the RI family of weak order 2.0 methods.
 
 ## References
 
-  - Rößler A., "Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations", SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
+  - Rößler A., "Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations", SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009). DOI: 10.1137/060673308
 """
 struct RI5 <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
-Rößler A., Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations,
-SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
-DOI:10.1137/060673308
-
     RI6()
 
 **RI6: Rößler Implicit Method 6 (High Weak Order)**
@@ -1672,16 +1608,11 @@ Final method in the RI family with deterministic order 2 (lower than other RI me
 
 ## References
 
-  - Rößler A., "Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations", SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009)
+  - Rößler A., "Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations", SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009). DOI: 10.1137/060673308
 """
 struct RI6 <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
-Debrabant, K. and Rößler A., Classification of Stochastic Runge–Kutta Methods for
-the Weak Approximation of Stochastic Differential Equations,
-Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
-DOI:10.1016/j.matcom.2007.04.016
-
     RDI1WM()
 
 **RDI1WM: Runge-Kutta Debrabant Implicit 1 Weak Method (High Weak Order)**
@@ -1706,16 +1637,11 @@ Fixed step method with weak order 1.0 for Itô SDEs.
 
 ## References
 
-  - Debrabant, K. and Rößler A., "Classification of Stochastic Runge–Kutta Methods for the Weak Approximation of Stochastic Differential Equations", Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
+  - Debrabant, K. and Rößler A., "Classification of Stochastic Runge–Kutta Methods for the Weak Approximation of Stochastic Differential Equations", Mathematics and Computers in Simulation 77, pp. 408-420 (2008). DOI: 10.1016/j.matcom.2007.04.016
 """
 struct RDI1WM <: StochasticDiffEqAlgorithm end
 
 """
-Debrabant, K. and Rößler A., Classification of Stochastic Runge–Kutta Methods for
-the Weak Approximation of Stochastic Differential Equations,
-Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
-DOI:10.1016/j.matcom.2007.04.016
-
     RDI2WM()
 
 **RDI2WM: Runge-Kutta Debrabant Implicit 2 Weak Method (High Weak Order)**
@@ -1740,16 +1666,11 @@ Adaptive weak order 2.0 method for Itô SDEs with deterministic order 2.
 
 ## References
 
-  - Debrabant, K. and Rößler A., "Classification of Stochastic Runge–Kutta Methods for the Weak Approximation of Stochastic Differential Equations", Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
+  - Debrabant, K. and Rößler A., "Classification of Stochastic Runge–Kutta Methods for the Weak Approximation of Stochastic Differential Equations", Mathematics and Computers in Simulation 77, pp. 408-420 (2008). DOI: 10.1016/j.matcom.2007.04.016.
 """
 struct RDI2WM <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
-Debrabant, K. and Rößler A., Classification of Stochastic Runge–Kutta Methods for
-the Weak Approximation of Stochastic Differential Equations,
-Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
-DOI:10.1016/j.matcom.2007.04.016
-
     RDI3WM()
 
 **RDI3WM: Runge-Kutta Debrabant Implicit 3 Weak Method (High Weak Order)**
@@ -1774,16 +1695,11 @@ Adaptive weak order 2.0 method with higher deterministic order 3.
 
 ## References
 
-  - Debrabant, K. and Rößler A., "Classification of Stochastic Runge–Kutta Methods for the Weak Approximation of Stochastic Differential Equations", Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
+  - Debrabant, K. and Rößler A., "Classification of Stochastic Runge–Kutta Methods for the Weak Approximation of Stochastic Differential Equations", Mathematics and Computers in Simulation 77, pp. 408-420 (2008). DOI: 10.1016/j.matcom.2007.04.016.
 """
 struct RDI3WM <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
-Debrabant, K. and Rößler A., Classification of Stochastic Runge–Kutta Methods for
-the Weak Approximation of Stochastic Differential Equations,
-Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
-DOI:10.1016/j.matcom.2007.04.016
-
     RDI4WM()
 
 **RDI4WM: Runge-Kutta Debrabant Implicit 4 Weak Method (High Weak Order)**
@@ -1808,16 +1724,11 @@ Fourth variant in the RDI family with weak order 2.0 and deterministic order 3.
 
 ## References
 
-  - Debrabant, K. and Rößler A., "Classification of Stochastic Runge–Kutta Methods for the Weak Approximation of Stochastic Differential Equations", Mathematics and Computers in Simulation 77, pp. 408-420 (2008)
+  - Debrabant, K. and Rößler A., "Classification of Stochastic Runge–Kutta Methods for the Weak Approximation of Stochastic Differential Equations", Mathematics and Computers in Simulation 77, pp. 408-420 (2008). DOI: 10.1016/j.matcom.2007.04.016.
 """
 struct RDI4WM <: StochasticDiffEqAdaptiveAlgorithm end
 
 """
-Tang, X., & Xiao, A., Efficient weak second-order stochastic Runge–Kutta methods
-for Itô stochastic differential equations,
-BIT Numerical Mathematics, 57, 241-260 (2017)
-DOI: 10.1007/s10543-016-0618-9
-
     W2Ito1()
 
 **W2Ito1: Wang-Tang-Xiao Weak Order 2 Method (High Weak Order)**
@@ -1848,17 +1759,13 @@ Efficient weak second-order method for Itô SDEs with adaptive stepping.
 
 ## References
 
-  - Tang, X., & Xiao, A., "Efficient weak second-order stochastic Runge–Kutta methods for Itô stochastic differential equations", BIT Numerical Mathematics, 57, 241-260 (2017)# Stratonovich sense
+  - Tang, X., & Xiao, A., "Efficient weak second-order stochastic Runge–Kutta methods for Itô stochastic differential equations", BIT Numerical Mathematics, 57, 241-260 (2017). DOI: 10.1007/s10543-016-0618-9
 """
 struct W2Ito1 <: StochasticDiffEqAdaptiveAlgorithm end
 
 # Stratonovich sense
 
 """
-Rößler A., Second order Runge–Kutta methods for Stratonovich stochastic differential
-equations, BIT Numerical Mathematics 47, pp. 657-680 (2007)
-DOI:10.1007/s10543-007-0130-3
-
     RS1()
 
 **RS1: Rößler Stratonovich Method 1 (High Weak Order)**
@@ -1893,15 +1800,11 @@ where ∘ denotes Stratonovich integration.
 
 ## References
 
-  - Rößler A., "Second order Runge–Kutta methods for Stratonovich stochastic differential equations", BIT Numerical Mathematics 47, pp. 657-680 (2007)
+  - Rößler A., "Second order Runge–Kutta methods for Stratonovich stochastic differential equations", BIT Numerical Mathematics 47, pp. 657-680 (2007) DOI: 10.1007/s10543-007-0130-3.
 """
 struct RS1 <: StochasticDiffEqAlgorithm end
 
 """
-Rößler A., Second order Runge–Kutta methods for Stratonovich stochastic differential
-equations, BIT Numerical Mathematics 47, pp. 657-680 (2007)
-DOI:10.1007/s10543-007-0130-3
-
     RS2()
 
 **RS2: Rößler Stratonovich Method 2 (High Weak Order)**
@@ -1932,14 +1835,11 @@ Alternative fixed step weak order 2.0 method for Stratonovich SDEs with higher d
 
 ## References
 
-  - Rößler A., "Second order Runge–Kutta methods for Stratonovich stochastic differential equations", BIT Numerical Mathematics 47, pp. 657-680 (2007)
+  - Rößler A., "Second order Runge–Kutta methods for Stratonovich stochastic differential equations", BIT Numerical Mathematics 47, pp. 657-680 (2007). DOI: 10.1007/s10543-007-0130-3
 """
 struct RS2 <: StochasticDiffEqAlgorithm end
 
 """
-Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
-Springer. Berlin Heidelberg (2011)
-
     PL1WM()
 
 **PL1WM: Platen Weak Method 1 (High Weak Order)**
@@ -1970,14 +1870,11 @@ Fixed step weak order 2.0 method from the classical Kloeden-Platen textbook.
 
 ## References
 
-  - Kloeden, P.E., Platen, E., "Numerical Solution of Stochastic Differential Equations", Springer. Berlin Heidelberg (2011)
+  - Kloeden, P.E., Platen, E., "Numerical Solution of Stochastic Differential Equations", Springer. Berlin Heidelberg (2011). ISBN 978-3-540-54062-5. DOI: 10.1007/978-3-662-12616-5.
 """
 struct PL1WM <: StochasticDiffEqAlgorithm end
 
 """
-Kloeden, P.E., Platen, E., Numerical Solution of Stochastic Differential Equations.
-Springer. Berlin Heidelberg (2011)
-
     PL1WMA()
 
 **PL1WMA: Platen Weak Method 1 Additive (High Weak Order)**
@@ -2018,21 +1915,20 @@ where diffusion σ doesn't depend on solution u.
 
 ## References
 
-  - Kloeden, P.E., Platen, E., "Numerical Solution of Stochastic Differential Equations", Springer. Berlin Heidelberg (2011)
+  - Kloeden, P.E., Platen, E., "Numerical Solution of Stochastic Differential Equations", Springer. Berlin Heidelberg (2011). ISBN 978-3-540-54062-5. DOI: 10.1007/978-3-662-12616-5.
 """
 struct PL1WMA <: StochasticDiffEqAlgorithm end
 
 """
-Komori, Y., Weak second-order stochastic Runge–Kutta methods for non-commutative
-stochastic differential equations, Journal of Computational and Applied
-Mathematics 206, pp. 158 – 173 (2007)
-DOI:10.1016/j.cam.2006.06.006
-
     NON()
 
 NON: High Weak Order Method
 Fixed step weak order 2.0 for Stratonovich SDEs (deterministic order 4).
 Can handle diagonal, non-diagonal, non-commuting, and scalar additive noise.
+
+## References
+
+  - Komori, Y., Weak second-order stochastic Runge–Kutta methods for non-commutative stochastic differential equations, Journal of Computational and Applied Mathematics 206, pp. 158 – 173 (2007). DOI: 10.1016/j.cam.2006.06.006.
 """
 struct NON <: StochasticDiffEqAlgorithm end
 
@@ -2076,7 +1972,7 @@ for all noise terms.
 
 ## References
 
-  - Komori, Y., "Weak order stochastic Runge–Kutta methods for commutative stochastic differential equations", Journal of Computational and Applied Mathematics 203, pp. 57 – 79 (2007)
+  - Komori, Y., "Weak order stochastic Runge–Kutta methods for commutative stochastic differential equations", Journal of Computational and Applied Mathematics 203, pp. 57 – 79 (2007). Bibcode: 2007JCoAM.203...57K
 """
 struct COM <: StochasticDiffEqAlgorithm end
 
@@ -2115,10 +2011,6 @@ Improved version of the NON method with enhanced efficiency for non-commutative 
 struct NON2 <: StochasticDiffEqAlgorithm end
 
 """
-Tocino, A. and Vigo-Aguiar, J., Weak Second Order Conditions for Stochastic Runge-
-Kutta Methods, SIAM Journal on Scientific Computing 24, pp. 507 - 523 (2002)
-DOI:10.1137/S1064827501387814
-
     SIEA()
 
 **SIEA: Stochastic Improved Euler A Method (High Weak Order)**
@@ -2149,15 +2041,11 @@ Stochastic generalization of the improved Euler method for Itô SDEs.
 
 ## References
 
-  - Tocino, A. and Vigo-Aguiar, J., "Weak Second Order Conditions for Stochastic Runge-Kutta Methods", SIAM Journal on Scientific Computing 24, pp. 507-523 (2002)
+  - Tocino, A. and Vigo-Aguiar, J., "Weak Second Order Conditions for Stochastic Runge-Kutta Methods", SIAM Journal on Scientific Computing 24, pp. 507-523 (2002). DOI: 10.1137/S1064827501387814.
 """
 struct SIEA <: StochasticDiffEqAlgorithm end
 
 """
-Tocino, A. and Vigo-Aguiar, J., Weak Second Order Conditions for Stochastic Runge-
-Kutta Methods, SIAM Journal on Scientific Computing 24, pp. 507 - 523 (2002)
-DOI:10.1137/S1064827501387814
-
     SMEA()
 
 **SMEA: Stochastic Modified Euler A Method (High Weak Order)**
@@ -2188,15 +2076,11 @@ Stochastic generalization of the modified Euler method for Itô SDEs.
 
 ## References
 
-  - Tocino, A. and Vigo-Aguiar, J., "Weak Second Order Conditions for Stochastic Runge-Kutta Methods", SIAM Journal on Scientific Computing 24, pp. 507-523 (2002)
+  - Tocino, A. and Vigo-Aguiar, J., "Weak Second Order Conditions for Stochastic Runge-Kutta Methods", SIAM Journal on Scientific Computing 24, pp. 507-523 (2002). DOI: 10.1137/S1064827501387814.
 """
 struct SMEA <: StochasticDiffEqAlgorithm end
 
 """
-Tocino, A. and Vigo-Aguiar, J., Weak Second Order Conditions for Stochastic Runge-
-Kutta Methods, SIAM Journal on Scientific Computing 24, pp. 507 - 523 (2002)
-DOI:10.1137/S1064827501387814
-
     SIEB()
 
 **SIEB: Stochastic Improved Euler B Method (High Weak Order)**
@@ -2227,15 +2111,11 @@ Alternative stochastic generalization of the improved Euler method.
 
 ## References
 
-  - Tocino, A. and Vigo-Aguiar, J., "Weak Second Order Conditions for Stochastic Runge-Kutta Methods", SIAM Journal on Scientific Computing 24, pp. 507-523 (2002)
+  - Tocino, A. and Vigo-Aguiar, J., "Weak Second Order Conditions for Stochastic Runge-Kutta Methods", SIAM Journal on Scientific Computing 24, pp. 507-523 (2002). DOI: 10.1137/S1064827501387814.
 """
 struct SIEB <: StochasticDiffEqAlgorithm end
 
 """
-Tocino, A. and Vigo-Aguiar, J., Weak Second Order Conditions for Stochastic Runge-
-Kutta Methods, SIAM Journal on Scientific Computing 24, pp. 507 - 523 (2002)
-DOI:10.1137/S1064827501387814
-
     SMEB()
 
 **SMEB: Stochastic Modified Euler B Method (High Weak Order)**
@@ -2266,7 +2146,7 @@ Alternative stochastic generalization of the modified Euler method.
 
 ## References
 
-  - Tocino, A. and Vigo-Aguiar, J., "Weak Second Order Conditions for Stochastic Runge-Kutta Methods", SIAM Journal on Scientific Computing 24, pp. 507-523 (2002)
+  - Tocino, A. and Vigo-Aguiar, J., "Weak Second Order Conditions for Stochastic Runge-Kutta Methods", SIAM Journal on Scientific Computing 24, pp. 507-523 (2002). DOI: 10.1137/S1064827501387814
 """
 struct SMEB <: StochasticDiffEqAlgorithm end
 
