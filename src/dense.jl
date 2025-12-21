@@ -99,7 +99,7 @@ end
 end
 
 """
-sde_interpolation(tvals,ts,timeseries,ks)
+    sde_interpolation(tvals,ts,timeseries,ks)
 
 Get the value at tvals where the solution is known at the
 times ts (sorted), with values timeseries and derivatives ks
@@ -144,7 +144,7 @@ function sde_interpolation(tvals, id, idxs, deriv, p, continuity::Symbol = :left
 end
 
 """
-sde_interpolation(tval::Number,ts,timeseries,ks)
+    sde_interpolation(tval::Number,ts,timeseries,ks)
 
 Get the value at tval where the solution is known at the
 times ts (sorted), with values timeseries and derivatives ks

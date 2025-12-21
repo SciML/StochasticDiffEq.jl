@@ -1,5 +1,5 @@
 """
-RosslerSRI
+    RosslerSRI
 
 Holds the Butcher tableaus for a Roessler SRI method.
 """
@@ -19,7 +19,7 @@ struct RosslerSRI{T, T2} <: Tableau
 end
 
 """
-RosslerSRA
+    RosslerSRA
 
 Holds the Butcher tableaus for a Rosser SRA method.
 """
@@ -35,7 +35,7 @@ struct RosslerSRA{T, T2} <: Tableau
 end
 
 """
-constructSRIW1()
+    constructSRIW1()
 
 Constructs the tableau type for the SRIW1 method.
 """
@@ -73,7 +73,7 @@ function constructSRIW1(T = Float64, T2 = Float64)
 end
 
 """
-constructSRIW2()
+    constructSRIW2()
 
 Constructs the tableau type for the SRIW1 method.
 """
@@ -111,7 +111,7 @@ function constructSRIW2(T = Float64, T2 = Float64)
 end
 
 """
-constructSRIOpt1()
+    constructSRIOpt1()
 
 Opti6-12-11-10-01-47
 """
@@ -144,7 +144,7 @@ function constructSRIOpt1(T = Float64, T2 = Float64)
 end
 
 """
-constructSRIOpt2()
+    constructSRIOpt2()
 
 Opti6-12-11-10-01-47
 """
@@ -182,7 +182,7 @@ function constructSRIOpt2(T = Float64, T2 = Float64)
 end
 
 """
-constructSRA1()
+    constructSRA1()
 
 Constructs the taleau type for the SRA1 method.
 """
@@ -202,7 +202,7 @@ function constructSRA1(T = Float64, T2 = Float64)
 end
 
 """
-constructSRA2()
+    constructSRA2()
 
 Constructs the taleau type for the SRA2 method.
 """
@@ -222,7 +222,7 @@ function constructSRA2(T = Float64, T2 = Float64)
 end
 
 """
-constructSRA3()
+    constructSRA3()
 
 Constructs the taleau type for the SRA3 method.
 """
@@ -244,7 +244,7 @@ function constructSRA3(T = Float64, T2 = Float64)
 end
 
 """
-constructSOSRA()
+    constructSOSRA()
 
 Constructs the taleau type for the SOSRA method.
 """
@@ -287,7 +287,7 @@ function constructSOSRA(T = Float64, T2 = Float64)
 end
 
 """
-constructSOSRA2()
+    constructSOSRA2()
 
 Constructs the taleau type for the SOSRA method.
 """
@@ -330,7 +330,7 @@ function constructSOSRA2(T = Float64, T2 = Float64)
 end
 
 """
-checkSRIOrder(RosslerSRI)
+    checkSRIOrder(RosslerSRI)
 
 Determines whether the order conditions are met via the tableaus of the SRI method.
 """
@@ -367,7 +367,7 @@ function checkSRIOrder(RosslerSRI; tol = 1e-6)
 end
 
 """
-checkSRAOrder(RosslerSRI)
+    checkSRAOrder(RosslerSRI)
 
 Determines whether the order conditions are met via the tableaus of the SRA method.
 """
@@ -387,7 +387,7 @@ function checkSRAOrder(SRA; tol = 1e-6)
 end
 
 """
-constructSOSRA2()
+    constructSOSRA2()
 
 Constructs the taleau type for the SOSRA method.
 """
@@ -436,7 +436,7 @@ function constructSKenCarp(T = Float64, T2 = Float64)
 end
 
 """
-constructSOSRA2()
+    constructSOSRA2()
 
 Constructs the taleau type for the SOSRA method.
 """
@@ -653,11 +653,9 @@ end
 # ebtilde4 = big(1767732205903)//4055673282236 - big(2193209047091)//5459859503100
 
 """
-
-RoesslerRI
+    RoesslerRI
 
 Holds the Butcher tableaus for a Roessler RI method. (high weak order)
-
 """
 
 struct RoesslerRI{T, T2} <: Tableau
@@ -1075,11 +1073,9 @@ function checkRIOrder(RI; tol = 1e-6, ps = 2)
 end
 
 """
-
-RoesslerRS
+    RoesslerRS
 
 Holds the Butcher tableaus for a Roessler RS method. (high weak order in Stratonovich sense)
-
 """
 
 struct RoesslerRS{T, T2} <: Tableau
@@ -1262,7 +1258,7 @@ function checkRSOrder(RS; tol = 1e-6, ps = 2)
 end
 
 """
-NON
+    KomoriNON
 
 Holds the Butcher tableau for Komori's NON method. (second weak order in Stratonovich sense)
 """
