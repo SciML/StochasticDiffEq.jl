@@ -2539,10 +2539,8 @@ Fully implicit split-step method for handling stiffness in both drift and diffus
 
 Applies implicit treatment to both drift and diffusion using split-step approach:
 
-```
-Step 1: Handle drift implicitly
-Step 2: Handle diffusion implicitly
-```
+- Step 1: Handle drift implicitly
+- Step 2: Handle diffusion implicitly
 
 ## Fully Implicit Features
 
