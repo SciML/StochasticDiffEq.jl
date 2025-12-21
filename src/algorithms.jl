@@ -131,13 +131,13 @@ The Euler-Maruyama method is the simplest and most fundamental numerical method 
 
 The method discretizes the SDE:
 
-```
+```math
 du = f(u,p,t)dt + g(u,p,t)dW
 ```
 
 using the scheme:
 
-```
+```math
 u_{n+1} = u_n + f(u_n,p,t_n)Δt + g(u_n,p,t_n)ΔW_n
 ```
 
@@ -176,10 +176,8 @@ Split-step version of the Euler-Maruyama method that separates the drift and dif
 
 Applies operator splitting to treat drift and diffusion separately:
 
-```
-Step 1: u* = u_n + f(u_n,t_n)Δt     (drift step)
-Step 2: u_{n+1} = u* + g(u*,t_n)ΔW_n (diffusion step)
-```
+- Step 1: drift step ``u* = u_n + f(u_n,t_n) Δt``
+- Step 2: diffusion step ``u_{n+1} = u* + g(u*,t_n) ΔW_n``
 
 ## References
 
@@ -212,13 +210,13 @@ The Euler-Heun method is the Stratonovich analog of the Euler-Maruyama method, p
 
 For Stratonovich SDEs:
 
-```
+```math
 du = f(u,p,t)dt + g(u,p,t)∘dW
 ```
 
 The method uses:
 
-```
+```math
 u_{n+1} = u_n + f(u_n,p,t_n)Δt + g(u_n + 0.5*g(u_n,p,t_n)ΔW_n, p, t_n)ΔW_n
 ```
 
@@ -391,8 +389,8 @@ Explicit Runge-Kutta discretization of the Milstein method achieving strong orde
 
 Implements the Milstein scheme using Runge-Kutta techniques:
 
-```
-du = f(u,t)dt + g(u,t)dW + 0.5*g(u,t)*g'(u,t)*(dW^2 - dt)
+```math
+du = f(u,t)dt + g(u,t)dW + 0.5 g(u,t) g'(u,t) (dW^2 - dt)
 ```
 
 where g'(u,t) is the derivative of g with respect to u.
@@ -1251,8 +1249,8 @@ Adaptive strong order 1.5 method for additive Itô and Stratonovich SDEs with we
 
 Specialized for SDEs of the form:
 
-```
-du = f(u,p,t)dt + σ(p,t) dW
+```math
+du = f(u,p,t) dt + σ(p,t) dW
 ```
 
 where diffusion σ doesn't depend on solution u.
@@ -1361,8 +1359,8 @@ SOSRA is a stability-optimized version of the SRA (Stochastic Runge-Kutta for Ad
 
 Specialized for SDEs of the form:
 
-```
-du = f(u,p,t)dt + σ(t) dW
+```math
+du = f(u,p,t) dt + σ(t) dW
 ```
 
 where the diffusion σ does not depend on the solution u.
@@ -1792,7 +1790,7 @@ Fixed step weak order 2.0 method specifically designed for Stratonovich SDEs.
 
 Optimized for SDEs in Stratonovich form:
 
-```
+```math
 du = f(u,t)dt + g(u,t)∘dW
 ```
 
@@ -1901,7 +1899,7 @@ Specialized version of PL1WM optimized for additive noise problems.
 
 Specialized for SDEs of the form:
 
-```
+```math
 du = f(u,t)dt + σ(t) dW
 ```
 
@@ -2309,10 +2307,10 @@ When `symplectic=true` and `theta=0.5`, the method preserves the symplectic stru
 
 ## Algorithm Description
 
-Treats the SDE `du = f(u,t)dt + g(u,t)dW` using:
+Treats the SDE ``du = f(u,t)dt + g(u,t)dW`` using:
 
-```
-u_{n+1} = u_n + theta*f(u_{n+1},t_{n+1})*dt + (1-theta)*f(u_n,t_n)*dt + g(u_n,t_n)*dW_n
+```math
+u_{n+1} = u_n + θ f(u_{n+1},t_{n+1}) dt + (1-θ) f(u_n,t_n) dt + g(u_n,t_n) dW_n
 ```
 
 ## References
@@ -2993,18 +2991,20 @@ Specialized integrator for Langevin dynamics in molecular dynamics simulations, 
 
 Designed for Langevin systems:
 
-```
-du = v dt
-dv = f(v,u) dt - γv dt + g(u)√(2γ) dW
+```math
+\\begin{align*}
+du &= v \\, dt \\\\
+dv &= f(v,u) \\, dt - γv \\, dt + g(u) \\sqrt{2γ} \\, dW
+\\end{align*}
 ```
 
 where:
 
-  - u: position coordinates
-  - v: velocity coordinates
-  - γ: friction coefficient
-  - f(v,u): force function
-  - g(u): noise scaling function
+  - ``u``: position coordinates
+  - ``v``: velocity coordinates
+  - ``γ``: friction coefficient
+  - ``f(v,u)``: force function
+  - ``g(u)``: noise scaling function
 
 ## When to Use
 
