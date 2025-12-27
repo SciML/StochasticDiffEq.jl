@@ -59,7 +59,7 @@ SciMLBase = "2.115"
 SciMLOperators = "0.2.9, 0.3, 0.4, 1"
 SimpleNonlinearSolve = "2"
 SparseArrays = "1.6"
-StaticArrays = "0.11, 0.12, 1.0"
+StaticArrays = "1.9.14"
 julia = "1.10"
 
 [extras]
