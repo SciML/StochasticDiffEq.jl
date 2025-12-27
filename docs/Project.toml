@@ -4,3 +4,4 @@ StochasticDiffEq = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
 
 [compat]
 Documenter = "0.27, 1"
+StochasticDiffEq = "6.87.0"
