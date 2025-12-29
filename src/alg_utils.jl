@@ -447,6 +447,7 @@ end
 end
 
 alg_mass_matrix_compatible(alg::StochasticDiffEqAlgorithm) = false
+alg_mass_matrix_compatible(alg::StochasticDiffEqRODEAlgorithm) = false
 alg_can_repeat_jac(alg::StochasticDiffEqAlgorithm) = true
 
 function alg_mass_matrix_compatible(alg::Union{
@@ -522,4 +523,5 @@ function OrdinaryDiffEqCore.unwrap_alg(integrator::SDEIntegrator, is_stiff)
 end
 
 alg_control_rate(::StochasticDiffEqAlgorithm) = false
+alg_control_rate(::StochasticDiffEqRODEAlgorithm) = false
 alg_control_rate(::TauLeaping) = true

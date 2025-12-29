@@ -201,7 +201,7 @@ function resize_non_user_cache!(integrator::SDEIntegrator, cache, i)
 end
 
 function deleteat!(integrator::SDEIntegrator, idxs)
-    deleteat_non_user_cache!(integrator, cache, idxs)
+    deleteat_non_user_cache!(integrator, integrator.cache, idxs)
     for c in full_cache(integrator)
         deleteat!(c, idxs)
     end
@@ -211,7 +211,7 @@ function deleteat!(integrator::SDEIntegrator, idxs)
 end
 
 function addat!(integrator::SDEIntegrator, idxs)
-    addat_non_user_cache!(integrator, cache, idxs)
+    addat_non_user_cache!(integrator, integrator.cache, idxs)
     for c in full_cache(integrator)
         addat!(c, idxs)
     end

@@ -305,9 +305,9 @@ end
     if integrator.P !== nothing && integrator.opts.adaptive
         if integrator.cache isa StochasticDiffEqMutableCache
             oldrate = integrator.P.cache.currate
-            P.cache.rate(oldrate, u, p, t)
+            integrator.P.cache.rate(oldrate, integrator.u, integrator.p, integrator.t)
         else
-            integrator.P.cache.currate = P.cache.rate(u, p, t)
+            integrator.P.cache.currate = integrator.P.cache.rate(integrator.u, integrator.p, integrator.t)
         end
     end
 end
