@@ -120,6 +120,7 @@ include("caches/sra_caches.jl")
 include("caches/rossler_caches.jl")
 include("caches/srk_weak_caches.jl")
 include("caches/kencarp_caches.jl")
+include("caches/implicit_weak_caches.jl")
 include("caches/predcorr_caches.jl")
 include("caches/SROCK_caches.jl")
 include("caches/tau_caches.jl")
@@ -145,6 +146,7 @@ include("perform_step/srk_weak.jl")
 include("perform_step/sdirk.jl")
 include("perform_step/implicit_split_step.jl")
 include("perform_step/kencarp.jl")
+include("perform_step/implicit_weak.jl")
 include("perform_step/predcorr.jl")
 include("perform_step/split.jl")
 include("perform_step/composite.jl")
@@ -184,7 +186,7 @@ export SimplifiedEM
 export SplitEM, IIF1M, IIF2M, IIF1Mil
 
 export ImplicitEM, ImplicitEulerHeun, ISSEM, ISSEulerHeun,
-       ImplicitRKMil, STrapezoid, SImplicitMidpoint
+       ImplicitRKMil, STrapezoid, SImplicitMidpoint, IRI1
 
 export TauLeaping, CaoTauLeaping
 
