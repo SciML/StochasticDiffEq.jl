@@ -2849,6 +2849,62 @@ Automatically adjusts tau based on:
 """
 struct CaoTauLeaping <: StochasticDiffEqJumpAdaptiveAlgorithm end
 
+"""
+    ThetaTrapezoidalTauLeaping(; theta=0.5)
+
+**ThetaTrapezoidalTauLeaping: Weak Second Order Tau-Leaping Method (Jump-Diffusion)**
+
+A predictor-corrector tau-leaping method achieving weak second order accuracy in the
+large volume scaling. Based on the work of Hu, Li, and Min (2011).
+
+## Method Properties
+
+  - **Problem type**: Jump-diffusion processes
+  - **Order**: Weak order 2 (in the large volume scaling)
+  - **Time stepping**: Fixed or adaptive tau
+  - **Accuracy**: Superior to both Euler tau-leaping and midpoint tau-leaping
+
+## Parameters
+
+  - `theta::Float64`: Parameter controlling the predictor-corrector balance (default: 0.5)
+    - Must be in range (0, 1)
+    - theta = 0.5 is recommended for balanced accuracy and stability
+
+## When to Use
+
+  - When higher accuracy is needed compared to standard tau-leaping methods
+  - Chemical reaction networks requiring weak second order accuracy
+  - Systems where accurate mean and covariance estimates are important
+  - When both Euler and midpoint tau-leaping provide insufficient accuracy
+
+## Algorithm Description
+
+The method uses a two-stage predictor-corrector approach:
+
+1. **Predictor step**: Generate Poisson jumps with rate `θτ·a(X_n)` and compute
+   predictor state `X' = X_n + ν·k'`
+
+2. **Corrector step**: Compute adjusted rates `l_j = max{α₁·a_j(X') - α₂·a_j(X_n), 0}`
+   where `α₁ = 1/(2(1-θ)θ)` and `α₂ = ((1-θ)² + θ²)/(2(1-θ)θ)`,
+   generate Poisson jumps with rate `(1-θ)τ·l_j`, and compute final state
+
+## Convergence Properties
+
+The local truncation error for covariance is O(τ³V⁻¹) when τ = V^(-β) for 0 < β < 1
+and system size V → ∞, which is higher order than both Euler and midpoint methods.
+
+## References
+
+  - Hu, Y., Li, T., Min, B., "A weak second order tau-leaping method for chemical
+    kinetic systems", J. Chem. Phys. 135, 024113 (2011)
+  - Anderson, D.F., Mattingly, J.C., "A weak trapezoidal method for a class of
+    stochastic differential equations", Comm. Math. Sci. 9, 301 (2011)
+"""
+struct ThetaTrapezoidalTauLeaping{T} <: StochasticDiffEqJumpAdaptiveAlgorithm
+    theta::T
+end
+ThetaTrapezoidalTauLeaping(; theta = 0.5) = ThetaTrapezoidalTauLeaping(theta)
+
 ################################################################################
 
 # Etc.
