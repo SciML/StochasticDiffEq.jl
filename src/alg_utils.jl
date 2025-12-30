@@ -238,6 +238,7 @@ alg_order(alg::ThetaTrapezoidalTauLeaping) = 2 // 1  # Weak second order
 alg_order(alg::BAOAB) = 1 // 1
 
 alg_order(alg::SKenCarp) = 2 // 1
+alg_order(alg::IRI1) = 1 // 1  # Strong order, weak order is 2
 function alg_order(
         alg::Union{
             StochasticDiffEqCompositeAlgorithm, StochasticDiffEqRODECompositeAlgorithm,
@@ -365,6 +366,7 @@ alg_compatible(prob::DiffEqBase.AbstractSDEProblem, alg::SMEA) = is_diagonal_noi
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem, alg::SIEB) = is_diagonal_noise(prob)
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem, alg::SMEB) = is_diagonal_noise(prob)
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem, alg::SKenCarp) = true
+alg_compatible(prob::DiffEqBase.AbstractSDEProblem, alg::IRI1) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem, alg::EM) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem, alg::LambaEM) = true
 alg_compatible(prob::DiffEqBase.AbstractSDEProblem, alg::WangLi3SMil_A) = true
@@ -441,6 +443,7 @@ alg_needs_extra_process(alg::SRA3) = true
 alg_needs_extra_process(alg::SOSRA) = true
 alg_needs_extra_process(alg::SOSRA2) = true
 alg_needs_extra_process(alg::SKenCarp) = true
+alg_needs_extra_process(alg::IRI1) = true
 alg_needs_extra_process(alg::DRI1) = true
 alg_needs_extra_process(alg::RI1) = true
 alg_needs_extra_process(alg::RI3) = true
