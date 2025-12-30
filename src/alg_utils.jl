@@ -462,8 +462,8 @@ function alg_mass_matrix_compatible(alg::Union{
 end
 
 is_split_step(::StochasticDiffEqAlgorithm) = false
-is_split_step(::EM{split}) = split
-is_split_step(::LambaEM{split}) = split
+is_split_step(::EM{split}) where {split} = split
+is_split_step(::LambaEM{split}) where {split} = split
 
 alg_stability_size(alg::SOSRI2) = 10.6
 alg_stability_size(alg::SOSRA2) = 5.3
