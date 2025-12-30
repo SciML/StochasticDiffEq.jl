@@ -127,8 +127,12 @@ function DiffEqBase.__init(
         if alias isa Bool
             aliases = is_sde ? SciMLBase.SDEAliasSpecifier(; alias) :
                       SciMLBase.RODEAliasSpecifier(; alias)
-        elseif alias isa SciMLBase.SDEAliasSpecifier ||
-               alias isa SciMLBase.RODEAliasSpecifier || isnothing(alias)
+        elseif alias isa SciMLBase.SDEAliasSpecifier
+            aliases = alias
+        elseif alias isa SciMLBase.RODEAliasSpecifier
+            aliases = alias
+        else
+            # Default case (including isnothing(alias))
             aliases = is_sde ? SciMLBase.SDEAliasSpecifier() :
                       SciMLBase.RODEAliasSpecifier()
         end
@@ -323,10 +327,10 @@ function DiffEqBase.__init(
     # end
 
     # Initialize timeseries and ts vectors
+    u_initial = save_idxs === nothing ? u : u[save_idxs]
     if save_idxs === nothing
         timeseries = Vector{uType}()
     else
-        u_initial = u[save_idxs]
         timeseries = Vector{typeof(u_initial)}()
     end
     ts = Vector{tType}()
