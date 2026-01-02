@@ -260,4 +260,10 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV, "APPVEYOR")
             include("multithreaded_jump_test.jl")
         end
     end
+
+    if GROUP == "All" || GROUP == "Allocations"
+        @time @safetestset "Allocation Tests" begin
+            include("alloc_tests.jl")
+        end
+    end
 end
