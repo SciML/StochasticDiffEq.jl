@@ -101,13 +101,14 @@ function qsteady_max_default(alg::Union{
 end
 
 # special cases in stepsize_controllers.jl
-function default_controller(alg::Union{TauLeaping, CaoTauLeaping}, args...)
+function default_controller(alg::Union{TauLeaping, CaoTauLeaping, ThetaTrapezoidalTauLeaping}, args...)
     DummyController()
 end
 
 # For whether an algorithm uses a priori dt estimates or utilizes an error estimate
 isaposteriori(alg) = false
 isaposteriori(alg::CaoTauLeaping) = true
+isaposteriori(alg::ThetaTrapezoidalTauLeaping) = false
 
 alg_order(alg::EM) = 1 // 2
 alg_order(alg::LambaEM) = 1 // 2
@@ -191,6 +192,7 @@ alg_order(alg::SMEB) = 1 // 1
 
 alg_order(alg::TauLeaping) = 1 // 1
 alg_order(alg::CaoTauLeaping) = 1 // 1
+alg_order(alg::ThetaTrapezoidalTauLeaping) = 2 // 1  # Weak second order
 
 alg_order(alg::BAOAB) = 1 // 1
 
@@ -525,3 +527,4 @@ end
 alg_control_rate(::StochasticDiffEqAlgorithm) = false
 alg_control_rate(::StochasticDiffEqRODEAlgorithm) = false
 alg_control_rate(::TauLeaping) = true
+alg_control_rate(::ThetaTrapezoidalTauLeaping) = true  # We manage rates manually
