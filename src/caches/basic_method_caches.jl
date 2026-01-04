@@ -7,25 +7,29 @@ struct EMConstantCache <: StochasticDiffEqConstantCache end
     rtmp2::rateNoiseType
 end
 
-function alg_cache(alg::EM, prob, u, ΔW, ΔZ, p, rate_prototype, noise_rate_prototype,
+function alg_cache(
+        alg::EM, prob, u, ΔW, ΔZ, p, rate_prototype, noise_rate_prototype,
         jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    EMConstantCache()
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return EMConstantCache()
 end
 
-function alg_cache(alg::EM, prob, u, ΔW, ΔZ, p, rate_prototype, noise_rate_prototype,
+function alg_cache(
+        alg::EM, prob, u, ΔW, ΔZ, p, rate_prototype, noise_rate_prototype,
         jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    tmp = zero(u);
-    rtmp1 = zero(rate_prototype);
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    tmp = zero(u)
+    rtmp1 = zero(rate_prototype)
     if noise_rate_prototype !== nothing
         rtmp2 = zero(noise_rate_prototype)
     else
         rtmp2 = nothing
     end
-    EMCache(u, uprev, tmp, rtmp1, rtmp2)
+    return EMCache(u, uprev, tmp, rtmp1, rtmp2)
 end
 
 struct SplitEMConstantCache <: StochasticDiffEqConstantCache end
@@ -37,26 +41,30 @@ struct SplitEMConstantCache <: StochasticDiffEqConstantCache end
     rtmp2::rateNoiseType
 end
 
-function alg_cache(alg::SplitEM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SplitEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    SplitEMConstantCache()
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return SplitEMConstantCache()
 end
 
-function alg_cache(alg::SplitEM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SplitEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    tmp = zero(u);
-    rtmp1 = zero(rate_prototype);
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    tmp = zero(u)
+    rtmp1 = zero(rate_prototype)
     rtmp2 = zero(noise_rate_prototype)
-    SplitEMCache(u, uprev, tmp, rtmp1, rtmp2)
+    return SplitEMCache(u, uprev, tmp, rtmp1, rtmp2)
 end
 
 struct EulerHeunConstantCache <: StochasticDiffEqConstantCache end
 @cache struct EulerHeunCache{uType, rateType, rateNoiseType, rateNoiseCollectionType} <:
-              StochasticDiffEqMutableCache
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
     tmp::uType
@@ -67,24 +75,28 @@ struct EulerHeunConstantCache <: StochasticDiffEqConstantCache end
     gtmp2::rateNoiseType
 end
 
-function alg_cache(alg::EulerHeun, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::EulerHeun, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    EulerHeunConstantCache()
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return EulerHeunConstantCache()
 end
 
-function alg_cache(alg::EulerHeun, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::EulerHeun, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    tmp = zero(u);
-    ftmp1 = zero(rate_prototype);
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    tmp = zero(u)
+    ftmp1 = zero(rate_prototype)
     ftmp2 = zero(rate_prototype)
     nrtmp = zero(rate_prototype)
-    gtmp1 = zero(noise_rate_prototype);
+    gtmp1 = zero(noise_rate_prototype)
     gtmp2 = zero(noise_rate_prototype)
-    EulerHeunCache(u, uprev, tmp, ftmp1, ftmp2, nrtmp, gtmp1, gtmp2)
+    return EulerHeunCache(u, uprev, tmp, ftmp1, ftmp2, nrtmp, gtmp1, gtmp2)
 end
 
 struct RandomEMConstantCache <: StochasticDiffEqConstantCache end
@@ -95,20 +107,24 @@ struct RandomEMConstantCache <: StochasticDiffEqConstantCache end
     rtmp::rateType
 end
 
-function alg_cache(alg::RandomEM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RandomEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    RandomEMConstantCache()
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return RandomEMConstantCache()
 end
 
-function alg_cache(alg::RandomEM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RandomEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    tmp = zero(u);
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    tmp = zero(u)
     rtmp = zero(rate_prototype)
-    RandomEMCache(u, uprev, tmp, rtmp)
+    return RandomEMCache(u, uprev, tmp, rtmp)
 end
 
 struct RandomTamedEMConstantCache <: StochasticDiffEqConstantCache end
@@ -120,20 +136,24 @@ struct RandomTamedEMConstantCache <: StochasticDiffEqConstantCache end
     rtmp::rateType
 end
 
-function alg_cache(alg::RandomTamedEM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RandomTamedEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    RandomTamedEMConstantCache()
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return RandomTamedEMConstantCache()
 end
 
-function alg_cache(alg::RandomTamedEM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RandomTamedEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    tmp = zero(u);
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    tmp = zero(u)
     rtmp = zero(rate_prototype)
-    RandomTamedEMCache(u, uprev, tmp, rtmp)
+    return RandomTamedEMCache(u, uprev, tmp, rtmp)
 end
 
 struct RandomHeunConstantCache <: StochasticDiffEqConstantCache end
@@ -146,27 +166,31 @@ struct RandomHeunConstantCache <: StochasticDiffEqConstantCache end
     wtmp::randType
 end
 
-function alg_cache(alg::RandomHeun, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RandomHeun, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    RandomHeunConstantCache()
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return RandomHeunConstantCache()
 end
 
-function alg_cache(alg::RandomHeun, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RandomHeun, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    tmp = zero(u);
-    rtmp1 = zero(rate_prototype);
-    rtmp2 = zero(rate_prototype);
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    tmp = zero(u)
+    rtmp1 = zero(rate_prototype)
+    rtmp2 = zero(rate_prototype)
     wtmp = zero(ΔW)
-    RandomHeunCache(u, uprev, tmp, rtmp1, rtmp2, wtmp)
+    return RandomHeunCache(u, uprev, tmp, rtmp1, rtmp2, wtmp)
 end
 
 struct SimplifiedEMConstantCache <: StochasticDiffEqConstantCache end
 @cache struct SimplifiedEMCache{randType, uType, rateType, rateNoiseType} <:
-              StochasticDiffEqMutableCache
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
     _dW::randType
@@ -174,17 +198,21 @@ struct SimplifiedEMConstantCache <: StochasticDiffEqConstantCache end
     rtmp2::rateNoiseType
 end
 
-function alg_cache(alg::SimplifiedEM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SimplifiedEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    SimplifiedEMConstantCache()
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return SimplifiedEMConstantCache()
 end
 
-function alg_cache(alg::SimplifiedEM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SimplifiedEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         _dW = copy(ΔW)
     else
@@ -193,7 +221,7 @@ function alg_cache(alg::SimplifiedEM, prob, u, ΔW, ΔZ, p, rate_prototype,
 
     rtmp1 = zero(rate_prototype)
     rtmp2 = zero(noise_rate_prototype)
-    SimplifiedEMCache(u, uprev, _dW, rtmp1, rtmp2)
+    return SimplifiedEMCache(u, uprev, _dW, rtmp1, rtmp2)
 end
 
 struct RKMilConstantCache <: StochasticDiffEqConstantCache end
@@ -207,30 +235,34 @@ struct RKMilConstantCache <: StochasticDiffEqConstantCache end
     L::rateType
 end
 
-function alg_cache(alg::RKMil, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RKMil, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    RKMilConstantCache()
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return RKMilConstantCache()
 end
 
-function alg_cache(alg::RKMil, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RKMil, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    du1 = zero(rate_prototype);
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    du1 = zero(rate_prototype)
     du2 = zero(rate_prototype)
-    K = zero(rate_prototype);
-    tmp = zero(u);
+    K = zero(rate_prototype)
+    tmp = zero(u)
     L = zero(rate_prototype)
-    RKMilCache(u, uprev, du1, du2, K, tmp, L)
+    return RKMilCache(u, uprev, du1, du2, K, tmp, L)
 end
 
 struct RKMilCommuteConstantCache{JalgType} <: StochasticDiffEqConstantCache
     Jalg::JalgType
 end
 @cache struct RKMilCommuteCache{uType, rateType, rateNoiseType, JalgType} <:
-              StochasticDiffEqMutableCache
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
     du1::rateType
@@ -245,29 +277,33 @@ end
     tmp::uType
 end
 
-function alg_cache(alg::RKMilCommute, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RKMilCommute, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     Jalg = get_Jalg(ΔW, dt, prob, alg)
-    RKMilCommuteConstantCache{typeof(Jalg)}(Jalg)
+    return RKMilCommuteConstantCache{typeof(Jalg)}(Jalg)
 end
 
-function alg_cache(alg::RKMilCommute, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RKMilCommute, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    du1 = zero(rate_prototype);
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    du1 = zero(rate_prototype)
     du2 = zero(rate_prototype)
-    K = zero(rate_prototype);
-    gtmp = zero(noise_rate_prototype);
-    L = zero(noise_rate_prototype);
+    K = zero(rate_prototype)
+    gtmp = zero(noise_rate_prototype)
+    L = zero(noise_rate_prototype)
     tmp = zero(rate_prototype)
     Jalg = get_Jalg(ΔW, dt, prob, alg)
     mil_correction = zero(rate_prototype)
-    Kj = zero(u);
+    Kj = zero(u)
     Dgj = zero(noise_rate_prototype)
-    RKMilCommuteCache(u, uprev, du1, du2, K, gtmp, L, Jalg, mil_correction, Kj, Dgj, tmp)
+    return RKMilCommuteCache(u, uprev, du1, du2, K, gtmp, L, Jalg, mil_correction, Kj, Dgj, tmp)
 end
 
 struct RKMilGeneralConstantCache{JalgType} <: StochasticDiffEqConstantCache
@@ -275,7 +311,7 @@ struct RKMilGeneralConstantCache{JalgType} <: StochasticDiffEqConstantCache
 end
 
 @cache struct RKMilGeneralCache{uType, rateType, rateNoiseType, JalgType} <:
-              StochasticDiffEqMutableCache
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
     tmp::uType
@@ -288,18 +324,22 @@ end
     Jalg::JalgType
 end
 
-function alg_cache(alg::RKMilGeneral, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RKMilGeneral, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     Jalg = get_Jalg(ΔW, dt, prob, alg)
-    RKMilGeneralConstantCache{typeof(Jalg)}(Jalg)
+    return RKMilGeneralConstantCache{typeof(Jalg)}(Jalg)
 end
 
-function alg_cache(alg::RKMilGeneral, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RKMilGeneral, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     tmp = zero(u)
     du₁ = zero(rate_prototype)
     du₂ = zero(rate_prototype)
@@ -308,7 +348,9 @@ function alg_cache(alg::RKMilGeneral, prob, u, ΔW, ΔZ, p, rate_prototype,
     mil_correction = zero(u)
     ggprime = zero(noise_rate_prototype)
     Jalg = get_Jalg(ΔW, dt, prob, alg)
-    RKMilGeneralCache{
-        typeof(u), typeof(rate_prototype), typeof(noise_rate_prototype), typeof(Jalg)}(
-        u, uprev, tmp, du₁, du₂, K, L, mil_correction, ggprime, Jalg)
+    return RKMilGeneralCache{
+        typeof(u), typeof(rate_prototype), typeof(noise_rate_prototype), typeof(Jalg),
+    }(
+        u, uprev, tmp, du₁, du₂, K, L, mil_correction, ggprime, Jalg
+    )
 end

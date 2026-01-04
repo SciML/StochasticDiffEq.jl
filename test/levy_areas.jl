@@ -17,7 +17,7 @@ end
 # LevyArea.jl algs: ITER_INT_ALGS
 
 @testset "diagonal noise tests" begin
-    true_diag = 1//2 .* W.dW .* W.dW
+    true_diag = 1 // 2 .* W.dW .* W.dW
 
     Jdiag = StochasticDiffEq.JDiagonal_iip(W.dW)
     StochasticDiffEq.get_iterated_I!(dt, W.dW, W.dZ, Jdiag, nothing, 1)
@@ -28,25 +28,25 @@ end
 
     for alg in LevyArea.ITER_INT_ALGS
         @test diag(StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, alg, nothing, 1)) ==
-              true_diag
+            true_diag
     end
 end
 
 # Commutative noise tests
 @testset "Commutative noise tests" begin
-    true_commute = 1//2 .* W.dW .* W.dW'
+    true_commute = 1 // 2 .* W.dW .* W.dW'
 
     Jcommute = StochasticDiffEq.JCommute_iip(W.dW)
     StochasticDiffEq.get_iterated_I!(dt, W.dW, W.dZ, Jcommute, nothing, 1)
     Jcommuteoop = StochasticDiffEq.JCommute_oop()
 
     @test StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, Jcommuteoop, nothing, 1) ==
-          Jcommute.J
+        Jcommute.J
     @test Jcommute.J == true_commute
 
     for alg in LevyArea.ITER_INT_ALGS
         @test diag(StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, alg, nothing, 1)) ==
-              diag(true_commute)
+            diag(true_commute)
     end
 end
 
@@ -71,13 +71,13 @@ function test_moments(m, alg, Δ, samples, p = nothing)
         @. E2 = E2 + I * I
         @. E3 = E3 + tmp * I
     end
-    @. E1 = E1/samples
-    @. E2 = E2/samples
-    @. E3 = E3/samples
+    @. E1 = E1 / samples
+    @. E2 = E2 / samples
+    @. E3 = E3 / samples
 
-    @test maximum(abs.(E1 - Δ*I)) < 2e-1
-    @test maximum(abs.(E2-Δ^2*(zero(E2) .+ 1)/2)) < 1e-2
-    @test maximum(abs.(E3 - Δ^2*(one(E2) .+ 1)/2)) < 1e-2
+    @test maximum(abs.(E1 - Δ * I)) < 2.0e-1
+    @test maximum(abs.(E2 - Δ^2 * (zero(E2) .+ 1) / 2)) < 1.0e-2
+    return @test maximum(abs.(E3 - Δ^2 * (one(E2) .+ 1) / 2)) < 1.0e-2
 end
 
 """
@@ -86,7 +86,7 @@ Kloeden, P. E., Platen, E., & Schurz, H. Numerical solution of SDE through compu
 experiments. Springer Science & Business Media. (2012)
 """
 
-function test_compare_sample_mean_and_var(alg, Δ, m, samples = Int(1e6), p = Int(1e2))
+function test_compare_sample_mean_and_var(alg, Δ, m, samples = Int(1.0e6), p = Int(1.0e2))
     W = WienerProcess(0.0, zeros(m), nothing)
     calculate_step!(W, dt, nothing, nothing)
     for i in 1:10
@@ -94,38 +94,38 @@ function test_compare_sample_mean_and_var(alg, Δ, m, samples = Int(1e6), p = In
     end
 
     xs = [StochasticDiffEq.get_iterated_I(Δ, W.dW, W.dZ, alg, p, 1)[1, 2]]
-    coms = [1//2*W.dW[1]*W.dW[2]]
+    coms = [1 // 2 * W.dW[1] * W.dW[2]]
 
     for i in 1:samples
         calculate_step!(W, Δ, nothing, nothing)
         accept_step!(W, Δ, nothing, nothing)
-        com = 1//2*W.dW[1]*W.dW[2]
+        com = 1 // 2 * W.dW[1] * W.dW[2]
         x = StochasticDiffEq.get_iterated_I(Δ, W.dW, W.dZ, alg, p, 1)[1, 2]
 
         push!(xs, x)
         push!(coms, com)
     end
 
-    @test mean(xs) ≈ 0 atol = 1e-2
-    @test mean(coms) ≈ 0 atol = 1e-2
-    @test var(xs) ≈ 1//2*Δ^2 rtol = 1e-2
-    @test var(coms) ≈ 1//4*Δ^2 rtol = 1e-2
+    @test mean(xs) ≈ 0 atol = 1.0e-2
+    @test mean(coms) ≈ 0 atol = 1.0e-2
+    @test var(xs) ≈ 1 // 2 * Δ^2 rtol = 1.0e-2
+    return @test var(coms) ≈ 1 // 4 * Δ^2 rtol = 1.0e-2
 end
 
 @testset "General noise tests" begin
-    true_commute = 1//2 .* W.dW .* W.dW'
-    samples = Int(1e4)
+    true_commute = 1 // 2 .* W.dW .* W.dW'
+    samples = Int(1.0e4)
     for alg in LevyArea.ITER_INT_ALGS
         # Test the relations given in Wiktorsson paper Eq.(2.1)
         Random.seed!(seed)
         I = StochasticDiffEq.get_iterated_I(dt, W.dW, W.dZ, alg, 1, 1)
         Random.seed!(seed)
-        A = LevyArea.levyarea(W.dW/√dt, 1, alg)
-        @test dt*A + true_commute == I # because of correction with \mu term
+        A = LevyArea.levyarea(W.dW / √dt, 1, alg)
+        @test dt * A + true_commute == I # because of correction with \mu term
         @test diag(A) == diag(zero(A))
         @test diag(true_commute) == diag(I)
-        @test I + I' ≈ 2*true_commute atol=1e-12
-        @test A ≈ -A' atol=1e-12
+        @test I + I' ≈ 2 * true_commute atol = 1.0e-12
+        @test A ≈ -A' atol = 1.0e-12
 
         # test moment conditions
         test_moments(m, alg, dt, samples)
@@ -146,7 +146,7 @@ end
         du[3, 2] = u[1]
         return nothing
     end
-    dt = 1//2^8
+    dt = 1 // 2^8
     tspan = (0.0, 1.0)
     prob = SDEProblem(f, g, u₀, (0.0, 1.0); noise_rate_prototype = zeros(3, 2))
     prob! = SDEProblem(f!, g!, u₀, (0.0, 1.0); noise_rate_prototype = zeros(3, 2))

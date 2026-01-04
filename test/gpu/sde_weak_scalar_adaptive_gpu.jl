@@ -4,10 +4,10 @@ using Random
 
 function f!(du, u, p, t)
     @inbounds begin
-        du[1] = p[1]*u[1]
-        du[2] = -p[1]*u[2]
+        du[1] = p[1] * u[1]
+        du[2] = -p[1] * u[2]
     end
-    nothing
+    return nothing
 end
 
 function scalar_noise!(du, u, p, t)
@@ -15,13 +15,13 @@ function scalar_noise!(du, u, p, t)
         du[1] = p[2]
         du[2] = -p[2]
     end
-    nothing
+    return nothing
 end
 
 function prob_func(prob, i, repeat)
     Random.seed!(seeds[i])
     W = WienerProcess(0.0, 0.0, 0.0)
-    remake(prob, noise = W)
+    return remake(prob, noise = W)
 end
 
 # fix seeds

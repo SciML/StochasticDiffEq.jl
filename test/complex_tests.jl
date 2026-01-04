@@ -25,7 +25,7 @@ implicit_noautodiff = [SKenCarp(autodiff = false), ImplicitEulerHeun(autodiff = 
 end
 
 @testset "In-place methods" begin
-    u0 = ones(2, 4) + im*ones(2, 4)
+    u0 = ones(2, 4) + im * ones(2, 4)
     function f(du, u, p, t)
         t isa Complex && error("time is complex")
         du .= 1.01u

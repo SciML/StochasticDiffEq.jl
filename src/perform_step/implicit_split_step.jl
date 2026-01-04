@@ -1,5 +1,8 @@
-@muladd function perform_step!(integrator, cache::Union{
-        ISSEMConstantCache, ISSEulerHeunConstantCache})
+@muladd function perform_step!(
+        integrator, cache::Union{
+            ISSEMConstantCache, ISSEulerHeunConstantCache,
+        }
+    )
     (; t, dt, uprev, u, p, f) = integrator
     (; nlsolver) = cache
     alg = unwrap_alg(integrator, true)
@@ -100,9 +103,11 @@
             end
         end
 
-        resids = calculate_residuals(Ed, En, uprev, u, integrator.opts.abstol,
+        resids = calculate_residuals(
+            Ed, En, uprev, u, integrator.opts.abstol,
             integrator.opts.reltol, integrator.opts.delta,
-            integrator.opts.internalnorm, t)
+            integrator.opts.internalnorm, t
+        )
         integrator.EEst = integrator.opts.internalnorm(resids, t)
     end
 
@@ -125,7 +130,7 @@ end
     repeat_step = false
 
     if integrator.success_iter > 0 && !integrator.u_modified &&
-       alg.extrapolant == :interpolant
+            alg.extrapolant == :interpolant
         current_extrapolant!(u, t + dt, integrator)
     elseif alg.extrapolant == :linear
         @.. u = uprev + integrator.fsalfirst * dt
@@ -241,9 +246,11 @@ end
 
     ##############################################################################
     if integrator.opts.adaptive
-        calculate_residuals!(tmp, k, dz, uprev, u, integrator.opts.abstol,
+        calculate_residuals!(
+            tmp, k, dz, uprev, u, integrator.opts.abstol,
             integrator.opts.reltol, integrator.opts.delta,
-            integrator.opts.internalnorm, t)
+            integrator.opts.internalnorm, t
+        )
         integrator.EEst = integrator.opts.internalnorm(tmp, t)
     end
 end

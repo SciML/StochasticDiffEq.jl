@@ -1,8 +1,9 @@
 mutable struct SDEIntegrator{
-    algType, IIP, uType, uEltype, tType, tdirType, P2, eigenType, tTypeNoUnits,
-    uEltypeNoUnits, randType, randType2, rateType, solType, cacheType, F4,
-    F5, F6, OType, noiseType, EventErrorType, CallbackCacheType, RCs, IA} <:
-               AbstractSDEIntegrator{algType, IIP, uType, tType}
+        algType, IIP, uType, uEltype, tType, tdirType, P2, eigenType, tTypeNoUnits,
+        uEltypeNoUnits, randType, randType2, rateType, solType, cacheType, F4,
+        F5, F6, OType, noiseType, EventErrorType, CallbackCacheType, RCs, IA,
+    } <:
+    AbstractSDEIntegrator{algType, IIP, uType, tType}
     f::F4
     g::F5
     c::F6

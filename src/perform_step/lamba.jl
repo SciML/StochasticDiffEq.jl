@@ -4,34 +4,36 @@
     K = @.. uprev + dt * du1
 
     if is_split_step(integrator.alg)
-        L = integrator.g(uprev, p, t+dt)
+        L = integrator.g(uprev, p, t + dt)
     else
-        L = integrator.g(K, p, t+dt)
+        L = integrator.g(K, p, t + dt)
     end
 
     mil_correction = zero(u)
     if !is_diagonal_noise(integrator.sol.prob) || W.dW isa Number
-        noise = L*W.dW
+        noise = L * W.dW
     else
         noise = L .* W.dW
     end
 
-    u = K+noise
+    u = K + noise
 
     if integrator.opts.adaptive
-        du2 = integrator.f(K, p, t+dt)
-        Ed = dt*(du2 - du1)/2
+        du2 = integrator.f(K, p, t + dt)
+        Ed = dt * (du2 - du1) / 2
 
-        utilde = K + noise*integrator.sqdt #L*integrator.sqdt
+        utilde = K + noise * integrator.sqdt #L*integrator.sqdt
         ggprime = (integrator.g(utilde, p, t) .- L) ./ (integrator.sqdt)
         if !is_diagonal_noise(integrator.sol.prob) || W.dW isa Number
-            En = ggprime*(W.dW .^ 2 .- dt) ./ 2
+            En = ggprime * (W.dW .^ 2 .- dt) ./ 2
         else
             En = ggprime .* (W.dW .^ 2 .- dt) ./ 2
         end
-        resids = calculate_residuals(Ed, En, uprev, u, integrator.opts.abstol,
+        resids = calculate_residuals(
+            Ed, En, uprev, u, integrator.opts.abstol,
             integrator.opts.reltol, integrator.opts.delta,
-            integrator.opts.internalnorm, t)
+            integrator.opts.internalnorm, t
+        )
         integrator.EEst = integrator.opts.internalnorm(resids, t)
     end
 
@@ -46,18 +48,18 @@ end
     @.. K = uprev + dt * du1
 
     if is_split_step(integrator.alg)
-        integrator.g(L, K, p, t+dt)
+        integrator.g(L, K, p, t + dt)
     else
-        integrator.g(L, uprev, p, t+dt)
+        integrator.g(L, uprev, p, t + dt)
     end
 
     if is_diagonal_noise(integrator.sol.prob)
-        @.. tmp=L*W.dW
+        @.. tmp = L * W.dW
     else
         mul!(tmp, L, W.dW)
     end
 
-    @.. u = K+tmp
+    @.. u = K + tmp
 
     if integrator.opts.adaptive
         if !is_diagonal_noise(integrator.sol.prob)
@@ -72,22 +74,25 @@ end
             g_sized2 = norm(gtmp, 2)
             @.. dW_cache = W.dW .^ 2 - dt
             diff_tmp = integrator.opts.internalnorm(dW_cache, t)
-            En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
+            En = (g_sized2 - g_sized) / (2integrator.sqdt) * diff_tmp
             @.. tmp = En
         else
             @.. tmp = K + integrator.sqdt * L
             integrator.g(gtmp, tmp, p, t)
-            @.. tmp = (gtmp-L)/(2integrator.sqdt)*(W.dW .^ 2 - dt)
+            @.. tmp = (gtmp - L) / (2integrator.sqdt) * (W.dW .^ 2 - dt)
         end
 
         # Ed
-        integrator.f(du2, K, p, t+dt)
+        integrator.f(du2, K, p, t + dt)
         @.. tmp += integrator.opts.internalnorm(
             integrator.opts.delta * dt * (du2 - du1) /
-            2, t)
+                2, t
+        )
 
-        calculate_residuals!(tmp, tmp, uprev, u, integrator.opts.abstol,
-            integrator.opts.reltol, integrator.opts.internalnorm, t)
+        calculate_residuals!(
+            tmp, tmp, uprev, u, integrator.opts.abstol,
+            integrator.opts.reltol, integrator.opts.internalnorm, t
+        )
         integrator.EEst = integrator.opts.internalnorm(tmp, t)
     end
 end
@@ -101,29 +106,31 @@ end
     if is_diagonal_noise(integrator.sol.prob)
         noise = L .* W.dW
     else
-        noise = L*W.dW
+        noise = L * W.dW
     end
     tmp = K .+ noise
-    gtmp2 = (1/2) .* (L .+ integrator.g(tmp, p, t+dt))
+    gtmp2 = (1 / 2) .* (L .+ integrator.g(tmp, p, t + dt))
     if is_diagonal_noise(integrator.sol.prob)
         noise2 = gtmp2 .* W.dW
     else
-        noise2 = gtmp2*W.dW
+        noise2 = gtmp2 * W.dW
     end
 
-    u = uprev .+ (dt / 2) .* (du1 .+ integrator.f(tmp, p, t+dt)) .+ noise2
+    u = uprev .+ (dt / 2) .* (du1 .+ integrator.f(tmp, p, t + dt)) .+ noise2
 
     if integrator.opts.adaptive
-        du2 = integrator.f(K, p, t+dt)
-        Ed = dt*(du2 - du1)/2
+        du2 = integrator.f(K, p, t + dt)
+        Ed = dt * (du2 - du1) / 2
 
-        utilde = uprev + L*integrator.sqdt
+        utilde = uprev + L * integrator.sqdt
         ggprime = (integrator.g(utilde, p, t) .- L) ./ (integrator.sqdt)
         En = ggprime .* (W.dW .^ 2) ./ 2
 
-        resids = calculate_residuals(Ed, En, uprev, u, integrator.opts.abstol,
+        resids = calculate_residuals(
+            Ed, En, uprev, u, integrator.opts.abstol,
             integrator.opts.reltol, integrator.opts.delta,
-            integrator.opts.internalnorm, t)
+            integrator.opts.internalnorm, t
+        )
         integrator.EEst = integrator.opts.internalnorm(resids, t)
     end
 
@@ -138,25 +145,25 @@ end
     @.. K = uprev + dt * du1
 
     if is_diagonal_noise(integrator.sol.prob)
-        @.. tmp=L*W.dW
+        @.. tmp = L * W.dW
     else
         mul!(tmp, L, W.dW)
     end
 
-    @.. tmp = K+tmp
+    @.. tmp = K + tmp
 
-    integrator.f(du2, tmp, p, t+dt)
-    integrator.g(gtmp, tmp, p, t+dt)
+    integrator.f(du2, tmp, p, t + dt)
+    integrator.g(gtmp, tmp, p, t + dt)
 
     if is_diagonal_noise(integrator.sol.prob)
-        @.. tmp=(1/2)*W.dW*(L+gtmp)
+        @.. tmp = (1 / 2) * W.dW * (L + gtmp)
     else
-        @.. gtmp = (1/2)*(L+gtmp)
+        @.. gtmp = (1 / 2) * (L + gtmp)
         mul!(tmp, gtmp, W.dW)
     end
 
-    dto2 = dt*(1/2)
-    @.. u = uprev + dto2*(du1+du2) + tmp
+    dto2 = dt * (1 / 2)
+    @.. u = uprev + dto2 * (du1 + du2) + tmp
 
     if integrator.opts.adaptive
         if !is_diagonal_noise(integrator.sol.prob)
@@ -171,22 +178,25 @@ end
             g_sized2 = norm(gtmp, 2)
             @.. dW_cache = W.dW .^ 2
             diff_tmp = integrator.opts.internalnorm(dW_cache, t)
-            En = (g_sized2-g_sized)/(2integrator.sqdt)*diff_tmp
+            En = (g_sized2 - g_sized) / (2integrator.sqdt) * diff_tmp
             @.. tmp = En
         else
             @.. tmp = uprev + integrator.sqdt * L
             integrator.g(gtmp, tmp, p, t)
-            @.. tmp = (gtmp-L)/(2integrator.sqdt)*(W.dW .^ 2)
+            @.. tmp = (gtmp - L) / (2integrator.sqdt) * (W.dW .^ 2)
         end
 
         # Ed
-        integrator.f(du2, K, p, t+dt)
+        integrator.f(du2, K, p, t + dt)
         @.. tmp += integrator.opts.internalnorm(
             integrator.opts.delta * dt * (du2 - du1) /
-            2, t)
+                2, t
+        )
 
-        calculate_residuals!(tmp, tmp, uprev, u, integrator.opts.abstol,
-            integrator.opts.reltol, integrator.opts.internalnorm, t)
+        calculate_residuals!(
+            tmp, tmp, uprev, u, integrator.opts.abstol,
+            integrator.opts.reltol, integrator.opts.internalnorm, t
+        )
         integrator.EEst = integrator.opts.internalnorm(tmp, t)
     end
 end

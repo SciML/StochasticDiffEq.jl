@@ -10,8 +10,8 @@ sol = solve(prob_sde_2Dlinear, SRI())
 # gui()
 
 #Make sure it does a good job
-sol.t[2] > 1e-7
+sol.t[2] > 1.0e-7
 
 sol = solve(prob_sde_2Dlinear, DRI1())
 #Make sure it does a good job
-sol.t[2] > 1e-7
+sol.t[2] > 1.0e-7

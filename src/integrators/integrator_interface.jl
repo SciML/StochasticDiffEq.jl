@@ -1,10 +1,11 @@
 @inline function DiffEqBase.change_t_via_interpolation!(
         integrator::SDEIntegrator, t, modify_save_endpoint::Type{Val{T}} = Val{false},
-        reinitialize_alg = nothing) where {T}
+        reinitialize_alg = nothing
+    ) where {T}
     # Can get rid of an allocation here with a function
     # get_tmp_arr(integrator.cache) which gives a pointer to some
     # cache array which can be modified.
-    if integrator.tdir*t < integrator.tdir*integrator.tprev
+    return if integrator.tdir * t < integrator.tdir * integrator.tprev
         error("Current interpolant only works between tprev and t")
     elseif t != integrator.t
         if integrator.u isa AbstractArray
@@ -13,7 +14,7 @@
             integrator.u = integrator(t)
         end
         integrator.dtnew = integrator.t - t
-        reject_step!(integrator, t-integrator.tprev) #this only changes dt and noise, so no interpolation problems
+        reject_step!(integrator, t - integrator.tprev) #this only changes dt and noise, so no interpolation problems
         integrator.dt = integrator.dtnew
         integrator.sqdt = sqrt(abs(integrator.dt))
         integrator.t = t
@@ -26,20 +27,22 @@
 end
 
 function (integrator::SDEIntegrator)(t, deriv::Type = Val{0}; idxs = nothing)
-    current_interpolant(t, integrator, idxs, deriv)
+    return current_interpolant(t, integrator, idxs, deriv)
 end
 
-function (integrator::SDEIntegrator)(val::AbstractArray, t::Union{Number, AbstractArray},
-        deriv::Type = Val{0}; idxs = nothing)
-    current_interpolant!(val, t, integrator, idxs, deriv)
+function (integrator::SDEIntegrator)(
+        val::AbstractArray, t::Union{Number, AbstractArray},
+        deriv::Type = Val{0}; idxs = nothing
+    )
+    return current_interpolant!(val, t, integrator, idxs, deriv)
 end
 
 function u_modified!(integrator::SDEIntegrator, bool::Bool)
-    integrator.u_modified = bool
+    return integrator.u_modified = bool
 end
 
 function get_proposed_dt(integrator::SDEIntegrator)
-    ifelse(integrator.opts.adaptive, integrator.dtpropose, integrator.dtcache)
+    return ifelse(integrator.opts.adaptive, integrator.dtpropose, integrator.dtcache)
 end
 function set_proposed_dt!(integrator::SDEIntegrator, dt::Number)
     (integrator.dtpropose = dt; integrator.dtcache = dt)
@@ -50,49 +53,54 @@ function set_proposed_dt!(integrator::SDEIntegrator, integrator2::SDEIntegrator)
     integrator.dtcache = integrator2.dtcache
     integrator.qold = integrator2.qold
     integrator.erracc = integrator2.erracc
-    integrator.dtacc = integrator2.dtacc
+    return integrator.dtacc = integrator2.dtacc
 end
 
 #TODO: Bigger caches for most algorithms
 @inline DiffEqBase.get_tmp_cache(integrator::SDEIntegrator) = get_tmp_cache(
-    integrator, integrator.alg, integrator.cache)
+    integrator, integrator.alg, integrator.cache
+)
 # avoid method ambiguity
 for typ in (StochasticDiffEqAlgorithm, StochasticDiffEqNewtonAdaptiveAlgorithm)
-    @eval @inline DiffEqBase.get_tmp_cache(integrator::SDEIntegrator, alg::$typ,
-        cache::StochasticDiffEqConstantCache) = nothing
+    @eval @inline DiffEqBase.get_tmp_cache(
+        integrator::SDEIntegrator, alg::$typ,
+        cache::StochasticDiffEqConstantCache
+    ) = nothing
 end
 @inline DiffEqBase.get_tmp_cache(integrator::SDEIntegrator, alg, cache) = (cache.tmp,)
 @inline DiffEqBase.get_tmp_cache(
     integrator::SDEIntegrator, alg::StochasticDiffEqNewtonAdaptiveAlgorithm,
-    cache) = (cache.nlsolver.tmp, cache.nlsolver.ztmp)
+    cache
+) = (cache.nlsolver.tmp, cache.nlsolver.ztmp)
 @inline DiffEqBase.get_tmp_cache(
     integrator::SDEIntegrator, alg::StochasticCompositeAlgorithm,
-    cache) = get_tmp_cache(integrator, alg.algs[1], cache.caches[1])
+    cache
+) = get_tmp_cache(integrator, alg.algs[1], cache.caches[1])
 
 full_cache(integrator::SDEIntegrator) = full_cache(integrator.cache)
 function full_cache(integrator::StochasticCompositeCache)
-    Iterators.flatten(full_cache(c) for c in integrator.caches)
+    return Iterators.flatten(full_cache(c) for c in integrator.caches)
 end
 
 ratenoise_cache(integrator::SDEIntegrator) = ratenoise_cache(integrator.cache)
 function ratenoise_cache(integrator::StochasticCompositeCache)
-    Iterators.flatten(ratenoise_cache(c) for c in integrator.caches)
+    return Iterators.flatten(ratenoise_cache(c) for c in integrator.caches)
 end
 
 rand_cache(integrator::SDEIntegrator) = rand_cache(integrator.cache)
 function rand_cache(integrator::StochasticCompositeCache)
-    Iterators.flatten(rand_cache(c) for c in integrator.caches)
+    return Iterators.flatten(rand_cache(c) for c in integrator.caches)
 end
 
 jac_iter(integrator::SDEIntegrator) = jac_iter(integrator.cache)
 function jac_iter(integrator::StochasticCompositeCache)
-    Iterators.flatten(jac_iter(c) for c in integrator.caches)
+    return Iterators.flatten(jac_iter(c) for c in integrator.caches)
 end
 
 @inline function add_tstop!(integrator::SDEIntegrator, t)
     integrator.tdir * (t - integrator.t) < 0 &&
         error("Tried to add a tstop that is behind the current time. This is strictly forbidden")
-    push!(integrator.opts.tstops, integrator.tdir * t)
+    return push!(integrator.opts.tstops, integrator.tdir * t)
 end
 
 DiffEqBase.has_tstop(integrator::SDEIntegrator) = !isempty(integrator.opts.tstops)
@@ -102,17 +110,17 @@ DiffEqBase.pop_tstop!(integrator::SDEIntegrator) = pop!(integrator.opts.tstops)
 function DiffEqBase.add_saveat!(integrator::SDEIntegrator, t)
     integrator.tdir * (t - integrator.t) < 0 &&
         error("Tried to add a saveat that is behind the current time. This is strictly forbidden")
-    push!(integrator.opts.saveat, integrator.tdir * t)
+    return push!(integrator.opts.saveat, integrator.tdir * t)
 end
 
 function resize_non_user_cache!(integrator::SDEIntegrator, i::Int)
-    resize_non_user_cache!(integrator, integrator.cache, i)
+    return resize_non_user_cache!(integrator, integrator.cache, i)
 end
 function deleteat_non_user_cache!(integrator::SDEIntegrator, i)
-    deleteat_non_user_cache!(integrator, integrator.cache, i)
+    return deleteat_non_user_cache!(integrator, integrator.cache, i)
 end
 function addat_non_user_cache!(integrator::SDEIntegrator, i)
-    addat_non_user_cache!(integrator, integrator.cache, i)
+    return addat_non_user_cache!(integrator, integrator.cache, i)
 end
 resize!(integrator::SDEIntegrator, i::Int) = resize!(integrator, integrator.cache, i)
 
@@ -125,6 +133,7 @@ function resize!(integrator::SDEIntegrator, cache, i)
     for c in ratenoise_cache(integrator)
         resize!(c, i)
     end
+    return
 end
 
 function resize_noise!(integrator, cache, bot_idx, i)
@@ -166,7 +175,7 @@ function resize_noise!(integrator, cache, bot_idx, i)
         resize!(integrator.W.curZ, i)
         integrator.W.curZ[end] = zero(eltype(integrator.u))
     end
-    if i >= bot_idx # fill in rands
+    return if i >= bot_idx # fill in rands
         fill!(@view(integrator.W.curW[bot_idx:i]), zero(eltype(integrator.u)))
         if alg_needs_extra_process(integrator.alg)
             fill!(@view(integrator.W.curZ[bot_idx:i]), zero(eltype(integrator.u)))
@@ -175,12 +184,16 @@ function resize_noise!(integrator, cache, bot_idx, i)
 end
 
 @inline function fill_new_noise_caches!(integrator, c, scaling_factor, idxs)
-    if isinplace(integrator.W)
-        integrator.W.dist(@view(c[2][idxs]), integrator.W, scaling_factor,
-            integrator.u, integrator.p, integrator.t, integrator.W.rng)
+    return if isinplace(integrator.W)
+        integrator.W.dist(
+            @view(c[2][idxs]), integrator.W, scaling_factor,
+            integrator.u, integrator.p, integrator.t, integrator.W.rng
+        )
         if alg_needs_extra_process(integrator.alg)
-            integrator.W.dist(@view(c[3][idxs]), integrator.W, scaling_factor,
-                integrator.u, integrator.p, integrator.t, integrator.W.rng)
+            integrator.W.dist(
+                @view(c[3][idxs]), integrator.W, scaling_factor,
+                integrator.u, integrator.p, integrator.t, integrator.W.rng
+            )
         end
     else
         c[2][idxs] .= integrator.noise(length(idxs), integrator, scaling_factor)
@@ -192,7 +205,7 @@ end
 
 function resize_non_user_cache!(integrator::SDEIntegrator, cache, i)
     bot_idx = length(integrator.u) + 1
-    if is_diagonal_noise(integrator.sol.prob)
+    return if is_diagonal_noise(integrator.sol.prob)
         resize_noise!(integrator, cache, bot_idx, i)
         for c in rand_cache(integrator)
             resize!(c, i)
@@ -208,6 +221,7 @@ function deleteat!(integrator::SDEIntegrator, idxs)
     for c in ratenoise_cache(integrator)
         deleteat!(c, idxs)
     end
+    return
 end
 
 function addat!(integrator::SDEIntegrator, idxs)
@@ -218,10 +232,11 @@ function addat!(integrator::SDEIntegrator, idxs)
     for c in ratenoise_cache(integrator)
         addat!(c, idxs)
     end
+    return
 end
 
 function deleteat_non_user_cache!(integrator::SDEIntegrator, cache, idxs)
-    if is_diagonal_noise(integrator.sol.prob)
+    return if is_diagonal_noise(integrator.sol.prob)
         deleteat_noise!(integrator, cache, idxs)
         for c in rand_cache(integrator)
             deleteat!(c, idxs)
@@ -230,7 +245,7 @@ function deleteat_non_user_cache!(integrator::SDEIntegrator, cache, idxs)
 end
 
 function addat_non_user_cache!(integrator::SDEIntegrator, cache, idxs)
-    if is_diagonal_noise(integrator.sol.prob)
+    return if is_diagonal_noise(integrator.sol.prob)
         addat_noise!(integrator, cache, idxs)
         for c in rand_cache(integrator)
             addat!(c, idxs)
@@ -257,7 +272,7 @@ function deleteat_noise!(integrator, cache, idxs)
     deleteat!(integrator.W.curW, idxs)
     DiffEqNoiseProcess.resize_stack!(integrator.W, length(integrator.u))
 
-    if alg_needs_extra_process(integrator.alg)
+    return if alg_needs_extra_process(integrator.alg)
         deleteat!(integrator.W.curZ, idxs)
         deleteat!(integrator.W.dZtmp, idxs)
         deleteat!(integrator.W.dZtilde, idxs)
@@ -303,18 +318,19 @@ function addat_noise!(integrator, cache, idxs)
 
     # fill in rands
     fill!(@view(integrator.W.curW[idxs]), zero(eltype(integrator.u)))
-    if alg_needs_extra_process(integrator.alg)
+    return if alg_needs_extra_process(integrator.alg)
         fill!(@view(integrator.W.curZ[idxs]), zero(eltype(integrator.u)))
     end
 end
 
 function terminate!(integrator::SDEIntegrator, retcode = ReturnCode.Terminated)
     integrator.sol = DiffEqBase.solution_new_retcode(integrator.sol, retcode)
-    integrator.opts.tstops.valtree = typeof(integrator.opts.tstops.valtree)()
+    return integrator.opts.tstops.valtree = typeof(integrator.opts.tstops.valtree)()
 end
 
 DiffEqBase.has_reinit(integrator::SDEIntegrator) = true
-function DiffEqBase.reinit!(integrator::SDEIntegrator, u0 = integrator.sol.prob.u0;
+function DiffEqBase.reinit!(
+        integrator::SDEIntegrator, u0 = integrator.sol.prob.u0;
         t0 = integrator.sol.prob.tspan[1], tf = integrator.sol.prob.tspan[2],
         erase_sol = true,
         tstops = integrator.opts.tstops_cache,
@@ -322,7 +338,8 @@ function DiffEqBase.reinit!(integrator::SDEIntegrator, u0 = integrator.sol.prob.
         d_discontinuities = integrator.opts.d_discontinuities_cache,
         reinit_cache = true, reinit_callbacks = true,
         initialize_save = true,
-        reset_dt = (integrator.dtcache == zero(integrator.dt)) && integrator.opts.adaptive)
+        reset_dt = (integrator.dtcache == zero(integrator.dt)) && integrator.opts.adaptive
+    )
     if isinplace(integrator.sol.prob)
         recursivecopy!(integrator.u, u0)
         recursivecopy!(integrator.uprev, integrator.u)
@@ -339,7 +356,8 @@ function DiffEqBase.reinit!(integrator::SDEIntegrator, u0 = integrator.sol.prob.
     integrator.opts.tstops = OrdinaryDiffEqCore.initialize_tstops(tType, tstops, d_discontinuities, tspan)
     integrator.opts.saveat = OrdinaryDiffEqCore.initialize_saveat(tType, saveat, tspan)
     integrator.opts.d_discontinuities = OrdinaryDiffEqCore.initialize_d_discontinuities(
-        tType, d_discontinuities, tspan)
+        tType, d_discontinuities, tspan
+    )
 
     if erase_sol
         if integrator.opts.save_start
@@ -376,36 +394,43 @@ function DiffEqBase.reinit!(integrator::SDEIntegrator, u0 = integrator.sol.prob.
         initialize!(integrator, integrator.cache)
     end
 
-    reinit!(integrator.W, integrator.dt)
+    return reinit!(integrator.W, integrator.dt)
 end
 
 function DiffEqBase.auto_dt_reset!(integrator::SDEIntegrator)
-    integrator.dt = sde_determine_initdt(integrator.u, integrator.t,
+    return integrator.dt = sde_determine_initdt(
+        integrator.u, integrator.t,
         integrator.tdir, integrator.opts.dtmax, integrator.opts.abstol, integrator.opts.reltol,
         integrator.opts.internalnorm, integrator.sol.prob, get_current_alg_order(
-            integrator.alg, integrator.cache),
-        integrator)
+            integrator.alg, integrator.cache
+        ),
+        integrator
+    )
 end
 
 @inline function DiffEqBase.get_du(integrator::SDEIntegrator)
-    (integrator.u - integrator.uprev) / integrator.dt
+    return (integrator.u - integrator.uprev) / integrator.dt
 end
 
 @inline function DiffEqBase.get_du!(out, integrator::SDEIntegrator)
-    @.. out = (integrator.u - integrator.uprev) / integrator.dt
+    return @.. out = (integrator.u - integrator.uprev) / integrator.dt
 end
 
 function DiffEqBase.set_t!(integrator::SDEIntegrator, t::Real)
     if integrator.opts.save_everystep
-        error("Integrator time cannot be reset unless it is initialized",
-            " with save_everystep=false")
+        error(
+            "Integrator time cannot be reset unless it is initialized",
+            " with save_everystep=false"
+        )
     end
-    if !isdtchangeable(integrator.alg)
-        reinit!(integrator, integrator.u;
+    return if !isdtchangeable(integrator.alg)
+        reinit!(
+            integrator, integrator.u;
             t0 = t,
             reset_dt = false,
             reinit_callbacks = false,
-            reinit_cache = false)
+            reinit_cache = false
+        )
     else
         integrator.t = t
     end
@@ -413,11 +438,13 @@ end
 
 function DiffEqBase.set_u!(integrator::SDEIntegrator, u)
     if integrator.opts.save_everystep
-        error("Integrator state cannot be reset unless it is initialized",
-            " with save_everystep=false")
+        error(
+            "Integrator state cannot be reset unless it is initialized",
+            " with save_everystep=false"
+        )
     end
     integrator.u = u
-    u_modified!(integrator, true)
+    return u_modified!(integrator, true)
 end
 
 DiffEqBase.get_tstops(integ::SDEIntegrator) = integ.opts.tstops

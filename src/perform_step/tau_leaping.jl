@@ -6,9 +6,9 @@
     if integrator.opts.adaptive
         if integrator.alg isa TauLeaping
             oldrate = P.cache.currate
-            newrate = P.cache.rate(integrator.u, p, t+dt)
+            newrate = P.cache.rate(integrator.u, p, t + dt)
             EEstcache = @. abs(newrate - oldrate) /
-                           max(50integrator.opts.reltol*oldrate, integrator.rate_constants/integrator.dt)
+                max(50integrator.opts.reltol * oldrate, integrator.rate_constants / integrator.dt)
             integrator.EEst = maximum(EEstcache)
             if integrator.EEst <= 1
                 P.cache.currate = newrate
@@ -28,9 +28,9 @@ end
     if integrator.opts.adaptive
         if integrator.alg isa TauLeaping
             oldrate = P.cache.currate
-            P.cache.rate(newrate, u, p, t+dt)
+            P.cache.rate(newrate, u, p, t + dt)
             @.. EEstcache = abs(newrate - oldrate) /
-                            max(50integrator.opts.reltol*oldrate, integrator.rate_constants/integrator.dt)
+                max(50integrator.opts.reltol * oldrate, integrator.rate_constants / integrator.dt)
             integrator.EEst = maximum(EEstcache)
             if integrator.EEst <= 1
                 P.cache.currate .= newrate

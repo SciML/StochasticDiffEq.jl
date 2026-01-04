@@ -21,15 +21,18 @@ function SRIConstantCache(tableau, rate_prototype, error_terms)
     stages = length(α)
     H0 = Array{typeof(rate_prototype)}(undef, stages)
     H1 = Array{typeof(rate_prototype)}(undef, stages)
-    SRIConstantCache(
-        c₀, c₁, A₀', A₁', B₀', B₁', α, β₁, β₂, β₃, β₄, stages, H0, H1, error_terms)
+    return SRIConstantCache(
+        c₀, c₁, A₀', A₁', B₀', B₁', α, β₁, β₂, β₃, β₄, stages, H0, H1, error_terms
+    )
 end
 
-function alg_cache(alg::SRI, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SRI, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    SRIConstantCache(alg.tableau, rate_prototype, alg.error_terms)
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return SRIConstantCache(alg.tableau, rate_prototype, alg.error_terms)
 end
 
 @cache struct SRICache{randType, uType, rateType, tabType} <: StochasticDiffEqMutableCache
@@ -59,10 +62,12 @@ end
     tab::tabType
 end
 
-function alg_cache(alg::SRI, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SRI, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     H0 = Vector{typeof(u)}()
     H1 = Vector{typeof(u)}()
     tab = SRIConstantCache(alg.tableau, rate_prototype, alg.error_terms)
@@ -71,20 +76,20 @@ function alg_cache(alg::SRI, prob, u, ΔW, ΔZ, p, rate_prototype,
         push!(H1, zero(u))
     end
     #TODO Reduce memory
-    A0temp = zero(rate_prototype);
+    A0temp = zero(rate_prototype)
     A1temp = zero(rate_prototype)
-    B0temp = zero(rate_prototype);
+    B0temp = zero(rate_prototype)
     B1temp = zero(rate_prototype)
-    A0temp2 = zero(rate_prototype);
+    A0temp2 = zero(rate_prototype)
     A1temp2 = zero(rate_prototype)
-    B0temp2 = zero(rate_prototype);
+    B0temp2 = zero(rate_prototype)
     B1temp2 = zero(rate_prototype)
-    atemp = zero(rate_prototype);
+    atemp = zero(rate_prototype)
     btemp = zero(rate_prototype)
-    E₁ = zero(rate_prototype);
-    E₂ = zero(rate_prototype);
+    E₁ = zero(rate_prototype)
+    E₂ = zero(rate_prototype)
     E₁temp = zero(rate_prototype)
-    ftemp = zero(rate_prototype);
+    ftemp = zero(rate_prototype)
     gtemp = zero(rate_prototype)
 
     if ΔW isa Union{SArray, Number}
@@ -97,17 +102,21 @@ function alg_cache(alg::SRI, prob, u, ΔW, ΔZ, p, rate_prototype,
         chi3 = zero(ΔW)
     end
     tmp = zero(u)
-    SRICache(u, uprev, H0, H1, A0temp, A1temp, B0temp,
+    return SRICache(
+        u, uprev, H0, H1, A0temp, A1temp, B0temp,
         B1temp, A0temp2, A1temp2, B0temp2, B1temp2,
-        atemp, btemp, E₁, E₂, E₁temp, ftemp, gtemp, chi1, chi2, chi3, tmp, tab)
+        atemp, btemp, E₁, E₂, E₁temp, ftemp, gtemp, chi1, chi2, chi3, tmp, tab
+    )
 end
 
 struct SRIW1ConstantCache <: StochasticDiffEqConstantCache end
-function alg_cache(alg::SRIW1, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SRIW1, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    SRIW1ConstantCache()
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return SRIW1ConstantCache()
 end
 
 @cache struct SRIW1Cache{randType, uType, rateType} <: StochasticDiffEqMutableCache
@@ -138,10 +147,12 @@ end
     tmp::uType
 end
 
-function alg_cache(alg::SRIW1, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SRIW1, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         chi1 = copy(ΔW)
         chi2 = copy(ΔW)
@@ -164,15 +175,17 @@ function alg_cache(alg::SRIW1, prob, u, ΔW, ΔZ, p, rate_prototype,
     mg₁ = zero(rate_prototype)
     E₁ = zero(rate_prototype)
     E₂ = zero(rate_prototype)
-    fH01 = zero(rate_prototype);
+    fH01 = zero(rate_prototype)
     fH02 = zero(rate_prototype)
-    g₁ = zero(rate_prototype);
-    g₂ = zero(rate_prototype);
-    g₃ = zero(rate_prototype);
+    g₁ = zero(rate_prototype)
+    g₂ = zero(rate_prototype)
+    g₃ = zero(rate_prototype)
     g₄ = zero(rate_prototype)
     tmp = zero(u)
-    SRIW1Cache(u, uprev, chi1, chi2, chi3, fH01o4, g₁o2, H0, H11, H12, H13, g₂o3,
-        Fg₂o3, g₃o3, Tg₃o3, mg₁, E₁, E₂, fH01, fH02, g₁, g₂, g₃, g₄, tmp)
+    return SRIW1Cache(
+        u, uprev, chi1, chi2, chi3, fH01o4, g₁o2, H0, H11, H12, H13, g₂o3,
+        Fg₂o3, g₃o3, Tg₃o3, mg₁, E₁, E₂, fH01, fH02, g₁, g₂, g₃, g₄, tmp
+    )
 end
 
 struct FourStageSRIConstantCache{T, T2} <: StochasticDiffEqConstantCache
@@ -231,69 +244,73 @@ end
 
 function SRIW2ConstantCache(T::Type, T2::Type)
     a021 = convert(T, 1)
-    a031 = convert(T, 1//4)
-    a032 = convert(T, 1//4)
+    a031 = convert(T, 1 // 4)
+    a032 = convert(T, 1 // 4)
     a041 = convert(T, 0)
     a042 = convert(T, 0)
     a043 = convert(T, 0)
-    a121 = convert(T, 1//4)
+    a121 = convert(T, 1 // 4)
     a131 = convert(T, 1)
     a132 = convert(T, 0)
     a141 = convert(T, 0)
     a142 = convert(T, 0)
-    a143 = convert(T, 1//4)
+    a143 = convert(T, 1 // 4)
     b021 = convert(T, 0)
     b031 = convert(T, 1)
-    b032 = convert(T, 1//2)
+    b032 = convert(T, 1 // 2)
     b041 = convert(T, 0)
     b042 = convert(T, 0)
     b043 = convert(T, 0)
-    b121 = convert(T, -1//2)
+    b121 = convert(T, -1 // 2)
     b131 = convert(T, 1)
     b132 = convert(T, 0)
     b141 = convert(T, 2)
     b142 = convert(T, -1)
-    b143 = convert(T, 1//2)
-    α1 = convert(T, 1//6)
-    α2 = convert(T, 1//6)
-    α3 = convert(T, 2//3)
+    b143 = convert(T, 1 // 2)
+    α1 = convert(T, 1 // 6)
+    α2 = convert(T, 1 // 6)
+    α3 = convert(T, 2 // 3)
     α4 = convert(T, 0)
     c02 = convert(T2, 1)
-    c03 = convert(T2, 1//2)
+    c03 = convert(T2, 1 // 2)
     c04 = convert(T2, 0)
     c11 = convert(T2, 0)
-    c12 = convert(T2, 1//4)
+    c12 = convert(T2, 1 // 4)
     c13 = convert(T2, 1)
-    c14 = convert(T2, 1//4)
+    c14 = convert(T2, 1 // 4)
     beta11 = convert(T, -1)
-    beta12 = convert(T, 4//3)
-    beta13 = convert(T, 2//3)
+    beta12 = convert(T, 4 // 3)
+    beta13 = convert(T, 2 // 3)
     beta14 = convert(T, 0)
     beta21 = convert(T, 1)
-    beta22 = convert(T, -4//3)
-    beta23 = convert(T, 1//3)
+    beta22 = convert(T, -4 // 3)
+    beta23 = convert(T, 1 // 3)
     beta24 = convert(T, 0)
     beta31 = convert(T, 2)
-    beta32 = convert(T, -4//3)
-    beta33 = convert(T, -2//3)
+    beta32 = convert(T, -4 // 3)
+    beta33 = convert(T, -2 // 3)
     beta34 = convert(T, 0)
     beta41 = convert(T, -2)
-    beta42 = convert(T, 5//3)
-    beta43 = convert(T, -2//3)
+    beta42 = convert(T, 5 // 3)
+    beta43 = convert(T, -2 // 3)
     beta44 = convert(T, 1)
-    FourStageSRIConstantCache(a021, a031, a032, a041, a042, a043, a121, a131, a132, a141,
+    return FourStageSRIConstantCache(
+        a021, a031, a032, a041, a042, a043, a121, a131, a132, a141,
         a142, a143, b021, b031, b032, b041, b042, b043,
         b121, b131, b132, b141, b142, b143, α1, α2,
         α3, α4, c02, c03, c04, c11, c12, c13, c14, beta11,
         beta12, beta13, beta14, beta21, beta22,
-        beta23, beta24, beta31, beta32, beta33, beta34, beta41, beta42, beta43, beta44)
+        beta23, beta24, beta31, beta32, beta33, beta34, beta41, beta42, beta43, beta44
+    )
 end
 
-function alg_cache(alg::SRIW2, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SRIW2, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    SRIW2ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return SRIW2ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 function SOSRIConstantCache(T::Type, T2::Type)
@@ -348,19 +365,23 @@ function SOSRIConstantCache(T::Type, T2::Type)
     beta42 = convert(T, -0.57877086147738)
     beta43 = convert(T, 0.2857851028163886)
     beta44 = convert(T, 0.17775911990655704)
-    FourStageSRIConstantCache(a021, a031, a032, a041, a042, a043, a121, a131, a132, a141,
+    return FourStageSRIConstantCache(
+        a021, a031, a032, a041, a042, a043, a121, a131, a132, a141,
         a142, a143, b021, b031, b032, b041, b042, b043,
         b121, b131, b132, b141, b142, b143, α1, α2,
         α3, α4, c02, c03, c04, c11, c12, c13, c14, beta11,
         beta12, beta13, beta14, beta21, beta22,
-        beta23, beta24, beta31, beta32, beta33, beta34, beta41, beta42, beta43, beta44)
+        beta23, beta24, beta31, beta32, beta33, beta34, beta41, beta42, beta43, beta44
+    )
 end
 
-function alg_cache(alg::SOSRI, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SOSRI, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    SOSRIConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return SOSRIConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 function SOSRI2ConstantCache(T::Type, T2::Type)
@@ -415,24 +436,29 @@ function SOSRI2ConstantCache(T::Type, T2::Type)
     beta42 = convert(T, 0.9148155835648892)
     beta43 = convert(T, -1.4102107084476505)
     beta44 = convert(T, 0.9930041932449877)
-    FourStageSRIConstantCache(a021, a031, a032, a041, a042, a043, a121, a131, a132, a141,
+    return FourStageSRIConstantCache(
+        a021, a031, a032, a041, a042, a043, a121, a131, a132, a141,
         a142, a143, b021, b031, b032, b041, b042, b043,
         b121, b131, b132, b141, b142, b143, α1, α2,
         α3, α4, c02, c03, c04, c11, c12, c13, c14, beta11,
         beta12, beta13, beta14, beta21, beta22,
-        beta23, beta24, beta31, beta32, beta33, beta34, beta41, beta42, beta43, beta44)
+        beta23, beta24, beta31, beta32, beta33, beta34, beta41, beta42, beta43, beta44
+    )
 end
 
-function alg_cache(alg::SOSRI2, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SOSRI2, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    SOSRI2ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return SOSRI2ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 @cache struct FourStageSRICache{
-    uType, randType, tabType, rateNoiseType, rateType, possibleRateType} <:
-              StochasticDiffEqMutableCache
+        uType, randType, tabType, rateNoiseType, rateType, possibleRateType,
+    } <:
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
     chi1::randType
@@ -454,10 +480,12 @@ end
     H03::possibleRateType
 end
 
-function alg_cache(alg::SRIW2, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SRIW2, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         chi1 = copy(ΔW)
         chi2 = copy(ΔW)
@@ -468,25 +496,29 @@ function alg_cache(alg::SRIW2, prob, u, ΔW, ΔZ, p, rate_prototype,
         chi3 = zero(ΔW)
     end
     tab = SRIW2ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
-    g1 = zero(noise_rate_prototype);
+    g1 = zero(noise_rate_prototype)
     g2 = zero(noise_rate_prototype)
-    g3 = zero(noise_rate_prototype);
+    g3 = zero(noise_rate_prototype)
     g4 = zero(noise_rate_prototype)
-    k1 = zero(rate_prototype);
+    k1 = zero(rate_prototype)
     k2 = zero(rate_prototype)
-    k3 = zero(rate_prototype);
+    k3 = zero(rate_prototype)
     k4 = zero(rate_prototype)
-    E₁ = zero(rate_prototype);
+    E₁ = zero(rate_prototype)
     E₂ = zero(rate_prototype)
     tmp = zero(rate_prototype)
-    FourStageSRICache(u, uprev, chi1, chi2, chi3, tab, g1, g2, g3,
-        g4, k1, k2, k3, k4, E₁, E₂, tmp, tmp, tmp)
+    return FourStageSRICache(
+        u, uprev, chi1, chi2, chi3, tab, g1, g2, g3,
+        g4, k1, k2, k3, k4, E₁, E₂, tmp, tmp, tmp
+    )
 end
 
-function alg_cache(alg::SOSRI, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SOSRI, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         chi1 = copy(ΔW)
         chi2 = copy(ΔW)
@@ -497,25 +529,29 @@ function alg_cache(alg::SOSRI, prob, u, ΔW, ΔZ, p, rate_prototype,
         chi3 = zero(ΔW)
     end
     tab = SOSRIConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
-    g1 = zero(noise_rate_prototype);
+    g1 = zero(noise_rate_prototype)
     g2 = zero(noise_rate_prototype)
-    g3 = zero(noise_rate_prototype);
+    g3 = zero(noise_rate_prototype)
     g4 = zero(noise_rate_prototype)
-    k1 = zero(rate_prototype);
+    k1 = zero(rate_prototype)
     k2 = zero(rate_prototype)
-    k3 = zero(rate_prototype);
+    k3 = zero(rate_prototype)
     k4 = zero(rate_prototype)
-    E₁ = zero(rate_prototype);
+    E₁ = zero(rate_prototype)
     E₂ = zero(rate_prototype)
     tmp = zero(rate_prototype)
-    FourStageSRICache(u, uprev, chi1, chi2, chi3, tab, g1, g2, g3,
-        g4, k1, k2, k3, k4, E₁, E₂, tmp, tmp, tmp)
+    return FourStageSRICache(
+        u, uprev, chi1, chi2, chi3, tab, g1, g2, g3,
+        g4, k1, k2, k3, k4, E₁, E₂, tmp, tmp, tmp
+    )
 end
 
-function alg_cache(alg::SOSRI2, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SOSRI2, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         chi1 = copy(ΔW)
         chi2 = copy(ΔW)
@@ -526,19 +562,21 @@ function alg_cache(alg::SOSRI2, prob, u, ΔW, ΔZ, p, rate_prototype,
         chi3 = zero(ΔW)
     end
     tab = SOSRI2ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
-    g1 = zero(noise_rate_prototype);
+    g1 = zero(noise_rate_prototype)
     g2 = zero(noise_rate_prototype)
-    g3 = zero(noise_rate_prototype);
+    g3 = zero(noise_rate_prototype)
     g4 = zero(noise_rate_prototype)
-    k1 = zero(rate_prototype);
+    k1 = zero(rate_prototype)
     k2 = zero(rate_prototype)
-    k3 = zero(rate_prototype);
+    k3 = zero(rate_prototype)
     k4 = zero(rate_prototype)
-    E₁ = zero(rate_prototype);
+    E₁ = zero(rate_prototype)
     E₂ = zero(rate_prototype)
-    tmp = zero(rate_prototype);
+    tmp = zero(rate_prototype)
     H02 = zero(rate_prototype)
     H03 = zero(rate_prototype)
-    FourStageSRICache(u, uprev, chi1, chi2, chi3, tab, g1, g2, g3,
-        g4, k1, k2, k3, k4, E₁, E₂, tmp, H02, H03)
+    return FourStageSRICache(
+        u, uprev, chi1, chi2, chi3, tab, g1, g2, g3,
+        g4, k1, k2, k3, k4, E₁, E₂, tmp, H02, H03
+    )
 end

@@ -7,19 +7,21 @@ abstract type StochasticDiffEqRODEAdaptiveAlgorithm <: StochasticDiffEqRODEAlgor
 abstract type StochasticDiffEqRODECompositeAlgorithm <: StochasticDiffEqRODEAlgorithm end
 
 abstract type StochasticDiffEqNewtonAdaptiveAlgorithm{CS, AD, FDT, ST, CJ, Controller} <:
-              StochasticDiffEqAdaptiveAlgorithm end
+StochasticDiffEqAdaptiveAlgorithm end
 abstract type StochasticDiffEqNewtonAlgorithm{CS, AD, FDT, ST, CJ, Controller} <:
-              StochasticDiffEqAlgorithm end
+StochasticDiffEqAlgorithm end
 
 abstract type StochasticDiffEqJumpAlgorithm <: StochasticDiffEqAlgorithm end
 abstract type StochasticDiffEqJumpAdaptiveAlgorithm <: StochasticDiffEqAlgorithm end
 abstract type StochasticDiffEqJumpNewtonAdaptiveAlgorithm{
-    CS, AD, FDT, ST, CJ, Controller} <: StochasticDiffEqJumpAdaptiveAlgorithm end
+    CS, AD, FDT, ST, CJ, Controller,
+} <: StochasticDiffEqJumpAdaptiveAlgorithm end
 
 abstract type StochasticDiffEqJumpDiffusionAlgorithm <: StochasticDiffEqAlgorithm end
 abstract type StochasticDiffEqJumpDiffusionAdaptiveAlgorithm <: StochasticDiffEqAlgorithm end
 abstract type StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm{
-    CS, AD, FDT, ST, CJ, Controller} <: StochasticDiffEqJumpDiffusionAdaptiveAlgorithm end
+    CS, AD, FDT, ST, CJ, Controller,
+} <: StochasticDiffEqJumpDiffusionAdaptiveAlgorithm end
 
 abstract type IteratedIntegralApprox end
 
@@ -454,7 +456,7 @@ struct RKMilCommute{T} <: StochasticDiffEqAdaptiveAlgorithm
     ii_approx::T
 end
 function RKMilCommute(; interpretation = SciMLBase.AlgorithmInterpretation.Ito, ii_approx = IICommutative())
-    RKMilCommute(interpretation, ii_approx)
+    return RKMilCommute(interpretation, ii_approx)
 end
 
 """
@@ -514,11 +516,13 @@ struct RKMilGeneral{T, TruncationType} <: StochasticDiffEqAdaptiveAlgorithm
     p::TruncationType
 end
 
-function RKMilGeneral(; interpretation = SciMLBase.AlgorithmInterpretation.Ito,
-        ii_approx = IILevyArea(), c = 1, p = nothing, dt = nothing)
-    γ = 1//1
-    p==true && (p = Int(floor(c*dt^(1//1-2//1*γ)) + 1))
-    RKMilGeneral{typeof(ii_approx), typeof(p)}(interpretation, ii_approx, c, p)
+function RKMilGeneral(;
+        interpretation = SciMLBase.AlgorithmInterpretation.Ito,
+        ii_approx = IILevyArea(), c = 1, p = nothing, dt = nothing
+    )
+    γ = 1 // 1
+    p == true && (p = Int(floor(c * dt^(1 // 1 - 2 // 1 * γ)) + 1))
+    return RKMilGeneral{typeof(ii_approx), typeof(p)}(interpretation, ii_approx, c, p)
 end
 
 """
@@ -700,7 +704,7 @@ struct SROCK1{interpretation, E} <: StochasticDiffEqAlgorithm
     eigen_est::E
 end
 function SROCK1(; interpretation = SciMLBase.AlgorithmInterpretation.Ito, eigen_est = nothing)
-    SROCK1{interpretation, typeof(eigen_est)}(eigen_est)
+    return SROCK1{interpretation, typeof(eigen_est)}(eigen_est)
 end
 
 # Weak Order 2
@@ -873,7 +877,7 @@ struct SKSROCK{E} <: StochasticDiffEqAlgorithm
     eigen_est::E
 end
 function SKSROCK(; post_processing = false, eigen_est = nothing)
-    SKSROCK(post_processing, eigen_est)
+    return SKSROCK(post_processing, eigen_est)
 end
 """
     TangXiaoSROCK2(;version_num=5, eigen_est=nothing)
@@ -924,7 +928,7 @@ struct TangXiaoSROCK2{E} <: StochasticDiffEqAlgorithm
     eigen_est::E
 end
 function TangXiaoSROCK2(; version_num = 5, eigen_est = nothing)
-    TangXiaoSROCK2(version_num, eigen_est)
+    return TangXiaoSROCK2(version_num, eigen_est)
 end
 ###############################################################################
 
@@ -995,7 +999,7 @@ parameters θ and η.
     The original paper contains a typo in the definition of ggprime - this
     implementation follows the corrected formulation.
 """
-PCEuler(ggprime; theta = 1/2, eta = 1/2) = PCEuler(theta, eta, ggprime)
+PCEuler(ggprime; theta = 1 / 2, eta = 1 / 2) = PCEuler(theta, eta, ggprime)
 
 ################################################################################
 
@@ -2318,7 +2322,7 @@ u_{n+1} = u_n + θ f(u_{n+1},t_{n+1}) dt + (1-θ) f(u_n,t_n) dt + g(u_n,t_n) dW_
   - Standard implicit methods adapted for SDEs
 """
 struct ImplicitEM{CS, AD, F, F2, P, FDT, ST, CJ, T2, Controller} <:
-       StochasticDiffEqNewtonAdaptiveAlgorithm{CS, AD, FDT, ST, CJ, Controller}
+    StochasticDiffEqNewtonAdaptiveAlgorithm{CS, AD, FDT, ST, CJ, Controller}
     linsolve::F
     nlsolve::F2
     precs::P
@@ -2327,26 +2331,31 @@ struct ImplicitEM{CS, AD, F, F2, P, FDT, ST, CJ, T2, Controller} <:
     new_jac_conv_bound::T2
     symplectic::Bool
 end
-function ImplicitEM(; chunk_size = 0, autodiff = true, diff_type = Val{:central},
+function ImplicitEM(;
+        chunk_size = 0, autodiff = true, diff_type = Val{:central},
         standardtag = Val{true}(), concrete_jac = nothing,
         precs = OrdinaryDiffEqCore.DEFAULT_PRECS,
         linsolve = nothing, nlsolve = NLNewton(),
         extrapolant = :constant,
         theta = 1, symplectic = false,
-        new_jac_conv_bound = 1e-3,
-        controller = :Predictive)
-    ImplicitEM{chunk_size, autodiff,
+        new_jac_conv_bound = 1.0e-3,
+        controller = :Predictive
+    )
+    return ImplicitEM{
+        chunk_size, autodiff,
         typeof(linsolve), typeof(nlsolve), typeof(precs), diff_type,
         SciMLBase._unwrap_val(standardtag),
         SciMLBase._unwrap_val(concrete_jac),
-        typeof(new_jac_conv_bound), controller}(
+        typeof(new_jac_conv_bound), controller,
+    }(
         linsolve, nlsolve, precs,
-        symplectic ? 1/2 : theta,
-        extrapolant, new_jac_conv_bound, symplectic)
+        symplectic ? 1 / 2 : theta,
+        extrapolant, new_jac_conv_bound, symplectic
+    )
 end
 
-STrapezoid(; kwargs...) = ImplicitEM(; theta = 1/2, kwargs...)
-SImplicitMidpoint(; kwargs...) = ImplicitEM(; theta = 1/2, symplectic = true, kwargs...)
+STrapezoid(; kwargs...) = ImplicitEM(; theta = 1 / 2, kwargs...)
+SImplicitMidpoint(; kwargs...) = ImplicitEM(; theta = 1 / 2, symplectic = true, kwargs...)
 """
     ImplicitEulerHeun(;chunk_size=0, autodiff=true, diff_type=Val{:central},
                       standardtag=Val{true}(), concrete_jac=nothing, precs=DEFAULT_PRECS,
@@ -2394,7 +2403,7 @@ When `symplectic=true` and `theta=1`, preserves symplectic structure in distribu
   - Implicit methods for stiff SDEs in Stratonovich interpretation
 """
 struct ImplicitEulerHeun{CS, AD, F, P, FDT, ST, CJ, N, T2, Controller} <:
-       StochasticDiffEqNewtonAdaptiveAlgorithm{CS, AD, FDT, ST, CJ, Controller}
+    StochasticDiffEqNewtonAdaptiveAlgorithm{CS, AD, FDT, ST, CJ, Controller}
     linsolve::F
     nlsolve::N
     precs::P
@@ -2403,24 +2412,29 @@ struct ImplicitEulerHeun{CS, AD, F, P, FDT, ST, CJ, N, T2, Controller} <:
     new_jac_conv_bound::T2
     symplectic::Bool
 end
-function ImplicitEulerHeun(; chunk_size = 0, autodiff = true, diff_type = Val{:central},
+function ImplicitEulerHeun(;
+        chunk_size = 0, autodiff = true, diff_type = Val{:central},
         standardtag = Val{true}(), concrete_jac = nothing,
         precs = OrdinaryDiffEqCore.DEFAULT_PRECS,
         linsolve = nothing, nlsolve = NLNewton(),
         extrapolant = :constant,
         theta = 1, symplectic = false,
-        new_jac_conv_bound = 1e-3,
-        controller = :Predictive)
-    ImplicitEulerHeun{chunk_size, autodiff,
+        new_jac_conv_bound = 1.0e-3,
+        controller = :Predictive
+    )
+    return ImplicitEulerHeun{
+        chunk_size, autodiff,
         typeof(linsolve), typeof(precs), diff_type,
         SciMLBase._unwrap_val(standardtag),
         SciMLBase._unwrap_val(concrete_jac),
         typeof(nlsolve),
-        typeof(new_jac_conv_bound), controller}(
+        typeof(new_jac_conv_bound), controller,
+    }(
         linsolve, nlsolve, precs,
-        symplectic ? 1/2 : theta,
+        symplectic ? 1 / 2 : theta,
         extrapolant,
-        new_jac_conv_bound, symplectic)
+        new_jac_conv_bound, symplectic
+    )
 end
 
 """
@@ -2474,7 +2488,7 @@ Drift-implicit Runge-Kutta Milstein method achieving order 1.0 for stiff problem
   - Implicit Milstein methods for stiff SDEs
 """
 struct ImplicitRKMil{CS, AD, F, P, FDT, ST, CJ, N, T2, Controller, interpretation} <:
-       StochasticDiffEqNewtonAdaptiveAlgorithm{CS, AD, FDT, ST, CJ, Controller}
+    StochasticDiffEqNewtonAdaptiveAlgorithm{CS, AD, FDT, ST, CJ, Controller}
     linsolve::F
     nlsolve::N
     precs::P
@@ -2483,24 +2497,29 @@ struct ImplicitRKMil{CS, AD, F, P, FDT, ST, CJ, N, T2, Controller, interpretatio
     new_jac_conv_bound::T2
     symplectic::Bool
 end
-function ImplicitRKMil(; chunk_size = 0, autodiff = true, diff_type = Val{:central},
+function ImplicitRKMil(;
+        chunk_size = 0, autodiff = true, diff_type = Val{:central},
         standardtag = Val{true}(), concrete_jac = nothing,
         precs = OrdinaryDiffEqCore.DEFAULT_PRECS,
         linsolve = nothing, nlsolve = NLNewton(),
         extrapolant = :constant,
         theta = 1, symplectic = false,
-        new_jac_conv_bound = 1e-3,
-        controller = :Predictive, interpretation = SciMLBase.AlgorithmInterpretation.Ito)
-    ImplicitRKMil{chunk_size, autodiff,
+        new_jac_conv_bound = 1.0e-3,
+        controller = :Predictive, interpretation = SciMLBase.AlgorithmInterpretation.Ito
+    )
+    return ImplicitRKMil{
+        chunk_size, autodiff,
         typeof(linsolve), typeof(precs), diff_type,
         SciMLBase._unwrap_val(standardtag),
         SciMLBase._unwrap_val(concrete_jac),
         typeof(nlsolve), typeof(new_jac_conv_bound),
-        controller, interpretation}(
+        controller, interpretation,
+    }(
         linsolve, nlsolve, precs,
-        symplectic ? 1/2 : theta,
+        symplectic ? 1 / 2 : theta,
         extrapolant,
-        new_jac_conv_bound, symplectic)
+        new_jac_conv_bound, symplectic
+    )
 end
 """
     ISSEM(;chunk_size=0, autodiff=true, diff_type=Val{:central},
@@ -2554,7 +2573,7 @@ Applies implicit treatment to both drift and diffusion using split-step approach
   - Split-step implicit methods for fully stiff SDEs
 """
 struct ISSEM{CS, AD, F, P, FDT, ST, CJ, N, T2, Controller} <:
-       StochasticDiffEqNewtonAdaptiveAlgorithm{CS, AD, FDT, ST, CJ, Controller}
+    StochasticDiffEqNewtonAdaptiveAlgorithm{CS, AD, FDT, ST, CJ, Controller}
     linsolve::F
     nlsolve::N
     precs::P
@@ -2563,24 +2582,29 @@ struct ISSEM{CS, AD, F, P, FDT, ST, CJ, N, T2, Controller} <:
     new_jac_conv_bound::T2
     symplectic::Bool
 end
-function ISSEM(; chunk_size = 0, autodiff = true, diff_type = Val{:central},
+function ISSEM(;
+        chunk_size = 0, autodiff = true, diff_type = Val{:central},
         standardtag = Val{true}(), concrete_jac = nothing,
         precs = OrdinaryDiffEqCore.DEFAULT_PRECS,
         linsolve = nothing, nlsolve = NLNewton(),
         extrapolant = :constant,
         theta = 1, symplectic = false,
-        new_jac_conv_bound = 1e-3,
-        controller = :Predictive)
-    ISSEM{chunk_size, autodiff,
+        new_jac_conv_bound = 1.0e-3,
+        controller = :Predictive
+    )
+    return ISSEM{
+        chunk_size, autodiff,
         typeof(linsolve), typeof(precs), diff_type,
         SciMLBase._unwrap_val(standardtag),
         SciMLBase._unwrap_val(concrete_jac),
         typeof(nlsolve),
-        typeof(new_jac_conv_bound), controller}(
+        typeof(new_jac_conv_bound), controller,
+    }(
         linsolve, nlsolve, precs,
-        symplectic ? 1/2 : theta,
+        symplectic ? 1 / 2 : theta,
         extrapolant,
-        new_jac_conv_bound, symplectic)
+        new_jac_conv_bound, symplectic
+    )
 end
 """
     ISSEulerHeun(;chunk_size=0, autodiff=true, diff_type=Val{:central},
@@ -2630,7 +2654,7 @@ Stratonovich analog of ISSEM with fully implicit treatment of both drift and dif
   - Split-step implicit methods for fully stiff Stratonovich SDEs
 """
 struct ISSEulerHeun{CS, AD, F, P, FDT, ST, CJ, N, T2, Controller} <:
-       StochasticDiffEqNewtonAdaptiveAlgorithm{CS, AD, FDT, ST, CJ, Controller}
+    StochasticDiffEqNewtonAdaptiveAlgorithm{CS, AD, FDT, ST, CJ, Controller}
     linsolve::F
     nlsolve::N
     precs::P
@@ -2639,23 +2663,28 @@ struct ISSEulerHeun{CS, AD, F, P, FDT, ST, CJ, N, T2, Controller} <:
     new_jac_conv_bound::T2
     symplectic::Bool
 end
-function ISSEulerHeun(; chunk_size = 0, autodiff = true, diff_type = Val{:central},
+function ISSEulerHeun(;
+        chunk_size = 0, autodiff = true, diff_type = Val{:central},
         standardtag = Val{true}(), concrete_jac = nothing,
         precs = OrdinaryDiffEqCore.DEFAULT_PRECS,
         linsolve = nothing, nlsolve = NLNewton(),
         extrapolant = :constant,
         theta = 1, symplectic = false,
-        new_jac_conv_bound = 1e-3,
-        controller = :Predictive)
-    ISSEulerHeun{chunk_size, autodiff,
+        new_jac_conv_bound = 1.0e-3,
+        controller = :Predictive
+    )
+    return ISSEulerHeun{
+        chunk_size, autodiff,
         typeof(linsolve), typeof(precs), diff_type,
         SciMLBase._unwrap_val(standardtag),
         SciMLBase._unwrap_val(concrete_jac),
-        typeof(nlsolve), typeof(new_jac_conv_bound), controller}(
+        typeof(nlsolve), typeof(new_jac_conv_bound), controller,
+    }(
         linsolve, nlsolve, precs,
-        symplectic ? 1/2 : theta,
+        symplectic ? 1 / 2 : theta,
         extrapolant,
-        new_jac_conv_bound, symplectic)
+        new_jac_conv_bound, symplectic
+    )
 end
 """
     SKenCarp(;chunk_size=0, autodiff=true, diff_type=Val{:central}, 
@@ -2709,7 +2738,7 @@ SKenCarp applies implicit treatment to the drift term while keeping the diffusio
   - Adapted for stochastic problems with additive noise
 """
 struct SKenCarp{CS, AD, F, P, FDT, ST, CJ, N, T2, Controller} <:
-       StochasticDiffEqNewtonAdaptiveAlgorithm{CS, AD, FDT, ST, CJ, Controller}
+    StochasticDiffEqNewtonAdaptiveAlgorithm{CS, AD, FDT, ST, CJ, Controller}
     linsolve::F
     nlsolve::N
     precs::P
@@ -2719,18 +2748,23 @@ struct SKenCarp{CS, AD, F, P, FDT, ST, CJ, N, T2, Controller} <:
     ode_error_est::Bool
 end
 
-function SKenCarp(; chunk_size = 0, autodiff = true, diff_type = Val{:central},
+function SKenCarp(;
+        chunk_size = 0, autodiff = true, diff_type = Val{:central},
         standardtag = Val{true}(), concrete_jac = nothing,
         precs = OrdinaryDiffEqCore.DEFAULT_PRECS,
         linsolve = nothing, nlsolve = NLNewton(),
         smooth_est = true, extrapolant = :min_correct,
-        new_jac_conv_bound = 1e-3, controller = :Predictive,
-        ode_error_est = true)
-    SKenCarp{chunk_size, autodiff, typeof(linsolve), typeof(precs), diff_type,
+        new_jac_conv_bound = 1.0e-3, controller = :Predictive,
+        ode_error_est = true
+    )
+    return SKenCarp{
+        chunk_size, autodiff, typeof(linsolve), typeof(precs), diff_type,
         SciMLBase._unwrap_val(standardtag), SciMLBase._unwrap_val(concrete_jac),
-        typeof(nlsolve), typeof(new_jac_conv_bound), controller}(
+        typeof(nlsolve), typeof(new_jac_conv_bound), controller,
+    }(
         linsolve, nlsolve, precs, smooth_est, extrapolant, new_jac_conv_bound,
-        ode_error_est)
+        ode_error_est
+    )
 end
 
 ################################################################################

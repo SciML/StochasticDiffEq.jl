@@ -8,34 +8,42 @@ struct TauLeapingConstantCache <: StochasticDiffEqConstantCache end
     EEstcache::rateType
 end
 
-function alg_cache(alg::TauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::TauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    TauLeapingConstantCache()
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return TauLeapingConstantCache()
 end
 
-function alg_cache(alg::TauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::TauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     tmp = zero(u)
     newrate = zero(jump_rate_prototype)
     EEstcache = zero(jump_rate_prototype)
-    TauLeapingCache(u, uprev, tmp, newrate, EEstcache)
+    return TauLeapingCache(u, uprev, tmp, newrate, EEstcache)
 end
 
-function alg_cache(alg::CaoTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::CaoTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    TauLeapingConstantCache()
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return TauLeapingConstantCache()
 end
 
-function alg_cache(alg::CaoTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::CaoTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     tmp = zero(u)
-    TauLeapingCache(u, uprev, tmp, nothing, nothing)
+    return TauLeapingCache(u, uprev, tmp, nothing, nothing)
 end

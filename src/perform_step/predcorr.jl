@@ -3,26 +3,26 @@
     (; theta, eta, ggprime) = integrator.alg
     dW = W.dW
     if !is_diagonal_noise(integrator.sol.prob) || W.dW isa Number
-        gdW_n = g(uprev, p, t)*dW
+        gdW_n = g(uprev, p, t) * dW
     else
         gdW_n = g(uprev, p, t) .* dW
     end
 
     f_n = f(uprev, p, t)
-    ubar = uprev + dt*f_n + gdW_n
+    ubar = uprev + dt * f_n + gdW_n
 
-    fbar_n = f_n - eta*ggprime(uprev, p, t)
+    fbar_n = f_n - eta * ggprime(uprev, p, t)
 
     tnp1 = t + dt
-    fbar_np1 = f(ubar, p, tnp1) - eta*ggprime(ubar, p, tnp1)
+    fbar_np1 = f(ubar, p, tnp1) - eta * ggprime(ubar, p, tnp1)
 
     if !is_diagonal_noise(integrator.sol.prob) || dW isa Number
-        gdW_np1 = g(ubar, p, tnp1)*dW
+        gdW_np1 = g(ubar, p, tnp1) * dW
     else
         gdW_np1 = g(ubar, p, tnp1) .* dW
     end
 
-    u = uprev + (theta*dt)*fbar_np1 + ((1-theta)*dt)*fbar_n + eta*gdW_np1 + (1-eta)*gdW_n
+    u = uprev + (theta * dt) * fbar_np1 + ((1 - theta) * dt) * fbar_n + eta * gdW_np1 + (1 - eta) * gdW_n
     integrator.u = u
 end
 
@@ -42,8 +42,8 @@ end
         mul!(gdWtmp, gtmp, dW)
     end
 
-    @.. utmp = uprev + ftmp*dt + gdWtmp
-    @.. u = uprev + (1-theta)*(ftmp-eta*bbprimetmp)*dt + (1-eta)*gdWtmp
+    @.. utmp = uprev + ftmp * dt + gdWtmp
+    @.. u = uprev + (1 - theta) * (ftmp - eta * bbprimetmp) * dt + (1 - eta) * gdWtmp
 
     tnp1 = t + dt
     f(ftmp, utmp, p, tnp1)
@@ -56,5 +56,5 @@ end
         mul!(gdWtmp, gtmp, dW)
     end
 
-    @.. u += theta*(ftmp - eta*bbprimetmp)*dt + eta*gdWtmp
+    @.. u += theta * (ftmp - eta * bbprimetmp) * dt + eta * gdWtmp
 end

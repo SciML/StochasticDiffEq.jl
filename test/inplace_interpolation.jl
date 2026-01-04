@@ -2,7 +2,7 @@ using StochasticDiffEq, Test, Random
 import SDEProblemLibrary: prob_sde_linear, prob_sde_2Dlinear
 Random.seed!(100)
 
-vecarrzero(m::Integer, n) = map(t->zeros(n), 1:m)
+vecarrzero(m::Integer, n) = map(t -> zeros(n), 1:m)
 
 tt = 0:0.05:1
 ntt = length(tt)
@@ -11,9 +11,9 @@ out_VVF_1 = vecarrzero(ntt, 1)                           # Vector{Vector{Float64
 out_VVF_2 = vecarrzero(ntt, 2)                           # Vector{Vector{Float64}}
 out_VMF = vecarrzero(ntt, size(prob_sde_2Dlinear.u0))   # Vector{Matrix{Float64}}
 
-@testset verbose=true "SDESolution interpolation" begin
-    sol_SDE = solve(prob_sde_linear, SRIW1(); dt = 1//2^4)
-    sol_SDE_2D = solve(prob_sde_2Dlinear, SRIW1(); dt = 1//2^4)
+@testset verbose = true "SDESolution interpolation" begin
+    sol_SDE = solve(prob_sde_linear, SRIW1(); dt = 1 // 2^4)
+    sol_SDE_2D = solve(prob_sde_2Dlinear, SRIW1(); dt = 1 // 2^4)
 
     sol_SDE_interp = sol_SDE(tt)
     sol_SDE_2D_interp = sol_SDE_2D(tt)
