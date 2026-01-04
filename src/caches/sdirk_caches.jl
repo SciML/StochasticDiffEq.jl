@@ -1,5 +1,5 @@
 @cache mutable struct ImplicitEMCache{uType, rateType, N, noiseRateType, dWType} <:
-                      StochasticDiffEqMutableCache
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
     fsalfirst::rateType
@@ -9,10 +9,12 @@
     nlsolver::N
 end
 
-function alg_cache(alg::ImplicitEM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::ImplicitEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype,
         ::Type{uEltypeNoUnits}, ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     gtmp = zero(noise_rate_prototype)
     if is_diagonal_noise(prob)
         gtmp2 = gtmp
@@ -25,28 +27,32 @@ function alg_cache(alg::ImplicitEM, prob, u, ΔW, ΔZ, p, rate_prototype,
     γ, c = alg.theta, zero(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true))
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true)
+    )
     fsalfirst = zero(rate_prototype)
-    ImplicitEMCache(u, uprev, fsalfirst, gtmp, gtmp2, dW_cache, nlsolver)
+    return ImplicitEMCache(u, uprev, fsalfirst, gtmp, gtmp2, dW_cache, nlsolver)
 end
 
 mutable struct ImplicitEMConstantCache{N} <: StochasticDiffEqConstantCache
     nlsolver::N
 end
 
-function alg_cache(alg::ImplicitEM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::ImplicitEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype,
         ::Type{uEltypeNoUnits}, ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     γ, c = alg.theta, zero(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false))
-    ImplicitEMConstantCache(nlsolver)
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false)
+    )
+    return ImplicitEMConstantCache(nlsolver)
 end
 
 @cache mutable struct ImplicitEulerHeunCache{uType, rateType, N, noiseRateType, dWType} <:
-                      StochasticDiffEqMutableCache
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
     fsalfirst::rateType
@@ -60,10 +66,12 @@ end
 u_cache(c::ImplicitEulerHeunCache) = (c.uprev2, c.nlsolver.z, c.nlsolver.dz)
 du_cache(c::ImplicitEulerHeunCache) = (c.nlsolver.k, c.fsalfirst)
 
-function alg_cache(alg::ImplicitEulerHeun, prob, u, ΔW, ΔZ, p,
+function alg_cache(
+        alg::ImplicitEulerHeun, prob, u, ΔW, ΔZ, p,
         rate_prototype, noise_rate_prototype, jump_rate_prototype,
         ::Type{uEltypeNoUnits}, ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     gtmp = zero(noise_rate_prototype)
     gtmp2 = zero(rate_prototype)
 
@@ -78,28 +86,32 @@ function alg_cache(alg::ImplicitEulerHeun, prob, u, ΔW, ΔZ, p,
     γ, c = alg.theta, zero(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true))
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true)
+    )
     fsalfirst = zero(rate_prototype)
-    ImplicitEulerHeunCache(u, uprev, fsalfirst, gtmp, gtmp2, gtmp3, nlsolver, dW_cache)
+    return ImplicitEulerHeunCache(u, uprev, fsalfirst, gtmp, gtmp2, gtmp3, nlsolver, dW_cache)
 end
 
 mutable struct ImplicitEulerHeunConstantCache{N} <: StochasticDiffEqConstantCache
     nlsolver::N
 end
 
-function alg_cache(alg::ImplicitEulerHeun, prob, u, ΔW, ΔZ, p,
+function alg_cache(
+        alg::ImplicitEulerHeun, prob, u, ΔW, ΔZ, p,
         rate_prototype, noise_rate_prototype, jump_rate_prototype,
         ::Type{uEltypeNoUnits}, ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     γ, c = alg.theta, zero(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false))
-    ImplicitEulerHeunConstantCache(nlsolver)
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false)
+    )
+    return ImplicitEulerHeunConstantCache(nlsolver)
 end
 
 @cache mutable struct ImplicitRKMilCache{uType, rateType, N, noiseRateType} <:
-                      StochasticDiffEqMutableCache
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
     fsalfirst::rateType
@@ -109,10 +121,12 @@ end
     nlsolver::N
 end
 
-function alg_cache(alg::ImplicitRKMil, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::ImplicitRKMil, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype,
         ::Type{uEltypeNoUnits}, ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     gtmp = zero(noise_rate_prototype)
     gtmp2 = zero(rate_prototype)
     gtmp3 = zero(rate_prototype)
@@ -120,22 +134,26 @@ function alg_cache(alg::ImplicitRKMil, prob, u, ΔW, ΔZ, p, rate_prototype,
     γ, c = alg.theta, zero(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true))
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true)
+    )
     fsalfirst = zero(rate_prototype)
-    ImplicitRKMilCache(u, uprev, fsalfirst, gtmp, gtmp2, gtmp3, nlsolver)
+    return ImplicitRKMilCache(u, uprev, fsalfirst, gtmp, gtmp2, gtmp3, nlsolver)
 end
 
 mutable struct ImplicitRKMilConstantCache{N} <: StochasticDiffEqConstantCache
     nlsolver::N
 end
 
-function alg_cache(alg::ImplicitRKMil, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::ImplicitRKMil, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype,
         ::Type{uEltypeNoUnits}, ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     γ, c = alg.theta, zero(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false))
-    ImplicitRKMilConstantCache(nlsolver)
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false)
+    )
+    return ImplicitRKMilConstantCache(nlsolver)
 end

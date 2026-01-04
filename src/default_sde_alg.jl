@@ -5,12 +5,13 @@ using LinearAlgebra: I
 
 # Helper function to extract alg_hints from keyword arguments
 function get_alg_hints(o)
-    :alg_hints ∈ keys(o) ? alg_hints = o[:alg_hints] : alg_hints = Symbol[:auto]
+    return :alg_hints ∈ keys(o) ? alg_hints = o[:alg_hints] : alg_hints = Symbol[:auto]
 end
 
 function default_algorithm(
         prob::DiffEqBase.AbstractSDEProblem{uType, tType, isinplace, ND};
-        kwargs...) where {uType, tType, isinplace, ND}
+        kwargs...
+    ) where {uType, tType, isinplace, ND}
     o = Dict{Symbol, Any}(kwargs)
     alg = SOSRI() # Standard default
 
@@ -28,8 +29,10 @@ function default_algorithm(
 
     if is_stratonovich
         if is_stiff || prob.f.mass_matrix !== I
-            alg = ImplicitRKMil(autodiff = false,
-                interpretation = SciMLBase.AlgorithmInterpretation.Stratonovich)
+            alg = ImplicitRKMil(
+                autodiff = false,
+                interpretation = SciMLBase.AlgorithmInterpretation.Stratonovich
+            )
         else
             alg = RKMil(interpretation = SciMLBase.AlgorithmInterpretation.Stratonovich)
         end
@@ -64,14 +67,16 @@ end
 
 # Dispatch for __init with Nothing algorithm - use default
 function DiffEqBase.__init(
-        prob::DiffEqBase.AbstractSDEProblem, ::Nothing, args...; kwargs...)
+        prob::DiffEqBase.AbstractSDEProblem, ::Nothing, args...; kwargs...
+    )
     alg = default_algorithm(prob; kwargs...)
-    DiffEqBase.__init(prob, alg, args...; kwargs...)
+    return DiffEqBase.__init(prob, alg, args...; kwargs...)
 end
 
 # Dispatch for __solve with Nothing algorithm - use default
 function DiffEqBase.__solve(
-        prob::DiffEqBase.AbstractSDEProblem, ::Nothing, args...; kwargs...)
+        prob::DiffEqBase.AbstractSDEProblem, ::Nothing, args...; kwargs...
+    )
     alg = default_algorithm(prob; kwargs...)
-    DiffEqBase.__solve(prob, alg, args...; kwargs...)
+    return DiffEqBase.__solve(prob, alg, args...; kwargs...)
 end

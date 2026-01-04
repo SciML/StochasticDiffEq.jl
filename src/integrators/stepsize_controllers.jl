@@ -1,25 +1,27 @@
-
 function stepsize_controller!(integrator::SDEIntegrator, controller::PIController, alg)
     integrator.q11 = DiffEqBase.value(FastPower.fastpower(integrator.EEst, controller.beta1))
-    integrator.q = DiffEqBase.value(integrator.q11/FastPower.fastpower(integrator.qold, controller.beta2))
-    @fastmath integrator.q = DiffEqBase.value(max(
-        inv(integrator.opts.qmax), min(inv(integrator.opts.qmin), integrator.q/integrator.opts.gamma)))
+    integrator.q = DiffEqBase.value(integrator.q11 / FastPower.fastpower(integrator.qold, controller.beta2))
+    return @fastmath integrator.q = DiffEqBase.value(
+        max(
+            inv(integrator.opts.qmax), min(inv(integrator.opts.qmin), integrator.q / integrator.opts.gamma)
+        )
+    )
 end
 
 @inline function step_accept_controller!(integrator::SDEIntegrator, alg)
-    step_accept_controller!(integrator, integrator.opts.controller, alg)
+    return step_accept_controller!(integrator, integrator.opts.controller, alg)
 end
 
 function step_accept_controller!(integrator::SDEIntegrator, controller::PIController, alg)
-    integrator.dtnew = DiffEqBase.value(integrator.dt/integrator.q) * oneunit(integrator.dt)
+    return integrator.dtnew = DiffEqBase.value(integrator.dt / integrator.q) * oneunit(integrator.dt)
 end
 
 function step_reject_controller!(integrator::SDEIntegrator, controller::PIController, alg)
-    integrator.dtnew = integrator.dt/min(inv(integrator.opts.qmin), integrator.q11/integrator.opts.gamma)
+    return integrator.dtnew = integrator.dt / min(inv(integrator.opts.qmin), integrator.q11 / integrator.opts.gamma)
 end
 
 function stepsize_controller!(integrator::SDEIntegrator, alg::TauLeaping)
-    nothing
+    return nothing
 end
 
 function step_accept_controller!(integrator::SDEIntegrator, alg::TauLeaping)
@@ -28,11 +30,11 @@ function step_accept_controller!(integrator::SDEIntegrator, alg::TauLeaping)
 end
 
 function step_reject_controller!(integrator::SDEIntegrator, alg::TauLeaping)
-    integrator.dt = integrator.opts.gamma * integrator.dt / integrator.EEst
+    return integrator.dt = integrator.opts.gamma * integrator.dt / integrator.EEst
 end
 
 function stepsize_controller!(integrator::SDEIntegrator, alg::CaoTauLeaping)
-    nothing
+    return nothing
 end
 
 function step_accept_controller!(integrator::SDEIntegrator, alg::CaoTauLeaping)

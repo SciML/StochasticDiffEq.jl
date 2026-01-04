@@ -23,14 +23,14 @@ function maxeig!(integrator, cache::StochasticDiffEqConstantCache)
     # Normalize `z` such that z-u lie in a circle
     if (!is_u_zero && !is_z_zero)
         dz_u = u_norm * sqrt_pert
-        quot = dz_u/z_norm
-        z = uprev + quot*z
+        quot = dz_u / z_norm
+        z = uprev + quot * z
     elseif !is_u_zero
         dz_u = u_norm * sqrt_pert
-        z = uprev + uprev*dz_u
+        z = uprev + uprev * dz_u
     elseif !is_z_zero
         dz_u = pert
-        quot = dz_u/z_norm
+        quot = dz_u / z_norm
         z *= quot
     else
         dz_u = pert
@@ -44,9 +44,9 @@ function maxeig!(integrator, cache::StochasticDiffEqConstantCache)
 
         Δ = integrator.opts.internalnorm(fz, t)
         eig_prev = integrator.eigen_est
-        integrator.eigen_est = Δ/dz_u * safe
+        integrator.eigen_est = Δ / dz_u * safe
         # Convergence
-        if iter >= 2 && abs(eig_prev - integrator.eigen_est) < integrator.eigen_est*0.05
+        if iter >= 2 && abs(eig_prev - integrator.eigen_est) < integrator.eigen_est * 0.05
             # Store the eigenvector
             cache.zprev = z - uprev
             return true
@@ -54,8 +54,8 @@ function maxeig!(integrator, cache::StochasticDiffEqConstantCache)
 
         # Next `z`
         if Δ != zero(Δ)
-            quot = dz_u/Δ
-            z = uprev + quot*fz
+            quot = dz_u / Δ
+            z = uprev + quot * fz
         else
             # An arbitrary change on `z`
             nind = length(z)
@@ -98,18 +98,18 @@ function maxeig!(integrator, cache::StochasticDiffEqMutableCache)
     # Normalize `z` such that z-u lie in a circle
     if (!is_u_zero && !is_z_zero)
         dz_u = u_norm * sqrt_pert
-        quot = dz_u/z_norm
-        @.. z = uprev + quot*z
+        quot = dz_u / z_norm
+        @.. z = uprev + quot * z
     elseif !is_u_zero
         dz_u = u_norm * sqrt_pert
-        @.. z = uprev + uprev*dz_u
+        @.. z = uprev + uprev * dz_u
     elseif !is_z_zero
         dz_u = pert
-        quot = dz_u/z_norm
+        quot = dz_u / z_norm
         @.. z *= quot
     else
         dz_u = pert
-        @.. z = dz_u*(false*z + one(eltype(z)))
+        @.. z = dz_u * (false * z + one(eltype(z)))
     end # endif
     # Start power iteration
     integrator.eigen_est = 0
@@ -120,17 +120,17 @@ function maxeig!(integrator, cache::StochasticDiffEqMutableCache)
 
         Δ = integrator.opts.internalnorm(fz, t)
         eig_prev = integrator.eigen_est
-        integrator.eigen_est = Δ/dz_u * safe
+        integrator.eigen_est = Δ / dz_u * safe
         # Convergence
-        if iter >= 2 && abs(eig_prev - integrator.eigen_est) < integrator.eigen_est*0.05
+        if iter >= 2 && abs(eig_prev - integrator.eigen_est) < integrator.eigen_est * 0.05
             # Store the eigenvector
             @.. ccache.zprev = z - uprev
             return true
         end
         # Next `z`
         if Δ != zero(Δ)
-            quot = dz_u/Δ
-            @.. z = uprev + quot*fz
+            quot = dz_u / Δ
+            @.. z = uprev + quot * fz
         else
             # An arbitrary change on `z`
             nind = length(uprev)
@@ -154,14 +154,14 @@ function choose_deg!(integrator, cache::T) where {T}
         # binary search as stability domain is monotonically incrasing with number of stages
         mn_st, mx_st, mid_st = 3, 200, 3
         while (mx_st - mn_st > 1)
-            mid_st = Int(floor((mn_st+mx_st)*0.5))
-            if (mid_st^2*(131.97/197 - 0.45*mid_st/197) > cache.mdeg)
+            mid_st = Int(floor((mn_st + mx_st) * 0.5))
+            if (mid_st^2 * (131.97 / 197 - 0.45 * mid_st / 197) > cache.mdeg)
                 mx_st = mid_st
             else
                 mn_st = mid_st
             end
         end
-        cache.mdeg = (cache.mdeg > mn_st^2*(131.97/197 - 0.45*mn_st/197)) ? mx_st : mn_st
+        cache.mdeg = (cache.mdeg > mn_st^2 * (131.97 / 197 - 0.45 * mn_st / 197)) ? mx_st : mn_st
 
         @inbounds for i in 1:size(cache.ms, 1)
             if cache.ms[i] <= cache.mdeg
@@ -176,12 +176,12 @@ function choose_deg!(integrator, cache::T) where {T}
         start = 1
         @inbounds for i in 1:size(cache.ms, 1)
             if cache.ms[i] >= cache.mdeg
-                cache.deg_index = i;
+                cache.deg_index = i
                 cache.mdeg = cache.ms[i]
                 cache.start = start
                 break
             else
-                start += cache.ms[i]*2 - 1
+                start += cache.ms[i] * 2 - 1
             end
         end
     end
@@ -190,12 +190,12 @@ function choose_deg!(integrator, cache::T) where {T}
         start = 1
         @inbounds for i in 1:size(cache.ms, 1)
             if cache.ms[i] >= cache.mdeg
-                cache.deg_index = i;
+                cache.deg_index = i
                 cache.mdeg = cache.ms[i]
                 cache.start = start
                 break
             else
-                start += cache.ms[i]*2 - 1
+                start += cache.ms[i] * 2 - 1
             end
         end
 
@@ -224,12 +224,12 @@ function choose_deg!(integrator, cache::T) where {T}
         start = 1
         @inbounds for i in 1:size(cache.ms, 1)
             if cache.ms[i] >= cache.mdeg
-                cache.deg_index = i;
+                cache.deg_index = i
                 cache.mdeg = cache.ms[i]
                 cache.start = start
                 break
             else
-                start += cache.ms[i]*2 - 1
+                start += cache.ms[i] * 2 - 1
             end
         end
     end
@@ -238,12 +238,12 @@ function choose_deg!(integrator, cache::T) where {T}
         start = 1
         @inbounds for i in 1:size(cache.ms, 1)
             if cache.ms[i] >= cache.mdeg
-                cache.deg_index = i;
+                cache.deg_index = i
                 cache.mdeg = cache.ms[i]
                 cache.start = start
                 break
             else
-                start += cache.ms[i]*2 - 1
+                start += cache.ms[i] * 2 - 1
             end
         end
     end

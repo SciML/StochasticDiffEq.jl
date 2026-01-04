@@ -24,7 +24,7 @@ sol = solve(prob, dt = 1 / 2^(3), alg_hints = [:additive])
 # Test with :stratonovich hint - should use RKMil with Stratonovich interpretation
 sol = solve(prob, dt = 1 / 2^(3), alg_hints = [:stratonovich])
 @test SciMLBase.alg_interpretation(sol.alg) ==
-      SciMLBase.AlgorithmInterpretation.Stratonovich
+    SciMLBase.AlgorithmInterpretation.Stratonovich
 @test sol.alg isa RKMil
 
 # Non-diagonal noise test problem
@@ -37,7 +37,7 @@ g = function (du, u, p, t)
     du[2, 1] = 1.2u[1]
     du[2, 2] = 0.2u[2]
     du[2, 3] = 0.3u[2]
-    du[2, 4] = 1.8u[2]
+    return du[2, 4] = 1.8u[2]
 end
 prob = SDEProblem(f, g, ones(2), (0.0, 1.0), noise_rate_prototype = zeros(2, 4))
 

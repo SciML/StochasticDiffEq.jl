@@ -10,7 +10,7 @@
     end
 
     if !is_diagonal_noise(integrator.sol.prob) || W.dW isa Number
-        noise = integrator.g(u_choice, p, t)*W.dW
+        noise = integrator.g(u_choice, p, t) * W.dW
     else
         noise = integrator.g(u_choice, p, t) .* W.dW
     end
@@ -67,16 +67,16 @@ end
     if is_diagonal_noise(integrator.sol.prob)
         noise = gtmp .* W.dW
     else
-        noise = gtmp*W.dW
+        noise = gtmp * W.dW
     end
     tmp = @.. uprev + dt * ftmp + noise
-    gtmp2 = (gtmp .+ integrator.g(tmp, p, t+dt)) ./ 2
+    gtmp2 = (gtmp .+ integrator.g(tmp, p, t + dt)) ./ 2
     if is_diagonal_noise(integrator.sol.prob)
         noise2 = gtmp2 .* W.dW
     else
-        noise2 = gtmp2*W.dW
+        noise2 = gtmp2 * W.dW
     end
-    u = uprev .+ (dt / 2) .* (ftmp .+ integrator.f(tmp, p, t+dt)) .+ noise2
+    u = uprev .+ (dt / 2) .* (ftmp .+ integrator.f(tmp, p, t + dt)) .+ noise2
     integrator.u = u
 end
 
@@ -87,15 +87,15 @@ end
     integrator.g(gtmp1, uprev, p, t)
 
     if is_diagonal_noise(integrator.sol.prob)
-        @.. nrtmp=gtmp1*W.dW
+        @.. nrtmp = gtmp1 * W.dW
     else
         mul!(nrtmp, gtmp1, W.dW)
     end
 
     @.. tmp = uprev + dt * ftmp1 + nrtmp
 
-    integrator.f(ftmp2, tmp, p, t+dt)
-    integrator.g(gtmp2, tmp, p, t+dt)
+    integrator.f(ftmp2, tmp, p, t + dt)
+    integrator.g(gtmp2, tmp, p, t + dt)
 
     if is_diagonal_noise(integrator.sol.prob)
         @.. nrtmp = W.dW * (gtmp1 + gtmp2) / 2
@@ -143,7 +143,7 @@ end
     ftmp = integrator.f(uprev, p, t, W.curW)
     tmp = @.. uprev + dt * ftmp
     wtmp = @.. W.curW + W.dW
-    u = uprev .+ (dt/2) .* (ftmp .+ integrator.f(tmp, p, t+dt, wtmp))
+    u = uprev .+ (dt / 2) .* (ftmp .+ integrator.f(tmp, p, t + dt, wtmp))
     integrator.u = u
 end
 
@@ -157,8 +157,8 @@ end
     else
         @.. wtmp = W.curW + W.dW
     end
-    integrator.f(rtmp2, tmp, p, t+dt, wtmp)
-    @.. u = uprev + (dt/2) * (rtmp1 + rtmp2)
+    integrator.f(rtmp2, tmp, p, t + dt, wtmp)
+    @.. u = uprev + (dt / 2) * (rtmp1 + rtmp2)
 end
 
 # weak approximation EM
@@ -170,7 +170,7 @@ end
     _dW = map(x -> calc_twopoint_random(integrator.sqdt, x), W.dW)
 
     if !is_diagonal_noise(integrator.sol.prob) || W.dW isa Number
-        noise = integrator.g(uprev, p, t)*_dW
+        noise = integrator.g(uprev, p, t) * _dW
     else
         noise = integrator.g(uprev, p, t) .* _dW
     end
@@ -211,27 +211,29 @@ end
     L = integrator.g(uprev, p, t)
     mil_correction = zero(u)
     if SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Ito
-        utilde = K + L*integrator.sqdt
+        utilde = K + L * integrator.sqdt
         ggprime = (integrator.g(utilde, p, t) .- L) ./ (integrator.sqdt)
         mil_correction = ggprime .* (W.dW .^ 2 .- abs(dt)) ./ 2
     elseif SciMLBase.alg_interpretation(integrator.alg) ==
-           SciMLBase.AlgorithmInterpretation.Stratonovich
-        utilde = uprev + L*integrator.sqdt
+            SciMLBase.AlgorithmInterpretation.Stratonovich
+        utilde = uprev + L * integrator.sqdt
         ggprime = (integrator.g(utilde, p, t) .- L) ./ (integrator.sqdt)
         mil_correction = ggprime .* (W.dW .^ 2) ./ 2
     else
         error("Algorithm interpretation invalid. Use either SciMLBase.AlgorithmInterpretation.Ito or SciMLBase.AlgorithmInterpretation.Stratonovich")
     end
-    u = K+L .* W.dW+mil_correction
+    u = K + L .* W.dW + mil_correction
 
     if integrator.opts.adaptive
-        du2 = integrator.f(K, p, t+dt)
-        Ed = dt*(du2 - du1)/2
-        En = W.dW .^ 3 .* ((du2-L)/(integrator.sqdt)) .^ 2 / 6
+        du2 = integrator.f(K, p, t + dt)
+        Ed = dt * (du2 - du1) / 2
+        En = W.dW .^ 3 .* ((du2 - L) / (integrator.sqdt)) .^ 2 / 6
 
-        resids = calculate_residuals(Ed, En, uprev, u, integrator.opts.abstol,
+        resids = calculate_residuals(
+            Ed, En, uprev, u, integrator.opts.abstol,
             integrator.opts.reltol, integrator.opts.delta,
-            integrator.opts.internalnorm, t)
+            integrator.opts.internalnorm, t
+        )
         integrator.EEst = integrator.opts.internalnorm(resids, t)
     end
     integrator.u = u
@@ -248,31 +250,33 @@ end
     if SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Ito
         @.. tmp = K + integrator.sqdt * L
         integrator.g(du2, tmp, p, t)
-        @.. tmp = (du2-L)/(2integrator.sqdt)*(W.dW .^ 2 - abs(dt))
+        @.. tmp = (du2 - L) / (2integrator.sqdt) * (W.dW .^ 2 - abs(dt))
     elseif SciMLBase.alg_interpretation(integrator.alg) ==
-           SciMLBase.AlgorithmInterpretation.Stratonovich
+            SciMLBase.AlgorithmInterpretation.Stratonovich
         @.. tmp = uprev + integrator.sqdt * L
         integrator.g(du2, tmp, p, t)
-        @.. tmp = (du2-L)/(2integrator.sqdt)*(W.dW .^ 2)
+        @.. tmp = (du2 - L) / (2integrator.sqdt) * (W.dW .^ 2)
     else
         error("Algorithm interpretation invalid. Use either SciMLBase.AlgorithmInterpretation.Ito or SciMLBase.AlgorithmInterpretation.Stratonovich")
     end
-    @.. u = K + L*W.dW + tmp
+    @.. u = K + L * W.dW + tmp
     if integrator.opts.adaptive
         @.. tmp = integrator.opts.internalnorm(W.dW^3, t) *
-                  integrator.opts.internalnorm((du2-L)/(integrator.sqdt), t)^2 / 6
-        integrator.f(du2, K, p, t+dt)
-        @.. tmp += integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1)/2, t)
+            integrator.opts.internalnorm((du2 - L) / (integrator.sqdt), t)^2 / 6
+        integrator.f(du2, K, p, t + dt)
+        @.. tmp += integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2, t)
 
-        calculate_residuals!(tmp, tmp, uprev, u, integrator.opts.abstol,
-            integrator.opts.reltol, integrator.opts.internalnorm, t)
+        calculate_residuals!(
+            tmp, tmp, uprev, u, integrator.opts.abstol,
+            integrator.opts.reltol, integrator.opts.internalnorm, t
+        )
         integrator.EEst = integrator.opts.internalnorm(tmp, t)
     end
 end
 
 @muladd function perform_step!(integrator, cache::RKMilCommuteConstantCache)
     (; t, dt, uprev, u, W, p, f) = integrator
-    dW = W.dW;
+    dW = W.dW
     sqdt = integrator.sqdt
     Jalg = cache.Jalg
 
@@ -283,53 +287,57 @@ end
     mil_correction = zero(u)
     if SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Ito
         if dW isa Number || is_diagonal_noise(integrator.sol.prob)
-            J = J .- 1//2 .* abs(dt)
+            J = J .- 1 // 2 .* abs(dt)
         else
-            J -= 1//2 .* UniformScaling(abs(dt))
+            J -= 1 // 2 .* UniformScaling(abs(dt))
         end
     end
 
     du1 = integrator.f(uprev, p, t)
     L = integrator.g(uprev, p, t)
 
-    K = uprev + dt*du1
+    K = uprev + dt * du1
 
     if is_diagonal_noise(integrator.sol.prob)
-        tmp = (SciMLBase.alg_interpretation(integrator.alg) ==
-               SciMLBase.AlgorithmInterpretation.Ito ? K : uprev) .+ integrator.sqdt .* L
+        tmp = (
+            SciMLBase.alg_interpretation(integrator.alg) ==
+                SciMLBase.AlgorithmInterpretation.Ito ? K : uprev
+        ) .+ integrator.sqdt .* L
         gtmp = integrator.g(tmp, p, t)
-        Dgj = (gtmp - L)/sqdt
+        Dgj = (gtmp - L) / sqdt
         ggprime_norm = integrator.opts.internalnorm(Dgj, t)
-        u = @.. K + L*dW + Dgj*J
+        u = @.. K + L * dW + Dgj * J
     else
         for j in 1:length(dW)
             if dW isa Number
-                Kj = K + sqdt*L
+                Kj = K + sqdt * L
             else
-                Kj = K + sqdt*@view(L[:, j])
+                Kj = K + sqdt * @view(L[:, j])
             end
             gtmp = integrator.g(Kj, p, t)
-            Dgj = (gtmp - L)/sqdt
+            Dgj = (gtmp - L) / sqdt
             if integrator.opts.adaptive
                 ggprime_norm += integrator.opts.internalnorm(Dgj, t)
             end
             if dW isa Number
-                tmp = Dgj*J
+                tmp = Dgj * J
             else
-                tmp = Dgj*@view(J[:, j])
+                tmp = Dgj * @view(J[:, j])
             end
             mil_correction += tmp
         end
-        tmp = L*dW
-        u = uprev + dt*du1 + tmp + mil_correction
+        tmp = L * dW
+        u = uprev + dt * du1 + tmp + mil_correction
     end
     if integrator.opts.adaptive
-        En = integrator.opts.internalnorm(dW, t)^3*ggprime_norm^2 / 6
-        du2 = integrator.f(K, p, t+dt)
+        En = integrator.opts.internalnorm(dW, t)^3 * ggprime_norm^2 / 6
+        du2 = integrator.f(K, p, t + dt)
         tmp = integrator.opts.internalnorm(integrator.opts.delta * dt * (du2 - du1) / 2, t) + En
 
-        tmp = calculate_residuals(tmp, uprev, u, integrator.opts.abstol,
-            integrator.opts.reltol, integrator.opts.internalnorm, t)
+        tmp = calculate_residuals(
+            tmp, uprev, u, integrator.opts.abstol,
+            integrator.opts.reltol, integrator.opts.internalnorm, t
+        )
         integrator.EEst = integrator.opts.internalnorm(tmp, t)
     end
     integrator.u = u
@@ -339,7 +347,7 @@ end
     (; du1, du2, K, gtmp, L) = cache
     (; t, dt, uprev, u, W, p, f) = integrator
     (; mil_correction, Kj, Dgj, tmp) = cache
-    dW = W.dW;
+    dW = W.dW
     sqdt = integrator.sqdt
 
     ggprime_norm = 0.0
@@ -354,28 +362,30 @@ end
         if dW isa Number || is_diagonal_noise(integrator.sol.prob)
             @.. J -= 1 // 2 * abs(dt)
         else
-            J -= 1//2 .* UniformScaling(abs(dt))
+            J -= 1 // 2 .* UniformScaling(abs(dt))
         end
     end
 
     integrator.f(du1, uprev, p, t)
     integrator.g(L, uprev, p, t)
 
-    @.. K = uprev + dt*du1
+    @.. K = uprev + dt * du1
 
     if is_diagonal_noise(integrator.sol.prob)
-        tmp .= (SciMLBase.alg_interpretation(integrator.alg) ==
-                SciMLBase.AlgorithmInterpretation.Ito ? K : uprev) .+ integrator.sqdt .* L
+        tmp .= (
+            SciMLBase.alg_interpretation(integrator.alg) ==
+                SciMLBase.AlgorithmInterpretation.Ito ? K : uprev
+        ) .+ integrator.sqdt .* L
         integrator.g(gtmp, tmp, p, t)
-        @.. Dgj = (gtmp - L)/sqdt
+        @.. Dgj = (gtmp - L) / sqdt
         ggprime_norm = integrator.opts.internalnorm(Dgj, t)
-        @.. u = K + L*dW + Dgj*J
+        @.. u = K + L * dW + Dgj * J
     else
         for j in 1:length(dW)
-            @.. Kj = K + sqdt*@view(L[:, j]) # This works too
+            @.. Kj = K + sqdt * @view(L[:, j]) # This works too
             #Kj .= uprev .+ sqdt*L[:,j]
             integrator.g(gtmp, Kj, p, t)
-            @.. Dgj = (gtmp - L)/sqdt
+            @.. Dgj = (gtmp - L) / sqdt
             if integrator.opts.adaptive
                 ggprime_norm += integrator.opts.internalnorm(Dgj, t)
             end
@@ -383,18 +393,21 @@ end
             mil_correction .+= tmp
         end
         mul!(tmp, L, dW)
-        @.. u .= uprev + dt*du1 + tmp + mil_correction
+        @.. u .= uprev + dt * du1 + tmp + mil_correction
     end
 
     if integrator.opts.adaptive
-        En = integrator.opts.internalnorm(W.dW, t)^3*ggprime_norm^2 / 6
-        integrator.f(du2, K, p, t+dt)
+        En = integrator.opts.internalnorm(W.dW, t)^3 * ggprime_norm^2 / 6
+        integrator.f(du2, K, p, t + dt)
         @.. tmp = integrator.opts.internalnorm(
             integrator.opts.delta * dt * (du2 - du1) /
-            2, t) + En
+                2, t
+        ) + En
 
-        calculate_residuals!(tmp, tmp, uprev, u, integrator.opts.abstol,
-            integrator.opts.reltol, integrator.opts.internalnorm, t)
+        calculate_residuals!(
+            tmp, tmp, uprev, u, integrator.opts.abstol,
+            integrator.opts.reltol, integrator.opts.internalnorm, t
+        )
         integrator.EEst = integrator.opts.internalnorm(tmp, t)
     end
 end
@@ -405,13 +418,14 @@ end
     dW = W.dW
 
     J = get_iterated_I(
-        dt, dW, W.dZ, Jalg, integrator.alg.p, integrator.alg.c, alg_order(integrator.alg))
+        dt, dW, W.dZ, Jalg, integrator.alg.p, integrator.alg.c, alg_order(integrator.alg)
+    )
 
     if SciMLBase.alg_interpretation(integrator.alg) == SciMLBase.AlgorithmInterpretation.Ito
         if dW isa Number || is_diagonal_noise(integrator.sol.prob)
-            J = J .- 1//2 .* abs(dt)
+            J = J .- 1 // 2 .* abs(dt)
         else
-            J -= 1//2 .* UniformScaling(abs(dt))
+            J -= 1 // 2 .* UniformScaling(abs(dt))
         end
     end
 
@@ -422,42 +436,46 @@ end
     # sqdt = integrator.sqdt
 
     if dW isa Number || is_diagonal_noise(integrator.sol.prob)
-        K = @.. uprev + dt*du₁
-        utilde = (SciMLBase.alg_interpretation(integrator.alg) ==
-                  SciMLBase.AlgorithmInterpretation.Ito ? K : uprev) + L*integrator.sqdt
+        K = @.. uprev + dt * du₁
+        utilde = (
+            SciMLBase.alg_interpretation(integrator.alg) ==
+                SciMLBase.AlgorithmInterpretation.Ito ? K : uprev
+        ) + L * integrator.sqdt
         ggprime = (integrator.g(utilde, p, t) .- L) ./ (integrator.sqdt)
         mil_correction = ggprime .* J
         u = K + L .* dW + mil_correction
     else
         for i in 1:length(dW)
-            K = uprev + dt*du₁ + integrator.sqdt*@view(L[:, i])
+            K = uprev + dt * du₁ + integrator.sqdt * @view(L[:, i])
             gtmp = integrator.g(K, p, t)
-            ggprime = @.. (gtmp - L)/integrator.sqdt
+            ggprime = @.. (gtmp - L) / integrator.sqdt
             ggprime_norm = zero(eltype(u))
             if integrator.opts.adaptive
                 ggprime_norm += integrator.opts.internalnorm(ggprime, t)
             end
-            mil_correction += ggprime*@view(J[:, i])
+            mil_correction += ggprime * @view(J[:, i])
         end
         if integrator.opts.adaptive
-            K = @.. uprev + dt*du₁
-            u = K + L*dW + mil_correction
+            K = @.. uprev + dt * du₁
+            u = K + L * dW + mil_correction
         else
-            u = uprev + dt*du₁ + L*dW + mil_correction
+            u = uprev + dt * du₁ + L * dW + mil_correction
         end
     end
 
     if integrator.opts.adaptive
-        du₂ = integrator.f(K, p, t+dt)
+        du₂ = integrator.f(K, p, t + dt)
         if dW isa Number || is_diagonal_noise(integrator.sol.prob)
-            tmp = dt*(du₂ - du₁)/2
-            En = W.dW .^ 3 .* ((du₂-L)/(integrator.sqdt)) .^ 2 / 6
+            tmp = dt * (du₂ - du₁) / 2
+            En = W.dW .^ 3 .* ((du₂ - L) / (integrator.sqdt)) .^ 2 / 6
         else
-            En = integrator.opts.internalnorm(W.dW, t)^3*ggprime_norm^2 / 6
-            tmp = integrator.opts.internalnorm((@.. dt*(du₂ - du₁)/2), t)
+            En = integrator.opts.internalnorm(W.dW, t)^3 * ggprime_norm^2 / 6
+            tmp = integrator.opts.internalnorm((@.. dt * (du₂ - du₁) / 2), t)
         end
-        tmp = calculate_residuals(tmp, En, uprev, u, integrator.opts.abstol,
-            integrator.opts.reltol, integrator.opts.delta, integrator.opts.internalnorm, t)
+        tmp = calculate_residuals(
+            tmp, En, uprev, u, integrator.opts.abstol,
+            integrator.opts.reltol, integrator.opts.delta, integrator.opts.internalnorm, t
+        )
         integrator.EEst = integrator.opts.internalnorm(tmp, t)
     end
     integrator.u = u
@@ -466,12 +484,13 @@ end
 @muladd function perform_step!(integrator, cache::RKMilGeneralCache)
     (; du₁, du₂, K, tmp, ggprime, L, mil_correction) = cache
     (; t, dt, uprev, u, W, p, f) = integrator
-    dW = W.dW;
+    dW = W.dW
     sqdt = integrator.sqdt
     Jalg = cache.Jalg
 
     get_iterated_I!(
-        dt, dW, W.dZ, Jalg, integrator.alg.p, integrator.alg.c, alg_order(integrator.alg))
+        dt, dW, W.dZ, Jalg, integrator.alg.p, integrator.alg.c, alg_order(integrator.alg)
+    )
     J = Jalg.J
 
     integrator.f(du₁, uprev, p, t)
@@ -488,19 +507,21 @@ end
     end
 
     if dW isa Number || is_diagonal_noise(integrator.sol.prob)
-        @.. K = uprev + dt*du₁
+        @.. K = uprev + dt * du₁
         @.. du₂ = zero(eltype(u))
-        tmp .= (SciMLBase.alg_interpretation(integrator.alg) ==
-                SciMLBase.AlgorithmInterpretation.Ito ? K : uprev) .+ integrator.sqdt .* L
+        tmp .= (
+            SciMLBase.alg_interpretation(integrator.alg) ==
+                SciMLBase.AlgorithmInterpretation.Ito ? K : uprev
+        ) .+ integrator.sqdt .* L
         integrator.g(du₂, tmp, p, t)
-        @.. ggprime = (du₂ - L)/sqdt
+        @.. ggprime = (du₂ - L) / sqdt
         ggprime_norm = integrator.opts.internalnorm(ggprime, t)
-        @.. u = K + L*dW + ggprime*J
+        @.. u = K + L * dW + ggprime * J
     else
         for i in 1:length(dW)
-            @.. K = uprev + dt*du₁ + sqdt*@view(L[:, i])
+            @.. K = uprev + dt * du₁ + sqdt * @view(L[:, i])
             integrator.g(ggprime, K, p, t)
-            @.. ggprime = (ggprime - L)/sqdt
+            @.. ggprime = (ggprime - L) / sqdt
             if integrator.opts.adaptive
                 ggprime_norm += integrator.opts.internalnorm(ggprime, t)
             end
@@ -509,22 +530,25 @@ end
         end
         mul!(tmp, L, dW)
         if integrator.opts.adaptive
-            @.. K = uprev + dt*du₁
+            @.. K = uprev + dt * du₁
             @.. u = K + tmp + mil_correction
         else
-            @.. u = uprev + dt*du₁ + tmp + mil_correction
+            @.. u = uprev + dt * du₁ + tmp + mil_correction
         end
     end
 
     if integrator.opts.adaptive
-        En = integrator.opts.internalnorm(W.dW, t)^3*ggprime_norm^2 / 6
-        integrator.f(du₂, K, p, t+dt)
+        En = integrator.opts.internalnorm(W.dW, t)^3 * ggprime_norm^2 / 6
+        integrator.f(du₂, K, p, t + dt)
         @.. tmp = integrator.opts.internalnorm(
             integrator.opts.delta * dt * (du₂ - du₁) /
-            2, t) + En
+                2, t
+        ) + En
 
-        calculate_residuals!(tmp, tmp, uprev, u, integrator.opts.abstol,
-            integrator.opts.reltol, integrator.opts.internalnorm, t)
+        calculate_residuals!(
+            tmp, tmp, uprev, u, integrator.opts.abstol,
+            integrator.opts.reltol, integrator.opts.internalnorm, t
+        )
         integrator.EEst = integrator.opts.internalnorm(tmp, t)
     end
     return nothing

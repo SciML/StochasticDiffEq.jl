@@ -14,15 +14,15 @@ don't allocate memory during stepping, which is critical for performance.
     Random.seed!(12345)
 
     # Test problem definitions (in-place, 3D diagonal noise)
-    f_iip!(du, u, p, t) = (du[1] = 0.1*u[1]; du[2] = 0.2*u[2]; du[3] = 0.3*u[3])
-    g_iip!(du, u, p, t) = (du[1] = 0.2*u[1]; du[2] = 0.3*u[2]; du[3] = 0.4*u[3])
+    f_iip!(du, u, p, t) = (du[1] = 0.1 * u[1]; du[2] = 0.2 * u[2]; du[3] = 0.3 * u[3])
+    g_iip!(du, u, p, t) = (du[1] = 0.2 * u[1]; du[2] = 0.3 * u[2]; du[3] = 0.4 * u[3])
     u0 = [1.0, 1.0, 1.0]
     tspan = (0.0, 10.0)  # Long enough to ensure many steps
     prob_iip = SDEProblem(f_iip!, g_iip!, u0, tspan)
 
     @testset "EM stepping allocation" begin
         # Initialize integrator with save_on=false to avoid solution saving allocations
-        integrator = init(prob_iip, EM(), dt=0.01, save_on=false)
+        integrator = init(prob_iip, EM(), dt = 0.01, save_on = false)
 
         # Warm up to ensure JIT compilation
         for _ in 1:10
@@ -35,7 +35,7 @@ don't allocate memory during stepping, which is critical for performance.
     end
 
     @testset "EulerHeun stepping allocation" begin
-        integrator = init(prob_iip, EulerHeun(), dt=0.01, save_on=false)
+        integrator = init(prob_iip, EulerHeun(), dt = 0.01, save_on = false)
 
         # Warm up
         for _ in 1:10
@@ -47,7 +47,7 @@ don't allocate memory during stepping, which is critical for performance.
     end
 
     @testset "RKMil stepping allocation" begin
-        integrator = init(prob_iip, RKMil(), dt=0.01, save_on=false)
+        integrator = init(prob_iip, RKMil(), dt = 0.01, save_on = false)
 
         # Warm up
         for _ in 1:10
@@ -59,7 +59,7 @@ don't allocate memory during stepping, which is critical for performance.
     end
 
     @testset "SOSRI stepping allocation" begin
-        integrator = init(prob_iip, SOSRI(), save_on=false)
+        integrator = init(prob_iip, SOSRI(), save_on = false)
 
         # Warm up
         for _ in 1:10
@@ -71,7 +71,7 @@ don't allocate memory during stepping, which is critical for performance.
     end
 
     @testset "SOSRA stepping allocation" begin
-        integrator = init(prob_iip, SOSRA(), save_on=false)
+        integrator = init(prob_iip, SOSRA(), save_on = false)
 
         # Warm up
         for _ in 1:10
@@ -88,7 +88,7 @@ don't allocate memory during stepping, which is critical for performance.
         g_scalar(u, p, t) = 0.2 * u
         prob_scalar = SDEProblem(f_scalar, g_scalar, 1.0, tspan)
 
-        integrator = init(prob_scalar, EM(), dt=0.01, save_on=false)
+        integrator = init(prob_scalar, EM(), dt = 0.01, save_on = false)
 
         # Warm up
         for _ in 1:10
@@ -101,7 +101,7 @@ don't allocate memory during stepping, which is critical for performance.
 
     # Test perform_step! directly
     @testset "perform_step! allocation - EM" begin
-        integrator = init(prob_iip, EM(), dt=0.01, save_on=false)
+        integrator = init(prob_iip, EM(), dt = 0.01, save_on = false)
         cache = integrator.cache
 
         # Warm up
@@ -116,7 +116,7 @@ don't allocate memory during stepping, which is critical for performance.
     end
 
     @testset "loopheader! allocation" begin
-        integrator = init(prob_iip, EM(), dt=0.01, save_on=false)
+        integrator = init(prob_iip, EM(), dt = 0.01, save_on = false)
 
         # Warm up
         for _ in 1:10
@@ -128,7 +128,7 @@ don't allocate memory during stepping, which is critical for performance.
     end
 
     @testset "loopfooter! allocation" begin
-        integrator = init(prob_iip, EM(), dt=0.01, save_on=false)
+        integrator = init(prob_iip, EM(), dt = 0.01, save_on = false)
 
         # Warm up
         for _ in 1:10

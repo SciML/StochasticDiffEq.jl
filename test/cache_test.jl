@@ -2,28 +2,30 @@ using StochasticDiffEq, Random
 
 function f(du, u, p, t)
     for i in 1:length(u)
-        du[i] = (0.2/length(u))*u[i]
+        du[i] = (0.2 / length(u)) * u[i]
     end
+    return
 end
 
 function g(du, u, p, t)
     for i in 1:length(u)
-        du[i] = (0.2/length(u))*u[i]
+        du[i] = (0.2 / length(u)) * u[i]
     end
+    return
 end
 
 function condition(u, t, integrator)
-    1-maximum(u)
+    return 1 - maximum(u)
 end
 
 function callback_affect!(integrator)
     u = integrator.u
-    resize!(integrator, length(u)+1)
+    resize!(integrator, length(u) + 1)
     maxidx = findmax(u)[2]
     Θ = rand()
     u[maxidx] = Θ
-    u[end] = 1-Θ
-    nothing
+    u[end] = 1 - Θ
+    return nothing
 end
 
 callback = ContinuousCallback(condition, callback_affect!)
@@ -45,13 +47,14 @@ plot(p1,p2,layout=(2,1),size=(600,1000))
 =#
 
 Random.seed!(3)
-sol = solve(prob, EM(), callback = callback, dt = 1/4)
-sol = solve(prob, RKMil(), callback = callback, dt = 1/4)
+sol = solve(prob, EM(), callback = callback, dt = 1 / 4)
+sol = solve(prob, RKMil(), callback = callback, dt = 1 / 4)
 
 function g(du, u, p, t)
     for i in 1:length(u)
-        du[i] = (0.3/length(u))
+        du[i] = (0.3 / length(u))
     end
+    return
 end
 prob = SDEProblem(f, g, u0, tspan)
 

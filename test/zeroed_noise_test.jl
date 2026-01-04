@@ -2,10 +2,10 @@ using StochasticDiffEq, OrdinaryDiffEq, Test
 import SciMLBase
 
 function f(du, u, p, t)
-    du[1] = u[1]
+    return du[1] = u[1]
 end
 function g(du, u, p, t)
-    0.0
+    return 0.0
 end
 
 u0 = [1.0]
@@ -14,13 +14,13 @@ prob = SDEProblem{true}(f, g, u0, (0.0, 0.1))
 sol_ito = solve(prob, RKMil{SciMLBase.AlgorithmInterpretation.Ito}())
 @test length(sol_ito) < 100
 
-sol_strato = solve(prob, RKMil{SciMLBase.AlgorithmInterpretation.Stratonovich}(); dt = 1e-2)
+sol_strato = solve(prob, RKMil{SciMLBase.AlgorithmInterpretation.Stratonovich}(); dt = 1.0e-2)
 @test length(sol_strato) < 100
 
 sol_ito = solve(prob, RKMil())
 @test length(sol_ito) < 100
 
-sol_strato = solve(prob, RKMil(interpretation = SciMLBase.AlgorithmInterpretation.Stratonovich); dt = 1e-2)
+sol_strato = solve(prob, RKMil(interpretation = SciMLBase.AlgorithmInterpretation.Stratonovich); dt = 1.0e-2)
 @test length(sol_strato) < 100
 
 sol_leh = solve(prob, LambaEulerHeun())
@@ -35,11 +35,11 @@ sol_leh = solve(prob, LambaEulerHeun())
 function linear_decay!(du, u, p, t)
     λ = p
     du[1] = -λ * u[1]
-    du[2] = -λ * u[2]
+    return du[2] = -λ * u[2]
 end
 
 function zero_noise_linear!(du, u, p, t)
-    du .= 0
+    return du .= 0
 end
 
 # Parameters - use λ=1 for mild stiffness (faster tests)
@@ -50,17 +50,18 @@ tspan_decay = (0.0, 1.0)
 
 # Create SDE and ODE problems
 sde_prob_decay = SDEProblem(
-    linear_decay!, zero_noise_linear!, u0_decay, tspan_decay, p_decay)
+    linear_decay!, zero_noise_linear!, u0_decay, tspan_decay, p_decay
+)
 ode_prob_decay = ODEProblem(linear_decay!, u0_decay, tspan_decay, p_decay)
 
 # Analytic solution for reference
 analytic_endpoint = u0_decay .* exp(-λ * tspan_decay[2])
 
 # Solve with ODE solver to verify setup
-abstol_decay = 1e-4
-reltol_decay = 1e-4
+abstol_decay = 1.0e-4
+reltol_decay = 1.0e-4
 sol_ode_decay = solve(ode_prob_decay, Rodas5(), abstol = abstol_decay, reltol = reltol_decay)
-@test isapprox(sol_ode_decay.u[end], analytic_endpoint, rtol = 1e-3)
+@test isapprox(sol_ode_decay.u[end], analytic_endpoint, rtol = 1.0e-3)
 
 # Test implicit SDE solvers that were fixed in this PR
 # These should now converge to the same solution as the ODE solver

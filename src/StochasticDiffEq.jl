@@ -12,12 +12,12 @@ import ADTypes
 
 import OrdinaryDiffEqCore
 import OrdinaryDiffEqCore: default_controller, isstandard, ispredictive,
-                           beta2_default, beta1_default, gamma_default,
-                           qmin_default, qmax_default, qsteady_min_default,
-                           qsteady_max_default,
-                           stepsize_controller!, accept_step_controller,
-                           step_accept_controller!,
-                           step_reject_controller!, PIController, DummyController, issplit
+    beta2_default, beta1_default, gamma_default,
+    qmin_default, qmax_default, qsteady_min_default,
+    qsteady_max_default,
+    stepsize_controller!, accept_step_controller,
+    step_accept_controller!,
+    step_reject_controller!, PIController, DummyController, issplit
 
 using RecursiveArrayTools, DataStructures
 using DiffEqNoiseProcess, Random, ArrayInterface
@@ -25,12 +25,12 @@ using SimpleNonlinearSolve, ForwardDiff, StaticArrays, MuladdMacro, FiniteDiff, 
 using Adapt
 
 import DiffEqBase: ODE_DEFAULT_NORM, ODE_DEFAULT_ISOUTOFDOMAIN,
-                   ODE_DEFAULT_PROG_MESSAGE, ODE_DEFAULT_UNSTABLE_CHECK
+    ODE_DEFAULT_PROG_MESSAGE, ODE_DEFAULT_UNSTABLE_CHECK
 
 using SciMLOperators: MatrixOperator
 
 using DiffEqBase: TimeGradientWrapper, UJacobianWrapper, TimeDerivativeWrapper,
-                  UDerivativeWrapper
+    UDerivativeWrapper
 
 import RecursiveArrayTools: chain
 
@@ -43,20 +43,20 @@ import ForwardDiff.Dual
 import FastPower
 
 import DiffEqBase: step!, initialize!, DEAlgorithm,
-                   AbstractSDEAlgorithm, AbstractRODEAlgorithm, DEIntegrator,
-                   AbstractDiffEqInterpolation,
-                   DECache, AbstractSDEIntegrator, AbstractRODEIntegrator,
-                   AbstractContinuousCallback,
-                   Tableau, AbstractSDDEIntegrator
+    AbstractSDEAlgorithm, AbstractRODEAlgorithm, DEIntegrator,
+    AbstractDiffEqInterpolation,
+    DECache, AbstractSDEIntegrator, AbstractRODEIntegrator,
+    AbstractContinuousCallback,
+    Tableau, AbstractSDDEIntegrator
 
 # Integrator Interface
 import DiffEqBase: resize!, deleteat!, addat!, full_cache, user_cache, u_cache, du_cache,
-                   rand_cache, ratenoise_cache,
-                   resize_non_user_cache!, deleteat_non_user_cache!, addat_non_user_cache!,
-                   terminate!, get_du, get_dt, get_proposed_dt, set_proposed_dt!,
-                   u_modified!, savevalues!, add_tstop!, add_saveat!, set_reltol!,
-                   set_abstol!, postamble!, last_step_failed, has_Wfact, has_jac,
-                   get_tstops, get_tstops_array, get_tstops_max
+    rand_cache, ratenoise_cache,
+    resize_non_user_cache!, deleteat_non_user_cache!, addat_non_user_cache!,
+    terminate!, get_du, get_dt, get_proposed_dt, set_proposed_dt!,
+    u_modified!, savevalues!, add_tstop!, add_saveat!, set_reltol!,
+    set_abstol!, postamble!, last_step_failed, has_Wfact, has_jac,
+    get_tstops, get_tstops_array, get_tstops_max
 
 using DiffEqBase: check_error!, is_diagonal_noise, @..
 
@@ -71,22 +71,22 @@ import OrdinaryDiffEqNonlinearSolve
 
 if isdefined(OrdinaryDiffEqCore, :FastConvergence)
     using OrdinaryDiffEqCore:
-                              FastConvergence, Convergence, SlowConvergence,
-                              VerySlowConvergence, Divergence
+        FastConvergence, Convergence, SlowConvergence,
+        VerySlowConvergence, Divergence
 
     import OrdinaryDiffEqCore:
-                               calculate_residuals, calculate_residuals!, nlsolve_f,
-                               unwrap_cache, islinear
+        calculate_residuals, calculate_residuals!, nlsolve_f,
+        unwrap_cache, islinear
 
     using OrdinaryDiffEqNonlinearSolve: NLFunctional, NLAnderson, NLNewton
 else
     using DiffEqBase:
-                      FastConvergence, Convergence, SlowConvergence, VerySlowConvergence,
-                      Divergence
+        FastConvergence, Convergence, SlowConvergence, VerySlowConvergence,
+        Divergence
 
     import DiffEqBase:
-                       calculate_residuals, calculate_residuals!, nlsolve_f, unwrap_cache,
-                       islinear
+        calculate_residuals, calculate_residuals!, nlsolve_f, unwrap_cache,
+        islinear
 end
 
 import SciMLBase
@@ -160,20 +160,20 @@ include("weak_utils.jl")
 include("default_sde_alg.jl")
 
 export StochasticDiffEqAlgorithm, StochasticDiffEqAdaptiveAlgorithm,
-       StochasticCompositeAlgorithm
+    StochasticCompositeAlgorithm
 
 export EM, LambaEM, PCEuler, RKMil, SRA, SRI, SRIW1,
-       SRA1, SRA2, SRA3,
-       SOSRA, SOSRA2, RKMilCommute, RKMilGeneral,
-       SRIW2, SOSRI, SOSRI2, SKenCarp,
-       SROCK1, SROCK2, SROCKEM, SKSROCK, TangXiaoSROCK2, KomBurSROCK2, SROCKC2,
-       WangLi3SMil_A, WangLi3SMil_B, WangLi3SMil_C, WangLi3SMil_D, WangLi3SMil_E,
-       WangLi3SMil_F,
-       AutoSOSRI2, AutoSOSRA2,
-       DRI1, DRI1NM, RI1, RI3, RI5, RI6, RDI1WM, RDI2WM, RDI3WM, RDI4WM, W2Ito1,
-       RS1, RS2,
-       PL1WM, PL1WMA,
-       NON, COM, NON2
+    SRA1, SRA2, SRA3,
+    SOSRA, SOSRA2, RKMilCommute, RKMilGeneral,
+    SRIW2, SOSRI, SOSRI2, SKenCarp,
+    SROCK1, SROCK2, SROCKEM, SKSROCK, TangXiaoSROCK2, KomBurSROCK2, SROCKC2,
+    WangLi3SMil_A, WangLi3SMil_B, WangLi3SMil_C, WangLi3SMil_D, WangLi3SMil_E,
+    WangLi3SMil_F,
+    AutoSOSRI2, AutoSOSRA2,
+    DRI1, DRI1NM, RI1, RI3, RI5, RI6, RDI1WM, RDI2WM, RDI3WM, RDI4WM, W2Ito1,
+    RS1, RS2,
+    PL1WM, PL1WMA,
+    NON, COM, NON2
 
 export SIEA, SMEA, SIEB, SMEB
 
@@ -184,14 +184,14 @@ export SimplifiedEM
 export SplitEM, IIF1M, IIF2M, IIF1Mil
 
 export ImplicitEM, ImplicitEulerHeun, ISSEM, ISSEulerHeun,
-       ImplicitRKMil, STrapezoid, SImplicitMidpoint
+    ImplicitRKMil, STrapezoid, SImplicitMidpoint
 
 export TauLeaping, CaoTauLeaping
 
 export BAOAB
 
 export StochasticDiffEqRODEAlgorithm, StochasticDiffEqRODEAdaptiveAlgorithm,
-       StochasticDiffEqRODECompositeAlgorithm
+    StochasticDiffEqRODECompositeAlgorithm
 
 export RandomEM, RandomTamedEM, RandomHeun
 
@@ -202,11 +202,11 @@ export solve, init, solve!, step!
 
 #Misc Tools
 export checkSRIOrder, checkSRAOrder, checkRIOrder, checkRSOrder,
-       checkNONOrder,
-       constructSRIW1, constructSRA1,
-       constructDRI1, constructRI1, constructRI3, constructRI5, constructRI6,
-       constructRDI1WM, constructRDI2WM, constructRDI3WM, constructRDI4WM,
-       constructRS1, constructRS2,
-       constructNON, constructNON2
+    checkNONOrder,
+    constructSRIW1, constructSRA1,
+    constructDRI1, constructRI1, constructRI3, constructRI5, constructRI6,
+    constructRDI1WM, constructRDI2WM, constructRDI3WM, constructRDI4WM,
+    constructRS1, constructRS2,
+    constructNON, constructNON2
 
 end # module

@@ -4,7 +4,7 @@ println("Scalar g")
 A = [-1.0 0.0; 0.0 -0.5]
 u0 = [1.0, 1.0];
 tspan = (0.0, 1.0)
-_f = (u, p, t) -> t*(A*u)
+_f = (u, p, t) -> t * (A * u)
 _g = (u, p, t) -> 1.0
 prob = SDEProblem(SDEFunction(_f, _g), u0, tspan)
 integrator = init(prob, SKenCarp(); adaptive = false, dt = 0.01)

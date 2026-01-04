@@ -11,9 +11,9 @@ using SciMLBase
 @test_nowarn solve(prob_sde_linear, EM(), dt = 0.1, alias = SciMLBase.SDEAliasSpecifier(alias_u0 = true))
 
 function f3(u, p, t, W)
-    2u * sin(W)
+    return 2u * sin(W)
 end
-u0 = 1.00
+u0 = 1.0
 tspan = (0.0, 5.0)
 prob_rode = RODEProblem(f3, u0, tspan)
 

@@ -1,4 +1,3 @@
-
 # Stochastic needs ΔW = s^(1/2).
 #=
 β = 0.6

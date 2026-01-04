@@ -17,5 +17,5 @@
             loopfooter!(integrator)
         end
     end
-    @inbounds handle_tstop!(integrator)
+    return @inbounds handle_tstop!(integrator)
 end

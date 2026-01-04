@@ -13,13 +13,15 @@ g(u, p, t) = 1
     ff_harmonic = DynamicalSDEFunction(f1_harmonic, f2_harmonic, g)
     prob1 = DynamicalSDEProblem(ff_harmonic, v0, u0, (0.0, 5.0))
 
-    dts = (1/2) .^ (8:-1:4)
+    dts = (1 / 2) .^ (8:-1:4)
 
     # Can't use NoiseGrid as noise is not generated with the correct size in convergence.jl. We require noise with shape of v.
-    sim1 = analyticless_test_convergence(dts, prob1, BAOAB(gamma = γ), (1/2)^10;
-        trajectories = Int(2e2), use_noise_grid = false)
+    sim1 = analyticless_test_convergence(
+        dts, prob1, BAOAB(gamma = γ), (1 / 2)^10;
+        trajectories = Int(2.0e2), use_noise_grid = false
+    )
     display(sim1.𝒪est)
-    @test abs(sim1.𝒪est[:weak_final]-1) < 0.3
+    @test abs(sim1.𝒪est[:weak_final] - 1) < 0.3
 end
 
 @testset "Vector u" begin
@@ -32,20 +34,24 @@ end
 
     ff_harmonic = DynamicalSDEFunction(f1_harmonic, f2_harmonic, g)
     prob1 = DynamicalSDEProblem(ff_harmonic, v0, u0, (0.0, 5.0))
-    sol1 = solve(prob1, BAOAB(gamma = γ); dt = 1/10, save_noise = true)
+    sol1 = solve(prob1, BAOAB(gamma = γ); dt = 1 / 10, save_noise = true)
 
-    prob2 = DynamicalSDEProblem(f1_harmonic_iip, f2_harmonic_iip, g_iip, v0,
-        u0, (0.0, 5.0); noise = NoiseWrapper(sol1.W))
-    sol2 = solve(prob2, BAOAB(gamma = γ); dt = 1/10)
+    prob2 = DynamicalSDEProblem(
+        f1_harmonic_iip, f2_harmonic_iip, g_iip, v0,
+        u0, (0.0, 5.0); noise = NoiseWrapper(sol1.W)
+    )
+    sol2 = solve(prob2, BAOAB(gamma = γ); dt = 1 / 10)
 
     @test sol1[:] ≈ sol2[:]
 
-    dts = (1/2) .^ (8:-1:4)
+    dts = (1 / 2) .^ (8:-1:4)
 
     # Can't use NoiseGrid as noise is not generated with the correct size in convergence.jl. We require noise with shape of v.
-    sim1 = analyticless_test_convergence(dts, prob1, BAOAB(gamma = γ), (1/2)^10;
-        trajectories = Int(1e3), use_noise_grid = false)
-    @test abs(sim1.𝒪est[:weak_final]-1) < 0.3
+    sim1 = analyticless_test_convergence(
+        dts, prob1, BAOAB(gamma = γ), (1 / 2)^10;
+        trajectories = Int(1.0e3), use_noise_grid = false
+    )
+    @test abs(sim1.𝒪est[:weak_final] - 1) < 0.3
 end
 
 @testset "Scalar u, scale_noise=false" begin
@@ -55,13 +61,15 @@ end
     ff_harmonic = DynamicalSDEFunction(f1_harmonic, f2_harmonic, g)
     prob1 = DynamicalSDEProblem(ff_harmonic, v0, u0, (0.0, 5.0))
 
-    dts = (1/2) .^ (8:-1:4)
+    dts = (1 / 2) .^ (8:-1:4)
 
     # Can't use NoiseGrid as noise is not generated with the correct size in convergence.jl. We require noise with shape of v.
-    sim1 = analyticless_test_convergence(dts, prob1, BAOAB(gamma = γ, scale_noise = false),
-        (1/2)^10; trajectories = Int(2e2), use_noise_grid = false)
+    sim1 = analyticless_test_convergence(
+        dts, prob1, BAOAB(gamma = γ, scale_noise = false),
+        (1 / 2)^10; trajectories = Int(2.0e2), use_noise_grid = false
+    )
     display(sim1.𝒪est)
-    @test abs(sim1.𝒪est[:weak_final]-1) < 0.3
+    @test abs(sim1.𝒪est[:weak_final] - 1) < 0.3
 end
 
 @testset "Vector u, scale_noise=false" begin
@@ -74,18 +82,22 @@ end
 
     ff_harmonic = DynamicalSDEFunction(f1_harmonic, f2_harmonic, g)
     prob1 = DynamicalSDEProblem(ff_harmonic, v0, u0, (0.0, 5.0))
-    sol1 = solve(prob1, BAOAB(gamma = γ, scale_noise = false); dt = 1/10, save_noise = true)
+    sol1 = solve(prob1, BAOAB(gamma = γ, scale_noise = false); dt = 1 / 10, save_noise = true)
 
-    prob2 = DynamicalSDEProblem(f1_harmonic_iip, f2_harmonic_iip, g_iip, v0,
-        u0, (0.0, 5.0); noise = NoiseWrapper(sol1.W))
-    sol2 = solve(prob2, BAOAB(gamma = γ, scale_noise = false); dt = 1/10)
+    prob2 = DynamicalSDEProblem(
+        f1_harmonic_iip, f2_harmonic_iip, g_iip, v0,
+        u0, (0.0, 5.0); noise = NoiseWrapper(sol1.W)
+    )
+    sol2 = solve(prob2, BAOAB(gamma = γ, scale_noise = false); dt = 1 / 10)
 
     @test sol1[:] ≈ sol2[:]
 
-    dts = (1/2) .^ (8:-1:4)
+    dts = (1 / 2) .^ (8:-1:4)
 
     # Can't use NoiseGrid as noise is not generated with the correct size in convergence.jl. We require noise with shape of v.
-    sim1 = analyticless_test_convergence(dts, prob1, BAOAB(gamma = γ, scale_noise = false),
-        (1/2)^10; trajectories = Int(1e3), use_noise_grid = false)
-    @test abs(sim1.𝒪est[:weak_final]-1) < 0.3
+    sim1 = analyticless_test_convergence(
+        dts, prob1, BAOAB(gamma = γ, scale_noise = false),
+        (1 / 2)^10; trajectories = Int(1.0e3), use_noise_grid = false
+    )
+    @test abs(sim1.𝒪est[:weak_final] - 1) < 0.3
 end

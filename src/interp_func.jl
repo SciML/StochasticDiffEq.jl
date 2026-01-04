@@ -5,10 +5,12 @@ end
 
 DiffEqBase.interp_summary(::LinearInterpolationData) = "1st order linear"
 function (interp::LinearInterpolationData)(
-        tvals, idxs, deriv, p, continuity::Symbol = :left)
-    sde_interpolation(tvals, interp, idxs, deriv, p, continuity)
+        tvals, idxs, deriv, p, continuity::Symbol = :left
+    )
+    return sde_interpolation(tvals, interp, idxs, deriv, p, continuity)
 end
 function (interp::LinearInterpolationData)(
-        val, tvals, idxs, deriv, p, continuity::Symbol = :left)
-    sde_interpolation!(val, tvals, interp, idxs, deriv, p, continuity)
+        val, tvals, idxs, deriv, p, continuity::Symbol = :left
+    )
+    return sde_interpolation!(val, tvals, interp, idxs, deriv, p, continuity)
 end

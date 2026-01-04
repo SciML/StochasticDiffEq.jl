@@ -20,22 +20,23 @@ probs = [prob_sde_2Dlinear,
 function tolerance_testing(probs, algs)
     for alg in algs, prob in probs
 
-        dt = typeof(alg)<:StochasticDiffEqAdaptiveAlgorithm ? 0.0 : 0.1
+        dt = typeof(alg) <: StochasticDiffEqAdaptiveAlgorithm ? 0.0 : 0.1
         Random.seed!(100)
         sol = solve(prob, alg; dt = dt)
 
         # Vector of element-wise absolute tolerances
         Random.seed!(100)
-        sol2 = solve(prob, alg; dt = dt, abstol = fill(1e-2, 4, 2))
+        sol2 = solve(prob, alg; dt = dt, abstol = fill(1.0e-2, 4, 2))
 
         @test sol.t ≈ sol2.t && sol.u ≈ sol2.u
 
         # Vector of element-wise relative tolerances
         Random.seed!(100)
-        sol2 = solve(prob, alg; dt = dt, reltol = fill(1e-2, 4, 2))
+        sol2 = solve(prob, alg; dt = dt, reltol = fill(1.0e-2, 4, 2))
 
         @test sol.t ≈ sol2.t && sol.u ≈ sol2.u
     end
+    return
 end
 
 probs = [prob_sde_2Dlinear]

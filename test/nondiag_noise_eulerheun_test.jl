@@ -1,5 +1,5 @@
 using StochasticDiffEq, DiffEqNoiseProcess, SparseArrays, LinearAlgebra,
-      AllocCheck
+    AllocCheck
 using DiffEqBase: @..
 
 @testset "EulerHeun sparse noise: no per-step alloc" begin
@@ -75,7 +75,8 @@ using DiffEqBase: @..
         p = (; N)
         W = SimpleWienerProcess!(0.0, zeros(2N); save_everystep = false)
         prob = SDEProblem(
-            f!, g!, ones(2N), (0.0, 1.0), p; noise_rate_prototype = A, noise = W)
+            f!, g!, ones(2N), (0.0, 1.0), p; noise_rate_prototype = A, noise = W
+        )
         integ = init(prob, EulerHeun(); dt = 0.01, adaptive = false, save_on = false)
 
         cache = integ.cache
@@ -90,7 +91,8 @@ using DiffEqBase: @..
         p = (; N)
         W = SimpleWienerProcess!(0.0, zeros(2N); save_everystep = false)
         prob = SDEProblem(
-            f!, g!, ones(2N), (0.0, 1.0), p; noise_rate_prototype = A, noise = W)
+            f!, g!, ones(2N), (0.0, 1.0), p; noise_rate_prototype = A, noise = W
+        )
         integ = init(prob, EulerHeun(); dt = 0.01, adaptive = false, save_on = false)
 
         cache = integ.cache

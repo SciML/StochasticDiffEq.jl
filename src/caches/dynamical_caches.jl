@@ -1,4 +1,3 @@
-
 mutable struct BAOABConstantCache{uType, uEltypeNoUnits} <: StochasticDiffEqConstantCache
     k::uType
     half::uEltypeNoUnits
@@ -6,7 +5,7 @@ mutable struct BAOABConstantCache{uType, uEltypeNoUnits} <: StochasticDiffEqCons
     c2::uEltypeNoUnits
 end
 @cache struct BAOABCache{uType, uEltypeNoUnits, rateNoiseType, uTypeCombined} <:
-              StochasticDiffEqMutableCache
+    StochasticDiffEqMutableCache
     utmp::uType
     dutmp::uType
     k::uType
@@ -18,20 +17,24 @@ end
     tmp::uTypeCombined
 end
 
-function alg_cache(alg::BAOAB, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::BAOAB, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     k = zero(rate_prototype.x[1])
-    c1 = exp(-alg.gamma*dt)
-    c2 = alg.scale_noise ? sqrt((1 - c1^2)/abs(dt)) : 1 # if scale_noise == false, c2 = 1
-    BAOABConstantCache(k, uEltypeNoUnits(1//2), uEltypeNoUnits(c1), uEltypeNoUnits(c2))
+    c1 = exp(-alg.gamma * dt)
+    c2 = alg.scale_noise ? sqrt((1 - c1^2) / abs(dt)) : 1 # if scale_noise == false, c2 = 1
+    return BAOABConstantCache(k, uEltypeNoUnits(1 // 2), uEltypeNoUnits(c1), uEltypeNoUnits(c2))
 end
 
-function alg_cache(alg::BAOAB, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::BAOAB, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     dutmp = zero(u.x[1])
     utmp = zero(u.x[2])
     k = zero(rate_prototype.x[1])
@@ -39,12 +42,13 @@ function alg_cache(alg::BAOAB, prob, u, ΔW, ΔZ, p, rate_prototype,
     gtmp = zero(rate_prototype.x[1])
     noise = zero(rate_prototype.x[1])
 
-    half = uEltypeNoUnits(1//2)
-    c1 = exp(-alg.gamma*dt)
-    c2 = alg.scale_noise ? sqrt((1 - c1^2)/abs(dt)) : 1 # if scale_noise == false, c2 = 1
+    half = uEltypeNoUnits(1 // 2)
+    c1 = exp(-alg.gamma * dt)
+    c2 = alg.scale_noise ? sqrt((1 - c1^2) / abs(dt)) : 1 # if scale_noise == false, c2 = 1
 
     tmp = zero(u)
 
-    BAOABCache(
-        utmp, dutmp, k, gtmp, noise, half, uEltypeNoUnits(c1), uEltypeNoUnits(c2), tmp)
+    return BAOABCache(
+        utmp, dutmp, k, gtmp, noise, half, uEltypeNoUnits(c1), uEltypeNoUnits(c2), tmp
+    )
 end

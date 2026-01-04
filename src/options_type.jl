@@ -1,6 +1,8 @@
-mutable struct SDEOptions{tTypeNoUnits, tType, Controller, F2, F3, F4, F5, F6,
-    F7, tstopsType, discType, ECType, SType, MI, A, R, D,
-    tcache, savecache, disccache}
+mutable struct SDEOptions{
+        tTypeNoUnits, tType, Controller, F2, F3, F4, F5, F6,
+        F7, tstopsType, discType, ECType, SType, MI, A, R, D,
+        tcache, savecache, disccache,
+    }
     maxiters::MI
     save_everystep::Bool
     adaptive::Bool

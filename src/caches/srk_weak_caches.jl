@@ -66,68 +66,71 @@ struct DRI1ConstantCache{T, T2} <: StochasticDiffEqConstantCache
 end
 
 function DRI1ConstantCache(::Type{T}, ::Type{T2}) where {T, T2}
-    a021 = convert(T, 1//2)
+    a021 = convert(T, 1 // 2)
     a031 = convert(T, -1)
     a032 = convert(T, 2)
 
-    a121 = convert(T, 342//491)
-    a131 = convert(T, 342//491)
+    a121 = convert(T, 342 // 491)
+    a131 = convert(T, 342 // 491)
 
-    b021 = convert(T, (6-sqrt(6))/10)
-    b031 = convert(T, (3+2*sqrt(6))/5)
+    b021 = convert(T, (6 - sqrt(6)) / 10)
+    b031 = convert(T, (3 + 2 * sqrt(6)) / 5)
 
-    b121 = convert(T, 3*sqrt(38//491))
-    b131 = convert(T, -3*sqrt(38/491))
+    b121 = convert(T, 3 * sqrt(38 // 491))
+    b131 = convert(T, -3 * sqrt(38 / 491))
 
-    b221 = convert(T, -214//513*sqrt(1105//991))
-    b222 = convert(T, -491//513*sqrt(221//4955))
-    b223 = convert(T, -491//513*sqrt(221//4955))
-    b231 = convert(T, 214//513*sqrt(1105//991))
-    b232 = convert(T, 491//513*sqrt(221//4955))
-    b233 = convert(T, 491//513*sqrt(221//4955))
+    b221 = convert(T, -214 // 513 * sqrt(1105 // 991))
+    b222 = convert(T, -491 // 513 * sqrt(221 // 4955))
+    b223 = convert(T, -491 // 513 * sqrt(221 // 4955))
+    b231 = convert(T, 214 // 513 * sqrt(1105 // 991))
+    b232 = convert(T, 491 // 513 * sqrt(221 // 4955))
+    b233 = convert(T, 491 // 513 * sqrt(221 // 4955))
 
-    α1 = convert(T, 1//6)
-    α2 = convert(T, 2//3)
-    α3 = convert(T, 1//6)
+    α1 = convert(T, 1 // 6)
+    α2 = convert(T, 2 // 3)
+    α3 = convert(T, 1 // 6)
 
-    c02 = convert(T2, 1//2)
+    c02 = convert(T2, 1 // 2)
     c03 = convert(T2, 1)
 
-    c12 = convert(T2, 342//491)
-    c13 = convert(T2, 342//491)
+    c12 = convert(T2, 342 // 491)
+    c13 = convert(T2, 342 // 491)
 
-    beta11 = convert(T, 193//684)
-    beta12 = convert(T, 491//1368)
-    beta13 = convert(T, 491//1368)
+    beta11 = convert(T, 193 // 684)
+    beta12 = convert(T, 491 // 1368)
+    beta13 = convert(T, 491 // 1368)
 
-    beta22 = convert(T, 1//6*sqrt(491//38))
-    beta23 = convert(T, -1//6*sqrt(491//38))
+    beta22 = convert(T, 1 // 6 * sqrt(491 // 38))
+    beta23 = convert(T, -1 // 6 * sqrt(491 // 38))
 
-    beta31 = convert(T, -4955//7072)
-    beta32 = convert(T, 4955//14144)
-    beta33 = convert(T, 4955//14144)
+    beta31 = convert(T, -4955 // 7072)
+    beta32 = convert(T, 4955 // 14144)
+    beta33 = convert(T, 4955 // 14144)
 
-    beta42 = convert(T, -1//8*sqrt(4955//221))
-    beta43 = convert(T, 1//8*sqrt(4955//221))
+    beta42 = convert(T, -1 // 8 * sqrt(4955 // 221))
+    beta43 = convert(T, 1 // 8 * sqrt(4955 // 221))
 
     NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
 
-    DRI1ConstantCache(
+    return DRI1ConstantCache(
         a021, a031, a032, a121, a131, b021, b031, b121, b131, b221, b222, b223, b231,
         b232, b233, α1, α2, α3, c02, c03, c12, c13, beta11, beta12, beta13, beta22,
-        beta23, beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE)
+        beta23, beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE
+    )
 end
 
-function alg_cache(alg::DRI1, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::DRI1, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    DRI1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return DRI1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 function RI1ConstantCache(T::Type, T2::Type)
-    a021 = convert(T, 2//3) # convert(T, 2//3)
-    a031 = convert(T, -1//3)
+    a021 = convert(T, 2 // 3) # convert(T, 2//3)
+    a031 = convert(T, -1 // 3)
     a032 = convert(T, 1)
 
     a121 = convert(T, 1)
@@ -146,55 +149,58 @@ function RI1ConstantCache(T::Type, T2::Type)
     b232 = convert(T, 0)
     b233 = convert(T, 0)
 
-    α1 = convert(T, 1//4)
-    α2 = convert(T, 1//2)
-    α3 = convert(T, 1//4)
+    α1 = convert(T, 1 // 4)
+    α2 = convert(T, 1 // 2)
+    α3 = convert(T, 1 // 4)
 
-    c02 = convert(T2, 2//3)
-    c03 = convert(T2, 2//3)
+    c02 = convert(T2, 2 // 3)
+    c03 = convert(T2, 2 // 3)
 
     c12 = convert(T2, 1)
     c13 = convert(T2, 1)
 
-    beta11 = convert(T, 1//2)
-    beta12 = convert(T, 1//4)
-    beta13 = convert(T, 1//4)
+    beta11 = convert(T, 1 // 2)
+    beta12 = convert(T, 1 // 4)
+    beta13 = convert(T, 1 // 4)
 
-    beta22 = convert(T, 1//2)
-    beta23 = convert(T, -1//2)
+    beta22 = convert(T, 1 // 2)
+    beta23 = convert(T, -1 // 2)
 
-    beta31 = convert(T, -1//2)
-    beta32 = convert(T, 1//4)
-    beta33 = convert(T, 1//4)
+    beta31 = convert(T, -1 // 2)
+    beta32 = convert(T, 1 // 4)
+    beta33 = convert(T, 1 // 4)
 
-    beta42 = convert(T, 1//2)
-    beta43 = convert(T, -1//2)
+    beta42 = convert(T, 1 // 2)
+    beta43 = convert(T, -1 // 2)
 
     NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
 
-    DRI1ConstantCache(
+    return DRI1ConstantCache(
         a021, a031, a032, a121, a131, b021, b031, b121, b131, b221, b222, b223, b231,
         b232, b233, α1, α2, α3, c02, c03, c12, c13, beta11, beta12, beta13, beta22,
-        beta23, beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE)
+        beta23, beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE
+    )
 end
 
-function alg_cache(alg::RI1, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RI1, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    RI1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return RI1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 function RI3ConstantCache(T::Type, T2::Type)
     a021 = convert(T, 1)
-    a031 = convert(T, 1//4)
-    a032 = convert(T, 1//4)
+    a031 = convert(T, 1 // 4)
+    a032 = convert(T, 1 // 4)
 
     a121 = convert(T, 1)
     a131 = convert(T, 1)
 
-    b021 = convert(T, (3-2*sqrt(6))/5)
-    b031 = convert(T, (6+sqrt(6))/10)
+    b021 = convert(T, (3 - 2 * sqrt(6)) / 5)
+    b031 = convert(T, (6 + sqrt(6)) / 10)
 
     b121 = convert(T, 1)
     b131 = convert(T, -1)
@@ -206,58 +212,61 @@ function RI3ConstantCache(T::Type, T2::Type)
     b232 = convert(T, 0)
     b233 = convert(T, 0)
 
-    α1 = convert(T, 1//6)
-    α2 = convert(T, 1//6)
-    α3 = convert(T, 2//3)
+    α1 = convert(T, 1 // 6)
+    α2 = convert(T, 1 // 6)
+    α3 = convert(T, 2 // 3)
 
     c02 = convert(T2, 1)
-    c03 = convert(T2, 1//2)
+    c03 = convert(T2, 1 // 2)
 
     c12 = convert(T2, 1)
     c13 = convert(T2, 1)
 
-    beta11 = convert(T, 1//2)
-    beta12 = convert(T, 1//4)
-    beta13 = convert(T, 1//4)
+    beta11 = convert(T, 1 // 2)
+    beta12 = convert(T, 1 // 4)
+    beta13 = convert(T, 1 // 4)
 
-    beta22 = convert(T, 1//2)
-    beta23 = convert(T, -1//2)
+    beta22 = convert(T, 1 // 2)
+    beta23 = convert(T, -1 // 2)
 
-    beta31 = convert(T, -1//2)
-    beta32 = convert(T, 1//4)
-    beta33 = convert(T, 1//4)
+    beta31 = convert(T, -1 // 2)
+    beta32 = convert(T, 1 // 4)
+    beta33 = convert(T, 1 // 4)
 
-    beta42 = convert(T, 1//2)
-    beta43 = convert(T, -1//2)
+    beta42 = convert(T, 1 // 2)
+    beta43 = convert(T, -1 // 2)
 
     NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
 
-    DRI1ConstantCache(
+    return DRI1ConstantCache(
         a021, a031, a032, a121, a131, b021, b031, b121, b131, b221, b222, b223, b231,
         b232, b233, α1, α2, α3, c02, c03, c12, c13, beta11, beta12, beta13, beta22,
-        beta23, beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE)
+        beta23, beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE
+    )
 end
 
-function alg_cache(alg::RI3, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RI3, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    RI3ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return RI3ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 function RI5ConstantCache(T::Type, T2::Type)
     a021 = convert(T, 1)
-    a031 = convert(T, 25//144)
-    a032 = convert(T, 35//144)
+    a031 = convert(T, 25 // 144)
+    a032 = convert(T, 35 // 144)
 
-    a121 = convert(T, 1//4)
-    a131 = convert(T, 1//4)
+    a121 = convert(T, 1 // 4)
+    a131 = convert(T, 1 // 4)
 
-    b021 = convert(T, 1//3)
-    b031 = convert(T, -5//6)
+    b021 = convert(T, 1 // 3)
+    b031 = convert(T, -5 // 6)
 
-    b121 = convert(T, 1//2)
-    b131 = convert(T, -1//2)
+    b121 = convert(T, 1 // 2)
+    b131 = convert(T, -1 // 2)
 
     b221 = convert(T, 1)
     b222 = convert(T, 0)
@@ -266,15 +275,15 @@ function RI5ConstantCache(T::Type, T2::Type)
     b232 = convert(T, 0)
     b233 = convert(T, 0)
 
-    α1 = convert(T, 1//10)
-    α2 = convert(T, 3//14)
-    α3 = convert(T, 24//35)
+    α1 = convert(T, 1 // 10)
+    α2 = convert(T, 3 // 14)
+    α3 = convert(T, 24 // 35)
 
     c02 = convert(T2, 1)
-    c03 = convert(T2, 5//12)
+    c03 = convert(T2, 5 // 12)
 
-    c12 = convert(T2, 1//4)
-    c13 = convert(T2, 1//4)
+    c12 = convert(T2, 1 // 4)
+    c13 = convert(T2, 1 // 4)
 
     beta11 = convert(T, 1)
     beta12 = convert(T, -1)
@@ -283,26 +292,29 @@ function RI5ConstantCache(T::Type, T2::Type)
     beta22 = convert(T, 1)
     beta23 = convert(T, -1)
 
-    beta31 = convert(T, 1//2)
-    beta32 = convert(T, -1//4)
-    beta33 = convert(T, -1//4)
+    beta31 = convert(T, 1 // 2)
+    beta32 = convert(T, -1 // 4)
+    beta33 = convert(T, -1 // 4)
 
-    beta42 = convert(T, 1//2)
-    beta43 = convert(T, -1//2)
+    beta42 = convert(T, 1 // 2)
+    beta43 = convert(T, -1 // 2)
 
     NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
 
-    DRI1ConstantCache(
+    return DRI1ConstantCache(
         a021, a031, a032, a121, a131, b021, b031, b121, b131, b221, b222, b223, b231,
         b232, b233, α1, α2, α3, c02, c03, c12, c13, beta11, beta12, beta13, beta22,
-        beta23, beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE)
+        beta23, beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE
+    )
 end
 
-function alg_cache(alg::RI5, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RI5, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    RI5ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return RI5ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 function RI6ConstantCache(T::Type, T2::Type)
@@ -326,8 +338,8 @@ function RI6ConstantCache(T::Type, T2::Type)
     b232 = convert(T, 0)
     b233 = convert(T, 0)
 
-    α1 = convert(T, 1//2)
-    α2 = convert(T, 1//2)
+    α1 = convert(T, 1 // 2)
+    α2 = convert(T, 1 // 2)
     α3 = convert(T, 0)
 
     c02 = convert(T2, 1)
@@ -336,33 +348,36 @@ function RI6ConstantCache(T::Type, T2::Type)
     c12 = convert(T2, 1)
     c13 = convert(T2, 1)
 
-    beta11 = convert(T, 1//2)
-    beta12 = convert(T, 1//4)
-    beta13 = convert(T, 1//4)
+    beta11 = convert(T, 1 // 2)
+    beta12 = convert(T, 1 // 4)
+    beta13 = convert(T, 1 // 4)
 
-    beta22 = convert(T, 1//2)
-    beta23 = convert(T, -1//2)
+    beta22 = convert(T, 1 // 2)
+    beta23 = convert(T, -1 // 2)
 
-    beta31 = convert(T, -1//2)
-    beta32 = convert(T, 1//4)
-    beta33 = convert(T, 1//4)
+    beta31 = convert(T, -1 // 2)
+    beta32 = convert(T, 1 // 4)
+    beta33 = convert(T, 1 // 4)
 
-    beta42 = convert(T, 1//2)
-    beta43 = convert(T, -1//2)
+    beta42 = convert(T, 1 // 2)
+    beta43 = convert(T, -1 // 2)
 
     NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
 
-    DRI1ConstantCache(
+    return DRI1ConstantCache(
         a021, a031, a032, a121, a131, b021, b031, b121, b131, b221, b222, b223, b231,
         b232, b233, α1, α2, α3, c02, c03, c12, c13, beta11, beta12, beta13, beta22,
-        beta23, beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE)
+        beta23, beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE
+    )
 end
 
-function alg_cache(alg::RI6, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RI6, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    RI6ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return RI6ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 function RDI2WMConstantCache(T::Type, T2::Type)
@@ -370,14 +385,14 @@ function RDI2WMConstantCache(T::Type, T2::Type)
     a031 = convert(T, 0)
     a032 = convert(T, 0)
 
-    a121 = convert(T, 2//3)
-    a131 = convert(T, 2//3)
+    a121 = convert(T, 2 // 3)
+    a131 = convert(T, 2 // 3)
 
     b021 = convert(T, 1)
     b031 = convert(T, 0)
 
-    b121 = convert(T, sqrt(2//3))
-    b131 = convert(T, -sqrt(2//3))
+    b121 = convert(T, sqrt(2 // 3))
+    b131 = convert(T, -sqrt(2 // 3))
 
     b221 = convert(T, sqrt(2))
     b222 = convert(T, 0)
@@ -386,58 +401,61 @@ function RDI2WMConstantCache(T::Type, T2::Type)
     b232 = convert(T, 0)
     b233 = convert(T, 0)
 
-    α1 = convert(T, 1//2)
-    α2 = convert(T, 1//2)
+    α1 = convert(T, 1 // 2)
+    α2 = convert(T, 1 // 2)
     α3 = convert(T, 0)
 
     c02 = convert(T2, 1)
     c03 = convert(T2, 0)
 
-    c12 = convert(T2, 2//3)
-    c13 = convert(T2, 2//3)
+    c12 = convert(T2, 2 // 3)
+    c13 = convert(T2, 2 // 3)
 
-    beta11 = convert(T, 1//4)
-    beta12 = convert(T, 3//8)
-    beta13 = convert(T, 3//8)
+    beta11 = convert(T, 1 // 4)
+    beta12 = convert(T, 3 // 8)
+    beta13 = convert(T, 3 // 8)
 
-    beta22 = convert(T, sqrt(6)/4)
-    beta23 = convert(T, -sqrt(6)/4)
+    beta22 = convert(T, sqrt(6) / 4)
+    beta23 = convert(T, -sqrt(6) / 4)
 
-    beta31 = convert(T, -1//4)
-    beta32 = convert(T, 1//8)
-    beta33 = convert(T, 1//8)
+    beta31 = convert(T, -1 // 4)
+    beta32 = convert(T, 1 // 8)
+    beta33 = convert(T, 1 // 8)
 
-    beta42 = convert(T, sqrt(2)/4)
-    beta43 = convert(T, -sqrt(2)/4)
+    beta42 = convert(T, sqrt(2) / 4)
+    beta43 = convert(T, -sqrt(2) / 4)
 
     NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
 
-    DRI1ConstantCache(
+    return DRI1ConstantCache(
         a021, a031, a032, a121, a131, b021, b031, b121, b131, b221, b222, b223, b231,
         b232, b233, α1, α2, α3, c02, c03, c12, c13, beta11, beta12, beta13, beta22,
-        beta23, beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE)
+        beta23, beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE
+    )
 end
 
-function alg_cache(alg::RDI2WM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RDI2WM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    RDI2WMConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return RDI2WMConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 function RDI3WMConstantCache(T::Type, T2::Type)
-    a021 = convert(T, 1//2)
+    a021 = convert(T, 1 // 2)
     a031 = convert(T, 0)
-    a032 = convert(T, 3//4)
+    a032 = convert(T, 3 // 4)
 
-    a121 = convert(T, 2//3)
-    a131 = convert(T, 2//3)
+    a121 = convert(T, 2 // 3)
+    a131 = convert(T, 2 // 3)
 
-    b021 = convert(T, (9-2*sqrt(15))/14)
-    b031 = convert(T, (18+3*sqrt(15))/28)
+    b021 = convert(T, (9 - 2 * sqrt(15)) / 14)
+    b031 = convert(T, (18 + 3 * sqrt(15)) / 28)
 
-    b121 = convert(T, sqrt(2//3))
-    b131 = convert(T, -sqrt(2//3))
+    b121 = convert(T, sqrt(2 // 3))
+    b131 = convert(T, -sqrt(2 // 3))
 
     b221 = convert(T, sqrt(2))
     b222 = convert(T, 0)
@@ -446,58 +464,61 @@ function RDI3WMConstantCache(T::Type, T2::Type)
     b232 = convert(T, 0)
     b233 = convert(T, 0)
 
-    α1 = convert(T, 2//9)
-    α2 = convert(T, 1//3)
-    α3 = convert(T, 4//9)
+    α1 = convert(T, 2 // 9)
+    α2 = convert(T, 1 // 3)
+    α3 = convert(T, 4 // 9)
 
-    c02 = convert(T2, 1//2)
-    c03 = convert(T2, 3//4)
+    c02 = convert(T2, 1 // 2)
+    c03 = convert(T2, 3 // 4)
 
-    c12 = convert(T2, 2//3)
-    c13 = convert(T2, 2//3)
+    c12 = convert(T2, 2 // 3)
+    c13 = convert(T2, 2 // 3)
 
-    beta11 = convert(T, 1//4)
-    beta12 = convert(T, 3//8)
-    beta13 = convert(T, 3//8)
+    beta11 = convert(T, 1 // 4)
+    beta12 = convert(T, 3 // 8)
+    beta13 = convert(T, 3 // 8)
 
-    beta22 = convert(T, sqrt(6)/4)
-    beta23 = convert(T, -sqrt(6)/4)
+    beta22 = convert(T, sqrt(6) / 4)
+    beta23 = convert(T, -sqrt(6) / 4)
 
-    beta31 = convert(T, -1//4)
-    beta32 = convert(T, 1//8)
-    beta33 = convert(T, 1//8)
+    beta31 = convert(T, -1 // 4)
+    beta32 = convert(T, 1 // 8)
+    beta33 = convert(T, 1 // 8)
 
-    beta42 = convert(T, sqrt(2)/4)
-    beta43 = convert(T, -sqrt(2)/4)
+    beta42 = convert(T, sqrt(2) / 4)
+    beta43 = convert(T, -sqrt(2) / 4)
 
     NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
 
-    DRI1ConstantCache(
+    return DRI1ConstantCache(
         a021, a031, a032, a121, a131, b021, b031, b121, b131, b221, b222, b223, b231,
         b232, b233, α1, α2, α3, c02, c03, c12, c13, beta11, beta12, beta13, beta22,
-        beta23, beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE)
+        beta23, beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE
+    )
 end
 
-function alg_cache(alg::RDI3WM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RDI3WM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    RDI3WMConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return RDI3WMConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 function RDI4WMConstantCache(T::Type, T2::Type)
-    a021 = convert(T, 1//2)
+    a021 = convert(T, 1 // 2)
     a031 = convert(T, -1)
     a032 = convert(T, 2)
 
-    a121 = convert(T, 2//3)
-    a131 = convert(T, 2//3)
+    a121 = convert(T, 2 // 3)
+    a131 = convert(T, 2 // 3)
 
-    b021 = convert(T, (6-sqrt(6))/10)
-    b031 = convert(T, (3+2*sqrt(6))/5)
+    b021 = convert(T, (6 - sqrt(6)) / 10)
+    b031 = convert(T, (3 + 2 * sqrt(6)) / 5)
 
-    b121 = convert(T, sqrt(2//3))
-    b131 = convert(T, -sqrt(2//3))
+    b121 = convert(T, sqrt(2 // 3))
+    b131 = convert(T, -sqrt(2 // 3))
 
     b221 = convert(T, sqrt(2))
     b222 = convert(T, 0)
@@ -506,48 +527,52 @@ function RDI4WMConstantCache(T::Type, T2::Type)
     b232 = convert(T, 0)
     b233 = convert(T, 0)
 
-    α1 = convert(T, 1//6)
-    α2 = convert(T, 2//3)
-    α3 = convert(T, 1//6)
+    α1 = convert(T, 1 // 6)
+    α2 = convert(T, 2 // 3)
+    α3 = convert(T, 1 // 6)
 
-    c02 = convert(T2, 1//2)
+    c02 = convert(T2, 1 // 2)
     c03 = convert(T2, 1)
 
-    c12 = convert(T2, 2//3)
-    c13 = convert(T2, 2//3)
+    c12 = convert(T2, 2 // 3)
+    c13 = convert(T2, 2 // 3)
 
-    beta11 = convert(T, 1//4)
-    beta12 = convert(T, 3//8)
-    beta13 = convert(T, 3//8)
+    beta11 = convert(T, 1 // 4)
+    beta12 = convert(T, 3 // 8)
+    beta13 = convert(T, 3 // 8)
 
-    beta22 = convert(T, sqrt(6)/4)
-    beta23 = convert(T, -sqrt(6)/4)
+    beta22 = convert(T, sqrt(6) / 4)
+    beta23 = convert(T, -sqrt(6) / 4)
 
-    beta31 = convert(T, -1//4)
-    beta32 = convert(T, 1//8)
-    beta33 = convert(T, 1//8)
+    beta31 = convert(T, -1 // 4)
+    beta32 = convert(T, 1 // 8)
+    beta33 = convert(T, 1 // 8)
 
-    beta42 = convert(T, sqrt(2)/4)
-    beta43 = convert(T, -sqrt(2)/4)
+    beta42 = convert(T, sqrt(2) / 4)
+    beta43 = convert(T, -sqrt(2) / 4)
 
     NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
 
-    DRI1ConstantCache(
+    return DRI1ConstantCache(
         a021, a031, a032, a121, a131, b021, b031, b121, b131, b221, b222, b223, b231,
         b232, b233, α1, α2, α3, c02, c03, c12, c13, beta11, beta12, beta13, beta22,
-        beta23, beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE)
+        beta23, beta31, beta32, beta33, beta42, beta43, NORMAL_ONESIX_QUANTILE
+    )
 end
 
-function alg_cache(alg::RDI4WM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RDI4WM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    RDI4WMConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return RDI4WMConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 @cache struct DRI1Cache{
-    uType, randType, tabType, rateNoiseType, rateType, possibleRateType} <:
-              StochasticDiffEqMutableCache
+        uType, randType, tabType, rateNoiseType, rateType, possibleRateType,
+    } <:
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
     uhat::uType
@@ -581,8 +606,9 @@ end
 end
 
 @cache struct DRI1NMCache{
-    uType, randType, tabType, rateNoiseType, rateType, possibleRateType} <:
-              StochasticDiffEqMutableCache
+        uType, randType, tabType, rateNoiseType, rateType, possibleRateType,
+    } <:
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
     uhat::uType
@@ -612,10 +638,12 @@ end
     resids::uType
 end
 
-function alg_cache(alg::DRI1, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::DRI1, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         _dW = copy(ΔW)
         _dZ = copy(ΔW)
@@ -630,8 +658,8 @@ function alg_cache(alg::DRI1, prob, u, ΔW, ΔZ, p, rate_prototype,
     g1 = zero(noise_rate_prototype)
     g2 = [zero(noise_rate_prototype) for k in 1:m]
     g3 = [zero(noise_rate_prototype) for k in 1:m]
-    k1 = zero(rate_prototype);
-    k2 = zero(rate_prototype);
+    k1 = zero(rate_prototype)
+    k2 = zero(rate_prototype)
     k3 = zero(rate_prototype)
 
     H02 = zero(u)
@@ -655,14 +683,18 @@ function alg_cache(alg::DRI1, prob, u, ΔW, ΔZ, p, rate_prototype,
     tmp = zero(u)
     resids = zero(u)
 
-    DRI1Cache(u, uprev, uhat, _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2,
-        k3, H02, H03, H12, H13, H22, H23, tmp1, tmpg, tmp, resids)
+    return DRI1Cache(
+        u, uprev, uhat, _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2,
+        k3, H02, H03, H12, H13, H22, H23, tmp1, tmpg, tmp, resids
+    )
 end
 
-function alg_cache(alg::DRI1NM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::DRI1NM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         _dW = copy(ΔW)
         chi1 = copy(ΔW)
@@ -675,8 +707,8 @@ function alg_cache(alg::DRI1NM, prob, u, ΔW, ΔZ, p, rate_prototype,
     g1 = zero(noise_rate_prototype)
     g2 = zero(noise_rate_prototype)
     g3 = zero(noise_rate_prototype)
-    k1 = zero(rate_prototype);
-    k2 = zero(rate_prototype);
+    k1 = zero(rate_prototype)
+    k2 = zero(rate_prototype)
     k3 = zero(rate_prototype)
 
     H02 = zero(u)
@@ -693,14 +725,18 @@ function alg_cache(alg::DRI1NM, prob, u, ΔW, ΔZ, p, rate_prototype,
     tmp = zero(u)
     resids = zero(u)
 
-    DRI1NMCache(u, uprev, uhat, _dW, chi1, tab, g1, g2, g3, k1, k2,
-        k3, H02, H03, H12, H13, tmp1, tmpg, tmp, resids)
+    return DRI1NMCache(
+        u, uprev, uhat, _dW, chi1, tab, g1, g2, g3, k1, k2,
+        k3, H02, H03, H12, H13, tmp1, tmpg, tmp, resids
+    )
 end
 
-function alg_cache(alg::RI1, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RI1, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         _dW = copy(ΔW)
         _dZ = copy(ΔW)
@@ -715,8 +751,8 @@ function alg_cache(alg::RI1, prob, u, ΔW, ΔZ, p, rate_prototype,
     g1 = zero(noise_rate_prototype)
     g2 = [zero(noise_rate_prototype) for k in 1:m]
     g3 = [zero(noise_rate_prototype) for k in 1:m]
-    k1 = zero(rate_prototype);
-    k2 = zero(rate_prototype);
+    k1 = zero(rate_prototype)
+    k2 = zero(rate_prototype)
     k3 = zero(rate_prototype)
 
     H02 = zero(u)
@@ -740,14 +776,18 @@ function alg_cache(alg::RI1, prob, u, ΔW, ΔZ, p, rate_prototype,
     tmp = zero(u)
     resids = zero(u)
 
-    DRI1Cache(u, uprev, uhat, _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2,
-        k3, H02, H03, H12, H13, H22, H23, tmp1, tmpg, tmp, resids)
+    return DRI1Cache(
+        u, uprev, uhat, _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2,
+        k3, H02, H03, H12, H13, H22, H23, tmp1, tmpg, tmp, resids
+    )
 end
 
-function alg_cache(alg::RI3, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RI3, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         _dW = copy(ΔW)
         _dZ = copy(ΔW)
@@ -762,8 +802,8 @@ function alg_cache(alg::RI3, prob, u, ΔW, ΔZ, p, rate_prototype,
     g1 = zero(noise_rate_prototype)
     g2 = [zero(noise_rate_prototype) for k in 1:m]
     g3 = [zero(noise_rate_prototype) for k in 1:m]
-    k1 = zero(rate_prototype);
-    k2 = zero(rate_prototype);
+    k1 = zero(rate_prototype)
+    k2 = zero(rate_prototype)
     k3 = zero(rate_prototype)
 
     H02 = zero(u)
@@ -787,14 +827,18 @@ function alg_cache(alg::RI3, prob, u, ΔW, ΔZ, p, rate_prototype,
     tmp = zero(u)
     resids = zero(u)
 
-    DRI1Cache(u, uprev, uhat, _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2,
-        k3, H02, H03, H12, H13, H22, H23, tmp1, tmpg, tmp, resids)
+    return DRI1Cache(
+        u, uprev, uhat, _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2,
+        k3, H02, H03, H12, H13, H22, H23, tmp1, tmpg, tmp, resids
+    )
 end
 
-function alg_cache(alg::RI5, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RI5, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         _dW = copy(ΔW)
         _dZ = copy(ΔW)
@@ -809,8 +853,8 @@ function alg_cache(alg::RI5, prob, u, ΔW, ΔZ, p, rate_prototype,
     g1 = zero(noise_rate_prototype)
     g2 = [zero(noise_rate_prototype) for k in 1:m]
     g3 = [zero(noise_rate_prototype) for k in 1:m]
-    k1 = zero(rate_prototype);
-    k2 = zero(rate_prototype);
+    k1 = zero(rate_prototype)
+    k2 = zero(rate_prototype)
     k3 = zero(rate_prototype)
 
     H02 = zero(u)
@@ -834,14 +878,18 @@ function alg_cache(alg::RI5, prob, u, ΔW, ΔZ, p, rate_prototype,
     tmp = zero(u)
     resids = zero(u)
 
-    DRI1Cache(u, uprev, uhat, _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2,
-        k3, H02, H03, H12, H13, H22, H23, tmp1, tmpg, tmp, resids)
+    return DRI1Cache(
+        u, uprev, uhat, _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2,
+        k3, H02, H03, H12, H13, H22, H23, tmp1, tmpg, tmp, resids
+    )
 end
 
-function alg_cache(alg::RI6, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RI6, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         _dW = copy(ΔW)
         _dZ = copy(ΔW)
@@ -856,8 +904,8 @@ function alg_cache(alg::RI6, prob, u, ΔW, ΔZ, p, rate_prototype,
     g1 = zero(noise_rate_prototype)
     g2 = [zero(noise_rate_prototype) for k in 1:m]
     g3 = [zero(noise_rate_prototype) for k in 1:m]
-    k1 = zero(rate_prototype);
-    k2 = zero(rate_prototype);
+    k1 = zero(rate_prototype)
+    k2 = zero(rate_prototype)
     k3 = zero(rate_prototype)
 
     H02 = zero(u)
@@ -881,14 +929,18 @@ function alg_cache(alg::RI6, prob, u, ΔW, ΔZ, p, rate_prototype,
     tmp = zero(u)
     resids = zero(u)
 
-    DRI1Cache(u, uprev, uhat, _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2,
-        k3, H02, H03, H12, H13, H22, H23, tmp1, tmpg, tmp, resids)
+    return DRI1Cache(
+        u, uprev, uhat, _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2,
+        k3, H02, H03, H12, H13, H22, H23, tmp1, tmpg, tmp, resids
+    )
 end
 
-function alg_cache(alg::RDI2WM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RDI2WM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         _dW = copy(ΔW)
         _dZ = copy(ΔW)
@@ -903,8 +955,8 @@ function alg_cache(alg::RDI2WM, prob, u, ΔW, ΔZ, p, rate_prototype,
     g1 = zero(noise_rate_prototype)
     g2 = [zero(noise_rate_prototype) for k in 1:m]
     g3 = [zero(noise_rate_prototype) for k in 1:m]
-    k1 = zero(rate_prototype);
-    k2 = zero(rate_prototype);
+    k1 = zero(rate_prototype)
+    k2 = zero(rate_prototype)
     k3 = zero(rate_prototype)
 
     H02 = zero(u)
@@ -928,14 +980,18 @@ function alg_cache(alg::RDI2WM, prob, u, ΔW, ΔZ, p, rate_prototype,
     tmp = zero(u)
     resids = zero(u)
 
-    DRI1Cache(u, uprev, uhat, _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2,
-        k3, H02, H03, H12, H13, H22, H23, tmp1, tmpg, tmp, resids)
+    return DRI1Cache(
+        u, uprev, uhat, _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2,
+        k3, H02, H03, H12, H13, H22, H23, tmp1, tmpg, tmp, resids
+    )
 end
 
-function alg_cache(alg::RDI3WM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RDI3WM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         _dW = copy(ΔW)
         _dZ = copy(ΔW)
@@ -950,8 +1006,8 @@ function alg_cache(alg::RDI3WM, prob, u, ΔW, ΔZ, p, rate_prototype,
     g1 = zero(noise_rate_prototype)
     g2 = [zero(noise_rate_prototype) for k in 1:m]
     g3 = [zero(noise_rate_prototype) for k in 1:m]
-    k1 = zero(rate_prototype);
-    k2 = zero(rate_prototype);
+    k1 = zero(rate_prototype)
+    k2 = zero(rate_prototype)
     k3 = zero(rate_prototype)
 
     H02 = zero(u)
@@ -975,14 +1031,18 @@ function alg_cache(alg::RDI3WM, prob, u, ΔW, ΔZ, p, rate_prototype,
     tmp = zero(u)
     resids = zero(u)
 
-    DRI1Cache(u, uprev, uhat, _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2,
-        k3, H02, H03, H12, H13, H22, H23, tmp1, tmpg, tmp, resids)
+    return DRI1Cache(
+        u, uprev, uhat, _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2,
+        k3, H02, H03, H12, H13, H22, H23, tmp1, tmpg, tmp, resids
+    )
 end
 
-function alg_cache(alg::RDI4WM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RDI4WM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         _dW = copy(ΔW)
         _dZ = copy(ΔW)
@@ -997,8 +1057,8 @@ function alg_cache(alg::RDI4WM, prob, u, ΔW, ΔZ, p, rate_prototype,
     g1 = zero(noise_rate_prototype)
     g2 = [zero(noise_rate_prototype) for k in 1:m]
     g3 = [zero(noise_rate_prototype) for k in 1:m]
-    k1 = zero(rate_prototype);
-    k2 = zero(rate_prototype);
+    k1 = zero(rate_prototype)
+    k2 = zero(rate_prototype)
     k3 = zero(rate_prototype)
 
     H02 = zero(u)
@@ -1022,8 +1082,10 @@ function alg_cache(alg::RDI4WM, prob, u, ΔW, ΔZ, p, rate_prototype,
     tmp = zero(u)
     resids = zero(u)
 
-    DRI1Cache(u, uprev, uhat, _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2,
-        k3, H02, H03, H12, H13, H22, H23, tmp1, tmpg, tmp, resids)
+    return DRI1Cache(
+        u, uprev, uhat, _dW, _dZ, chi1, tab, g1, g2, g3, k1, k2,
+        k3, H02, H03, H12, H13, H22, H23, tmp1, tmpg, tmp, resids
+    )
 end
 
 # Roessler SRK for first order weak approx
@@ -1069,32 +1131,35 @@ struct RDI1WMConstantCache{T, T2} <: StochasticDiffEqConstantCache
 end
 
 function RDI1WMConstantCache(::Type{T}, ::Type{T2}) where {T, T2}
-    a021 = convert(T, 2//3)
+    a021 = convert(T, 2 // 3)
 
-    b021 = convert(T, 2//3)
+    b021 = convert(T, 2 // 3)
 
-    α1 = convert(T, 1//4)
-    α2 = convert(T, 3//4)
+    α1 = convert(T, 1 // 4)
+    α2 = convert(T, 3 // 4)
 
-    c02 = convert(T2, 2//3)
+    c02 = convert(T2, 2 // 3)
 
     beta11 = convert(T, 1)
 
     NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
 
-    RDI1WMConstantCache(a021, b021, α1, α2, c02, beta11, NORMAL_ONESIX_QUANTILE)
+    return RDI1WMConstantCache(a021, b021, α1, α2, c02, beta11, NORMAL_ONESIX_QUANTILE)
 end
 
-function alg_cache(alg::RDI1WM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RDI1WM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    RDI1WMConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return RDI1WMConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 @cache struct RDI1WMCache{
-    uType, randType, tabType, rateNoiseType, rateType, possibleRateType} <:
-              StochasticDiffEqMutableCache
+        uType, randType, tabType, rateNoiseType, rateType, possibleRateType,
+    } <:
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
 
@@ -1113,10 +1178,12 @@ end
     tmp1::possibleRateType
 end
 
-function alg_cache(alg::RDI1WM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RDI1WM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         _dW = copy(ΔW)
         chi1 = copy(ΔW)
@@ -1127,14 +1194,14 @@ function alg_cache(alg::RDI1WM, prob, u, ΔW, ΔZ, p, rate_prototype,
     m = length(ΔW)
     tab = RDI1WMConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
     g1 = zero(noise_rate_prototype)
-    k1 = zero(rate_prototype);
+    k1 = zero(rate_prototype)
     k2 = zero(rate_prototype)
 
     H02 = zero(u)
 
     tmp1 = zero(rate_prototype)
 
-    RDI1WMCache(u, uprev, _dW, chi1, tab, g1, k1, k2, H02, tmp1)
+    return RDI1WMCache(u, uprev, _dW, chi1, tab, g1, k1, k2, H02, tmp1)
 end
 
 # Stratonovich sense
@@ -1197,28 +1264,28 @@ function RS1ConstantCache(T::Type, T2::Type)
     a131 = convert(T, 1)
     a141 = convert(T, 1)
 
-    b031 = convert(T, 1//4)
-    b032 = convert(T, 3//4)
+    b031 = convert(T, 1 // 4)
+    b032 = convert(T, 3 // 4)
 
-    b121 = convert(T, 2//3)
-    b131 = convert(T, 1//12)
-    b132 = convert(T, 1//4)
-    b141 = convert(T, -5//4)
-    b142 = convert(T, 1//4)
+    b121 = convert(T, 2 // 3)
+    b131 = convert(T, 1 // 12)
+    b132 = convert(T, 1 // 4)
+    b141 = convert(T, -5 // 4)
+    b142 = convert(T, 1 // 4)
     b143 = convert(T, 2)
 
     b221 = convert(T, 1)
     b231 = convert(T, -1)
 
-    b331 = convert(T, 1//4)
-    b332 = convert(T, 3//4)
-    b341 = convert(T, 1//4)
-    b342 = convert(T, 3//4)
+    b331 = convert(T, 1 // 4)
+    b332 = convert(T, 3 // 4)
+    b341 = convert(T, 1 // 4)
+    b342 = convert(T, 3 // 4)
 
     α1 = convert(T, 0)
     α2 = convert(T, 0)
-    α3 = convert(T, 1//2)
-    α4 = convert(T, 1//2)
+    α3 = convert(T, 1 // 2)
+    α4 = convert(T, 1 // 2)
 
     c02 = convert(T2, 0)
     c03 = convert(T2, 1)
@@ -1226,92 +1293,99 @@ function RS1ConstantCache(T::Type, T2::Type)
     c13 = convert(T2, 1)
     c14 = convert(T2, 1)
 
-    beta11 = convert(T, 1//8)
-    beta12 = convert(T, 3//8)
-    beta13 = convert(T, 3//8)
-    beta14 = convert(T, 1//8)
+    beta11 = convert(T, 1 // 8)
+    beta12 = convert(T, 3 // 8)
+    beta13 = convert(T, 3 // 8)
+    beta14 = convert(T, 1 // 8)
 
-    beta22 = convert(T, -1//4)
-    beta23 = convert(T, 1//4)
+    beta22 = convert(T, -1 // 4)
+    beta23 = convert(T, 1 // 4)
 
     NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
 
-    RSConstantCache(
+    return RSConstantCache(
         a021, a031, a032, a131, a141, b031, b032, b121, b131, b132, b141, b142, b143,
         b221, b231, b331, b332, b341, b342, α1, α2, α3, α4, c02, c03, c13, c14,
-        beta11, beta12, beta13, beta14, beta22, beta23, NORMAL_ONESIX_QUANTILE)
+        beta11, beta12, beta13, beta14, beta22, beta23, NORMAL_ONESIX_QUANTILE
+    )
 end
 
-function alg_cache(alg::RS1, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RS1, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    RS1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return RS1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 function RS2ConstantCache(T::Type, T2::Type)
-    a021 = convert(T, 2//3)
-    a031 = convert(T, 1//6)
-    a032 = convert(T, 1//2)
+    a021 = convert(T, 2 // 3)
+    a031 = convert(T, 1 // 6)
+    a032 = convert(T, 1 // 2)
 
     a131 = convert(T, 1)
     a141 = convert(T, 1)
 
-    b031 = convert(T, 1//4)
-    b032 = convert(T, 3//4)
+    b031 = convert(T, 1 // 4)
+    b032 = convert(T, 3 // 4)
 
-    b121 = convert(T, 2//3)
-    b131 = convert(T, 1//12)
-    b132 = convert(T, 1//4)
-    b141 = convert(T, -5//4)
-    b142 = convert(T, 1//4)
+    b121 = convert(T, 2 // 3)
+    b131 = convert(T, 1 // 12)
+    b132 = convert(T, 1 // 4)
+    b141 = convert(T, -5 // 4)
+    b142 = convert(T, 1 // 4)
     b143 = convert(T, 2)
 
     b221 = convert(T, 1)
     b231 = convert(T, -1)
 
-    b331 = convert(T, 1//4)
-    b332 = convert(T, 3//4)
-    b341 = convert(T, 1//4)
-    b342 = convert(T, 3//4)
+    b331 = convert(T, 1 // 4)
+    b332 = convert(T, 3 // 4)
+    b341 = convert(T, 1 // 4)
+    b342 = convert(T, 3 // 4)
 
-    α1 = convert(T, 1//4)
-    α2 = convert(T, 1//4)
-    α3 = convert(T, 1//2)
+    α1 = convert(T, 1 // 4)
+    α2 = convert(T, 1 // 4)
+    α3 = convert(T, 1 // 2)
     α4 = convert(T, 0)
 
-    c02 = convert(T2, 2//3)
-    c03 = convert(T2, 2//3)
+    c02 = convert(T2, 2 // 3)
+    c03 = convert(T2, 2 // 3)
 
     c13 = convert(T2, 1)
     c14 = convert(T2, 1)
 
-    beta11 = convert(T, 1//8)
-    beta12 = convert(T, 3//8)
-    beta13 = convert(T, 3//8)
-    beta14 = convert(T, 1//8)
+    beta11 = convert(T, 1 // 8)
+    beta12 = convert(T, 3 // 8)
+    beta13 = convert(T, 3 // 8)
+    beta14 = convert(T, 1 // 8)
 
-    beta22 = convert(T, -1//4)
-    beta23 = convert(T, 1//4)
+    beta22 = convert(T, -1 // 4)
+    beta23 = convert(T, 1 // 4)
 
     NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
 
-    RSConstantCache(
+    return RSConstantCache(
         a021, a031, a032, a131, a141, b031, b032, b121, b131, b132, b141, b142, b143,
         b221, b231, b331, b332, b341, b342, α1, α2, α3, α4, c02, c03, c13, c14,
-        beta11, beta12, beta13, beta14, beta22, beta23, NORMAL_ONESIX_QUANTILE)
+        beta11, beta12, beta13, beta14, beta22, beta23, NORMAL_ONESIX_QUANTILE
+    )
 end
 
-function alg_cache(alg::RS2, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RS2, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    RS2ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return RS2ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 @cache struct RSCache{
-    uType, randType, tabType, rateNoiseType, rateType, possibleRateType} <:
-              StochasticDiffEqMutableCache
+        uType, randType, tabType, rateNoiseType, rateType, possibleRateType,
+    } <:
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
 
@@ -1342,10 +1416,12 @@ end
     tmpg::rateNoiseType
 end
 
-function alg_cache(alg::RS1, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RS1, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         _dW = copy(ΔW)
         _dZ = copy(ΔW)
@@ -1361,8 +1437,8 @@ function alg_cache(alg::RS1, prob, u, ΔW, ΔZ, p, rate_prototype,
     g2 = [zero(noise_rate_prototype) for k in 1:m]
     g3 = [zero(noise_rate_prototype) for k in 1:m]
     g4 = [zero(noise_rate_prototype) for k in 1:m]
-    k1 = zero(rate_prototype);
-    k2 = zero(rate_prototype);
+    k1 = zero(rate_prototype)
+    k2 = zero(rate_prototype)
     k3 = zero(rate_prototype)
 
     H02 = zero(u)
@@ -1384,14 +1460,18 @@ function alg_cache(alg::RS1, prob, u, ΔW, ΔZ, p, rate_prototype,
     tmp1 = zero(rate_prototype)
     tmpg = zero(noise_rate_prototype)
 
-    RSCache(u, uprev, _dW, _dZ, chi1, tab, g1, g2, g3, g4, k1, k2,
-        k3, H02, H03, H12, H13, H14, H22, H23, tmp1, tmpg)
+    return RSCache(
+        u, uprev, _dW, _dZ, chi1, tab, g1, g2, g3, g4, k1, k2,
+        k3, H02, H03, H12, H13, H14, H22, H23, tmp1, tmpg
+    )
 end
 
-function alg_cache(alg::RS2, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::RS2, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         _dW = copy(ΔW)
         _dZ = copy(ΔW)
@@ -1407,8 +1487,8 @@ function alg_cache(alg::RS2, prob, u, ΔW, ΔZ, p, rate_prototype,
     g2 = [zero(noise_rate_prototype) for k in 1:m]
     g3 = [zero(noise_rate_prototype) for k in 1:m]
     g4 = [zero(noise_rate_prototype) for k in 1:m]
-    k1 = zero(rate_prototype);
-    k2 = zero(rate_prototype);
+    k1 = zero(rate_prototype)
+    k2 = zero(rate_prototype)
     k3 = zero(rate_prototype)
 
     H02 = zero(u)
@@ -1430,8 +1510,10 @@ function alg_cache(alg::RS2, prob, u, ΔW, ΔZ, p, rate_prototype,
     tmp1 = zero(rate_prototype)
     tmpg = zero(noise_rate_prototype)
 
-    RSCache(u, uprev, _dW, _dZ, chi1, tab, g1, g2, g3, g4, k1, k2,
-        k3, H02, H03, H12, H13, H14, H22, H23, tmp1, tmpg)
+    return RSCache(
+        u, uprev, _dW, _dZ, chi1, tab, g1, g2, g3, g4, k1, k2,
+        k3, H02, H03, H12, H13, H14, H22, H23, tmp1, tmpg
+    )
 end
 
 # PL1WM
@@ -1443,14 +1525,16 @@ end
 function PL1WMConstantCache(T::Type)
     NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
 
-    PL1WMConstantCache(NORMAL_ONESIX_QUANTILE)
+    return PL1WMConstantCache(NORMAL_ONESIX_QUANTILE)
 end
 
-function alg_cache(alg::PL1WM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::PL1WM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    PL1WMConstantCache(real(uBottomEltypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return PL1WMConstantCache(real(uBottomEltypeNoUnits))
 end
 
 struct PL1WMAConstantCache{T} <: StochasticDiffEqConstantCache
@@ -1461,19 +1545,22 @@ end
 function PL1WMAConstantCache(T::Type)
     NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
 
-    PL1WMAConstantCache(NORMAL_ONESIX_QUANTILE)
+    return PL1WMAConstantCache(NORMAL_ONESIX_QUANTILE)
 end
 
-function alg_cache(alg::PL1WMA, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::PL1WMA, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    PL1WMAConstantCache(real(uBottomEltypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return PL1WMAConstantCache(real(uBottomEltypeNoUnits))
 end
 
 @cache struct PL1WMCache{
-    uType, randType, rand2Type, tabType, rateNoiseType, rateType, possibleRateType} <:
-              StochasticDiffEqMutableCache
+        uType, randType, rand2Type, tabType, rateNoiseType, rateType, possibleRateType,
+    } <:
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
 
@@ -1499,10 +1586,12 @@ end
     Ulm::uType
 end
 
-function alg_cache(alg::PL1WM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::PL1WM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         _dW = copy(ΔW)
         _dZ = copy(ΔZ)
@@ -1516,8 +1605,8 @@ function alg_cache(alg::PL1WM, prob, u, ΔW, ΔZ, p, rate_prototype,
     tab = PL1WMConstantCache(real(uBottomEltypeNoUnits))
     g1 = zero(noise_rate_prototype)
 
-    k1 = zero(rate_prototype);
-    k2 = zero(rate_prototype);
+    k1 = zero(rate_prototype)
+    k2 = zero(rate_prototype)
 
     Y = zero(u)
     Yp = Vector{typeof(u)}()
@@ -1535,14 +1624,16 @@ function alg_cache(alg::PL1WM, prob, u, ΔW, ΔZ, p, rate_prototype,
     Ulp = zero(u)
     Ulm = zero(u)
 
-    PL1WMCache(
-        u, uprev, _dW, _dZ, chi1, tab, g1, k1, k2, Y, Yp, Ym, tmp1, tmpg1, tmpg2, Ulp, Ulm)
+    return PL1WMCache(
+        u, uprev, _dW, _dZ, chi1, tab, g1, k1, k2, Y, Yp, Ym, tmp1, tmpg1, tmpg2, Ulp, Ulm
+    )
 end
 
 # additive noise
 @cache struct PL1WMACache{
-    uType, randType, tabType, rateNoiseType, rateType, possibleRateType} <:
-              StochasticDiffEqMutableCache
+        uType, randType, tabType, rateNoiseType, rateType, possibleRateType,
+    } <:
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
 
@@ -1558,10 +1649,12 @@ end
     tmp1::possibleRateType
 end
 
-function alg_cache(alg::PL1WMA, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::PL1WMA, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         _dW = copy(ΔW)
         chi1 = copy(ΔW)
@@ -1573,14 +1666,14 @@ function alg_cache(alg::PL1WMA, prob, u, ΔW, ΔZ, p, rate_prototype,
     tab = PL1WMConstantCache(real(uBottomEltypeNoUnits))
     g1 = zero(noise_rate_prototype)
 
-    k1 = zero(rate_prototype);
-    k2 = zero(rate_prototype);
+    k1 = zero(rate_prototype)
+    k2 = zero(rate_prototype)
 
     Y = zero(u)
 
     tmp1 = zero(rate_prototype)
 
-    PL1WMACache(u, uprev, _dW, chi1, tab, g1, k1, k2, Y, tmp1)
+    return PL1WMACache(u, uprev, _dW, chi1, tab, g1, k1, k2, Y, tmp1)
 end
 
 #NON
@@ -1635,68 +1728,71 @@ struct NONConstantCache{T} <: StochasticDiffEqConstantCache
 end
 
 function NONConstantCache(T::Type)
-    c01 = convert(T, 1//6)
-    c02 = convert(T, 1//3)
-    c03 = convert(T, 1//3)
-    c04 = convert(T, 1//6)
+    c01 = convert(T, 1 // 6)
+    c02 = convert(T, 1 // 3)
+    c03 = convert(T, 1 // 3)
+    c04 = convert(T, 1 // 6)
 
-    cj1 = convert(T, 1//8)
-    cj2 = convert(T, 3//8)
-    cj3 = convert(T, 3//8)
-    cj4 = convert(T, 1//8)
+    cj1 = convert(T, 1 // 8)
+    cj2 = convert(T, 3 // 8)
+    cj3 = convert(T, 3 // 8)
+    cj4 = convert(T, 1 // 8)
 
-    cjl2 = convert(T, 1//2)
-    cjl3 = convert(T, -1//2)
+    cjl2 = convert(T, 1 // 2)
+    cjl3 = convert(T, -1 // 2)
 
-    clj2 = convert(T, -1//2)
-    clj3 = convert(T, 1//2)
+    clj2 = convert(T, -1 // 2)
+    clj3 = convert(T, 1 // 2)
 
-    a0021 = convert(T, 1//2)
-    a0032 = convert(T, 1//2)
+    a0021 = convert(T, 1 // 2)
+    a0032 = convert(T, 1 // 2)
     a0043 = convert(T, 1)
 
     aj021 = convert(T, 2)
     aj041 = convert(T, -2)
 
     a0j21 = convert(T, 1)
-    a0j31 = convert(T, -9//8)
-    a0j32 = convert(T, 9//8)
+    a0j31 = convert(T, -9 // 8)
+    a0j32 = convert(T, 9 // 8)
     a0j41 = convert(T, 1)
 
-    ajj21 = convert(T, 2//3)
-    ajj31 = convert(T, 1//12)
-    ajj32 = convert(T, 1//4)
-    ajj41 = convert(T, -5//4)
-    ajj42 = convert(T, 1//4)
+    ajj21 = convert(T, 2 // 3)
+    ajj31 = convert(T, 1 // 12)
+    ajj32 = convert(T, 1 // 4)
+    ajj41 = convert(T, -5 // 4)
+    ajj42 = convert(T, 1 // 4)
     ajj43 = convert(T, 2)
 
-    ajl31 = convert(T, 1//4)
-    ajl32 = convert(T, 3//4)
-    ajl41 = convert(T, 1//4)
-    ajl42 = convert(T, 3//4)
+    ajl31 = convert(T, 1 // 4)
+    ajl32 = convert(T, 3 // 4)
+    ajl41 = convert(T, 1 // 4)
+    ajl42 = convert(T, 3 // 4)
 
     ajljj31 = convert(T, 1)
 
-    aljjl21 = convert(T, -1//2)
-    aljjl31 = convert(T, 1//2)
+    aljjl21 = convert(T, -1 // 2)
+    aljjl31 = convert(T, 1 // 2)
 
     NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
 
-    NONConstantCache(
+    return NONConstantCache(
         c01, c02, c03, c04, cj1, cj2, cj3, cj4, cjl2, cjl3, clj2, clj3, a0021, a0032, a0043,
         aj021, aj041, a0j21, a0j31, a0j32, a0j41, ajj21, ajj31, ajj32, ajj41, ajj42, ajj43,
-        ajl31, ajl32, ajl41, ajl42, ajljj31, aljjl21, aljjl31, NORMAL_ONESIX_QUANTILE)
+        ajl31, ajl32, ajl41, ajl42, ajljj31, aljjl21, aljjl31, NORMAL_ONESIX_QUANTILE
+    )
 end
 
-function alg_cache(alg::NON, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::NON, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    NONConstantCache(real(uBottomEltypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return NONConstantCache(real(uBottomEltypeNoUnits))
 end
 
 @cache struct NONCache{uType, randType, tabType, rateNoiseType, rateType} <:
-              StochasticDiffEqMutableCache
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
 
@@ -1723,10 +1819,12 @@ end
 
 end
 
-function alg_cache(alg::NON, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::NON, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         _dW = copy(ΔW)
         _dZ = copy(ΔW)
@@ -1753,8 +1851,10 @@ function alg_cache(alg::NON, prob, u, ΔW, ΔZ, p, rate_prototype,
 
     tmpu = zero(u)
 
-    NONCache(u, uprev, _dW, _dZ, chi1, tab, gtmp, ktmp, Y100, Y200,
-        Y300, Y400, Y1jajb, Y2jajb, Y3jajb, Y4jajb, tmpu)
+    return NONCache(
+        u, uprev, _dW, _dZ, chi1, tab, gtmp, ktmp, Y100, Y200,
+        Y300, Y400, Y1jajb, Y2jajb, Y3jajb, Y4jajb, tmpu
+    )
 end
 
 # COM
@@ -1798,56 +1898,60 @@ struct COMConstantCache{T} <: StochasticDiffEqConstantCache
 end
 
 function COMConstantCache(T::Type)
-    c01 = convert(T, 1//6)
-    c02 = convert(T, 1//3)
-    c03 = convert(T, 1//3)
-    c04 = convert(T, 1//6)
+    c01 = convert(T, 1 // 6)
+    c02 = convert(T, 1 // 3)
+    c03 = convert(T, 1 // 3)
+    c04 = convert(T, 1 // 6)
 
-    cj1 = convert(T, 1//8)
-    cj2 = convert(T, 3//8)
-    cj3 = convert(T, 3//8)
-    cj4 = convert(T, 1//8)
+    cj1 = convert(T, 1 // 8)
+    cj2 = convert(T, 3 // 8)
+    cj3 = convert(T, 3 // 8)
+    cj4 = convert(T, 1 // 8)
 
-    a0021 = convert(T, 1//2)
-    a0032 = convert(T, 1//2)
+    a0021 = convert(T, 1 // 2)
+    a0032 = convert(T, 1 // 2)
     a0043 = convert(T, 1)
 
     aj021 = convert(T, 2)
     aj041 = convert(T, -2)
 
     a0j21 = convert(T, 1)
-    a0j31 = convert(T, -9//8)
-    a0j32 = convert(T, 9//8)
+    a0j31 = convert(T, -9 // 8)
+    a0j32 = convert(T, 9 // 8)
     a0j41 = convert(T, 1)
 
-    ajj21 = convert(T, 2//3)
-    ajj31 = convert(T, 1//12)
-    ajj32 = convert(T, 1//4)
-    ajj41 = convert(T, -5//4)
-    ajj42 = convert(T, 1//4)
+    ajj21 = convert(T, 2 // 3)
+    ajj31 = convert(T, 1 // 12)
+    ajj32 = convert(T, 1 // 4)
+    ajj41 = convert(T, -5 // 4)
+    ajj42 = convert(T, 1 // 4)
     ajj43 = convert(T, 2)
 
-    ajl31 = convert(T, 1//4)
-    ajl32 = convert(T, 3//4)
-    ajl41 = convert(T, 1//4)
-    ajl42 = convert(T, 3//4)
+    ajl31 = convert(T, 1 // 4)
+    ajl32 = convert(T, 3 // 4)
+    ajl41 = convert(T, 1 // 4)
+    ajl42 = convert(T, 3 // 4)
 
     NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
 
-    COMConstantCache(c01, c02, c03, c04, cj1, cj2, cj3, cj4, a0021, a0032, a0043, aj021,
+    return COMConstantCache(
+        c01, c02, c03, c04, cj1, cj2, cj3, cj4, a0021, a0032, a0043, aj021,
         aj041, a0j21, a0j31, a0j32, a0j41, ajj21, ajj31, ajj32, ajj41,
-        ajj42, ajj43, ajl31, ajl32, ajl41, ajl42, NORMAL_ONESIX_QUANTILE)
+        ajj42, ajj43, ajl31, ajl32, ajl41, ajl42, NORMAL_ONESIX_QUANTILE
+    )
 end
 
-function alg_cache(alg::COM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::COM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    COMConstantCache(real(uBottomEltypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return COMConstantCache(real(uBottomEltypeNoUnits))
 end
 
 @cache struct COMCache{uType, randType, tabType, rateNoiseType, rateType} <:
-              StochasticDiffEqMutableCache
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
 
@@ -1871,10 +1975,12 @@ end
     tmpu2::uType
 end
 
-function alg_cache(alg::COM, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::COM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         _dW = copy(ΔW)
     else
@@ -1898,8 +2004,9 @@ function alg_cache(alg::COM, prob, u, ΔW, ΔZ, p, rate_prototype,
     tmpu = zero(u)
     tmpu2 = zero(u)
 
-    COMCache(
-        u, uprev, _dW, tab, gtmp, ktmp, Y10, Y20, Y30, Y40, Y1j, Y2j, Y3j, Y4j, tmpu, tmpu2)
+    return COMCache(
+        u, uprev, _dW, tab, gtmp, ktmp, Y10, Y20, Y30, Y40, Y1j, Y2j, Y3j, Y4j, tmpu, tmpu2
+    )
 end
 
 # NON2
@@ -1951,58 +2058,62 @@ struct NON2ConstantCache{T} <: StochasticDiffEqConstantCache
 end
 
 function NON2ConstantCache(T::Type)
-    c01 = convert(T, 1//6)
-    c02 = convert(T, 1//3)
-    c03 = convert(T, 1//3)
-    c04 = convert(T, 1//6)
+    c01 = convert(T, 1 // 6)
+    c02 = convert(T, 1 // 3)
+    c03 = convert(T, 1 // 3)
+    c04 = convert(T, 1 // 6)
 
-    cj1 = convert(T, 1//8)
-    cj2 = convert(T, 3//8)
-    cj3 = convert(T, 3//8)
-    cj4 = convert(T, 1//8)
+    cj1 = convert(T, 1 // 8)
+    cj2 = convert(T, 3 // 8)
+    cj3 = convert(T, 3 // 8)
+    cj4 = convert(T, 1 // 8)
 
-    a0021 = convert(T, 1//2)
-    a0032 = convert(T, 1//2)
+    a0021 = convert(T, 1 // 2)
+    a0032 = convert(T, 1 // 2)
     a0043 = convert(T, 1)
 
     aj021 = convert(T, 2)
     aj041 = convert(T, -2)
 
     a0j21 = convert(T, 1)
-    a0j31 = convert(T, -9//8)
-    a0j32 = convert(T, 9//8)
+    a0j31 = convert(T, -9 // 8)
+    a0j32 = convert(T, 9 // 8)
     a0j41 = convert(T, 1)
 
-    ajj21 = convert(T, 2//3)
-    ajj31 = convert(T, 1//12)
-    ajj32 = convert(T, 1//4)
-    ajj41 = convert(T, -5//4)
-    ajj42 = convert(T, 1//4)
+    ajj21 = convert(T, 2 // 3)
+    ajj31 = convert(T, 1 // 12)
+    ajj32 = convert(T, 1 // 4)
+    ajj41 = convert(T, -5 // 4)
+    ajj42 = convert(T, 1 // 4)
     ajj43 = convert(T, 2)
 
-    ajl31 = convert(T, 1//4)
-    ajl32 = convert(T, 3//4)
-    ajl41 = convert(T, 1//4)
-    ajl42 = convert(T, 3//4)
+    ajl31 = convert(T, 1 // 4)
+    ajl32 = convert(T, 3 // 4)
+    ajl41 = convert(T, 1 // 4)
+    ajl42 = convert(T, 3 // 4)
 
     γ = convert(T, 1)
 
     NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
 
-    NON2ConstantCache(c01, c02, c03, c04, cj1, cj2, cj3, cj4, a0021, a0032, a0043, aj021,
+    return NON2ConstantCache(
+        c01, c02, c03, c04, cj1, cj2, cj3, cj4, a0021, a0032, a0043, aj021,
         aj041, a0j21, a0j31, a0j32, a0j41, ajj21, ajj31, ajj32, ajj41,
-        ajj42, ajj43, ajl31, ajl32, ajl41, ajl42, γ, NORMAL_ONESIX_QUANTILE)
+        ajj42, ajj43, ajl31, ajl32, ajl41, ajl42, γ, NORMAL_ONESIX_QUANTILE
+    )
 end
 
-function alg_cache(alg::NON2, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::NON2, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    NON2ConstantCache(real(uBottomEltypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return NON2ConstantCache(real(uBottomEltypeNoUnits))
 end
 
 @cache struct NON2Cache{uType, randType, MType1, tabType, rateNoiseType, rateType} <:
-              StochasticDiffEqMutableCache
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
 
@@ -2030,10 +2141,12 @@ end
     tmpu2::uType
 end
 
-function alg_cache(alg::NON2, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::NON2, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         _dW = copy(ΔW)
         _dZ = copy(ΔW)
@@ -2063,8 +2176,10 @@ function alg_cache(alg::NON2, prob, u, ΔW, ΔZ, p, rate_prototype,
     tmpu = zero(u)
     tmpu2 = zero(u)
 
-    NON2Cache(u, uprev, _dW, _dZ, chi1, Ihat2, tab, gtmp, gtmp1, ktmp,
-        Y10, Y20, Y30, Y40, Y1j, Y2j, Y3j, Y4j, tmpu, tmpu2)
+    return NON2Cache(
+        u, uprev, _dW, _dZ, chi1, Ihat2, tab, gtmp, gtmp1, ktmp,
+        Y10, Y20, Y30, Y40, Y1j, Y2j, Y3j, Y4j, tmpu, tmpu2
+    )
 end
 
 # SIE / SME methods
@@ -2100,167 +2215,179 @@ struct SIESMEConstantCache{T, T2} <: StochasticDiffEqConstantCache
 end
 
 function SIEAConstantCache(::Type{T}, ::Type{T2}) where {T, T2}
-    α1 = convert(T, 1//2)
-    α2 = convert(T, 1//2)
+    α1 = convert(T, 1 // 2)
+    α2 = convert(T, 1 // 2)
 
-    γ1 = convert(T, 1//2)
+    γ1 = convert(T, 1 // 2)
 
-    λ1 = convert(T, 1//4)
-    λ2 = convert(T, -1//4)
-    λ3 = convert(T, 1//4)
+    λ1 = convert(T, 1 // 4)
+    λ2 = convert(T, -1 // 4)
+    λ3 = convert(T, 1 // 4)
 
-    µ1 = convert(T, 1//4)
-    µ2 = convert(T, 1//4)
-    µ3 = convert(T, -1//4)
+    µ1 = convert(T, 1 // 4)
+    µ2 = convert(T, 1 // 4)
+    µ3 = convert(T, -1 // 4)
 
-    µ0 = convert(T2, 1//1)
-    µbar0 = convert(T2, 1//1)
+    µ0 = convert(T2, 1 // 1)
+    µbar0 = convert(T2, 1 // 1)
 
-    λ0 = convert(T, 1//1)
-    λbar0 = convert(T, 1//1)
+    λ0 = convert(T, 1 // 1)
+    λbar0 = convert(T, 1 // 1)
 
-    ν1 = convert(T, 1//1)
+    ν1 = convert(T, 1 // 1)
     ν2 = convert(T, 0)
 
-    β2 = convert(T, 1//1)
+    β2 = convert(T, 1 // 1)
     β3 = convert(T, 0)
 
-    δ2 = convert(T, -1//1)
+    δ2 = convert(T, -1 // 1)
     δ3 = convert(T, 0)
 
-    SIESMEConstantCache(
-        α1, α2, γ1, λ1, λ2, λ3, µ1, µ2, µ3, µ0, µbar0, λ0, λbar0, ν1, ν2, β2, β3, δ2, δ3)
+    return SIESMEConstantCache(
+        α1, α2, γ1, λ1, λ2, λ3, µ1, µ2, µ3, µ0, µbar0, λ0, λbar0, ν1, ν2, β2, β3, δ2, δ3
+    )
 end
 
-function alg_cache(alg::SIEA, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SIEA, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    SIEAConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return SIEAConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 function SMEAConstantCache(::Type{T}, ::Type{T2}) where {T, T2}
     α1 = convert(T, 0)
-    α2 = convert(T, 1//1)
+    α2 = convert(T, 1 // 1)
 
-    γ1 = convert(T, 1//2)
+    γ1 = convert(T, 1 // 2)
 
-    λ1 = convert(T, 1//4)
-    λ2 = convert(T, -1//4)
-    λ3 = convert(T, 1//4)
+    λ1 = convert(T, 1 // 4)
+    λ2 = convert(T, -1 // 4)
+    λ3 = convert(T, 1 // 4)
 
-    µ1 = convert(T, 1//4)
-    µ2 = convert(T, 1//4)
-    µ3 = convert(T, -1//4)
+    µ1 = convert(T, 1 // 4)
+    µ2 = convert(T, 1 // 4)
+    µ3 = convert(T, -1 // 4)
 
-    µ0 = convert(T2, 1//2)
-    µbar0 = convert(T2, 1//1)
+    µ0 = convert(T2, 1 // 2)
+    µbar0 = convert(T2, 1 // 1)
 
-    λ0 = convert(T, 1//2)
-    λbar0 = convert(T, 1//1)
+    λ0 = convert(T, 1 // 2)
+    λbar0 = convert(T, 1 // 1)
 
-    ν1 = convert(T, (2-sqrt(6))/4)
-    ν2 = convert(T, sqrt(6)/12)
+    ν1 = convert(T, (2 - sqrt(6)) / 4)
+    ν2 = convert(T, sqrt(6) / 12)
 
-    β2 = convert(T, 1//1)
+    β2 = convert(T, 1 // 1)
     β3 = convert(T, 0)
 
-    δ2 = convert(T, -1//1)
+    δ2 = convert(T, -1 // 1)
     δ3 = convert(T, 0)
 
-    SIESMEConstantCache(
-        α1, α2, γ1, λ1, λ2, λ3, µ1, µ2, µ3, µ0, µbar0, λ0, λbar0, ν1, ν2, β2, β3, δ2, δ3)
+    return SIESMEConstantCache(
+        α1, α2, γ1, λ1, λ2, λ3, µ1, µ2, µ3, µ0, µbar0, λ0, λbar0, ν1, ν2, β2, β3, δ2, δ3
+    )
 end
 
-function alg_cache(alg::SMEA, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SMEA, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    SMEAConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return SMEAConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 function SIEBConstantCache(::Type{T}, ::Type{T2}) where {T, T2}
-    α1 = convert(T, 1//2)
-    α2 = convert(T, 1//2)
+    α1 = convert(T, 1 // 2)
+    α2 = convert(T, 1 // 2)
 
-    γ1 = convert(T, -1//5)
+    γ1 = convert(T, -1 // 5)
 
-    λ1 = convert(T, 3//5)
-    λ2 = convert(T, 3//2)
-    λ3 = convert(T, -1//2)
+    λ1 = convert(T, 3 // 5)
+    λ2 = convert(T, 3 // 2)
+    λ3 = convert(T, -1 // 2)
 
-    µ1 = convert(T, 3//5)
-    µ2 = convert(T, -3//2)
-    µ3 = convert(T, 1//2)
+    µ1 = convert(T, 3 // 5)
+    µ2 = convert(T, -3 // 2)
+    µ3 = convert(T, 1 // 2)
 
-    µ0 = convert(T2, 1//1)
-    µbar0 = convert(T2, 5//12)
+    µ0 = convert(T2, 1 // 1)
+    µbar0 = convert(T2, 5 // 12)
 
-    λ0 = convert(T, 1//1)
-    λbar0 = convert(T, 5//12)
+    λ0 = convert(T, 1 // 1)
+    λbar0 = convert(T, 5 // 12)
 
-    ν1 = convert(T, 1//1)
+    ν1 = convert(T, 1 // 1)
     ν2 = convert(T, 0)
 
     β2 = convert(T, 0)
-    β3 = convert(T, -1//6)
+    β3 = convert(T, -1 // 6)
 
     δ2 = convert(T, 0)
-    δ3 = convert(T, 1//6)
+    δ3 = convert(T, 1 // 6)
 
-    SIESMEConstantCache(
-        α1, α2, γ1, λ1, λ2, λ3, µ1, µ2, µ3, µ0, µbar0, λ0, λbar0, ν1, ν2, β2, β3, δ2, δ3)
+    return SIESMEConstantCache(
+        α1, α2, γ1, λ1, λ2, λ3, µ1, µ2, µ3, µ0, µbar0, λ0, λbar0, ν1, ν2, β2, β3, δ2, δ3
+    )
 end
 
-function alg_cache(alg::SIEB, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SIEB, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    SIEBConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return SIEBConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 function SMEBConstantCache(::Type{T}, ::Type{T2}) where {T, T2}
     α1 = convert(T, 0)
-    α2 = convert(T, 1//1)
+    α2 = convert(T, 1 // 1)
 
-    γ1 = convert(T, -1//5)
+    γ1 = convert(T, -1 // 5)
 
-    λ1 = convert(T, 3//5)
-    λ2 = convert(T, 3//2)
-    λ3 = convert(T, -1//2)
+    λ1 = convert(T, 3 // 5)
+    λ2 = convert(T, 3 // 2)
+    λ3 = convert(T, -1 // 2)
 
-    µ1 = convert(T, 3//5)
-    µ2 = convert(T, -3//2)
-    µ3 = convert(T, 1//2)
+    µ1 = convert(T, 3 // 5)
+    µ2 = convert(T, -3 // 2)
+    µ3 = convert(T, 1 // 2)
 
-    µ0 = convert(T2, 1//2)
-    µbar0 = convert(T2, 5//12)
+    µ0 = convert(T2, 1 // 2)
+    µbar0 = convert(T2, 5 // 12)
 
-    λ0 = convert(T, 1//2)
-    λbar0 = convert(T, 5//12)
+    λ0 = convert(T, 1 // 2)
+    λbar0 = convert(T, 5 // 12)
 
-    ν1 = convert(T, (2-sqrt(6))/4)
-    ν2 = convert(T, sqrt(6)/12)
+    ν1 = convert(T, (2 - sqrt(6)) / 4)
+    ν2 = convert(T, sqrt(6) / 12)
 
     β2 = convert(T, 0)
-    β3 = convert(T, -1//6)
+    β3 = convert(T, -1 // 6)
 
     δ2 = convert(T, 0)
-    δ3 = convert(T, 1//6)
+    δ3 = convert(T, 1 // 6)
 
-    SIESMEConstantCache(
-        α1, α2, γ1, λ1, λ2, λ3, µ1, µ2, µ3, µ0, µbar0, λ0, λbar0, ν1, ν2, β2, β3, δ2, δ3)
+    return SIESMEConstantCache(
+        α1, α2, γ1, λ1, λ2, λ3, µ1, µ2, µ3, µ0, µbar0, λ0, λbar0, ν1, ν2, β2, β3, δ2, δ3
+    )
 end
 
-function alg_cache(alg::SMEB, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SMEB, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    SMEBConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return SMEBConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 @cache struct SIESMECache{uType, randType, tabType, rateNoiseType, rateType} <:
-              StochasticDiffEqMutableCache
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
 
@@ -2280,10 +2407,12 @@ end
     tmpu::uType
 end
 
-function alg_cache(alg::SIEA, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SIEA, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         W2 = copy(ΔW)
         W3 = copy(ΔW)
@@ -2303,13 +2432,15 @@ function alg_cache(alg::SIEA, prob, u, ΔW, ΔZ, p, rate_prototype,
 
     tab = SIEAConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 
-    SIESMECache(u, uprev, W2, W3, tab, k0, k1, g0, g1, g2, tmpu)
+    return SIESMECache(u, uprev, W2, W3, tab, k0, k1, g0, g1, g2, tmpu)
 end
 
-function alg_cache(alg::SMEA, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SMEA, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         W2 = copy(ΔW)
         W3 = copy(ΔW)
@@ -2329,13 +2460,15 @@ function alg_cache(alg::SMEA, prob, u, ΔW, ΔZ, p, rate_prototype,
 
     tab = SMEAConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 
-    SIESMECache(u, uprev, W2, W3, tab, k0, k1, g0, g1, g2, tmpu)
+    return SIESMECache(u, uprev, W2, W3, tab, k0, k1, g0, g1, g2, tmpu)
 end
 
-function alg_cache(alg::SIEB, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SIEB, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         W2 = copy(ΔW)
         W3 = copy(ΔW)
@@ -2355,13 +2488,15 @@ function alg_cache(alg::SIEB, prob, u, ΔW, ΔZ, p, rate_prototype,
 
     tab = SIEBConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 
-    SIESMECache(u, uprev, W2, W3, tab, k0, k1, g0, g1, g2, tmpu)
+    return SIESMECache(u, uprev, W2, W3, tab, k0, k1, g0, g1, g2, tmpu)
 end
 
-function alg_cache(alg::SMEB, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::SMEB, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         W2 = copy(ΔW)
         W3 = copy(ΔW)
@@ -2381,7 +2516,7 @@ function alg_cache(alg::SMEB, prob, u, ΔW, ΔZ, p, rate_prototype,
 
     tab = SMEBConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 
-    SIESMECache(u, uprev, W2, W3, tab, k0, k1, g0, g1, g2, tmpu)
+    return SIESMECache(u, uprev, W2, W3, tab, k0, k1, g0, g1, g2, tmpu)
 end
 
 # Tang & Xiao: DOI 10.1007/s10543-016-0618-9 W2Ito1 and W2Ito2 methods
@@ -2460,20 +2595,25 @@ function W2Ito1ConstantCache(::Type{T}, ::Type{T2}) where {T, T2}
 
     NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
 
-    W2Ito1ConstantCache(a021, a031, a032, a121, a131, b021, b031, b121, b131, b221, α1, α2,
-        α3, beta01, beta02, beta03, beta11, beta13, NORMAL_ONESIX_QUANTILE)
+    return W2Ito1ConstantCache(
+        a021, a031, a032, a121, a131, b021, b031, b121, b131, b221, α1, α2,
+        α3, beta01, beta02, beta03, beta11, beta13, NORMAL_ONESIX_QUANTILE
+    )
 end
 
-function alg_cache(alg::W2Ito1, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::W2Ito1, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    W2Ito1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+        ::Type{Val{false}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+    return W2Ito1ConstantCache(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 @cache struct W2Ito1Cache{
-    uType, randType, tabType, rateNoiseType, rateType, possibleRateType} <:
-              StochasticDiffEqMutableCache
+        uType, randType, tabType, rateNoiseType, rateType, possibleRateType,
+    } <:
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
     uhat::uType
@@ -2504,10 +2644,12 @@ end
     resids::uType
 end
 
-function alg_cache(alg::W2Ito1, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::W2Ito1, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         _dW = copy(ΔW)
         _dZ = zeros(eltype(ΔW), 2)
@@ -2543,6 +2685,8 @@ function alg_cache(alg::W2Ito1, prob, u, ΔW, ΔZ, p, rate_prototype,
     tmp = zero(u)
     resids = zero(u)
 
-    W2Ito1Cache(u, uprev, uhat, _dW, _dZ, chi1, tab, g1, g2, g3, k1,
-        k2, k3, H02, H03, H12, H13, tmp1, tmpg, tmp, resids)
+    return W2Ito1Cache(
+        u, uprev, uhat, _dW, _dZ, chi1, tab, g1, g2, g3, k1,
+        k2, k3, H02, H03, H12, H13, tmp1, tmpg, tmp, resids
+    )
 end
