@@ -266,4 +266,10 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV, "APPVEYOR")
             include("alloc_tests.jl")
         end
     end
+
+    if GROUP == "All" || GROUP == "StaticAnalysis"
+        @time @safetestset "JET Static Analysis Tests" begin
+            include("jet_tests.jl")
+        end
+    end
 end
