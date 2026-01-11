@@ -7,6 +7,12 @@ function activate_gpu_env()
     return Pkg.instantiate()
 end
 
+function activate_nopre_env()
+    Pkg.activate("nopre")
+    Pkg.develop(PackageSpec(path = dirname(@__DIR__)))
+    return Pkg.instantiate()
+end
+
 const LONGER_TESTS = false
 
 const GROUP = get(ENV, "GROUP", "All")
@@ -267,9 +273,10 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV, "APPVEYOR")
         end
     end
 
-    if GROUP == "All" || GROUP == "StaticAnalysis"
+    if !is_APPVEYOR && GROUP == "StaticAnalysis"
+        activate_nopre_env()
         @time @safetestset "JET Static Analysis Tests" begin
-            include("jet_tests.jl")
+            include("nopre/jet_tests.jl")
         end
     end
 end

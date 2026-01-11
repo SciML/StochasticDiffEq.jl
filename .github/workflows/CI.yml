@@ -21,12 +21,15 @@ jobs:
           - AlgConvergence3
           - WeakConvergence1
           - Allocations
+          - StaticAnalysis
         version:
           - 'lts'
           - '1'
           - 'pre'
         exclude:
           - group: Allocations
+            version: 'pre'
+          - group: StaticAnalysis
             version: 'pre'
     steps:
       - uses: actions/checkout@v6
