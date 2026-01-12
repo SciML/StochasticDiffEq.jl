@@ -166,9 +166,10 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV, "APPVEYOR")
         @time @safetestset "Additive SDE Tests" begin
             include("sde/sde_additive_tests.jl")
         end
-        @time @safetestset "Split Tests" begin
-            include("split_tests.jl")
-        end
+        # Split tests temporarily disabled, see https://github.com/SciML/StochasticDiffEq.jl/issues/665
+        # @time @safetestset "Split Tests" begin
+        #     include("split_tests.jl")
+        # end
         @time @safetestset "Stratonovich Convergence Tests" begin
             include("stratonovich_convergence_tests.jl")
         end

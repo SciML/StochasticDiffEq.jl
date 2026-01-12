@@ -14,7 +14,7 @@ using JET
 
 # Helper to filter JET reports to only show StochasticDiffEq issues
 function filter_stochastic_reports(reports)
-    filter(reports) do r
+    return filter(reports) do r
         str_rep = string(r)
         occursin("StochasticDiffEq", str_rep) &&
             !occursin("DiffEqBase", str_rep) &&
