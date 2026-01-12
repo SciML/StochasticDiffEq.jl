@@ -12,6 +12,7 @@ on:
       - 'docs/**'
 jobs:
   test:
+    if: false  # Disabled until OrdinaryDiffEq compatibility is resolved, see https://github.com/SciML/StochasticDiffEq.jl/issues/666
     runs-on: ubuntu-latest
     strategy:
       matrix:
