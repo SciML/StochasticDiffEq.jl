@@ -112,6 +112,9 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV, "APPVEYOR")
         @time @safetestset "Utility Tests" begin
             include("utility_tests.jl")
         end
+        @time @safetestset "Implicit Time Parameter Tests" begin
+            include("implicit_time_parameter_test.jl")
+        end
         @time @safetestset "Non-diagonal SDE Tests" begin
             include("nondiagonal_tests.jl")
         end

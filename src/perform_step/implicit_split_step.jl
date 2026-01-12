@@ -25,7 +25,9 @@
     end
     nlsolver.z = z
 
-    nlsolver.c = a
+    # nlsolver.c should be the Butcher tableau coefficient (time fraction), not coefficient*dt
+    # OrdinaryDiffEqNonlinearSolve computes tstep = t + c * dt, so c should be in [0,1]
+    nlsolver.c = alg.symplectic ? one(t) / 2 : theta
     if alg.symplectic
         # u = uprev + z then  u = (uprev+u)/2 = (uprev+uprev+z)/2 = uprev + z/2
         #u = uprev + z/2
@@ -219,7 +221,9 @@ end
         #@.. u = uprev + dt*(1-theta)*tmp + theta*z
         @.. tmp = uprev + dt * (1 - theta) * tmp
     end
-    nlsolver.c = a
+    # nlsolver.c should be the Butcher tableau coefficient (time fraction), not coefficient*dt
+    # OrdinaryDiffEqNonlinearSolve computes tstep = t + c * dt, so c should be in [0,1]
+    nlsolver.c = alg.symplectic ? one(t) / 2 : theta
     z = OrdinaryDiffEqNonlinearSolve.nlsolve!(nlsolver, integrator, cache, repeat_step)
     OrdinaryDiffEqNonlinearSolve.nlsolvefail(nlsolver) && return
 

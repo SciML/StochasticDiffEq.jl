@@ -53,7 +53,9 @@
         z = dt * ftmp # linear extrapolation
     end
     nlsolver.z = z
-    nlsolver.c = a
+    # nlsolver.c should be the Butcher tableau coefficient (time fraction), not coefficient*dt
+    # OrdinaryDiffEqNonlinearSolve computes tstep = t + c * dt, so c should be in [0,1]
+    nlsolver.c = alg.symplectic ? one(t) / 2 : theta
 
     if alg.symplectic
         # u = uprev + z then  u = (uprev+u)/2 = (uprev+uprev+z)/2 = uprev + z/2
@@ -194,7 +196,9 @@ end
         @.. z = dt * tmp # linear extrapolation
     end
 
-    nlsolver.c = a
+    # nlsolver.c should be the Butcher tableau coefficient (time fraction), not coefficient*dt
+    # OrdinaryDiffEqNonlinearSolve computes tstep = t + c * dt, so c should be in [0,1]
+    nlsolver.c = alg.symplectic ? one(t) / 2 : theta
     if alg.symplectic
         #@.. u = uprev + z/2 + gtmp2/2
         if P !== nothing
