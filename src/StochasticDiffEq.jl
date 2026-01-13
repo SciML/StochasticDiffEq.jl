@@ -186,7 +186,7 @@ export SplitEM, IIF1M, IIF2M, IIF1Mil
 export ImplicitEM, ImplicitEulerHeun, ISSEM, ISSEulerHeun,
     ImplicitRKMil, STrapezoid, SImplicitMidpoint
 
-export TauLeaping, CaoTauLeaping
+export TauLeaping, CaoTauLeaping, ImplicitTauLeaping, ThetaTrapezoidalTauLeaping
 
 export BAOAB
 
