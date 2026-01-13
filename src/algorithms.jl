@@ -2850,12 +2850,13 @@ Automatically adjusts tau based on:
 struct CaoTauLeaping <: StochasticDiffEqJumpAdaptiveAlgorithm end
 
 """
-    ThetaTrapezoidalTauLeaping(; theta=0.5)
+    ThetaTrapezoidalTauLeaping(; theta=0.5, max_iters=10, abstol=1e-8, reltol=1e-6)
 
-**ThetaTrapezoidalTauLeaping: Weak Second Order Tau-Leaping Method (Jump-Diffusion)**
+**ThetaTrapezoidalTauLeaping: Implicit Weak Second Order Tau-Leaping Method (Jump-Diffusion)**
 
-A predictor-corrector tau-leaping method achieving weak second order accuracy in the
-large volume scaling. Based on the work of Hu, Li, and Min (2011).
+An implicit tau-leaping method achieving weak second order accuracy in the
+large volume scaling. Uses fixed-point iteration to solve the implicit equation.
+Based on the work of Hu, Li, and Min (2011) and Anderson and Mattingly (2011).
 
 ## Method Properties
 
@@ -2863,12 +2864,17 @@ large volume scaling. Based on the work of Hu, Li, and Min (2011).
   - **Order**: Weak order 2 (in the large volume scaling)
   - **Time stepping**: Fixed or adaptive tau
   - **Accuracy**: Superior to both Euler tau-leaping and midpoint tau-leaping
+  - **Implicit treatment**: Uses nonlinear solver for implicit rate equations
 
 ## Parameters
 
-  - `theta::Float64`: Parameter controlling the predictor-corrector balance (default: 0.5)
+  - `theta::Float64`: Implicitness parameter (default: 0.5)
     - Must be in range (0, 1)
-    - theta = 0.5 is recommended for balanced accuracy and stability
+    - theta = 0.5 gives trapezoidal method (recommended for balanced accuracy/stability)
+    - theta = 1.0 gives backward Euler (maximum stability)
+  - `max_iters::Int`: Maximum iterations for nonlinear solver (default: 10)
+  - `abstol::Float64`: Absolute tolerance for convergence (default: 1e-8)
+  - `reltol::Float64`: Relative tolerance for convergence (default: 1e-6)
 
 ## When to Use
 
@@ -2876,17 +2882,23 @@ large volume scaling. Based on the work of Hu, Li, and Min (2011).
   - Chemical reaction networks requiring weak second order accuracy
   - Systems where accurate mean and covariance estimates are important
   - When both Euler and midpoint tau-leaping provide insufficient accuracy
+  - Stiff chemical systems where implicit treatment provides stability
 
 ## Algorithm Description
 
-The method uses a two-stage predictor-corrector approach:
+The method solves the implicit equation:
 
-1. **Predictor step**: Generate Poisson jumps with rate `θτ·a(X_n)` and compute
-   predictor state `X' = X_n + ν·k'`
+```math
+X_{n+1} = X_n + ν⋅k + θ⋅dt⋅ν⋅(a(X_{n+1}) - a(X_n))
+```
 
-2. **Corrector step**: Compute adjusted rates `l_j = max{α₁·a_j(X') - α₂·a_j(X_n), 0}`
-   where `α₁ = 1/(2(1-θ)θ)` and `α₂ = ((1-θ)² + θ²)/(2(1-θ)θ)`,
-   generate Poisson jumps with rate `(1-θ)τ·l_j`, and compute final state
+where `k ~ Poisson(dt⋅a(X_n))` are the jump counts.
+
+This is solved using fixed-point iteration:
+1. Generate Poisson jumps with rate `dt·a(X_n)`
+2. Initialize `z = 0`
+3. Iterate: `z_{new} = θ·dt·(drift(X_n + ν·k + z) - drift(X_n))`
+4. Final state: `X_{n+1} = X_n + ν·k + z`
 
 ## Convergence Properties
 
@@ -2900,10 +2912,13 @@ and system size V → ∞, which is higher order than both Euler and midpoint me
   - Anderson, D.F., Mattingly, J.C., "A weak trapezoidal method for a class of
     stochastic differential equations", Comm. Math. Sci. 9, 301 (2011)
 """
-struct ThetaTrapezoidalTauLeaping{T} <: StochasticDiffEqJumpAdaptiveAlgorithm
+struct ThetaTrapezoidalTauLeaping{T, N} <: StochasticDiffEqJumpAdaptiveAlgorithm
     theta::T
+    nlsolve::N
 end
-ThetaTrapezoidalTauLeaping(; theta = 0.5) = ThetaTrapezoidalTauLeaping(theta)
+function ThetaTrapezoidalTauLeaping(; theta = 0.5, nlsolve = NLFunctional())
+    ThetaTrapezoidalTauLeaping(theta, nlsolve)
+end
 
 ################################################################################
 

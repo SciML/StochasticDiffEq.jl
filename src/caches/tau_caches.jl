@@ -48,54 +48,52 @@ function alg_cache(
     return TauLeapingCache(u, uprev, tmp, nothing, nothing)
 end
 
-# ThetaTrapezoidalTauLeaping cache with theta parameter and extra storage for predictor step
-struct ThetaTrapezoidalTauLeapingConstantCache{T} <: StochasticDiffEqConstantCache
+# ThetaTrapezoidalTauLeaping cache
+# Uses NLFunctional-style fixed-point iteration adapted for tau-leaping
+# (The standard nlsolver infrastructure assumes ODE mass_matrix which DiscreteProblem lacks)
+
+struct ThetaTrapezoidalTauLeapingConstantCache{T, N} <: StochasticDiffEqConstantCache
     theta::T
-    alpha1::T
-    alpha2::T
+    nlalg::N  # NLFunctional algorithm with κ, max_iter settings
 end
 
-@cache struct ThetaTrapezoidalTauLeapingCache{uType, rateType, T} <:
+@cache struct ThetaTrapezoidalTauLeapingCache{uType, rateType, T, N} <:
               StochasticDiffEqMutableCache
     u::uType
     uprev::uType
-    tmp::uType
-    predictor::uType
-    predictor_counts::rateType
-    corrector_counts::rateType
-    rate_at_predictor::rateType
-    rate_at_uprev::rateType
-    corrector_rate::rateType
+    tmp::uType               # Explicit contribution: X_n + ν*k - θ*dt*drift(X_n)
+    z::uType                 # Current iteration value
+    ztmp::uType              # New iteration result
+    k::uType                 # Function evaluation storage
+    drift_at_uprev::uType    # drift(X_n) = ν*a(X_n)
+    atmp::uType              # Residual storage for convergence check
+    poisson_counts::rateType # k ~ Poisson(dt * a(X_n))
+    rate_at_uprev::rateType  # a(X_n)
+    rate_tmp::rateType       # Temporary storage for rates
     theta::T
-    alpha1::T
-    alpha2::T
+    nlalg::N
 end
 
 function alg_cache(alg::ThetaTrapezoidalTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
         ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    theta = alg.theta
-    alpha1 = one(theta) / (2 * (one(theta) - theta) * theta)
-    alpha2 = ((one(theta) - theta)^2 + theta^2) / (2 * (one(theta) - theta) * theta)
-    ThetaTrapezoidalTauLeapingConstantCache(theta, alpha1, alpha2)
+    return ThetaTrapezoidalTauLeapingConstantCache(alg.theta, alg.nlsolve)
 end
 
 function alg_cache(alg::ThetaTrapezoidalTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
         ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    theta = alg.theta
-    alpha1 = one(theta) / (2 * (one(theta) - theta) * theta)
-    alpha2 = ((one(theta) - theta)^2 + theta^2) / (2 * (one(theta) - theta) * theta)
     tmp = zero(u)
-    predictor = zero(u)
-    predictor_counts = zero(jump_rate_prototype)
-    corrector_counts = zero(jump_rate_prototype)
-    rate_at_predictor = zero(jump_rate_prototype)
+    z = zero(u)
+    ztmp = zero(u)
+    k = zero(u)
+    drift_at_uprev = zero(u)
+    atmp = zero(u)
+    poisson_counts = zero(jump_rate_prototype)
     rate_at_uprev = zero(jump_rate_prototype)
-    corrector_rate = zero(jump_rate_prototype)
-    ThetaTrapezoidalTauLeapingCache(u, uprev, tmp, predictor, predictor_counts,
-        corrector_counts, rate_at_predictor, rate_at_uprev,
-        corrector_rate, theta, alpha1, alpha2)
+    rate_tmp = zero(jump_rate_prototype)
+    return ThetaTrapezoidalTauLeapingCache(u, uprev, tmp, z, ztmp, k, drift_at_uprev, atmp,
+        poisson_counts, rate_at_uprev, rate_tmp, alg.theta, alg.nlsolve)
 end
