@@ -1,5 +1,6 @@
 @inline function DiffEqBase.change_t_via_interpolation!(
-        integrator::SDEIntegrator, t, modify_save_endpoint::Type{Val{T}} = Val{false},
+        integrator::Union{SDEIntegrator, AbstractSDDEIntegrator}, t,
+        modify_save_endpoint::Type{Val{T}} = Val{false},
         reinitialize_alg = nothing
     ) where {T}
     # Can get rid of an allocation here with a function
