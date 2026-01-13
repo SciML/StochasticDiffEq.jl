@@ -49,51 +49,52 @@ function alg_cache(
 end
 
 # ThetaTrapezoidalTauLeaping cache
-# Uses NLFunctional-style fixed-point iteration adapted for tau-leaping
-# (The standard nlsolver infrastructure assumes ODE mass_matrix which DiscreteProblem lacks)
+# Uses standard nlsolver infrastructure from OrdinaryDiffEqNonlinearSolve
+# The nlsolve_f override in integrator_utils.jl provides the tau-leaping drift function
 
-struct ThetaTrapezoidalTauLeapingConstantCache{T, N} <: StochasticDiffEqConstantCache
+struct ThetaTrapezoidalTauLeapingConstantCache{rateType, T, N} <: StochasticDiffEqConstantCache
+    poisson_counts::rateType  # Storage for Poisson random variates
+    rate_at_uprev::rateType   # a(X_n)
     theta::T
-    nlalg::N  # NLFunctional algorithm with κ, max_iter settings
+    nlsolver::N
 end
 
 @cache struct ThetaTrapezoidalTauLeapingCache{uType, rateType, T, N} <:
               StochasticDiffEqMutableCache
     u::uType
     uprev::uType
-    tmp::uType               # Explicit contribution: X_n + ν*k - θ*dt*drift(X_n)
-    z::uType                 # Current iteration value
-    ztmp::uType              # New iteration result
-    k::uType                 # Function evaluation storage
-    drift_at_uprev::uType    # drift(X_n) = ν*a(X_n)
-    atmp::uType              # Residual storage for convergence check
-    poisson_counts::rateType # k ~ Poisson(dt * a(X_n))
-    rate_at_uprev::rateType  # a(X_n)
-    rate_tmp::rateType       # Temporary storage for rates
+    poisson_counts::rateType  # k ~ Poisson(dt * a(X_n))
+    rate_at_uprev::rateType   # a(X_n)
     theta::T
-    nlalg::N
+    nlsolver::N
 end
 
 function alg_cache(alg::ThetaTrapezoidalTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
         ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    return ThetaTrapezoidalTauLeapingConstantCache(alg.theta, alg.nlsolve)
+    # γ = theta (implicit weight), c = 1 (evaluate at t + dt)
+    γ, c = alg.theta, oneunit(t)
+    nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
+        alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false)
+    )
+    poisson_counts = zero(jump_rate_prototype)
+    rate_at_uprev = zero(jump_rate_prototype)
+    return ThetaTrapezoidalTauLeapingConstantCache(poisson_counts, rate_at_uprev, alg.theta, nlsolver)
 end
 
 function alg_cache(alg::ThetaTrapezoidalTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
         ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    tmp = zero(u)
-    z = zero(u)
-    ztmp = zero(u)
-    k = zero(u)
-    drift_at_uprev = zero(u)
-    atmp = zero(u)
+    # γ = theta (implicit weight), c = 1 (evaluate at t + dt)
+    γ, c = alg.theta, oneunit(t)
+    nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
+        alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true)
+    )
     poisson_counts = zero(jump_rate_prototype)
     rate_at_uprev = zero(jump_rate_prototype)
-    rate_tmp = zero(jump_rate_prototype)
-    return ThetaTrapezoidalTauLeapingCache(u, uprev, tmp, z, ztmp, k, drift_at_uprev, atmp,
-        poisson_counts, rate_at_uprev, rate_tmp, alg.theta, alg.nlsolve)
+    return ThetaTrapezoidalTauLeapingCache(u, uprev, poisson_counts, rate_at_uprev, alg.theta, nlsolver)
 end

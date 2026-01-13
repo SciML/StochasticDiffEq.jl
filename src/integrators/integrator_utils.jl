@@ -449,6 +449,46 @@ function OrdinaryDiffEqCore.nlsolve_f(integrator::SDEIntegrator)
     return nlsolve_f(integrator.f, unwrap_alg(integrator, true))
 end
 
+# TauLeapingDrift: wrapper for tau-leaping drift function used by nlsolver
+# Computes drift(u, p, t) = c(u, p, t, rate(u, p, t), nothing)
+# where c is the stoichiometry function and rate is the propensity function
+struct TauLeapingDrift{C, R, RateCache, IIP}
+    c::C              # Stoichiometry function (from integrator.c)
+    rate::R           # Rate function (from integrator.P.cache.rate)
+    rate_cache::RateCache  # Cache for rate values (for in-place version)
+end
+
+# Out-of-place: drift(u, p, t)
+function (td::TauLeapingDrift{C, R, Nothing, false})(u, p, t) where {C, R}
+    rates = td.rate(u, p, t)
+    return td.c(u, p, t, rates, nothing)
+end
+
+# In-place: drift(du, u, p, t)
+function (td::TauLeapingDrift{C, R, RateCache, true})(du, u, p, t) where {C, R, RateCache}
+    td.rate(td.rate_cache, u, p, t)
+    td.c(du, u, p, t, td.rate_cache, nothing)
+    return nothing
+end
+
+# nlsolve_f override for tau-leaping: return TauLeapingDrift wrapper
+function OrdinaryDiffEqCore.nlsolve_f(integrator::SDEIntegrator{A}) where {A <: ThetaTrapezoidalTauLeaping}
+    # Determine if the cache is in-place or constant (out-of-place) based on cache type
+    cache = integrator.cache
+    if cache isa ThetaTrapezoidalTauLeapingCache
+        # In-place version - use rate cache from the integrator's cache
+        rate_cache = cache.rate_at_uprev
+        return TauLeapingDrift{typeof(integrator.c), typeof(integrator.P.cache.rate), typeof(rate_cache), true}(
+            integrator.c, integrator.P.cache.rate, rate_cache
+        )
+    else
+        # Out-of-place (constant cache) version
+        return TauLeapingDrift{typeof(integrator.c), typeof(integrator.P.cache.rate), Nothing, false}(
+            integrator.c, integrator.P.cache.rate, nothing
+        )
+    end
+end
+
 function iip_generate_W(alg, u, uprev, p, t, dt, f, uEltypeNoUnits)
     if alg.nlsolve isa NLNewton
         nf = nlsolve_f(f, alg)
