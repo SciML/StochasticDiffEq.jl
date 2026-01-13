@@ -232,6 +232,7 @@ alg_order(alg::SMEB) = 1 // 1
 
 alg_order(alg::TauLeaping) = 1 // 1
 alg_order(alg::CaoTauLeaping) = 1 // 1
+alg_order(alg::ImplicitTauLeaping) = 1 // 1  # Weak first order (backward Euler)
 alg_order(alg::ThetaTrapezoidalTauLeaping) = 2 // 1  # Weak second order
 
 alg_order(alg::BAOAB) = 1 // 1

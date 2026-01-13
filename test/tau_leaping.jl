@@ -175,3 +175,27 @@ sol_theta_oop_ens = solve(
 )
 mean_theta_oop = mean([sol_theta_oop_ens.u[i][end, end] for i in 1:N_theta])
 @test mean_theta_oop ≈ mean_theta_ens rtol = 5.0e-2
+
+# ImplicitTauLeaping: First-order implicit (backward Euler) tau-leaping method
+# Reuse the same problem setup from ThetaTrapezoidalTauLeaping tests
+
+# Test basic solve with in-place functions
+@time sol_implicit = solve(
+    jump_iipprob_theta, ImplicitTauLeaping(); dt = 1.0, adaptive = false
+)
+@test length(sol_implicit.t) > 0
+
+# Test with out-of-place functions
+@time sol_implicit_oop = solve(
+    jump_prob_oop_theta, ImplicitTauLeaping(); dt = 1.0, adaptive = false
+)
+@test length(sol_implicit_oop.t) > 0
+
+# Compare mean with TauLeaping - should give similar results
+N_implicit = 10_000
+sol_implicit_ens = solve(
+    EnsembleProblem(jump_iipprob_theta), ImplicitTauLeaping();
+    dt = 1.0, adaptive = false, save_everystep = false, trajectories = N_implicit
+)
+mean_implicit_ens = mean([sol_implicit_ens.u[i][end, end] for i in 1:N_implicit])
+@test mean_tauleaping_theta ≈ mean_implicit_ens rtol = 5.0e-2

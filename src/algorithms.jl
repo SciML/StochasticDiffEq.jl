@@ -2850,6 +2850,77 @@ Automatically adjusts tau based on:
 struct CaoTauLeaping <: StochasticDiffEqJumpAdaptiveAlgorithm end
 
 """
+    ImplicitTauLeaping(; nlsolve=NLFunctional())
+
+**ImplicitTauLeaping: First Order Implicit Tau-Leaping Method (Jump-Diffusion)**
+
+An implicit (backward Euler) tau-leaping method for stiff chemical kinetic systems.
+Uses backward Euler discretization to provide improved stability for systems with
+fast reversible reactions or stiff rate constants.
+
+## Method Properties
+
+| Property              | Value       |
+|:----------------------|:------------|
+| Jacobian Required     | No          |
+| Implicit              | Yes         |
+| Adaptive              | No          |
+| Stability             | A-stable    |
+| Weak Order            | 1           |
+
+## Mathematical Formulation
+
+The method solves the implicit equation:
+
+```math
+X_{n+1} = X_n + ν ⋅ Poisson(dt ⋅ a(X_{n+1}))
+```
+
+which is approximated by:
+
+```math
+X_{n+1} = X_n + ν ⋅ k + dt ⋅ (drift(X_{n+1}) - drift(X_n))
+```
+
+where k ~ Poisson(dt * a(X_n)) and drift(u) = ν * a(u).
+
+This corresponds to `ThetaTrapezoidalTauLeaping` with θ = 1 (fully implicit).
+
+## Keyword Arguments
+
+- `nlsolve`: Nonlinear solver algorithm (default: `NLFunctional()`).
+  Options include `NLFunctional()`, `NLAnderson()`, and `NLNewton()`.
+
+## Example
+
+```julia
+using StochasticDiffEq, JumpProcesses
+
+# Define rate function and stoichiometry
+rate(out, u, p, t) = (out[1] = 0.1*u[1]; out[2] = 0.05*u[2])
+c(du, u, p, t, counts, mark) = (du[1] = -counts[1] + counts[2]; du[2] = counts[1] - counts[2])
+
+rj = RegularJump(rate, c, 2)
+prob = DiscreteProblem([100.0, 0.0], (0.0, 10.0))
+jprob = JumpProblem(prob, Direct(), rj)
+
+sol = solve(jprob, ImplicitTauLeaping(); dt=0.1)
+```
+
+## References
+
+  - Rathinam, M., Petzold, L.R., Cao, Y., Gillespie, D.T., "Stiffness in stochastic
+    chemically reacting systems: The implicit tau-leaping method", J. Chem. Phys.
+    119, 12784 (2003)
+"""
+struct ImplicitTauLeaping{N} <: StochasticDiffEqJumpAdaptiveAlgorithm
+    nlsolve::N
+end
+function ImplicitTauLeaping(; nlsolve = NLFunctional())
+    ImplicitTauLeaping(nlsolve)
+end
+
+"""
     ThetaTrapezoidalTauLeaping(; theta=0.5, max_iters=10, abstol=1e-8, reltol=1e-6)
 
 **ThetaTrapezoidalTauLeaping: Implicit Weak Second Order Tau-Leaping Method (Jump-Diffusion)**
