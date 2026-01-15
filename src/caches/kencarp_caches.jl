@@ -7,7 +7,7 @@ function alg_cache(
         alg::SKenCarp, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     tab = SKenCarpTableau(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
     γ, c = tab.γ, tab.c3
@@ -48,7 +48,7 @@ function alg_cache(
         alg::SKenCarp, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     tab = SKenCarpTableau(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
     γ, c = tab.γ, tab.c3

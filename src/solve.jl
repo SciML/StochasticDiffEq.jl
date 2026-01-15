@@ -623,7 +623,7 @@ function DiffEqBase.__init(
     cache = alg_cache(
         alg, prob, u, dW, dZ, p, rate_prototype, noise_rate_prototype,
         jump_prototype, uEltypeNoUnits, uBottomEltypeNoUnits,
-        tTypeNoUnits, uprev, f, t, dt, Val{isinplace(_prob)}
+        tTypeNoUnits, uprev, f, t, dt, Val{isinplace(_prob)}, verbose_internal
     )
 
     if _prob isa JumpProblem && prob isa DiscreteProblem && prob isa Integer
