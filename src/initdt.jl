@@ -18,12 +18,14 @@ function sde_determine_initdt(
     smalldt = tType(1 // 10^(6))
     if !isinplace(prob)
         f₀ = f(u0, p, t)
-        if integrator.opts.verbose && any(x -> any(isnan, x), f₀)
-            @warn("First function call for f produced NaNs. Exiting.")
+        if any(x -> any(isnan, x), f₀)
+            @SciMLMessage("First function call for f produced NaNs. Exiting.",
+                integrator.opts.verbose, :function_NaN)
         end
         g₀ = 3g(u0, p, t)
-        if integrator.opts.verbose && any(x -> any(isnan, x), g₀)
-            @warn("First function call for g produced NaNs. Exiting.")
+        if any(x -> any(isnan, x), g₀)
+            @SciMLMessage("First function call for g produced NaNs. Exiting.",
+                integrator.opts.verbose, :function_NaN)
         end
     else
         f₀ = zero(u0)
@@ -33,13 +35,15 @@ function sde_determine_initdt(
             g₀ = zero(u0)
         end
         f(f₀, u0, p, t)
-        if integrator.opts.verbose && any(x -> any(isnan, x), f₀)
-            @warn("First function call for f produced NaNs. Exiting.")
+        if any(x -> any(isnan, x), f₀)
+            @SciMLMessage("First function call for f produced NaNs. Exiting.",
+                integrator.opts.verbose, :function_NaN)
         end
         g(g₀, u0, p, t)
         g₀ .*= 3
-        if integrator.opts.verbose && any(x -> any(isnan, x), g₀)
-            @warn("First function call for g produced NaNs. Exiting.")
+        if any(x -> any(isnan, x), g₀)
+            @SciMLMessage("First function call for g produced NaNs. Exiting.",
+                integrator.opts.verbose, :function_NaN)
         end
     end
 

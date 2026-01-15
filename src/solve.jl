@@ -656,6 +656,17 @@ function DiffEqBase.__init(
         controller = default_controller(alg, cache, QT(qoldinit), beta1, beta2)
     end
 
+    # Convert verbose argument to SDEVerbosity
+    verbose_internal = if verbose isa Bool
+        verbose ? SDEVerbosity(Standard()) : SDEVerbosity(None())
+    elseif verbose isa AbstractVerbosityPreset
+        SDEVerbosity(verbose)
+    elseif verbose isa SDEVerbosity
+        verbose
+    else
+        throw(ArgumentError("verbose must be a Bool, AbstractVerbosityPreset, or SDEVerbosity"))
+    end
+
     opts = SDEOptions(
         maxiters, save_everystep,
         adaptive, abstol_internal,
@@ -678,7 +689,7 @@ function DiffEqBase.__init(
         convert.(uBottomEltypeNoUnits, delta),
         dense, save_on, save_start, save_end, save_end_user, save_noise,
         callbacks_internal, isoutofdomain, unstable_check,
-        verbose, calck, force_dtmin,
+        verbose_internal, calck, force_dtmin,
         advance_to_tstop, stop_at_next_tstop
     )
 
@@ -818,9 +829,8 @@ function handle_dt!(integrator)
             error("Automatic dt setting has the wrong sign. Exiting. Please report this error.")
         end
         if isnan(integrator.dt)
-            if integrator.opts.verbose
-                @warn("Automatic dt set the starting dt as NaN, causing instability.")
-            end
+            @SciMLMessage("Automatic dt set the starting dt as NaN, causing instability.",
+                integrator.opts.verbose, :dt_NaN)
         end
     elseif integrator.opts.adaptive && integrator.dt > zero(integrator.dt) &&
             integrator.tdir < 0
