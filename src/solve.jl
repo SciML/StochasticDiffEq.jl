@@ -620,6 +620,17 @@ function DiffEqBase.__init(
 
     dW, dZ = isnothing(W) ? (nothing, nothing) : (W.dW, W.dZ)
 
+    # Convert verbose argument to SDEVerbosity
+    verbose_internal = if verbose isa Bool
+        verbose ? SDEVerbosity(Standard()) : SDEVerbosity(None())
+    elseif verbose isa AbstractVerbosityPreset
+        SDEVerbosity(verbose)
+    elseif verbose isa SDEVerbosity
+        verbose
+    else
+        throw(ArgumentError("verbose must be a Bool, AbstractVerbosityPreset, or SDEVerbosity"))
+    end
+
     cache = alg_cache(
         alg, prob, u, dW, dZ, p, rate_prototype, noise_rate_prototype,
         jump_prototype, uEltypeNoUnits, uBottomEltypeNoUnits,
@@ -654,17 +665,6 @@ function DiffEqBase.__init(
 
     if controller === nothing
         controller = default_controller(alg, cache, QT(qoldinit), beta1, beta2)
-    end
-
-    # Convert verbose argument to SDEVerbosity
-    verbose_internal = if verbose isa Bool
-        verbose ? SDEVerbosity(Standard()) : SDEVerbosity(None())
-    elseif verbose isa AbstractVerbosityPreset
-        SDEVerbosity(verbose)
-    elseif verbose isa SDEVerbosity
-        verbose
-    else
-        throw(ArgumentError("verbose must be a Bool, AbstractVerbosityPreset, or SDEVerbosity"))
     end
 
     opts = SDEOptions(
