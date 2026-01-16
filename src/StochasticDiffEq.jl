@@ -38,8 +38,9 @@ using Logging, SparseArrays
 
 using SciMLLogging: AbstractVerbositySpecifier, AbstractVerbosityPreset,
     AbstractMessageLevel, None, Minimal, Standard, Detailed, All,
-    Silent, DebugLevel, InfoLevel, WarnLevel, ErrorLevel, @SciMLMessage,
-    @verbosity_specifier
+    Silent, DebugLevel, InfoLevel, WarnLevel, ErrorLevel, @SciMLMessage
+
+using OrdinaryDiffEqCore: ODEVerbosity
 
 using LinearAlgebra, Random
 
@@ -112,7 +113,6 @@ end
 
 include("misc_utils.jl")
 include("algorithms.jl")
-include("verbosity.jl")
 include("options_type.jl")
 include("interp_func.jl")
 include("caches/cache_types.jl")

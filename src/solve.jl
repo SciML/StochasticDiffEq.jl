@@ -620,15 +620,15 @@ function DiffEqBase.__init(
 
     dW, dZ = isnothing(W) ? (nothing, nothing) : (W.dW, W.dZ)
 
-    # Convert verbose argument to SDEVerbosity
+    # Convert verbose argument to ODEVerbosity
     verbose_internal = if verbose isa Bool
-        verbose ? SDEVerbosity(Standard()) : SDEVerbosity(None())
+        verbose ? ODEVerbosity(Standard()) : ODEVerbosity(None())
     elseif verbose isa AbstractVerbosityPreset
-        SDEVerbosity(verbose)
-    elseif verbose isa SDEVerbosity
+        ODEVerbosity(verbose)
+    elseif verbose isa ODEVerbosity
         verbose
     else
-        throw(ArgumentError("verbose must be a Bool, AbstractVerbosityPreset, or SDEVerbosity"))
+        throw(ArgumentError("verbose must be a Bool, AbstractVerbosityPreset, or ODEVerbosity"))
     end
 
     cache = alg_cache(
