@@ -27,7 +27,7 @@ function alg_cache(
     γ, c = alg.theta, zero(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true), verbose.ode_verbosity
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true), verbose
     )
     fsalfirst = zero(rate_prototype)
     return ImplicitEMCache(u, uprev, fsalfirst, gtmp, gtmp2, dW_cache, nlsolver)
@@ -46,7 +46,7 @@ function alg_cache(
     γ, c = alg.theta, zero(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false), verbose.ode_verbosity
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false), verbose
     )
     return ImplicitEMConstantCache(nlsolver)
 end
@@ -86,7 +86,7 @@ function alg_cache(
     γ, c = alg.theta, zero(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true), verbose.ode_verbosity
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true), verbose
     )
     fsalfirst = zero(rate_prototype)
     return ImplicitEulerHeunCache(u, uprev, fsalfirst, gtmp, gtmp2, gtmp3, nlsolver, dW_cache)
@@ -105,7 +105,7 @@ function alg_cache(
     γ, c = alg.theta, zero(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false), verbose.ode_verbosity
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false), verbose
     )
     return ImplicitEulerHeunConstantCache(nlsolver)
 end
@@ -134,7 +134,7 @@ function alg_cache(
     γ, c = alg.theta, zero(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true), verbose.ode_verbosity
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true), verbose
     )
     fsalfirst = zero(rate_prototype)
     return ImplicitRKMilCache(u, uprev, fsalfirst, gtmp, gtmp2, gtmp3, nlsolver)
@@ -153,7 +153,7 @@ function alg_cache(
     γ, c = alg.theta, zero(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false), verbose.ode_verbosity
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false), verbose
     )
     return ImplicitRKMilConstantCache(nlsolver)
 end

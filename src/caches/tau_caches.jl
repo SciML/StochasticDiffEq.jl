@@ -75,7 +75,7 @@ function alg_cache(alg::ImplicitTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype
     γ, c = one(t), oneunit(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false), verbose.ode_verbosity
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false), verbose
     )
     poisson_counts = zero(jump_rate_prototype)
     rate_at_uprev = zero(jump_rate_prototype)
@@ -90,7 +90,7 @@ function alg_cache(alg::ImplicitTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype
     γ, c = one(t), oneunit(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true), verbose.ode_verbosity
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true), verbose
     )
     poisson_counts = zero(jump_rate_prototype)
     rate_at_uprev = zero(jump_rate_prototype)
@@ -126,7 +126,7 @@ function alg_cache(alg::ThetaTrapezoidalTauLeaping, prob, u, ΔW, ΔZ, p, rate_p
     γ, c = alg.theta, oneunit(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false), verbose.ode_verbosity
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false), verbose
     )
     poisson_counts = zero(jump_rate_prototype)
     rate_at_uprev = zero(jump_rate_prototype)
@@ -141,7 +141,7 @@ function alg_cache(alg::ThetaTrapezoidalTauLeaping, prob, u, ΔW, ΔZ, p, rate_p
     γ, c = alg.theta, oneunit(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true), verbose.ode_verbosity
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true), verbose
     )
     poisson_counts = zero(jump_rate_prototype)
     rate_at_uprev = zero(jump_rate_prototype)

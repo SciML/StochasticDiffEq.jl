@@ -74,8 +74,6 @@ import OrdinaryDiffEqCore
 import OrdinaryDiffEqDifferentiation
 import OrdinaryDiffEqNonlinearSolve
 
-using OrdinaryDiffEqCore: ODEVerbosity
-
 if isdefined(OrdinaryDiffEqCore, :FastConvergence)
     using OrdinaryDiffEqCore:
         FastConvergence, Convergence, SlowConvergence,

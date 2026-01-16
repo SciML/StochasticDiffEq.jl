@@ -1,4 +1,4 @@
-using StochasticDiffEq, OrdinaryDiffEqCore
+using StochasticDiffEq
 using StochasticDiffEq: SDEVerbosity
 using SciMLLogging: SciMLLogging, AbstractMessageLevel
 using Test
@@ -7,19 +7,25 @@ using Test
     # Test default constructor
     @testset "Default constructor" begin
         v = SDEVerbosity()
-        @test v.ode_verbosity isa OrdinaryDiffEqCore.ODEVerbosity
+        # Test some ODE fields are present
+        @test v.dt_NaN isa SciMLLogging.WarnLevel
+        @test v.max_iters isa SciMLLogging.WarnLevel
+        @test v.instability isa SciMLLogging.WarnLevel
+        # Test SDE-specific fields
         @test v.noise_evaluation isa SciMLLogging.Silent
         @test v.adaptive_timestepping isa SciMLLogging.Silent
-        @test v.dt_NaN isa SciMLLogging.WarnLevel
         @test v.function_NaN isa SciMLLogging.WarnLevel
     end
 
     # Test preset constructors
     @testset "Preset: None" begin
         v = SDEVerbosity(None())
-        @test v.ode_verbosity isa OrdinaryDiffEqCore.ODEVerbosity
-        @test all(getfield(v, f) isa SciMLLogging.Silent
-        for f in fieldnames(SDEVerbosity) if f != :ode_verbosity)
+        # All fields should be Silent
+        @test v.noise_evaluation isa SciMLLogging.Silent
+        @test v.adaptive_timestepping isa SciMLLogging.Silent
+        @test v.dt_NaN isa SciMLLogging.Silent
+        @test v.function_NaN isa SciMLLogging.Silent
+        @test v.max_iters isa SciMLLogging.Silent
     end
 
     @testset "Preset: Minimal" begin
@@ -86,11 +92,16 @@ using Test
         @test v.dt_NaN isa SciMLLogging.WarnLevel  # Overridden
     end
 
-    # Test ODE verbosity passthrough
-    @testset "ODE verbosity" begin
-        ode_v = OrdinaryDiffEqCore.ODEVerbosity(Detailed())
-        v = SDEVerbosity(ode_verbosity = ode_v)
-        @test v.ode_verbosity === ode_v
+    # Test ODE field construction
+    @testset "ODE fields" begin
+        v = SDEVerbosity(
+            dt_NaN = WarnLevel(),
+            max_iters = InfoLevel(),
+            alg_switch = InfoLevel()
+        )
+        @test v.dt_NaN isa SciMLLogging.WarnLevel
+        @test v.max_iters isa SciMLLogging.InfoLevel
+        @test v.alg_switch isa SciMLLogging.InfoLevel
     end
 
     # Test invalid arguments
@@ -108,12 +119,12 @@ end
         @test v.noise_evaluation isa SciMLLogging.InfoLevel
     end
 
-    # Test nested ODE field access via getproperty
-    @testset "Nested ODE field access" begin
-        ode_v = OrdinaryDiffEqCore.ODEVerbosity(dt_NaN = WarnLevel())
-        v = SDEVerbosity(ode_verbosity = ode_v)
-        @test v.dt_NaN isa SciMLLogging.AbstractMessageLevel
-        @test v.max_iters isa SciMLLogging.AbstractMessageLevel
+    # Test ODE field access
+    @testset "ODE field access" begin
+        v = SDEVerbosity(dt_NaN = WarnLevel(), max_iters = InfoLevel())
+        @test v.dt_NaN isa SciMLLogging.WarnLevel
+        @test v.max_iters isa SciMLLogging.InfoLevel
+        @test v.instability isa SciMLLogging.AbstractMessageLevel
     end
 
     # Test that invalid field access errors
