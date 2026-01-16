@@ -20,12 +20,12 @@ function sde_determine_initdt(
         f₀ = f(u0, p, t)
         if any(x -> any(isnan, x), f₀)
             @SciMLMessage("First function call for f produced NaNs. Exiting.",
-                integrator.opts.verbose, :function_NaN)
+                integrator.opts.verbose, :init_NaN)
         end
         g₀ = 3g(u0, p, t)
         if any(x -> any(isnan, x), g₀)
             @SciMLMessage("First function call for g produced NaNs. Exiting.",
-                integrator.opts.verbose, :function_NaN)
+                integrator.opts.verbose, :init_NaN)
         end
     else
         f₀ = zero(u0)
@@ -37,13 +37,13 @@ function sde_determine_initdt(
         f(f₀, u0, p, t)
         if any(x -> any(isnan, x), f₀)
             @SciMLMessage("First function call for f produced NaNs. Exiting.",
-                integrator.opts.verbose, :function_NaN)
+                integrator.opts.verbose, :init_NaN)
         end
         g(g₀, u0, p, t)
         g₀ .*= 3
         if any(x -> any(isnan, x), g₀)
             @SciMLMessage("First function call for g produced NaNs. Exiting.",
-                integrator.opts.verbose, :function_NaN)
+                integrator.opts.verbose, :init_NaN)
         end
     end
 
