@@ -55,24 +55,6 @@
     )
 end
 
-function Base.getproperty(v::SDEVerbosity, s::Symbol)
-    # For parametric types, we need to use the base type
-    SDE_fields = fieldnames(typeof(v).name.wrapper)
-    if s in SDE_fields
-        return getfield(v, s)
-    else
-        # Try to delegate to ODE verbosity
-        ode_v = getfield(v, :ode_verbosity)
-        ODE_fields = fieldnames(typeof(ode_v).name.wrapper)
-        if s in ODE_fields
-            return getfield(ode_v, s)
-        else
-            return error("type SDEVerbosity has no field ", s)
-        end
-    end
-end
-
-
 """
     SDEVerbosity <: AbstractVerbositySpecifier
 
