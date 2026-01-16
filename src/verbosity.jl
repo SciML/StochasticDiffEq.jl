@@ -1,63 +1,3 @@
-
-"""
-    SDEVerbosity <: AbstractVerbositySpecifier
-
-Verbosity configuration for StochasticDiffEq.jl solvers, providing fine-grained control over
-diagnostic messages, warnings, and errors during SDE solution.
-
-# Fields
-
-## ODE Verbosity
-- `ode_verbosity`: Verbosity configuration for the underlying ODE solver
-
-## SDE-Specific Group
-- `noise_evaluation`: Messages about noise term evaluation
-- `adaptive_timestepping`: Messages about adaptive timestepping decisions
-- `dt_NaN`: Messages when automatic dt is NaN
-- `function_NaN`: Messages when drift or diffusion functions return NaN
-
-# Constructors
-
-    SDEVerbosity(preset::AbstractVerbosityPreset)
-
-Create a `SDEVerbosity` using a preset configuration:
-- `SciMLLogging.None()`: All messages disabled
-- `SciMLLogging.Minimal()`: Only critical errors and fatal issues
-- `SciMLLogging.Standard()`: Balanced verbosity (default)
-- `SciMLLogging.Detailed()`: Comprehensive debugging information
-- `SciMLLogging.All()`: Maximum verbosity
-
-    SDEVerbosity(; ode_verbosity=nothing, sde_specific=nothing, kwargs...)
-
-Create a `SDEVerbosity` with group-level or individual field control.
-
-# Examples
-
-```julia
-# Use a preset
-verbose = SDEVerbosity(SciMLLogging.Standard())
-
-# Set ODE verbosity and SDE-specific group
-verbose = SDEVerbosity(
-    ode_verbosity = ODEVerbosity(SciMLLogging.Detailed()),
-    sde_specific = SciMLLogging.InfoLevel()
-)
-
-# Set individual fields
-verbose = SDEVerbosity(
-    noise_evaluation = SciMLLogging.InfoLevel(),
-    dt_NaN = SciMLLogging.WarnLevel()
-)
-
-# Mix group and individual settings
-verbose = SDEVerbosity(
-    sde_specific = SciMLLogging.InfoLevel(),  # Set all SDE-specific to InfoLevel
-    dt_NaN = SciMLLogging.WarnLevel()  # Override specific field
-)
-```
-"""
-function SDEVerbosity end
-
 @verbosity_specifier SDEVerbosity begin
     toggles = (
         :ode_verbosity,
@@ -131,3 +71,63 @@ function Base.getproperty(v::SDEVerbosity, s::Symbol)
         end
     end
 end
+
+
+"""
+    SDEVerbosity <: AbstractVerbositySpecifier
+
+Verbosity configuration for StochasticDiffEq.jl solvers, providing fine-grained control over
+diagnostic messages, warnings, and errors during SDE solution.
+
+# Fields
+
+## ODE Verbosity
+- `ode_verbosity`: Verbosity configuration for the underlying ODE solver
+
+## SDE-Specific Group
+- `noise_evaluation`: Messages about noise term evaluation
+- `adaptive_timestepping`: Messages about adaptive timestepping decisions
+- `dt_NaN`: Messages when automatic dt is NaN
+- `function_NaN`: Messages when drift or diffusion functions return NaN
+
+# Constructors
+
+    SDEVerbosity(preset::AbstractVerbosityPreset)
+
+Create a `SDEVerbosity` using a preset configuration:
+- `SciMLLogging.None()`: All messages disabled
+- `SciMLLogging.Minimal()`: Only critical errors and fatal issues
+- `SciMLLogging.Standard()`: Balanced verbosity (default)
+- `SciMLLogging.Detailed()`: Comprehensive debugging information
+- `SciMLLogging.All()`: Maximum verbosity
+
+    SDEVerbosity(; ode_verbosity=nothing, sde_specific=nothing, kwargs...)
+
+Create a `SDEVerbosity` with group-level or individual field control.
+
+# Examples
+
+```julia
+# Use a preset
+verbose = SDEVerbosity(SciMLLogging.Standard())
+
+# Set ODE verbosity and SDE-specific group
+verbose = SDEVerbosity(
+    ode_verbosity = ODEVerbosity(SciMLLogging.Detailed()),
+    sde_specific = SciMLLogging.InfoLevel()
+)
+
+# Set individual fields
+verbose = SDEVerbosity(
+    noise_evaluation = SciMLLogging.InfoLevel(),
+    dt_NaN = SciMLLogging.WarnLevel()
+)
+
+# Mix group and individual settings
+verbose = SDEVerbosity(
+    sde_specific = SciMLLogging.InfoLevel(),  # Set all SDE-specific to InfoLevel
+    dt_NaN = SciMLLogging.WarnLevel()  # Override specific field
+)
+```
+"""
+function SDEVerbosity end
