@@ -1,3 +1,4 @@
+
 """
     SDEVerbosity <: AbstractVerbositySpecifier
 
@@ -55,6 +56,8 @@ verbose = SDEVerbosity(
 )
 ```
 """
+function SDEVerbosity end
+
 @verbosity_specifier SDEVerbosity begin
     toggles = (
         :ode_verbosity,
