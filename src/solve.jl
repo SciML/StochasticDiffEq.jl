@@ -620,10 +620,21 @@ function DiffEqBase.__init(
 
     dW, dZ = isnothing(W) ? (nothing, nothing) : (W.dW, W.dZ)
 
+    # Convert verbose argument to ODEVerbosity
+    verbose_internal = if verbose isa Bool
+        verbose ? ODEVerbosity(Standard()) : ODEVerbosity(None())
+    elseif verbose isa AbstractVerbosityPreset
+        ODEVerbosity(verbose)
+    elseif verbose isa ODEVerbosity
+        verbose
+    else
+        throw(ArgumentError("verbose must be a Bool, AbstractVerbosityPreset, or ODEVerbosity"))
+    end
+
     cache = alg_cache(
         alg, prob, u, dW, dZ, p, rate_prototype, noise_rate_prototype,
         jump_prototype, uEltypeNoUnits, uBottomEltypeNoUnits,
-        tTypeNoUnits, uprev, f, t, dt, Val{isinplace(_prob)}
+        tTypeNoUnits, uprev, f, t, dt, Val{isinplace(_prob)}, verbose_internal
     )
 
     if _prob isa JumpProblem && prob isa DiscreteProblem && prob isa Integer
@@ -678,7 +689,7 @@ function DiffEqBase.__init(
         convert.(uBottomEltypeNoUnits, delta),
         dense, save_on, save_start, save_end, save_end_user, save_noise,
         callbacks_internal, isoutofdomain, unstable_check,
-        verbose, calck, force_dtmin,
+        verbose_internal, calck, force_dtmin,
         advance_to_tstop, stop_at_next_tstop
     )
 
@@ -818,9 +829,8 @@ function handle_dt!(integrator)
             error("Automatic dt setting has the wrong sign. Exiting. Please report this error.")
         end
         if isnan(integrator.dt)
-            if integrator.opts.verbose
-                @warn("Automatic dt set the starting dt as NaN, causing instability.")
-            end
+            @SciMLMessage("Automatic dt set the starting dt as NaN, causing instability.",
+                integrator.opts.verbose, :dt_NaN)
         end
     elseif integrator.opts.adaptive && integrator.dt > zero(integrator.dt) &&
             integrator.tdir < 0

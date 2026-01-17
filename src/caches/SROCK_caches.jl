@@ -24,7 +24,7 @@ function alg_cache(
         alg::SROCK1, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     return SROCK1ConstantCache{typeof(t)}(u)
 end
@@ -33,7 +33,7 @@ function alg_cache(
         alg::SROCK1, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     k = zero(rate_prototype)
     uᵢ₋₁ = zero(u)
@@ -83,7 +83,7 @@ function alg_cache(
         alg::SROCK2, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     return SROCK2ConstantCache{typeof(t)}(u)
 end
@@ -92,7 +92,7 @@ function alg_cache(
         alg::SROCK2, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     k = zero(rate_prototype)
     uᵢ = zero(u)
@@ -146,7 +146,7 @@ function alg_cache(
         alg::SROCKEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     return SROCKEMConstantCache{typeof(t)}(u)
 end
@@ -155,7 +155,7 @@ function alg_cache(
         alg::SROCKEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     k = zero(rate_prototype)
     uᵢ₋₁ = zero(u)
@@ -207,7 +207,7 @@ function alg_cache(
         alg::SKSROCK, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     return SKSROCKConstantCache{typeof(t)}(u)
 end
@@ -216,7 +216,7 @@ function alg_cache(
         alg::SKSROCK, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     k = zero(rate_prototype)
     uᵢ₋₁ = zero(u)
@@ -276,7 +276,7 @@ function alg_cache(
         alg::TangXiaoSROCK2, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     return TangXiaoSROCK2ConstantCache{typeof(t)}(u)
 end
@@ -285,7 +285,7 @@ function alg_cache(
         alg::TangXiaoSROCK2, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     k = zero(rate_prototype)
     uᵢ = zero(u)
@@ -354,7 +354,7 @@ function alg_cache(
         alg::KomBurSROCK2, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     return KomBurSROCK2ConstantCache{typeof(t)}(u)
 end
@@ -363,7 +363,7 @@ function alg_cache(
         alg::KomBurSROCK2, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     utmp = zero(u)
     uᵢ₋₁ = zero(u)
@@ -431,7 +431,7 @@ function alg_cache(
         alg::SROCKC2, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     return SROCKC2ConstantCache{typeof(t)}(u)
 end
@@ -440,7 +440,7 @@ function alg_cache(
         alg::SROCKC2, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     k = zero(rate_prototype)
     uᵢ = zero(u)

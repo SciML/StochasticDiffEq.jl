@@ -25,7 +25,8 @@ function alg_cache(
         f,
         t,
         dt,
-        ::Type{Val{T}}
+        ::Type{Val{T}},
+        verbose
     ) where {
         T, algType <: StochasticCompositeAlgorithm,
         uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits,
@@ -34,7 +35,7 @@ function alg_cache(
         (x) -> alg_cache(
             x, prob, u, ΔW, ΔZ, p, rate_prototype, noise_rate_prototype,
             jump_rate_prototype, uEltypeNoUnits, uBottomEltypeNoUnits,
-            tTypeNoUnits, uprev, f, t, dt, Val{T}
+            tTypeNoUnits, uprev, f, t, dt, Val{T}, verbose
         ),
         alg.algs
     )

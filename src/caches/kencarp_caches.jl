@@ -7,13 +7,13 @@ function alg_cache(
         alg::SKenCarp, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     tab = SKenCarpTableau(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
     γ, c = tab.γ, tab.c3
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false)
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false), verbose
     )
     return SKenCarpConstantCache(nlsolver, tab)
 end
@@ -48,13 +48,13 @@ function alg_cache(
         alg::SKenCarp, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     tab = SKenCarpTableau(real(uBottomEltypeNoUnits), real(tTypeNoUnits))
     γ, c = tab.γ, tab.c3
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true)
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true), verbose
     )
     fsalfirst = zero(rate_prototype)
 

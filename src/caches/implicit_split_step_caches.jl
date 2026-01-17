@@ -15,12 +15,12 @@ function alg_cache(
         alg::ISSEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype,
         ::Type{uEltypeNoUnits}, ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     γ, c = alg.theta, zero(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true)
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true), verbose
     )
     fsalfirst = zero(rate_prototype)
     gtmp = zero(noise_rate_prototype)
@@ -46,12 +46,12 @@ function alg_cache(
         alg::ISSEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype,
         ::Type{uEltypeNoUnits}, ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     γ, c = alg.theta, zero(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false)
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false), verbose
     )
     return ISSEMConstantCache(nlsolver)
 end
@@ -74,12 +74,12 @@ function alg_cache(
         alg::ISSEulerHeun, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype,
         ::Type{uEltypeNoUnits}, ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     γ, c = alg.theta, zero(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true)
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true), verbose
     )
     fsalfirst = zero(rate_prototype)
 
@@ -108,12 +108,12 @@ function alg_cache(
         alg::ISSEulerHeun, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype,
         ::Type{uEltypeNoUnits}, ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     γ, c = alg.theta, zero(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false)
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false), verbose
     )
     return ISSEulerHeunConstantCache(nlsolver)
 end

@@ -12,7 +12,7 @@ function alg_cache(
         alg::TauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     return TauLeapingConstantCache()
 end
@@ -21,7 +21,7 @@ function alg_cache(
         alg::TauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     tmp = zero(u)
     newrate = zero(jump_rate_prototype)
@@ -33,7 +33,7 @@ function alg_cache(
         alg::CaoTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     return TauLeapingConstantCache()
 end
@@ -42,7 +42,7 @@ function alg_cache(
         alg::CaoTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     tmp = zero(u)
     return TauLeapingCache(u, uprev, tmp, nothing, nothing)
@@ -70,12 +70,12 @@ end
 function alg_cache(alg::ImplicitTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{false}}, verbose) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     # γ = 1 (fully implicit), c = 1 (evaluate at t + dt)
     γ, c = one(t), oneunit(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false)
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false), verbose
     )
     poisson_counts = zero(jump_rate_prototype)
     rate_at_uprev = zero(jump_rate_prototype)
@@ -85,12 +85,12 @@ end
 function alg_cache(alg::ImplicitTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}, verbose) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     # γ = 1 (fully implicit), c = 1 (evaluate at t + dt)
     γ, c = one(t), oneunit(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true)
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true), verbose
     )
     poisson_counts = zero(jump_rate_prototype)
     rate_at_uprev = zero(jump_rate_prototype)
@@ -121,12 +121,12 @@ end
 function alg_cache(alg::ThetaTrapezoidalTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{false}}, verbose) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     # γ = theta (implicit weight), c = 1 (evaluate at t + dt)
     γ, c = alg.theta, oneunit(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false)
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false), verbose
     )
     poisson_counts = zero(jump_rate_prototype)
     rate_at_uprev = zero(jump_rate_prototype)
@@ -136,12 +136,12 @@ end
 function alg_cache(alg::ThetaTrapezoidalTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}, verbose) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     # γ = theta (implicit weight), c = 1 (evaluate at t + dt)
     γ, c = alg.theta, oneunit(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true)
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true), verbose
     )
     poisson_counts = zero(jump_rate_prototype)
     rate_at_uprev = zero(jump_rate_prototype)

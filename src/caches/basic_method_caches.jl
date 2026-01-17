@@ -11,7 +11,7 @@ function alg_cache(
         alg::EM, prob, u, ΔW, ΔZ, p, rate_prototype, noise_rate_prototype,
         jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     return EMConstantCache()
 end
@@ -20,7 +20,7 @@ function alg_cache(
         alg::EM, prob, u, ΔW, ΔZ, p, rate_prototype, noise_rate_prototype,
         jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     tmp = zero(u)
     rtmp1 = zero(rate_prototype)
@@ -45,7 +45,7 @@ function alg_cache(
         alg::SplitEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     return SplitEMConstantCache()
 end
@@ -54,7 +54,7 @@ function alg_cache(
         alg::SplitEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     tmp = zero(u)
     rtmp1 = zero(rate_prototype)
@@ -79,7 +79,7 @@ function alg_cache(
         alg::EulerHeun, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     return EulerHeunConstantCache()
 end
@@ -88,7 +88,7 @@ function alg_cache(
         alg::EulerHeun, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     tmp = zero(u)
     ftmp1 = zero(rate_prototype)
@@ -111,7 +111,7 @@ function alg_cache(
         alg::RandomEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     return RandomEMConstantCache()
 end
@@ -120,7 +120,7 @@ function alg_cache(
         alg::RandomEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     tmp = zero(u)
     rtmp = zero(rate_prototype)
@@ -140,7 +140,7 @@ function alg_cache(
         alg::RandomTamedEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     return RandomTamedEMConstantCache()
 end
@@ -149,7 +149,7 @@ function alg_cache(
         alg::RandomTamedEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     tmp = zero(u)
     rtmp = zero(rate_prototype)
@@ -170,7 +170,7 @@ function alg_cache(
         alg::RandomHeun, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     return RandomHeunConstantCache()
 end
@@ -179,7 +179,7 @@ function alg_cache(
         alg::RandomHeun, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     tmp = zero(u)
     rtmp1 = zero(rate_prototype)
@@ -202,7 +202,7 @@ function alg_cache(
         alg::SimplifiedEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     return SimplifiedEMConstantCache()
 end
@@ -211,7 +211,7 @@ function alg_cache(
         alg::SimplifiedEM, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     if ΔW isa Union{SArray, Number}
         _dW = copy(ΔW)
@@ -239,7 +239,7 @@ function alg_cache(
         alg::RKMil, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     return RKMilConstantCache()
 end
@@ -248,7 +248,7 @@ function alg_cache(
         alg::RKMil, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     du1 = zero(rate_prototype)
     du2 = zero(rate_prototype)
@@ -281,7 +281,7 @@ function alg_cache(
         alg::RKMilCommute, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     Jalg = get_Jalg(ΔW, dt, prob, alg)
     return RKMilCommuteConstantCache{typeof(Jalg)}(Jalg)
@@ -291,7 +291,7 @@ function alg_cache(
         alg::RKMilCommute, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     du1 = zero(rate_prototype)
     du2 = zero(rate_prototype)
@@ -328,7 +328,7 @@ function alg_cache(
         alg::RKMilGeneral, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}
+        ::Type{Val{false}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     Jalg = get_Jalg(ΔW, dt, prob, alg)
     return RKMilGeneralConstantCache{typeof(Jalg)}(Jalg)
@@ -338,7 +338,7 @@ function alg_cache(
         alg::RKMilGeneral, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}
+        ::Type{Val{true}}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     tmp = zero(u)
     du₁ = zero(rate_prototype)

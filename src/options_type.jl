@@ -1,6 +1,6 @@
 mutable struct SDEOptions{
         tTypeNoUnits, tType, Controller, F2, F3, F4, F5, F6,
-        F7, tstopsType, discType, ECType, SType, MI, A, R, D,
+        F7, tstopsType, discType, ECType, SType, MI, A, R, D, V,
         tcache, savecache, disccache,
     }
     maxiters::MI
@@ -44,7 +44,7 @@ mutable struct SDEOptions{
     callback::F4
     isoutofdomain::F5
     unstable_check::F7
-    verbose::Bool
+    verbose::V
     calck::Bool
     force_dtmin::Bool
     advance_to_tstop::Bool
