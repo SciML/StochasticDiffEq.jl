@@ -48,8 +48,8 @@ end
 
 function IRI1ConstantCache(nlsolver::N, ::Type{T}, ::Type{T2}) where {N, T, T2}
     # RI1 coefficients from the original RI1ConstantCache function
-    a021 = convert(T, 2//3)
-    a031 = convert(T, -1//3)
+    a021 = convert(T, 2 // 3)
+    a031 = convert(T, -1 // 3)
     a032 = convert(T, 1)
 
     a121 = convert(T, 1)
@@ -68,54 +68,60 @@ function IRI1ConstantCache(nlsolver::N, ::Type{T}, ::Type{T2}) where {N, T, T2}
     b232 = convert(T, 0)
     b233 = convert(T, 0)
 
-    α1 = convert(T, 1//4)
-    α2 = convert(T, 1//2)
-    α3 = convert(T, 1//4)
+    α1 = convert(T, 1 // 4)
+    α2 = convert(T, 1 // 2)
+    α3 = convert(T, 1 // 4)
 
-    c02 = convert(T2, 2//3)
-    c03 = convert(T2, 2//3)
+    c02 = convert(T2, 2 // 3)
+    c03 = convert(T2, 2 // 3)
 
     c12 = convert(T2, 1)
     c13 = convert(T2, 1)
 
-    beta11 = convert(T, 1//2)
-    beta12 = convert(T, 1//4)
-    beta13 = convert(T, 1//4)
+    beta11 = convert(T, 1 // 2)
+    beta12 = convert(T, 1 // 4)
+    beta13 = convert(T, 1 // 4)
 
-    beta22 = convert(T, 1//2)
-    beta23 = convert(T, -1//2)
+    beta22 = convert(T, 1 // 2)
+    beta23 = convert(T, -1 // 2)
 
-    beta31 = convert(T, -1//2)
-    beta32 = convert(T, 1//4)
-    beta33 = convert(T, 1//4)
+    beta31 = convert(T, -1 // 2)
+    beta32 = convert(T, 1 // 4)
+    beta33 = convert(T, 1 // 4)
 
-    beta42 = convert(T, 1//2)
-    beta43 = convert(T, -1//2)
+    beta42 = convert(T, 1 // 2)
+    beta43 = convert(T, -1 // 2)
 
     NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
 
-    IRI1ConstantCache(nlsolver, a021, a031, a032, a121, a131, b021, b031, b121, b131,
+    return IRI1ConstantCache(
+        nlsolver, a021, a031, a032, a121, a131, b021, b031, b121, b131,
         b221, b222, b223, b231, b232, b233, α1, α2, α3, c02, c03, c12, c13,
         beta11, beta12, beta13, beta22, beta23, beta31, beta32, beta33, beta42, beta43,
-        NORMAL_ONESIX_QUANTILE)
+        NORMAL_ONESIX_QUANTILE
+    )
 end
 
-function alg_cache(alg::IRI1, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::IRI1, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}, verbose) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{false}}, verbose
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     γ, c = alg.theta, zero(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false), verbose)
-    IRI1ConstantCache(nlsolver, real(uBottomEltypeNoUnits), real(tTypeNoUnits))
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(false), verbose
+    )
+    return IRI1ConstantCache(nlsolver, real(uBottomEltypeNoUnits), real(tTypeNoUnits))
 end
 
 # IRI1Cache: Mutable cache for the IRI1 (Implicit Rößler 1) method (in-place version).
 # Contains all the working arrays needed for the implicit weak order 2 SRK method.
 @cache mutable struct IRI1Cache{
-    uType, randType, rateNoiseType, rateType, noUnitsType, N, T, T2} <:
-                      StochasticDiffEqMutableCache
+        uType, randType, rateNoiseType, rateType, noUnitsType, N, T, T2,
+    } <:
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
     uhat::uType
@@ -173,10 +179,12 @@ end
     NORMAL_ONESIX_QUANTILE::T
 end
 
-function alg_cache(alg::IRI1, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::IRI1, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}, verbose) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}, verbose
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     T = real(uBottomEltypeNoUnits)
     T2 = real(tTypeNoUnits)
 
@@ -184,7 +192,8 @@ function alg_cache(alg::IRI1, prob, u, ΔW, ΔZ, p, rate_prototype,
     γ, c = alg.theta, zero(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
         alg, u, uprev, p, t, dt, f, rate_prototype, uEltypeNoUnits,
-        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true), verbose)
+        uBottomEltypeNoUnits, tTypeNoUnits, γ, c, Val(true), verbose
+    )
 
     # Allocate arrays
     uhat = zero(u)
@@ -221,8 +230,8 @@ function alg_cache(alg::IRI1, prob, u, ΔW, ΔZ, p, rate_prototype,
     resids = fill!(similar(u, uEltypeNoUnits), zero(uEltypeNoUnits))
 
     # RI1 coefficients
-    a021 = convert(T, 2//3)
-    a031 = convert(T, -1//3)
+    a021 = convert(T, 2 // 3)
+    a031 = convert(T, -1 // 3)
     a032 = convert(T, 1)
     a121 = convert(T, 1)
     a131 = convert(T, 1)
@@ -236,29 +245,31 @@ function alg_cache(alg::IRI1, prob, u, ΔW, ΔZ, p, rate_prototype,
     b231 = convert(T, -1)
     b232 = convert(T, 0)
     b233 = convert(T, 0)
-    α1 = convert(T, 1//4)
-    α2 = convert(T, 1//2)
-    α3 = convert(T, 1//4)
-    c02 = convert(T2, 2//3)
-    c03 = convert(T2, 2//3)
+    α1 = convert(T, 1 // 4)
+    α2 = convert(T, 1 // 2)
+    α3 = convert(T, 1 // 4)
+    c02 = convert(T2, 2 // 3)
+    c03 = convert(T2, 2 // 3)
     c12 = convert(T2, 1)
     c13 = convert(T2, 1)
-    beta11 = convert(T, 1//2)
-    beta12 = convert(T, 1//4)
-    beta13 = convert(T, 1//4)
-    beta22 = convert(T, 1//2)
-    beta23 = convert(T, -1//2)
-    beta31 = convert(T, -1//2)
-    beta32 = convert(T, 1//4)
-    beta33 = convert(T, 1//4)
-    beta42 = convert(T, 1//2)
-    beta43 = convert(T, -1//2)
+    beta11 = convert(T, 1 // 2)
+    beta12 = convert(T, 1 // 4)
+    beta13 = convert(T, 1 // 4)
+    beta22 = convert(T, 1 // 2)
+    beta23 = convert(T, -1 // 2)
+    beta31 = convert(T, -1 // 2)
+    beta32 = convert(T, 1 // 4)
+    beta33 = convert(T, 1 // 4)
+    beta42 = convert(T, 1 // 2)
+    beta43 = convert(T, -1 // 2)
     NORMAL_ONESIX_QUANTILE = convert(T, -0.9674215661017014)
 
-    IRI1Cache(u, uprev, uhat, _dW, _dZ, chi1, g1, g2, g3, k1, k2, k3,
+    return IRI1Cache(
+        u, uprev, uhat, _dW, _dZ, chi1, g1, g2, g3, k1, k2, k3,
         H02, H03, H12, H13, H22, H23, tmp, tmpg, resids, nlsolver,
         a021, a031, a032, a121, a131, b021, b031, b121, b131,
         b221, b222, b223, b231, b232, b233, α1, α2, α3, c02, c03, c12, c13,
         beta11, beta12, beta13, beta22, beta23, beta31, beta32, beta33, beta42, beta43,
-        NORMAL_ONESIX_QUANTILE)
+        NORMAL_ONESIX_QUANTILE
+    )
 end
