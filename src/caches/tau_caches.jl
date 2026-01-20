@@ -59,7 +59,7 @@ struct ImplicitTauLeapingConstantCache{rateType, N} <: StochasticDiffEqConstantC
 end
 
 @cache struct ImplicitTauLeapingCache{uType, rateType, N} <:
-              StochasticDiffEqMutableCache
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
     poisson_counts::rateType  # k ~ Poisson(dt * a(X_n))
@@ -67,10 +67,12 @@ end
     nlsolver::N
 end
 
-function alg_cache(alg::ImplicitTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::ImplicitTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}, verbose) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{false}}, verbose
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     # γ = 1 (fully implicit), c = 1 (evaluate at t + dt)
     γ, c = one(t), oneunit(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
@@ -82,10 +84,12 @@ function alg_cache(alg::ImplicitTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype
     return ImplicitTauLeapingConstantCache(poisson_counts, rate_at_uprev, nlsolver)
 end
 
-function alg_cache(alg::ImplicitTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::ImplicitTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}, verbose) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}, verbose
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     # γ = 1 (fully implicit), c = 1 (evaluate at t + dt)
     γ, c = one(t), oneunit(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
@@ -109,7 +113,7 @@ struct ThetaTrapezoidalTauLeapingConstantCache{rateType, T, N} <: StochasticDiff
 end
 
 @cache struct ThetaTrapezoidalTauLeapingCache{uType, rateType, T, N} <:
-              StochasticDiffEqMutableCache
+    StochasticDiffEqMutableCache
     u::uType
     uprev::uType
     poisson_counts::rateType  # k ~ Poisson(dt * a(X_n))
@@ -118,10 +122,12 @@ end
     nlsolver::N
 end
 
-function alg_cache(alg::ThetaTrapezoidalTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::ThetaTrapezoidalTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{false}}, verbose) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{false}}, verbose
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     # γ = theta (implicit weight), c = 1 (evaluate at t + dt)
     γ, c = alg.theta, oneunit(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(
@@ -133,10 +139,12 @@ function alg_cache(alg::ThetaTrapezoidalTauLeaping, prob, u, ΔW, ΔZ, p, rate_p
     return ThetaTrapezoidalTauLeapingConstantCache(poisson_counts, rate_at_uprev, alg.theta, nlsolver)
 end
 
-function alg_cache(alg::ThetaTrapezoidalTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
+function alg_cache(
+        alg::ThetaTrapezoidalTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         noise_rate_prototype, jump_rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, f, t, dt,
-        ::Type{Val{true}}, verbose) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
+        ::Type{Val{true}}, verbose
+    ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
     # γ = theta (implicit weight), c = 1 (evaluate at t + dt)
     γ, c = alg.theta, oneunit(t)
     nlsolver = OrdinaryDiffEqNonlinearSolve.build_nlsolver(

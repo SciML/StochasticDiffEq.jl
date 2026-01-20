@@ -237,6 +237,9 @@ const is_APPVEYOR = Sys.iswindows() && haskey(ENV, "APPVEYOR")
         @time @safetestset "IIP Weak Convergence Tests" begin
             include("weak_convergence/iip_weak.jl")
         end
+        @time @safetestset "IRI1 Weak Convergence Tests" begin
+            include("weak_convergence/iri1_weak.jl")
+        end
     end
 
     if !is_APPVEYOR && GROUP == "SROCKC2WeakConvergence"

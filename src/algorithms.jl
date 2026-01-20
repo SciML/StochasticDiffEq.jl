@@ -2769,6 +2769,99 @@ end
 
 ################################################################################
 
+# Implicit Weak Order 2 Methods
+
+"""
+    IRI1(;chunk_size=0, autodiff=true, diff_type=Val{:central},
+         standardtag=Val{true}(), concrete_jac=nothing, precs=DEFAULT_PRECS,
+         linsolve=nothing, nlsolve=NLNewton(), extrapolant=:constant,
+         theta=1, new_jac_conv_bound=1e-3, controller=:Predictive)
+
+**IRI1: Implicit Rößler 1 Method (Stiff, High Weak Order)**
+
+Drift-implicit version of the RI1 weak order 2.0 method for stiff Itô SDEs with multiplicative noise.
+
+## Method Properties
+
+  - **Strong Order**: Not optimized for strong convergence
+  - **Weak Order**: 2.0
+  - **Deterministic Order**: 3.0 (when noise = 0)
+  - **Time stepping**: Adaptive
+  - **Noise types**: All forms (diagonal, non-diagonal, non-commuting, scalar additive)
+  - **SDE interpretation**: Itô
+  - **Implicit treatment**: Drift term only (diffusion remains explicit)
+
+## Parameters
+
+  - `theta::Real = 1`: Implicitness parameter (0=explicit, 1=fully implicit, 0.5=trapezoidal)
+  - Linear/nonlinear solver options via `linsolve` and `nlsolve`
+
+## When to Use
+
+  - **Stiff SDEs with multiplicative noise requiring weak order 2.0**
+  - When SKenCarp cannot be used (non-additive noise)
+  - Monte Carlo simulations where drift causes stability issues
+  - When weak convergence is sufficient but drift stability is needed
+  - Alternative to explicit RI1 when drift is stiff
+
+## Algorithm Description
+
+IRI1 applies the theta-method implicitization to the drift stages of the RI1 weak order 2
+stochastic Runge-Kutta method. The diffusion terms remain explicit, making this method
+suitable for problems where the drift is stiff but the diffusion does not cause stability issues.
+
+## Theta Method Variants
+
+  - `theta = 0.5`: Trapezoidal rule (good accuracy/stability balance)
+  - `theta = 1`: Backward Euler (maximum stability, default)
+
+## Comparison with Other Methods
+
+  - **vs RI1**: IRI1 adds implicit drift treatment for stiff problems
+  - **vs SKenCarp**: IRI1 handles multiplicative noise, not just additive
+  - **vs ImplicitEM**: IRI1 achieves weak order 2.0 instead of 1.0
+  - **vs ISSEM**: IRI1 has higher weak order but only drift-implicit
+
+## References
+
+  - Rößler A., "Second Order Runge–Kutta Methods for Itô Stochastic Differential Equations", SIAM J. Numer. Anal., 47, pp. 1713-1738 (2009). DOI: 10.1137/060673308
+  - Debrabant, K., Rößler, A., "Diagonally drift-implicit Runge-Kutta methods of weak order one and two for Itô SDEs and stability analysis", Applied Numerical Mathematics 59(3–4), 595–607 (2009). DOI: 10.1016/j.apnum.2008.03.011
+  - Kloeden, P.E., Platen, E., "Numerical Solution of Stochastic Differential Equations", Springer (1992). Chapter 15: Explicit and Implicit Weak Approximations.
+"""
+struct IRI1{CS, AD, F, F2, P, FDT, ST, CJ, T2, Controller} <:
+    StochasticDiffEqNewtonAdaptiveAlgorithm{CS, AD, FDT, ST, CJ, Controller}
+    linsolve::F
+    nlsolve::F2
+    precs::P
+    theta::T2
+    extrapolant::Symbol
+    new_jac_conv_bound::T2
+end
+function IRI1(;
+        chunk_size = 0, autodiff = true, diff_type = Val{:central},
+        standardtag = Val{true}(), concrete_jac = nothing,
+        precs = OrdinaryDiffEqCore.DEFAULT_PRECS,
+        linsolve = nothing, nlsolve = NLNewton(),
+        extrapolant = :constant,
+        theta = 1,
+        new_jac_conv_bound = 1.0e-3,
+        controller = :Predictive
+    )
+    return IRI1{
+        chunk_size, autodiff,
+        typeof(linsolve), typeof(nlsolve), typeof(precs), diff_type,
+        SciMLBase._unwrap_val(standardtag),
+        SciMLBase._unwrap_val(concrete_jac),
+        typeof(new_jac_conv_bound), controller,
+    }(
+        linsolve, nlsolve, precs,
+        theta,
+        extrapolant, new_jac_conv_bound
+    )
+end
+
+################################################################################
+
 # Jumps
 
 """
@@ -2917,7 +3010,7 @@ struct ImplicitTauLeaping{N} <: StochasticDiffEqJumpAdaptiveAlgorithm
     nlsolve::N
 end
 function ImplicitTauLeaping(; nlsolve = NLFunctional())
-    ImplicitTauLeaping(nlsolve)
+    return ImplicitTauLeaping(nlsolve)
 end
 
 """
@@ -2988,7 +3081,7 @@ struct ThetaTrapezoidalTauLeaping{T, N} <: StochasticDiffEqJumpAdaptiveAlgorithm
     nlsolve::N
 end
 function ThetaTrapezoidalTauLeaping(; theta = 0.5, nlsolve = NLFunctional())
-    ThetaTrapezoidalTauLeaping(theta, nlsolve)
+    return ThetaTrapezoidalTauLeaping(theta, nlsolve)
 end
 
 ################################################################################
