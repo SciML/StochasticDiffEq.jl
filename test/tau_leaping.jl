@@ -96,7 +96,7 @@ meanX = mean([sol.u[i][end, end] for i in 1:1_000])
 # Test in-place version with fixed dt
 function regular_rate_iip(out, u, p, t)
     out[1] = (0.1 / 1000.0) * u[1] * u[2]
-    out[2] = 0.01u[2]
+    return out[2] = 0.01u[2]
 end
 
 const dc_iip = zeros(3, 2)
@@ -106,7 +106,7 @@ dc_iip[2, 2] = -1
 dc_iip[3, 2] = 1
 
 function regular_c_iip(du, u, p, t, counts, mark)
-    mul!(du, dc_iip, counts)
+    return mul!(du, dc_iip, counts)
 end
 
 rj_iip = RegularJump(regular_rate_iip, regular_c_iip, 2)
@@ -144,7 +144,7 @@ mean_theta_ens = mean([sol_theta_ens.u[i][end, end] for i in 1:N_theta])
 
 # Test out-of-place version
 function rate_oop_theta(u, p, t)
-    [(0.1 / 1000.0) * u[1] * u[2], 0.01u[2]]
+    return [(0.1 / 1000.0) * u[1] * u[2], 0.01u[2]]
 end
 
 const dc_oop_theta = zeros(3, 2)
@@ -154,7 +154,7 @@ dc_oop_theta[2, 2] = -1
 dc_oop_theta[3, 2] = 1
 
 function regular_c_oop_theta(u, p, t, counts, mark)
-    dc_oop_theta * counts
+    return dc_oop_theta * counts
 end
 
 rj_oop = RegularJump(rate_oop_theta, regular_c_oop_theta, 2)

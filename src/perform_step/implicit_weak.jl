@@ -10,10 +10,12 @@ based on the RI1 scheme with theta-method implicitization of the drift.
 """
 @muladd function perform_step!(integrator, cache::IRI1ConstantCache)
     (; t, dt, uprev, u, W, p, f) = integrator
-    (; nlsolver, a021, a031, a032, a121, a131, b021, b031, b121, b131,
+    (;
+        nlsolver, a021, a031, a032, a121, a131, b021, b031, b121, b131,
         b221, b222, b223, b231, b232, b233, α1, α2, α3, c02, c03, c12, c13,
         beta11, beta12, beta13, beta22, beta23, beta31, beta32, beta33,
-        beta42, beta43, NORMAL_ONESIX_QUANTILE) = cache
+        beta42, beta43, NORMAL_ONESIX_QUANTILE,
+    ) = cache
 
     alg = unwrap_alg(integrator, true)
     theta = alg.theta
@@ -125,9 +127,9 @@ based on the RI1 scheme with theta-method implicitization of the drift.
                 H23[k] += tmp * integrator.sqdt
             else
                 H22[k] += (b221 * g1[:, k] + b222 * g2[k][:, k] + b223 * g3[k][:, k]) *
-                          integrator.sqdt
+                    integrator.sqdt
                 H23[k] += (b231 * g1[:, k] + b232 * g2[k][:, k] + b233 * g3[k][:, k]) *
-                          integrator.sqdt
+                    integrator.sqdt
             end
         end
     end
@@ -138,24 +140,24 @@ based on the RI1 scheme with theta-method implicitization of the drift.
     # Add noise contribution (same as explicit RI1)
     if W.dW isa Number
         u += g1 * (_dW * beta11) + g2 * (_dW * beta12 + chi1 * beta22 / integrator.sqdt) +
-             g3 * (_dW * beta13 + chi1 * beta23 / integrator.sqdt)
+            g3 * (_dW * beta13 + chi1 * beta23 / integrator.sqdt)
     else
         if is_diagonal_noise(integrator.sol.prob)
             u += g1 .* _dW * beta11
             for k in 1:m
                 u[k] += g2[k][k] * _dW[k] * beta12 + g3[k][k] * _dW[k] * beta13
                 u[k] += g2[k][k] * chi1[k] * beta22 / integrator.sqdt +
-                        g3[k][k] * chi1[k] * beta23 / integrator.sqdt
+                    g3[k][k] * chi1[k] * beta23 / integrator.sqdt
                 u[k] += (m - 1) * beta31 * g1[k] * _dW[k]
                 for l in 1:m
                     if l != k
                         ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
                         tmpg = integrator.g(H22[l], p, t)
                         u[k] += tmpg[k] *
-                                (_dW[k] * beta32 + ihat2 * beta42 / integrator.sqdt)
+                            (_dW[k] * beta32 + ihat2 * beta42 / integrator.sqdt)
                         tmpg = integrator.g(H23[l], p, t)
                         u[k] += tmpg[k] *
-                                (_dW[k] * beta33 + ihat2 * beta43 / integrator.sqdt)
+                            (_dW[k] * beta33 + ihat2 * beta43 / integrator.sqdt)
                     end
                 end
             end
@@ -167,18 +169,18 @@ based on the RI1 scheme with theta-method implicitization of the drift.
                 @.. u = u + g1k * _dW[k] * (beta11 + (m - 1) * beta31)
                 @.. u = u + g2k * _dW[k] * beta12 + g3k * _dW[k] * beta13
                 @.. u = u + g2k * chi1[k] * beta22 / integrator.sqdt +
-                        g3k * chi1[k] * beta23 / integrator.sqdt
+                    g3k * chi1[k] * beta23 / integrator.sqdt
                 for l in 1:m
                     if l != k
                         ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
                         tmpg = integrator.g(H22[l], p, t)
                         tmpgk = @view tmpg[:, k]
                         @.. u = u +
-                                tmpgk * (_dW[k] * beta32 + ihat2 * beta42 / integrator.sqdt)
+                            tmpgk * (_dW[k] * beta32 + ihat2 * beta42 / integrator.sqdt)
                         tmpg = integrator.g(H23[l], p, t)
                         tmpgk = @view tmpg[:, k]
                         @.. u = u +
-                                tmpgk * (_dW[k] * beta33 + ihat2 * beta43 / integrator.sqdt)
+                            tmpgk * (_dW[k] * beta33 + ihat2 * beta43 / integrator.sqdt)
                     end
                 end
             end
@@ -187,15 +189,15 @@ based on the RI1 scheme with theta-method implicitization of the drift.
 
     # Adaptive error estimation
     if integrator.opts.adaptive &&
-       (W.dW isa Number || is_diagonal_noise(integrator.sol.prob) || m == 1)
+            (W.dW isa Number || is_diagonal_noise(integrator.sol.prob) || m == 1)
         # Compare against lower order method (similar to DRI1)
         if c03 != 0.0
             rat = c02 / c03
             δ₁ = integrator.opts.delta * (rat - 1)
             δ₂ = -integrator.opts.delta * rat
             uhat = uprev +
-                   ((α1 + δ₁) * k1 + (α2 + integrator.opts.delta) * k2 + (α3 + δ₂) * k3) *
-                   dt
+                ((α1 + δ₁) * k1 + (α2 + integrator.opts.delta) * k2 + (α3 + δ₂) * k3) *
+                dt
         else
             uhat = uprev + k1 * dt
         end
@@ -205,8 +207,10 @@ based on the RI1 scheme with theta-method implicitization of the drift.
             uhat += g1 * _dW
         end
 
-        resids = calculate_residuals(u - uhat, uprev, u, integrator.opts.abstol,
-            integrator.opts.reltol, integrator.opts.internalnorm, t)
+        resids = calculate_residuals(
+            u - uhat, uprev, u, integrator.opts.abstol,
+            integrator.opts.reltol, integrator.opts.internalnorm, t
+        )
         integrator.EEst = integrator.opts.internalnorm(resids, t)
     end
 
@@ -231,12 +235,14 @@ IRI1 perform_step! implementation (mutable cache, in-place)
 """
 @muladd function perform_step!(integrator, cache::IRI1Cache)
     (; t, dt, uprev, u, W, p, f) = integrator
-    (; _dW, _dZ, chi1, g1, g2, g3, k1, k2, k3, H02, H03, H12, H13, H22, H23,
+    (;
+        _dW, _dZ, chi1, g1, g2, g3, k1, k2, k3, H02, H03, H12, H13, H22, H23,
         tmp, tmpg, resids, nlsolver, uhat,
         a021, a031, a032, a121, a131, b021, b031, b121, b131,
         b221, b222, b223, b231, b232, b233, α1, α2, α3, c02, c03, c12, c13,
         beta11, beta12, beta13, beta22, beta23, beta31, beta32, beta33,
-        beta42, beta43, NORMAL_ONESIX_QUANTILE) = cache
+        beta42, beta43, NORMAL_ONESIX_QUANTILE,
+    ) = cache
     (; z) = nlsolver
 
     alg = unwrap_alg(integrator, true)
@@ -249,8 +255,10 @@ IRI1 perform_step! implementation (mutable cache, in-place)
 
     # Define three-point distributed random variables
     if W.dW isa Union{SArray, Number}
-        _dW = map(x -> calc_threepoint_random(sq3dt, NORMAL_ONESIX_QUANTILE, x),
-            W.dW / sqrt(dt))
+        _dW = map(
+            x -> calc_threepoint_random(sq3dt, NORMAL_ONESIX_QUANTILE, x),
+            W.dW / sqrt(dt)
+        )
     else
         sqrtdt = sqrt(dt)
         @.. chi1 = W.dW / sqrtdt
@@ -345,9 +353,9 @@ IRI1 perform_step! implementation (mutable cache, in-place)
             @.. H23[k] = uprev
             if is_diagonal_noise(integrator.sol.prob)
                 H22[k][k] += (b221 * g1[k] + b222 * g2[k][k] + b223 * g3[k][k]) *
-                             integrator.sqdt
+                    integrator.sqdt
                 H23[k][k] += (b231 * g1[k] + b232 * g2[k][k] + b233 * g3[k][k]) *
-                             integrator.sqdt
+                    integrator.sqdt
             else
                 g1k = @view g1[:, k]
                 g2kk = @view g2[k][:, k]
@@ -367,7 +375,7 @@ IRI1 perform_step! implementation (mutable cache, in-place)
         for k in 1:m
             u[k] += g2[k][k] * _dW[k] * beta12 + g3[k][k] * _dW[k] * beta13
             u[k] += g2[k][k] * chi1[k] * beta22 / integrator.sqdt +
-                    g3[k][k] * chi1[k] * beta23 / integrator.sqdt
+                g3[k][k] * chi1[k] * beta23 / integrator.sqdt
             u[k] += (m - 1) * beta31 * g1[k] * _dW[k]
             for l in 1:m
                 if l != k
@@ -387,7 +395,7 @@ IRI1 perform_step! implementation (mutable cache, in-place)
             @.. u = u + g1k * _dW[k] * (beta11 + (m - 1) * beta31)
             @.. u = u + g2k * _dW[k] * beta12 + g3k * _dW[k] * beta13
             @.. u = u + g2k * chi1[k] * beta22 / integrator.sqdt +
-                    g3k * chi1[k] * beta23 / integrator.sqdt
+                g3k * chi1[k] * beta23 / integrator.sqdt
             for l in 1:m
                 if l != k
                     ihat2 = Ihat2(cache, _dW, _dZ, integrator.sqdt, k, l)
@@ -404,14 +412,16 @@ IRI1 perform_step! implementation (mutable cache, in-place)
 
     # Adaptive error estimation
     if integrator.opts.adaptive &&
-       (W.dW isa Number || is_diagonal_noise(integrator.sol.prob) || m == 1)
+            (W.dW isa Number || is_diagonal_noise(integrator.sol.prob) || m == 1)
         if c03 != 0.0
             rat = c02 / c03
             δ₁ = integrator.opts.delta * (rat - 1)
             δ₂ = -integrator.opts.delta * rat
             @.. uhat = uprev +
-                       ((α1 + δ₁) * k1 + (α2 + integrator.opts.delta) * k2 +
-                        (α3 + δ₂) * k3) * dt
+                (
+                (α1 + δ₁) * k1 + (α2 + integrator.opts.delta) * k2 +
+                    (α3 + δ₂) * k3
+            ) * dt
         else
             @.. uhat = uprev + k1 * dt
         end
@@ -423,8 +433,10 @@ IRI1 perform_step! implementation (mutable cache, in-place)
         end
 
         @.. tmp = u - uhat
-        calculate_residuals!(resids, tmp, uprev, u, integrator.opts.abstol,
-            integrator.opts.reltol, integrator.opts.internalnorm, t)
+        calculate_residuals!(
+            resids, tmp, uprev, u, integrator.opts.abstol,
+            integrator.opts.reltol, integrator.opts.internalnorm, t
+        )
         integrator.EEst = integrator.opts.internalnorm(resids, t)
     end
 end
