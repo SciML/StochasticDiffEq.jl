@@ -2829,7 +2829,7 @@ suitable for problems where the drift is stiff but the diffusion does not cause 
   - Kloeden, P.E., Platen, E., "Numerical Solution of Stochastic Differential Equations", Springer (1992). Chapter 15: Explicit and Implicit Weak Approximations.
 """
 struct IRI1{CS, AD, F, F2, P, FDT, ST, CJ, T2, Controller} <:
-       StochasticDiffEqNewtonAdaptiveAlgorithm{CS, AD, FDT, ST, CJ, Controller}
+    StochasticDiffEqNewtonAdaptiveAlgorithm{CS, AD, FDT, ST, CJ, Controller}
     linsolve::F
     nlsolve::F2
     precs::P
@@ -2837,22 +2837,27 @@ struct IRI1{CS, AD, F, F2, P, FDT, ST, CJ, T2, Controller} <:
     extrapolant::Symbol
     new_jac_conv_bound::T2
 end
-function IRI1(; chunk_size = 0, autodiff = true, diff_type = Val{:central},
+function IRI1(;
+        chunk_size = 0, autodiff = true, diff_type = Val{:central},
         standardtag = Val{true}(), concrete_jac = nothing,
         precs = OrdinaryDiffEqCore.DEFAULT_PRECS,
         linsolve = nothing, nlsolve = NLNewton(),
         extrapolant = :constant,
         theta = 1,
-        new_jac_conv_bound = 1e-3,
-        controller = :Predictive)
-    IRI1{chunk_size, autodiff,
+        new_jac_conv_bound = 1.0e-3,
+        controller = :Predictive
+    )
+    return IRI1{
+        chunk_size, autodiff,
         typeof(linsolve), typeof(nlsolve), typeof(precs), diff_type,
         SciMLBase._unwrap_val(standardtag),
         SciMLBase._unwrap_val(concrete_jac),
-        typeof(new_jac_conv_bound), controller}(
+        typeof(new_jac_conv_bound), controller,
+    }(
         linsolve, nlsolve, precs,
         theta,
-        extrapolant, new_jac_conv_bound)
+        extrapolant, new_jac_conv_bound
+    )
 end
 
 ################################################################################
@@ -3005,7 +3010,7 @@ struct ImplicitTauLeaping{N} <: StochasticDiffEqJumpAdaptiveAlgorithm
     nlsolve::N
 end
 function ImplicitTauLeaping(; nlsolve = NLFunctional())
-    ImplicitTauLeaping(nlsolve)
+    return ImplicitTauLeaping(nlsolve)
 end
 
 """
@@ -3076,7 +3081,7 @@ struct ThetaTrapezoidalTauLeaping{T, N} <: StochasticDiffEqJumpAdaptiveAlgorithm
     nlsolve::N
 end
 function ThetaTrapezoidalTauLeaping(; theta = 0.5, nlsolve = NLFunctional())
-    ThetaTrapezoidalTauLeaping(theta, nlsolve)
+    return ThetaTrapezoidalTauLeaping(theta, nlsolve)
 end
 
 ################################################################################
