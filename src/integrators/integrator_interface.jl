@@ -14,11 +14,12 @@
         else
             integrator.u = integrator(t)
         end
-        integrator.dtnew = integrator.t - t
         reject_step!(integrator, t - integrator.tprev) #this only changes dt and noise, so no interpolation problems
-        integrator.dt = integrator.dtnew
-        integrator.sqdt = sqrt(abs(integrator.dt))
         integrator.t = t
+        # dt should be the step from tprev to t (for correct interpolation in savevalues!)
+        # This matches the behavior in OrdinaryDiffEq
+        integrator.dt = integrator.t - integrator.tprev
+        integrator.sqdt = sqrt(abs(integrator.dt))
 
         # reeval_internals_due_to_modification!(integrator) # Not necessary for linear interp
         if T
