@@ -123,3 +123,69 @@ end
 
 sprob = SDEProblem(f, g, [1.0], (0.0, 10.0), [1.0, 0.1])
 sol = solve(sprob, ImplicitEM(), callback = PositiveDomain())
+
+###
+# https://github.com/SciML/DifferentialEquations.jl/issues/1121
+# saveat + ContinuousCallback interpolation bug fix
+###
+
+using Random
+
+@testset "saveat + ContinuousCallback interpolation (issue #1121)" begin
+    α = 1.0
+    β = 1.0
+    σφ = 0.5
+
+    u0_test = [0.5, 0.0]
+    tspan_test = (0.0, 10.0)
+
+    function f_test(u, p, t)
+        A, φ = u
+        return [α * A * cos(φ), 0.0]
+    end
+
+    function g_test(u, p, t)
+        A, φ = u
+        return [β * A, σφ]
+    end
+
+    prob_test = SDEProblem(f_test, g_test, u0_test, tspan_test)
+
+    rng = MersenneTwister(123)
+    threshold = Ref(rand(rng, 0.2:0.001:1.0))
+    cond_test(u, t, integrator) = u[1] - threshold[]
+    function affect_test!(integrator)
+        integrator.u[1] *= 2.0
+        threshold[] = rand(rng, 0.2:0.001:1.0)
+    end
+
+    cb_test = ContinuousCallback(cond_test, affect_test!)
+
+    sol_saveat = solve(
+        prob_test, SRIW1(), seed = 123, abstol = 1e-2, reltol = 1e-2,
+        maxiters = Int(1e10), saveat = 0.01, callback = cb_test
+    )
+
+    # Reset RNG for same callback behavior
+    rng = MersenneTwister(123)
+    threshold = Ref(rand(rng, 0.2:0.001:1.0))
+
+    sol_dense = solve(
+        prob_test, SRIW1(), seed = 123, abstol = 1e-2, reltol = 1e-2,
+        maxiters = Int(1e10), callback = cb_test
+    )
+
+    # Compare saveat values with dense solution sampled at same times
+    phase_saveat = [sol_saveat.u[i][2] for i in 1:length(sol_saveat)]
+    phase_dense_sampled = [sol_dense(t)[2] for t in sol_saveat.t]
+
+    # The values should match to machine precision
+    max_diff = maximum(abs.(phase_saveat .- phase_dense_sampled))
+    @test max_diff < 1e-10
+
+    # Also verify no large jumps in phase (the original bug symptom)
+    dt = 0.01
+    expected_std = σφ * sqrt(dt)
+    diffs_saveat = diff(phase_saveat)
+    @test all(abs.(diffs_saveat) .< 10 * expected_std)
+end
