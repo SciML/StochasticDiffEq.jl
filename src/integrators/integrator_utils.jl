@@ -513,7 +513,7 @@ function iip_generate_W(alg, u, uprev, p, t, dt, f, uEltypeNoUnits)
         islin = f isa Union{SDEFunction, SplitSDEFunction} && islinear(nf.f)
         if islin
             J = nf.f
-            W = WOperator{true}(f.mass_matrix, dt, J, u)
+            W = WOperator{true}(f.mass_matrix, dt, J, _vec(u))
         else
             if ArrayInterface.isstructured(f.jac_prototype) ||
                     f.jac_prototype isa SparseMatrixCSC
@@ -521,8 +521,11 @@ function iip_generate_W(alg, u, uprev, p, t, dt, f, uEltypeNoUnits)
                 W = similar(J)
             elseif DiffEqBase.has_jac(f) && !DiffEqBase.has_invW(f) &&
                     f.jac_prototype !== nothing
-                J = nothing
-                W = WOperator{true}(f, u, dt)
+                J = deepcopy(f.jac_prototype)
+                if J isa AbstractMatrix
+                    J = MatrixOperator(J; update_func! = f.jac)
+                end
+                W = WOperator{true}(f.mass_matrix, dt, J, _vec(u))
             else
                 J = false .* vec(u) .* vec(u)'
                 W = similar(J)
@@ -544,7 +547,7 @@ function oop_generate_W(alg, u, uprev, p, t, dt, f, uEltypeNoUnits)
         if !isa(J, DiffEqBase.AbstractDiffEqLinearOperator)
             J = MatrixOperator(J)
         end
-        W = WOperator{false}(f.mass_matrix, dt, J, u)
+        W = WOperator{false}(f.mass_matrix, dt, J, _vec(u))
     else
         if u isa StaticArray
             # get a "fake" `J`

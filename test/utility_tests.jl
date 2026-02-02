@@ -1,6 +1,6 @@
 using StochasticDiffEq, LinearAlgebra, SparseArrays, Random, LinearSolve, Test
-using StochasticDiffEq.OrdinaryDiffEqDifferentiation: WOperator, calc_W!, calc_W
-using StochasticDiffEq.SciMLOperators: MatrixOperator
+using StochasticDiffEq.OrdinaryDiffEqDifferentiation: calc_W!, calc_W
+using StochasticDiffEq.SciMLOperators: MatrixOperator, WOperator
 using OrdinaryDiffEq
 
 #horid nasty hack to deal with temporary calc_W refactor
