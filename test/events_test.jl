@@ -162,8 +162,8 @@ using Random
     cb_test = ContinuousCallback(cond_test, affect_test!)
 
     sol_saveat = solve(
-        prob_test, SRIW1(), seed = 123, abstol = 1e-2, reltol = 1e-2,
-        maxiters = Int(1e10), saveat = 0.01, callback = cb_test
+        prob_test, SRIW1(), seed = 123, abstol = 1.0e-2, reltol = 1.0e-2,
+        maxiters = Int(1.0e10), saveat = 0.01, callback = cb_test
     )
 
     # Reset RNG for same callback behavior
@@ -171,8 +171,8 @@ using Random
     threshold = Ref(rand(rng, 0.2:0.001:1.0))
 
     sol_dense = solve(
-        prob_test, SRIW1(), seed = 123, abstol = 1e-2, reltol = 1e-2,
-        maxiters = Int(1e10), callback = cb_test
+        prob_test, SRIW1(), seed = 123, abstol = 1.0e-2, reltol = 1.0e-2,
+        maxiters = Int(1.0e10), callback = cb_test
     )
 
     # Compare saveat values with dense solution sampled at same times
@@ -181,7 +181,7 @@ using Random
 
     # The values should match to machine precision
     max_diff = maximum(abs.(phase_saveat .- phase_dense_sampled))
-    @test max_diff < 1e-10
+    @test max_diff < 1.0e-10
 
     # Also verify no large jumps in phase (the original bug symptom)
     dt = 0.01
