@@ -20,14 +20,15 @@ rj = RegularJump(regular_rate, regular_c, 2)
 jumps = JumpSet(rj)
 iip_prob = DiscreteProblem([999.0, 1, 0], (0.0, 250.0))
 jump_iipprob = JumpProblem(iip_prob, Direct(), rj)
+jump_iipprob_pure = JumpProblem(iip_prob, PureLeaping(), rj)
 @time sol = solve(jump_iipprob, TauLeaping())
-@time sol = solve(jump_iipprob, SimpleTauLeaping(); dt = 1.0)
+@time sol = solve(jump_iipprob_pure, SimpleTauLeaping(); dt = 1.0)
 @time sol = solve(jump_iipprob, TauLeaping(); dt = 1.0, adaptive = false)
 @time sol = solve(jump_iipprob, CaoTauLeaping(); dt = 1.0)
 @time sol = solve(jump_iipprob, CaoTauLeaping())
 
 N = 40_000
-sol1 = solve(EnsembleProblem(jump_iipprob), SimpleTauLeaping(); dt = 1.0, trajectories = N)
+sol1 = solve(EnsembleProblem(jump_iipprob_pure), SimpleTauLeaping(); dt = 1.0, trajectories = N)
 sol2 = solve(
     EnsembleProblem(jump_iipprob), TauLeaping(); dt = 1.0,
     adaptive = false, save_everystep = false, trajectories = N
