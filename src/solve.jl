@@ -1,3 +1,13 @@
+function _get_alias_noise_from_kwargs(; alias_noise = nothing, alias = nothing, kwargs...)
+    if alias_noise !== nothing
+        return alias_noise
+    elseif alias !== nothing && hasproperty(alias, :alias_noise) && alias.alias_noise !== nothing
+        return alias.alias_noise
+    else
+        return true
+    end
+end
+
 function DiffEqBase.__solve(
         prob::DiffEqBase.AbstractRODEProblem,
         alg::Union{StochasticDiffEqAlgorithm, StochasticDiffEqRODEAlgorithm};
@@ -7,7 +17,7 @@ function DiffEqBase.__solve(
     solve!(integrator)
     if prob isa DiffEqBase.AbstractRODEProblem &&
             typeof(prob.noise) == typeof(integrator.sol.W) &&
-            (!haskey(kwargs, :alias_noise) || kwargs[:alias_noise] === true)
+            _get_alias_noise_from_kwargs(; kwargs...)
         copy!(prob.noise, integrator.sol.W)
     end
     return integrator.sol
@@ -23,7 +33,7 @@ function DiffEqBase.__solve(
     solve!(integrator)
     if concrete_prob(prob) isa DiffEqBase.AbstractRODEProblem &&
             typeof(concrete_prob(prob).noise) == typeof(integrator.sol.W) &&
-            (!haskey(kwargs, :alias_noise) || kwargs[:alias_noise] === true)
+            _get_alias_noise_from_kwargs(; kwargs...)
         copy!(concrete_prob(prob).noise, integrator.sol.W)
     end
     return integrator.sol
@@ -118,7 +128,7 @@ function DiffEqBase.__init(
 
         if haskey(kwargs, :alias_noise)
             message = "`alias_noise` keyword argument is deprecated, to set `alias_noise`,
-            please use an SDEAliasSpecifier, e.g. `solve(prob, alias = SDEAliasSpecifier(alias_noise = true))`"
+            please use a RODEAliasSpecifier, e.g. `solve(prob, alias = RODEAliasSpecifier(alias_noise = true))`"
             Base.depwarn(message, :init)
             Base.depwarn(message, :solve)
             alias_noise = values(kwargs).alias_noise
@@ -126,8 +136,13 @@ function DiffEqBase.__init(
             alias_noise = nothing
         end
 
-        aliases = is_sde ? SciMLBase.SDEAliasSpecifier(; alias_u0, alias_jumps) :
+        aliases = if alias_noise !== nothing
             SciMLBase.RODEAliasSpecifier(; alias_u0, alias_jumps, alias_noise)
+        elseif is_sde
+            SciMLBase.SDEAliasSpecifier(; alias_u0, alias_jumps)
+        else
+            SciMLBase.RODEAliasSpecifier(; alias_u0, alias_jumps)
+        end
 
     else
         # If alias isa Bool, all fields of SDEAliasSpecifier set to alias
@@ -556,8 +571,12 @@ function DiffEqBase.__init(
             =#
         end
     elseif prob isa DiffEqBase.AbstractRODEProblem
-        W = (!haskey(kwargs, :alias_noise) || kwargs[:alias_noise] === true) ?
-            copy(prob.noise) : prob.noise
+        _alias_noise = if hasproperty(aliases, :alias_noise) && aliases.alias_noise !== nothing
+            aliases.alias_noise
+        else
+            true
+        end
+        W = _alias_noise ? copy(prob.noise) : prob.noise
 
         if alg_needs_extra_process(alg) && (!hasproperty(W, :dZ) || W.dZ === nothing)
             error("Higher order solver requires extra Brownian process Z. Thus `WienerProcess(t, W0)` is insufficient, you must use `WienerProcess(t, W0, Z0)` where `Z` is another Brownian process")

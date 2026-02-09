@@ -230,7 +230,7 @@ println("PL1WMA:", sim1.𝒪est[:weak_final])
 
 @test all(
     [
-        all([sim.solutions[i][j] ≈ sim1.solutions[i][j] for j in 1:numtraj])
+        all([sim.solutions[i].u[j] ≈ sim1.solutions[i].u[j] for j in 1:numtraj])
             for i in 1:length(sim.solutions)
     ]
 )
@@ -270,7 +270,7 @@ println("PL1WMA:", sim1.𝒪est[:weak_final])
 
 @test all(
     [
-        all([sim.solutions[i][j] ≈ sim1.solutions[i][j] for j in 1:numtraj])
+        all([sim.solutions[i].u[j] ≈ sim1.solutions[i].u[j] for j in 1:numtraj])
             for i in 1:length(sim.solutions)
     ]
 )

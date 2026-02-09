@@ -7,7 +7,7 @@ sol1 = solve(prob, SRI(), dt = 1 // 2^(4))
 Random.seed!(100)
 sol2 = solve(prob, SRIW1(), dt = 1 // 2^(4))
 
-@test sol1[end] ≈ sol2[end]
+@test sol1.u[end] ≈ sol2.u[end]
 
 prob = prob_sde_2Dlinear
 
@@ -16,7 +16,7 @@ sol1 = solve(prob, SRI(), dt = 1 // 2^(4))
 Random.seed!(100)
 sol2 = solve(prob, SRIW1(), dt = 1 // 2^(4))
 
-@test sol1[end] ≈ sol2[end]
+@test sol1.u[end] ≈ sol2.u[end]
 
 prob = prob_sde_linear
 
