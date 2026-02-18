@@ -1,5 +1,8 @@
 ## SciMLBase Trait Definitions
 
+SciMLBase.allows_late_binding_tstops(::StochasticDiffEqAlgorithm) = true
+SciMLBase.allows_late_binding_tstops(::StochasticDiffEqRODEAlgorithm) = true
+
 function SciMLBase.isautodifferentiable(
         alg::Union{
             StochasticDiffEqAlgorithm, StochasticDiffEqRODEAlgorithm,

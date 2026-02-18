@@ -355,6 +355,15 @@ function DiffEqBase.reinit!(
 
     tType = typeof(integrator.t)
     tspan = (tType(t0), tType(tf))
+
+    # Stash callable tstops (e.g. SymbolicTstops) and use empty tuple for heap init.
+    if tstops isa AbstractArray || tstops isa Tuple || tstops isa Number
+        _tstops_callable = nothing
+    else
+        _tstops_callable = tstops
+        tstops = ()
+    end
+
     integrator.opts.tstops = OrdinaryDiffEqCore.initialize_tstops(tType, tstops, d_discontinuities, tspan)
     integrator.opts.saveat = OrdinaryDiffEqCore.initialize_saveat(tType, saveat, tspan)
     integrator.opts.d_discontinuities = OrdinaryDiffEqCore.initialize_d_discontinuities(
@@ -394,6 +403,13 @@ function DiffEqBase.reinit!(
 
     if reinit_cache
         initialize!(integrator, integrator.cache)
+    end
+
+    # Evaluate callable tstops now that callbacks are re-initialized.
+    if _tstops_callable !== nothing
+        for ts in _tstops_callable(integrator.p, tspan)
+            add_tstop!(integrator, ts)
+        end
     end
 
     return reinit!(integrator.W, integrator.dt)
