@@ -167,19 +167,26 @@ using SDEProblemLibrary: prob_sde_linear
     end
 
     @testset "Callable tstops with callbacks" begin
-        f(u, p, t) = -p[1] * u
-        g(u, p, t) = 0.1 * u
-        prob = SDEProblem(f, g, 1.0, (0.0, 5.0), [0.5])
+        # Zero drift and noise so u stays at its initial/reset value
+        f(u, p, t) = 0.0
+        g(u, p, t) = 0.0
+        prob = SDEProblem(f, g, 1.0, (0.0, 5.0))
 
-        # Discrete callback at t=2.0
+        # Discrete callback at t=2.0 that sets u to exactly 42.0
         condition(u, t, integrator) = t == 2.0
-        affect!(integrator) = (integrator.u *= 2.0)
+        affect!(integrator) = (integrator.u = 42.0)
         cb = DiscreteCallback(condition, affect!)
 
         my_tstops = (p, tspan) -> [2.0, 4.0]
         sol = solve(prob, EM(); dt = 0.01, tstops = my_tstops, callback = cb)
         @test 2.0 ∈ sol.t
         @test 4.0 ∈ sol.t
+        # Verify callback fired: u should be 1.0 before t=2.0 and 42.0 after
+        idx_before = findfirst(==(2.0), sol.t) - 1
+        idx_after = findfirst(==(2.0), sol.t) + 1
+        @test sol.u[idx_before] == 1.0
+        @test sol.u[idx_after] == 42.0
+        @test sol.u[end] == 42.0
     end
 
     @testset "Callable tstops with multiple solvers" begin
