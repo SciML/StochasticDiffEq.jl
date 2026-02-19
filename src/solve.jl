@@ -27,8 +27,9 @@ end
 function DiffEqBase.__solve(
         prob::JumpProblem,
         alg::Union{StochasticDiffEqAlgorithm, StochasticDiffEqRODEAlgorithm};
-        kwargs...
+        merge_callbacks = true, kwargs...
     )
+    kwargs = DiffEqBase.merge_problem_kwargs(prob; merge_callbacks, kwargs...)
     integrator = DiffEqBase.__init(prob, alg; kwargs...)
     solve!(integrator)
     if concrete_prob(prob) isa DiffEqBase.AbstractRODEProblem &&
@@ -99,6 +100,11 @@ function DiffEqBase.__init(
         initializealg = OrdinaryDiffEqCore.DefaultInit(),
         kwargs...
     )
+    # Merge JumpProblem kwargs (tstops, callbacks, etc.) for direct init() callers.
+    if _prob isa JumpProblem
+        kwargs = DiffEqBase.merge_problem_kwargs(_prob; kwargs...)
+    end
+
     is_sde = _prob isa SDEProblem
 
     use_old_kwargs = haskey(kwargs, :alias_u0) || haskey(kwargs, :alias_jumps) ||
