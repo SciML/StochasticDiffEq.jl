@@ -23,7 +23,7 @@ println("SROCKC2")
     weak_timeseries_errors = false
 )
 @show sim.𝒪est[:weak_final]
-@test abs(sim.𝒪est[:weak_final] - 3) < 0.4
+@test abs(sim.𝒪est[:weak_final] - 2) < 0.4
 #@test abs(sim.𝒪est[:weak_l2]-2) < 0.3
 #@test abs(sim.𝒪est[:weak_l∞]-2) < 0.3
 sim = nothing
