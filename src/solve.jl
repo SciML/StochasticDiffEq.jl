@@ -220,7 +220,8 @@ function DiffEqBase.__init(
 
     t = tspan[1]
 
-    if !adaptive && iszero(dt) && isempty(tstops)
+    if !adaptive && iszero(dt) &&
+            (tstops isa AbstractArray || tstops isa Tuple) && isempty(tstops)
         error("Fixed timestep methods require a choice of dt or choosing the tstops")
     end
 
@@ -337,6 +338,14 @@ function DiffEqBase.__init(
         end
     else
         noise_rate_prototype = nothing
+    end
+
+    # Stash callable tstops (e.g. SymbolicTstops) and use empty tuple for heap init.
+    if tstops isa AbstractArray || tstops isa Tuple || tstops isa Number
+        _tstops_callable = nothing
+    else
+        _tstops_callable = tstops
+        tstops = ()
     end
 
     tstops_internal = OrdinaryDiffEqCore.initialize_tstops(tType, tstops, d_discontinuities, tspan)
@@ -686,6 +695,11 @@ function DiffEqBase.__init(
         controller = default_controller(alg, cache, QT(qoldinit), beta1, beta2)
     end
 
+    # Restore callable for tstops_cache so reinit! can re-evaluate it.
+    if _tstops_callable !== nothing
+        tstops = _tstops_callable
+    end
+
     opts = SDEOptions(
         maxiters, save_everystep,
         adaptive, abstol_internal,
@@ -790,6 +804,13 @@ function DiffEqBase.__init(
             StochasticDiffEqRODECompositeAlgorithm,
         } &&
             copyat_or_push!(alg_choice, 1, integrator.cache.current)
+    end
+
+    # Evaluate callable tstops now that callbacks are initialized and parameters finalized.
+    if _tstops_callable !== nothing
+        for ts in _tstops_callable(integrator.p, prob.tspan)
+            add_tstop!(integrator, ts)
+        end
     end
 
     handle_dt!(integrator)
