@@ -36,7 +36,7 @@ function SciMLBase.forwarddiffs_model(
             StochasticDiffEqJumpNewtonDiffusionAdaptiveAlgorithm,
         }
     )
-    return OrdinaryDiffEqCore.alg_autodiff(alg)
+    return OrdinaryDiffEqCore.alg_autodiff(alg) isa ADTypes.AutoForwardDiff
 end
 
 # Required for initialization, because ODECore._initialize_dae! calls it during
