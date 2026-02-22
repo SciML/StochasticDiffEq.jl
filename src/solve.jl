@@ -516,6 +516,7 @@ function DiffEqBase.__init(
         callback_cache = nothing
     end
 
+    # Guard: JumpProblem can wrap non-RODE problems (e.g. ODEProblem) which lack .noise
     _user_provided_noise = prob isa DiffEqBase.AbstractRODEProblem && prob.noise !== nothing
 
     if prob isa DiffEqBase.AbstractRODEProblem && prob.noise === nothing
