@@ -103,6 +103,11 @@ function _resolve_rng(rng, seed, prob)
     return Random.Xoshiro(_seed), _seed, false
 end
 
+# rng kwarg: Pre-constructed AbstractRNG for all framework-managed randomness
+# (noise processes, integrator.rng). Takes priority over `seed` when provided.
+# When omitted, an Xoshiro is constructed from `seed` (or a random seed if
+# `seed` is also omitted). Only controls framework-constructed randomness;
+# user-provided noise processes (`prob.noise`) keep their own RNG.
 function DiffEqBase.__init(
         _prob::Union{DiffEqBase.AbstractRODEProblem, JumpProblem},
         alg::Union{StochasticDiffEqAlgorithm, StochasticDiffEqRODEAlgorithm};
@@ -155,14 +160,6 @@ function DiffEqBase.__init(
         userdata = nothing,
         initialize_integrator = true,
         seed = UInt64(0),
-        # rng: Pre-constructed AbstractRNG for all framework-managed randomness
-        # (noise processes, integrator.rng). Takes priority over `seed` when
-        # provided. When omitted, an Xoshiro is constructed from `seed` (or a
-        # random seed if `seed` is also omitted).
-        #
-        # RNG ownership: `rng` controls framework-constructed randomness only.
-        # If `prob.noise` is supplied, that noise object's internal RNG remains
-        # authoritative and is not modified by this kwarg or by `set_rng!`.
         rng = nothing,
         alias = nothing,
         initializealg = OrdinaryDiffEqCore.DefaultInit(),
