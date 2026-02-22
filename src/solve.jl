@@ -516,8 +516,7 @@ function DiffEqBase.__init(
         callback_cache = nothing
     end
 
-    # Defensive: follows existing pattern — prob should always be AbstractRODEProblem here
-    # since __init requires an SDE/RODE algorithm, but the check is kept for safety.
+    # isa check is defensive here; prob should always be an AbstractRODEProblem.
     _user_provided_noise = prob isa DiffEqBase.AbstractRODEProblem && prob.noise !== nothing
 
     if prob isa DiffEqBase.AbstractRODEProblem && prob.noise === nothing
