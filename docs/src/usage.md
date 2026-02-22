@@ -140,6 +140,80 @@ prob = SDEProblem(f!, g!, u0, tspan, interpretation = :Stratonovich)
 sol = solve(prob, RKMil(interpretation = :Stratonovich))
 ```
 
+## RNG Control
+
+By default, StochasticDiffEq constructs an internal random number generator (RNG)
+from a random seed for each `solve` or `init` call. You can take explicit control
+of the RNG for reproducibility or custom seeding.
+
+### Using the `rng` keyword
+
+Pass a pre-constructed `AbstractRNG` to `solve` or `init`:
+
+```julia
+using Random
+
+# Reproducible results with an explicit RNG
+rng = Xoshiro(42)
+sol = solve(prob, EM(); dt = 0.01, rng)
+
+# Same seed produces identical trajectories
+rng2 = Xoshiro(42)
+sol2 = solve(prob, EM(); dt = 0.01, rng = rng2)
+sol.u == sol2.u  # true
+```
+
+The `rng` keyword takes priority over `seed`. When both are provided, `seed` is
+ignored.
+
+### RNG ownership
+
+The `rng` keyword controls **framework-constructed** randomness (noise processes
+created internally by the solver, and the integrator's own RNG). If you supply
+your own noise process via `SDEProblem(...; noise = my_W)`, that noise object's
+internal RNG remains under your control and is **not** modified by the `rng`
+keyword or by `set_rng!`.
+
+### `TaskLocalRNG` handling
+
+Passing `rng = Random.default_rng()` (which returns a `TaskLocalRNG`) is
+supported. StochasticDiffEq converts it to a concrete `Xoshiro` seeded from one
+draw of the task-local stream. This avoids type mismatches with noise processes
+and prevents the integrator from sharing the global task-local random stream.
+
+### The `seed` keyword (backward compatible)
+
+The older `seed` keyword still works:
+
+```julia
+sol = solve(prob, EM(); dt = 0.01, seed = UInt64(42))
+```
+
+When neither `rng` nor `seed` is provided, a random seed is generated
+automatically.
+
+### Integrator RNG interface
+
+The integrator implements the SciMLBase RNG interface:
+
+```julia
+integ = init(prob, EM(); dt = 0.01, rng = Xoshiro(42))
+
+SciMLBase.has_rng(integ)       # true
+SciMLBase.get_rng(integ)       # the Xoshiro RNG
+SciMLBase.set_rng!(integ, Xoshiro(99))  # replace with same-type RNG
+```
+
+`set_rng!` requires the new RNG to be the same concrete type as the current one.
+For framework-constructed noise, it also syncs the noise process RNG. For
+user-provided noise, only `integrator.rng` is updated.
+
+The `reinit!` function also accepts an `rng` keyword:
+
+```julia
+reinit!(integ, u0; rng = Xoshiro(99))
+```
+
 ## Performance Tips
 
  1. **Use appropriate solvers**: Match solver to problem type

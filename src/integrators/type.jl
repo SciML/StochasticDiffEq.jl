@@ -1,7 +1,7 @@
 mutable struct SDEIntegrator{
         algType, IIP, uType, uEltype, tType, tdirType, P2, eigenType, tTypeNoUnits,
         uEltypeNoUnits, randType, randType2, rateType, solType, cacheType, F4,
-        F5, F6, OType, noiseType, EventErrorType, CallbackCacheType, RCs, IA,
+        F5, F6, OType, noiseType, EventErrorType, CallbackCacheType, RCs, IA, RNGType,
     } <:
     AbstractSDEIntegrator{algType, IIP, uType, tType}
     f::F4
@@ -49,4 +49,6 @@ mutable struct SDEIntegrator{
     q11::tTypeNoUnits
     stats::DiffEqBase.Stats
     initializealg::IA
+    rng::RNGType
+    user_provided_noise::Bool
 end
