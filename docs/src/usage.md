@@ -142,13 +142,19 @@ sol = solve(prob, RKMil(interpretation = :Stratonovich))
 
 ## RNG Control
 
-By default, StochasticDiffEq constructs an internal random number generator (RNG)
-from a random seed for each `solve` or `init` call. You can take explicit control
-of the RNG for reproducibility or custom seeding.
+Each `solve` or `init` call needs a random number generator (RNG) for
+constructing noise processes. The RNG is resolved from the keyword arguments
+in the following priority order:
 
-### Using the `rng` keyword
+1. **`rng` provided** — use the given `AbstractRNG` directly. Any `seed` kwarg
+   is ignored. If a `TaskLocalRNG` is passed (i.e. `Random.default_rng()`), it
+   is converted to a concrete `Xoshiro` seeded from one draw of the task-local
+   stream, so the integrator never shares the global random stream.
+2. **`seed` provided (nonzero)** — construct `Xoshiro(seed)`.
+3. **Problem seed** (`prob.seed != 0`) — construct `Xoshiro(prob.seed)`.
+4. **Neither** — generate a random seed and construct `Xoshiro` from it.
 
-Pass a pre-constructed `AbstractRNG` to `solve` or `init`:
+### Examples
 
 ```julia
 using Random
@@ -161,10 +167,12 @@ sol = solve(prob, EM(); dt = 0.01, rng)
 rng2 = Xoshiro(42)
 sol2 = solve(prob, EM(); dt = 0.01, rng = rng2)
 sol.u == sol2.u  # true
-```
 
-The `rng` keyword takes priority over `seed`. When both are provided, `seed` is
-ignored.
+# The older seed keyword still works (constructs Xoshiro(seed) internally,
+# so reproducibility depends on the internal RNG type; prefer `rng` for
+# guaranteed reproducibility across library versions)
+sol = solve(prob, EM(); dt = 0.01, seed = UInt64(42))
+```
 
 ### RNG ownership
 
@@ -173,24 +181,6 @@ created internally by the solver, and the integrator's own RNG). If you supply
 your own noise process via `SDEProblem(...; noise = my_W)`, that noise object's
 internal RNG remains under your control and is **not** modified by the `rng`
 keyword or by `set_rng!`.
-
-### `TaskLocalRNG` handling
-
-Passing `rng = Random.default_rng()` (which returns a `TaskLocalRNG`) is
-supported. StochasticDiffEq converts it to a concrete `Xoshiro` seeded from one
-draw of the task-local stream. This avoids type mismatches with noise processes
-and prevents the integrator from sharing the global task-local random stream.
-
-### The `seed` keyword (backward compatible)
-
-The older `seed` keyword still works:
-
-```julia
-sol = solve(prob, EM(); dt = 0.01, seed = UInt64(42))
-```
-
-When neither `rng` nor `seed` is provided, a random seed is generated
-automatically.
 
 ### Integrator RNG interface
 
