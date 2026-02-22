@@ -516,7 +516,8 @@ function DiffEqBase.__init(
         callback_cache = nothing
     end
 
-    # Guard: JumpProblem can wrap non-RODE problems (e.g. ODEProblem) which lack .noise
+    # Defensive: follows existing pattern — prob should always be AbstractRODEProblem here
+    # since __init requires an SDE/RODE algorithm, but the check is kept for safety.
     _user_provided_noise = prob isa DiffEqBase.AbstractRODEProblem && prob.noise !== nothing
 
     if prob isa DiffEqBase.AbstractRODEProblem && prob.noise === nothing
