@@ -65,6 +65,8 @@ function default_algorithm(
     return alg
 end
 
+SciMLBase.supports_solve_rng(::SciMLBase.AbstractSDEProblem, ::Nothing) = true
+
 # Dispatch for __init with Nothing algorithm - use default
 function DiffEqBase.__init(
         prob::DiffEqBase.AbstractSDEProblem, ::Nothing, args...; kwargs...
