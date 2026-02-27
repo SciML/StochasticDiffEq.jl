@@ -24,44 +24,20 @@ end
     return !isnothing(integrator.P) && DiffEqNoiseProcess.save_noise!(integrator.P)
 end
 
-@inline function loopheader!(integrator::SDEIntegrator)
-    # Apply right after iterators / callbacks
+# loopheader! is imported from OrdinaryDiffEqCore and used directly.
+# ODE's generic loopheader! dispatches to hooks (handle_step_rejection!,
+# on_u_modified_at_init!, post_apply_step!) that SDE overrides below.
 
-    # Accept or reject the step
-    if integrator.iter > 0
-        if (
-                (integrator.opts.adaptive && integrator.accept_step) ||
-                    !integrator.opts.adaptive || isaposteriori(integrator.alg)
-            ) &&
-                !integrator.force_stepfail
-            integrator.success_iter += 1
-            apply_step!(integrator)
+# SDE's loopfooter! dispatches to ODE's shared _loopfooter! with SDE hooks.
+@inline loopfooter!(integrator::SDEIntegrator) = _loopfooter!(integrator)
 
-        elseif integrator.opts.adaptive && !integrator.accept_step
-            if integrator.isout
-                integrator.dtnew = integrator.dt * integrator.opts.qmin
-            elseif !integrator.force_stepfail
-                step_reject_controller!(integrator, integrator.alg)
-            end
-            choose_algorithm!(integrator, integrator.cache)
-            fix_dtnew_at_bounds!(integrator)
-            modify_dtnew_for_tstops!(integrator)
-            reject_step!(integrator)
-            integrator.dt = integrator.dtnew
-            integrator.sqdt = integrator.tdir * sqrt(abs(integrator.dt))
-        end
-    end
-
-    integrator.iter += 1
-    return integrator.force_stepfail = false
-end
-
+# SDE helpers for rejection flow (used by handle_step_rejection! hook).
 @inline function fix_dtnew_at_bounds!(integrator)
     integrator.dtnew = integrator.tdir * min(abs(integrator.opts.dtmax), abs(integrator.dtnew))
     return integrator.dtnew = integrator.tdir * max(abs(integrator.dtnew), abs(integrator.opts.dtmin))
 end
 
-@inline function modify_dt_for_tstops!(integrator)
+@inline function modify_dt_for_tstops!(integrator::SDEIntegrator)
     tstops = integrator.opts.tstops
     return @fastmath if !isempty(tstops)
         if integrator.opts.adaptive
@@ -107,83 +83,6 @@ end
     return _savevalues!(integrator, force_save, reduce_size)
 end
 
-@inline function loopfooter!(integrator::SDEIntegrator)
-    ttmp = integrator.t + integrator.dt
-    integrator.do_error_check = true
-    if integrator.force_stepfail
-        if integrator.opts.adaptive
-            integrator.dtnew = integrator.dt / integrator.opts.failfactor
-        elseif integrator.last_stepfail
-            return
-        end
-        integrator.last_stepfail = true
-        integrator.accept_step = false
-    elseif integrator.opts.adaptive
-        stepsize_controller!(integrator, integrator.alg)
-        integrator.isout = integrator.opts.isoutofdomain(integrator.u, integrator.p, ttmp)
-        integrator.accept_step = (
-            !integrator.isout &&
-                accept_step_controller(integrator, integrator.opts.controller)
-        ) ||
-            (
-            integrator.opts.force_dtmin &&
-                integrator.dt <= integrator.opts.dtmin
-        )
-        if integrator.accept_step # Accepted
-            step_accept_controller!(integrator, integrator.alg)
-            integrator.last_stepfail = false
-            integrator.tprev = integrator.t
-            if typeof(integrator.t) <: AbstractFloat && !isempty(integrator.opts.tstops)
-                tstop = integrator.tdir * first(integrator.opts.tstops)
-                @fastmath abs(ttmp - tstop) < 100eps(integrator.t) ?
-                    (integrator.t = tstop) : (integrator.t = ttmp)
-            else
-                integrator.t = ttmp
-            end
-            calc_dt_propose!(integrator)
-            handle_callbacks!(integrator)
-        end
-    else # Non adaptive
-        integrator.tprev = integrator.t
-        if typeof(integrator.t) <: AbstractFloat && !isempty(integrator.opts.tstops)
-            tstop = integrator.tdir * first(integrator.opts.tstops)
-            # For some reason 100eps(integrator.t) is slow here
-            # TODO: Allow higher precision but profile
-            @fastmath abs(ttmp - tstop) < 100eps(max(integrator.t, tstop)) ?
-                (integrator.t = tstop) : (integrator.t = ttmp)
-        else
-            integrator.t = ttmp
-        end
-        integrator.last_stepfail = false
-        integrator.accept_step = true
-        integrator.dtpropose = integrator.dt
-        handle_callbacks!(integrator)
-    end
-    return if integrator.opts.progress && integrator.iter % integrator.opts.progress_steps == 0
-        @logmsg(
-            LogLevel(-1),
-            integrator.opts.progress_name,
-            _id = integrator.opts.progress_id,
-            message = integrator.opts.progress_message(integrator.dt, integrator.u, integrator.p, integrator.t),
-            progress = integrator.t / integrator.sol.prob.tspan[2]
-        )
-    end
-end
-
-@inline function calc_dt_propose!(integrator)
-    integrator.qold = max(integrator.EEst, integrator.opts.qoldinit)
-    if integrator.tdir > 0
-        integrator.dtpropose = min(integrator.opts.dtmax, integrator.dtnew)
-    else
-        integrator.dtpropose = max(integrator.opts.dtmax, integrator.dtnew)
-    end
-    return if integrator.tdir > 0
-        integrator.dtpropose = max(integrator.dtpropose, integrator.opts.dtmin) #abs to fix complex sqrt issue at end
-    else
-        integrator.dtpropose = min(integrator.dtpropose, integrator.opts.dtmin) #abs to fix complex sqrt issue at end
-    end
-end
-
 # solution_endpoint_match_cur_integrator! is now imported from OrdinaryDiffEqCore.
 # SDE-specific behavior (noise acceptance, noise saving) handled via
 # finalize_endpoint! and finalize_solution_storage! hooks.
@@ -206,21 +105,6 @@ end
             integrator.P.cache.currate = integrator.P.cache.rate(integrator.u, integrator.p, integrator.t)
         end
     end
-end
-
-@inline function apply_step!(integrator)
-    if isinplace(integrator.sol.prob)
-        recursivecopy!(integrator.uprev, integrator.u)
-    else
-        integrator.uprev = integrator.u
-    end
-    integrator.dt = integrator.dtpropose
-    modify_dt_for_tstops!(integrator)
-    accept_step!(integrator, true)
-
-    # Allow RSWM1 on Wiener Process to change dt
-    !isnothing(integrator.W) && (integrator.dt = integrator.W.dt)
-    return integrator.sqdt = @fastmath integrator.tdir * sqrt(abs(integrator.dt)) # It can change dt, like in RSwM1
 end
 
 # handle_tstop! is now imported from OrdinaryDiffEqCore.
@@ -428,8 +312,58 @@ end
 # Hook overrides for SDEIntegrator
 # These allow StochasticDiffEq to reuse OrdinaryDiffEqCore's shared loop
 # functions (savevalues!, postamble!, handle_callbacks!, handle_tstop!,
-# solution_endpoint_match_cur_integrator!) while customizing SDE-specific behavior.
+# solution_endpoint_match_cur_integrator!, loopheader!, _loopfooter!)
+# while customizing SDE-specific behavior.
 # ============================================================================
+
+# --- Hooks for loopheader! ---
+
+# SDE step rejection: uses dtnew intermediate, noise rejection, and sqdt update.
+function OrdinaryDiffEqCore.handle_step_rejection!(integrator::SDEIntegrator)
+    if integrator.isout
+        integrator.dtnew = integrator.dt * integrator.opts.qmin
+    elseif !integrator.force_stepfail
+        step_reject_controller!(integrator, integrator.alg)
+    end
+    fix_dtnew_at_bounds!(integrator)
+    modify_dtnew_for_tstops!(integrator)
+    reject_step!(integrator)
+    integrator.dt = integrator.dtnew
+    return integrator.sqdt = integrator.tdir * sqrt(abs(integrator.dt))
+end
+
+# SDE has no DAE re-initialization or FSAL at init. Just update uprev.
+function OrdinaryDiffEqCore.on_u_modified_at_init!(integrator::SDEIntegrator)
+    return if isinplace(integrator.sol.prob)
+        recursivecopy!(integrator.uprev, integrator.u)
+    else
+        integrator.uprev = integrator.u
+    end
+end
+
+# SDE apply_step! hook: shorten dt for tstops, accept noise, readback W.dt, update sqdt.
+# modify_dt_for_tstops! MUST be called BEFORE accept_step! so the noise grid
+# receives the shortened dt and doesn't overshoot the grid boundary.
+# (ODE's loopheader! also calls modify_dt_for_tstops! after apply_step!, which is
+# a harmless no-op since dt was already adjusted here.)
+function OrdinaryDiffEqCore.post_apply_step!(integrator::SDEIntegrator)
+    modify_dt_for_tstops!(integrator)
+    accept_step!(integrator, true)
+    !isnothing(integrator.W) && (integrator.dt = integrator.W.dt)
+    return integrator.sqdt = @fastmath integrator.tdir * sqrt(abs(integrator.dt))
+end
+
+# --- Hooks for _loopfooter! ---
+
+# SDE has no reeval_fsal field; u_modified is handled by handle_callbacks!/on_callbacks_complete!.
+OrdinaryDiffEqCore.loopfooter_reset!(integrator::SDEIntegrator) = nothing
+
+# SDE force_stepfail: set dtnew = dt / failfactor (not post_newton_controller!).
+function OrdinaryDiffEqCore.handle_force_stepfail!(integrator::SDEIntegrator)
+    return integrator.dtnew = integrator.dt / integrator.opts.failfactor
+end
+
+# --- Hooks for savevalues! ---
 
 # Interpolation at saveat points: SDE uses linear interpolation instead of ODE's
 # polynomial interpolation (addsteps! + ode_interpolant).
@@ -447,6 +381,8 @@ OrdinaryDiffEqCore.skip_saveat_at_tspan_end(integrator::SDEIntegrator, curt) = f
 # SDE has no dense output storage (no saveiter_dense, k vectors).
 OrdinaryDiffEqCore.save_dense_at_t!(integrator::SDEIntegrator) = nothing
 
+# --- Traits ---
+
 # Trait: SDE composite algorithm types
 function OrdinaryDiffEqCore.is_composite_algorithm(
         alg::Union{StochasticDiffEqCompositeAlgorithm, StochasticDiffEqRODECompositeAlgorithm},
@@ -456,6 +392,8 @@ end
 
 # Trait: SDE composite cache type
 OrdinaryDiffEqCore.is_composite_cache(cache::StochasticCompositeCache) = true
+
+# --- Hooks for postamble!/solution_endpoint_match_cur_integrator! ---
 
 # Finalize solution storage: SDE needs to accept noise at endpoint and save noise
 # instead of ODE's dense output resize.
@@ -475,6 +413,8 @@ end
 function OrdinaryDiffEqCore.finalize_endpoint!(integrator::SDEIntegrator)
     return SciMLBase.save_final_discretes!(integrator, integrator.opts.callback)
 end
+
+# --- Hooks for handle_callbacks! ---
 
 # After callbacks complete: SDE sets do_error_check=false on modification
 # and updates Poisson rate constants (instead of ODE's FSAL re-evaluation).

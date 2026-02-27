@@ -8,11 +8,18 @@ function stepsize_controller!(integrator::SDEIntegrator, controller::PIControlle
     )
 end
 
+# Bridge: ODE's _loopfooter! calls step_accept_controller!(integrator, alg, q).
+# SDE uses 2-arg dispatch (ignores q, uses integrator.q instead).
+@inline function step_accept_controller!(integrator::SDEIntegrator, alg, q)
+    return step_accept_controller!(integrator, alg)
+end
+
 @inline function step_accept_controller!(integrator::SDEIntegrator, alg)
     return step_accept_controller!(integrator, integrator.opts.controller, alg)
 end
 
 function step_accept_controller!(integrator::SDEIntegrator, controller::PIController, alg)
+    integrator.qold = max(integrator.EEst, integrator.opts.qoldinit)
     return integrator.dtnew = DiffEqBase.value(integrator.dt / integrator.q) * oneunit(integrator.dt)
 end
 
