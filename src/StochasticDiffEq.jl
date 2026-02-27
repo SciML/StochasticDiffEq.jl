@@ -19,6 +19,17 @@ import OrdinaryDiffEqCore: default_controller, isstandard, ispredictive,
     step_accept_controller!,
     step_reject_controller!, PIController, DummyController, issplit
 
+# Import shared loop functions and hooks from OrdinaryDiffEqCore
+# These allow SDE to reuse ODE's savevalues!, postamble!, handle_callbacks!,
+# handle_tstop!, and solution_endpoint_match_cur_integrator! via hook overrides.
+import OrdinaryDiffEqCore: handle_callbacks!, handle_tstop!,
+    solution_endpoint_match_cur_integrator!,
+    _savevalues!, _postamble!,
+    post_step_reject!, on_u_modified_at_init!, post_apply_step!,
+    interp_at_saveat, post_savevalues!, finalize_solution_storage!,
+    finalize_endpoint!, on_callbacks_complete!, is_composite_cache,
+    is_composite_algorithm, final_progress
+
 using RecursiveArrayTools, DataStructures
 using DiffEqNoiseProcess, Random, ArrayInterface
 using SimpleNonlinearSolve, ForwardDiff, StaticArrays, MuladdMacro, FiniteDiff, Base.Threads
