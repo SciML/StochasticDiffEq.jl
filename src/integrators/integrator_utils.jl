@@ -341,13 +341,10 @@ function OrdinaryDiffEqCore.on_u_modified_at_init!(integrator::SDEIntegrator)
     end
 end
 
-# SDE apply_step! hook: shorten dt for tstops, accept noise, readback W.dt, update sqdt.
-# modify_dt_for_tstops! MUST be called BEFORE accept_step! so the noise grid
-# receives the shortened dt and doesn't overshoot the grid boundary.
-# (ODE's loopheader! also calls modify_dt_for_tstops! after apply_step!, which is
-# a harmless no-op since dt was already adjusted here.)
+# SDE apply_step! hook: accept noise, readback W.dt, update sqdt.
+# modify_dt_for_tstops! is already called by ODE's apply_step! before this hook,
+# so dt is already shortened for the next tstop when we reach here.
 function OrdinaryDiffEqCore.post_apply_step!(integrator::SDEIntegrator)
-    modify_dt_for_tstops!(integrator)
     accept_step!(integrator, true)
     !isnothing(integrator.W) && (integrator.dt = integrator.W.dt)
     return integrator.sqdt = @fastmath integrator.tdir * sqrt(abs(integrator.dt))
