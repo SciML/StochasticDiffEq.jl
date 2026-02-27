@@ -440,6 +440,13 @@ end
 # SDE has no k vectors or dense output storage to resize after savevalues.
 OrdinaryDiffEqCore.post_savevalues!(integrator::SDEIntegrator, reduce_size) = nothing
 
+# SDE: always save at explicit saveat times, even at tspan[2] with save_end=false.
+# The SDE convention is that saveat overrides save_end for explicitly requested times.
+OrdinaryDiffEqCore.skip_saveat_at_tspan_end(integrator::SDEIntegrator, curt) = false
+
+# SDE has no dense output storage (no saveiter_dense, k vectors).
+OrdinaryDiffEqCore.save_dense_at_t!(integrator::SDEIntegrator) = nothing
+
 # Trait: SDE composite algorithm types
 function OrdinaryDiffEqCore.is_composite_algorithm(
         alg::Union{StochasticDiffEqCompositeAlgorithm, StochasticDiffEqRODECompositeAlgorithm},
