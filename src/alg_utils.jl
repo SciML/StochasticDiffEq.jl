@@ -3,6 +3,16 @@
 SciMLBase.allows_late_binding_tstops(::StochasticDiffEqAlgorithm) = true
 SciMLBase.allows_late_binding_tstops(::StochasticDiffEqRODEAlgorithm) = true
 
+SciMLBase.supports_solve_rng(
+    ::SciMLBase.AbstractSDEProblem,
+    ::StochasticDiffEqAlgorithm,
+) = true
+
+SciMLBase.supports_solve_rng(
+    ::SciMLBase.AbstractRODEProblem,
+    ::StochasticDiffEqRODEAlgorithm,
+) = true
+
 function SciMLBase.isautodifferentiable(
         alg::Union{
             StochasticDiffEqAlgorithm, StochasticDiffEqRODEAlgorithm,

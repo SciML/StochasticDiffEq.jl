@@ -340,7 +340,8 @@ function DiffEqBase.reinit!(
         d_discontinuities = integrator.opts.d_discontinuities_cache,
         reinit_cache = true, reinit_callbacks = true,
         initialize_save = true,
-        reset_dt = (integrator.dtcache == zero(integrator.dt)) && integrator.opts.adaptive
+        reset_dt = (integrator.dtcache == zero(integrator.dt)) && integrator.opts.adaptive,
+        rng = nothing
     )
     if isinplace(integrator.sol.prob)
         recursivecopy!(integrator.u, u0)
@@ -392,6 +393,10 @@ function DiffEqBase.reinit!(
     # full re-initialize the PI in timestepping
     integrator.qold = integrator.opts.qoldinit
     integrator.q11 = typeof(integrator.t)(1)
+
+    if rng !== nothing
+        SciMLBase.set_rng!(integrator, rng)
+    end
 
     if reset_dt
         auto_dt_reset!(integrator)
@@ -468,3 +473,48 @@ end
 DiffEqBase.get_tstops(integ::SDEIntegrator) = integ.opts.tstops
 DiffEqBase.get_tstops_array(integ::SDEIntegrator) = get_tstops(integ).valtree
 DiffEqBase.get_tstops_max(integ::SDEIntegrator) = maximum(get_tstops_array(integ))
+
+SciMLBase.has_rng(::SDEIntegrator) = true
+SciMLBase.get_rng(integrator::SDEIntegrator) = integrator.rng
+
+"""
+    SciMLBase.set_rng!(integrator::SDEIntegrator, rng) -> nothing
+
+Replace the integrator's random number generator. The new RNG must be the same
+concrete type as the current one (the type is baked into the integrator's type
+parameters).
+
+## Noise process behavior
+
+- **Framework-constructed noise** (no `noise` on the problem): `set_rng!` also
+  updates `W.rng` and `P.rng` so that all framework-managed randomness uses the
+  new RNG. After the call, `integrator.rng === integrator.W.rng`.
+- **User-provided noise** (`SDEProblem(...; noise = my_W)`): `set_rng!` only
+  updates `integrator.rng`. The noise process keeps its own RNG — the user is
+  responsible for managing it (e.g., via `Random.seed!(integrator.W.rng, seed)`
+  or replacing it directly with `integrator.W.rng = new_rng`).
+
+## See also
+
+[`reinit!`](@ref) accepts an `rng` keyword that delegates to `set_rng!`.
+"""
+function SciMLBase.set_rng!(integrator::SDEIntegrator, rng)
+    R = typeof(integrator.rng)
+    if !isa(rng, R)
+        throw(ArgumentError(
+            "Cannot set RNG of type $(typeof(rng)) on an integrator " *
+            "whose RNG type parameter is $R. " *
+            "Construct a new integrator via `init(prob, alg; rng = your_rng)` instead."
+        ))
+    end
+    integrator.rng = rng
+    # Sync framework-constructed noise processes only
+    if !integrator.user_provided_noise && integrator.W !== nothing
+        integrator.W.rng = rng
+    end
+    # P (CompoundPoissonProcess) is always framework-constructed when present
+    if integrator.P !== nothing
+        integrator.P.rng = rng
+    end
+    return nothing
+end

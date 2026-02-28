@@ -44,6 +44,70 @@ end
 concrete_prob(prob) = prob
 concrete_prob(prob::JumpProblem) = prob.prob
 
+"""
+    _resolve_rng(rng, seed, prob) -> (rng, seed, rng_provided)
+
+Resolve the RNG and seed for an SDE/RODE integration from the user-provided
+`rng` and `seed` kwargs plus the problem's stored seed.
+
+## Priority
+
+1. **`rng` provided**: Use it directly. `rng_provided = true`. If the RNG is a
+   `TaskLocalRNG`, it is converted to a concrete `Xoshiro` seeded from a draw
+   from the task-local stream, and the derived seed is returned as `seed`. This
+   avoids type mismatches (DiffEqNoiseProcess copies `TaskLocalRNG` into `Xoshiro`
+   internally) and prevents duplicate random streams. For other RNG types,
+   `seed = UInt64(0)` (sentinel for "no seed").
+2. **`seed` provided (nonzero)**: Construct `Xoshiro(seed)`. `rng_provided = false`.
+3. **Problem has a seed** (`prob.seed != 0`): Use it. `rng_provided = false`.
+4. **Neither**: Generate a random seed and construct `Xoshiro` from it.
+   `rng_provided = false`.
+
+## Return values
+
+- `rng::AbstractRNG` — the RNG to use for noise processes and `integrator.rng`.
+- `seed::UInt64` — the seed for solution metadata (`RODESolution.seed::UInt64`).
+  For `TaskLocalRNG` conversion, this is the derived seed. For other user-provided
+  RNGs, `UInt64(0)` (no seed was used).
+- `rng_provided::Bool` — `true` when the user explicitly passed an `rng` kwarg.
+  Controls whether downstream consumers (JumpProcesses reseeding, noise process
+  reseeding) should skip their own seed-based initialization.
+"""
+function _resolve_rng(rng, seed, prob)
+    if rng !== nothing
+        if !(rng isa Random.AbstractRNG)
+            throw(ArgumentError(
+                "`rng` must be an `AbstractRNG`, got $(typeof(rng))."
+            ))
+        end
+        # TaskLocalRNG is a zero-field singleton pointing to shared task-local
+        # state. Storing it directly would cause type mismatches with noise
+        # processes (DiffEqNoiseProcess converts it to Xoshiro internally) and
+        # means set_rng! cannot sync integrator.rng with W.rng. Convert to a
+        # concrete Xoshiro seeded from one draw of the task-local stream.
+        if rng isa Random.TaskLocalRNG
+            _seed = rand(rng, UInt64)
+            return Random.Xoshiro(_seed), _seed, true
+        end
+        return rng, UInt64(0), true
+    end
+    _seed = if iszero(seed)
+        if (!(prob isa DiffEqBase.AbstractRODEProblem) || iszero(prob.seed))
+            seed_multiplier() * rand(UInt64)
+        else
+            prob.seed
+        end
+    else
+        seed
+    end
+    return Random.Xoshiro(_seed), _seed, false
+end
+
+# rng kwarg: Pre-constructed AbstractRNG for all framework-managed randomness
+# (noise processes, integrator.rng). Takes priority over `seed` when provided.
+# When omitted, an Xoshiro is constructed from `seed` (or a random seed if
+# `seed` is also omitted). Only controls framework-constructed randomness;
+# user-provided noise processes (`prob.noise`) keep their own RNG.
 function DiffEqBase.__init(
         _prob::Union{DiffEqBase.AbstractRODEProblem, JumpProblem},
         alg::Union{StochasticDiffEqAlgorithm, StochasticDiffEqRODEAlgorithm};
@@ -96,6 +160,7 @@ function DiffEqBase.__init(
         userdata = nothing,
         initialize_integrator = true,
         seed = UInt64(0),
+        rng = nothing,
         alias = nothing,
         initializealg = OrdinaryDiffEqCore.DefaultInit(),
         kwargs...
@@ -168,23 +233,16 @@ function DiffEqBase.__init(
 
     prob = concrete_prob(_prob)
 
-    _seed = if iszero(seed)
-        if (!(prob isa DiffEqBase.AbstractRODEProblem) || iszero(prob.seed))
-            seed_multiplier() * rand(UInt64)
-        else
-            prob.seed
-        end
-    else
-        seed
-    end
+    _rng, _seed, _rng_provided = _resolve_rng(rng, seed, prob)
 
     if _prob isa JumpProblem
         alias_jumps = isnothing(aliases.alias_jumps) ? Threads.threadid() == 1 :
             aliases.alias_jumps
+        _jump_seed = _rng_provided ? nothing : _seed
         if !alias_jumps
-            _prob = JumpProcesses.resetted_jump_problem(_prob, _seed)
-        elseif _seed !== 0
-            JumpProcesses.reset_jump_problem!(_prob, _seed)
+            _prob = JumpProcesses.resetted_jump_problem(_prob, _jump_seed)
+        else
+            JumpProcesses.reset_jump_problem!(_prob, _jump_seed)
         end
     end
 
@@ -458,6 +516,9 @@ function DiffEqBase.__init(
         callback_cache = nothing
     end
 
+    # isa check is defensive here; prob should always be an AbstractRODEProblem.
+    _user_provided_noise = prob isa DiffEqBase.AbstractRODEProblem && prob.noise !== nothing
+
     if prob isa DiffEqBase.AbstractRODEProblem && prob.noise === nothing
         rswm = isadaptive(alg) ? RSWM(adaptivealg = :RSwM3) : RSWM(adaptivealg = :RSwM1)
         if isinplace(prob)
@@ -470,7 +531,7 @@ function DiffEqBase.__init(
                     W = WienerProcess!(
                         t, rand_prototype, rand_prototype2,
                         save_everystep = save_noise,
-                        rng = Random.Xoshiro(_seed)
+                        rng = _rng
                     )
                 elseif alg isa RKMilGeneral
                     m = length(rand_prototype)
@@ -483,7 +544,7 @@ function DiffEqBase.__init(
                     W = WienerProcess!(
                         t, rand_prototype, rand_prototype2,
                         save_everystep = save_noise,
-                        rng = Random.Xoshiro(_seed)
+                        rng = _rng
                     )
                 elseif alg isa W2Ito1
                     m = 2
@@ -491,20 +552,20 @@ function DiffEqBase.__init(
                     W = WienerProcess!(
                         t, rand_prototype, rand_prototype2,
                         save_everystep = save_noise,
-                        rng = Random.Xoshiro(_seed)
+                        rng = _rng
                     )
                 else
                     W = WienerProcess!(
                         t, rand_prototype, rand_prototype,
                         save_everystep = save_noise,
-                        rng = Random.Xoshiro(_seed)
+                        rng = _rng
                     )
                 end
             else
                 W = WienerProcess!(
                     t, rand_prototype,
                     save_everystep = save_noise,
-                    rng = Random.Xoshiro(_seed)
+                    rng = _rng
                 )
             end
             #=
@@ -512,11 +573,11 @@ function DiffEqBase.__init(
               if alg_needs_extra_process(alg)
                 W = SimpleWienerProcess!(t,rand_prototype,rand_prototype,
                                    save_everystep=save_noise,
-                                   rng = Random.Xoshiro(_seed))
+                                   rng = _rng)
               else
                 W = SimpleWienerProcess!(t,rand_prototype,
                                    save_everystep=save_noise,
-                                   rng = Random.Xoshiro(_seed))
+                                   rng = _rng)
               end
             end
             =#
@@ -534,7 +595,7 @@ function DiffEqBase.__init(
                     W = WienerProcess(
                         t, rand_prototype, rand_prototype2,
                         save_everystep = save_noise,
-                        rng = Random.Xoshiro(_seed)
+                        rng = _rng
                     )
                 elseif alg isa RKMilGeneral
                     m = length(rand_prototype)
@@ -547,7 +608,7 @@ function DiffEqBase.__init(
                     W = WienerProcess(
                         t, rand_prototype, rand_prototype2,
                         save_everystep = save_noise,
-                        rng = Random.Xoshiro(_seed)
+                        rng = _rng
                     )
                 elseif alg isa W2Ito1
                     m = 2
@@ -555,20 +616,20 @@ function DiffEqBase.__init(
                     W = WienerProcess(
                         t, rand_prototype, rand_prototype2,
                         save_everystep = save_noise,
-                        rng = Random.Xoshiro(_seed)
+                        rng = _rng
                     )
                 else
                     W = WienerProcess(
                         t, rand_prototype, rand_prototype,
                         save_everystep = save_noise,
-                        rng = Random.Xoshiro(_seed)
+                        rng = _rng
                     )
                 end
             else
                 W = WienerProcess(
                     t, rand_prototype,
                     save_everystep = save_noise,
-                    rng = Random.Xoshiro(_seed)
+                    rng = _rng
                 )
             end
             #=
@@ -576,11 +637,11 @@ function DiffEqBase.__init(
               if alg_needs_extra_process(alg)
                 W = SimpleWienerProcess(t,rand_prototype,rand_prototype,
                                    save_everystep=save_noise,
-                                   rng = Random.Xoshiro(_seed))
+                                   rng = _rng)
               else
                 W = SimpleWienerProcess(t,rand_prototype,
                                    save_everystep=save_noise,
-                                   rng = Random.Xoshiro(_seed))
+                                   rng = _rng)
               end
             end
             =#
@@ -598,8 +659,10 @@ function DiffEqBase.__init(
         end
 
         if W.reset
-            # Reseed
-            if W isa Union{NoiseProcess, NoiseTransport} && W.reseed
+            # Reseed (skip when user explicitly provided an RNG — reseeding
+            # would mutate the shared _rng object, affecting the integrator
+            # and any other noise processes using it)
+            if !_rng_provided && W isa Union{NoiseProcess, NoiseTransport} && W.reseed
                 Random.seed!(W.rng, _seed)
             end
             if W.curt != t
@@ -629,7 +692,7 @@ function DiffEqBase.__init(
                 _prob.regular_jump.rate, t, jump_prototype,
                 computerates = !alg_control_rate(alg) || !adaptive,
                 save_everystep = save_noise,
-                rng = Random.Xoshiro(_seed)
+                rng = _rng
             )
             alg_control_rate(alg) && adaptive &&
                 P.cache.rate(P.cache.currate, u, p, tspan[1])
@@ -639,7 +702,7 @@ function DiffEqBase.__init(
                 _prob.regular_jump.rate, t, jump_prototype,
                 save_everystep = save_noise,
                 computerates = !alg_control_rate(alg) || !adaptive,
-                rng = Random.Xoshiro(_seed)
+                rng = _rng
             )
             alg_control_rate(alg) && adaptive &&
                 (P.cache.currate = P.cache.rate(u, p, tspan[1]))
@@ -785,7 +848,7 @@ function DiffEqBase.__init(
         uEltypeNoUnits, typeof(W), typeof(P), rateType, typeof(sol), typeof(cache),
         FType, GType, CType, typeof(opts), typeof(noise), typeof(last_event_error),
         typeof(callback_cache), typeof(rate_constants),
-        typeof(initializealg),
+        typeof(initializealg), typeof(_rng),
     }(
         f, g, c, noise, uprev, tprev, t, u, p, tType(dt),
         tType(dt), tType(dt), dtcache, tspan[2], tdir,
@@ -797,7 +860,7 @@ function DiffEqBase.__init(
         alg, sol,
         cache, callback_cache, tType(dt), W, P, rate_constants,
         opts, iter, success_iter, eigen_est, EEst, q,
-        QT(qoldinit), q11, stats, initializealg
+        QT(qoldinit), q11, stats, initializealg, _rng, _user_provided_noise
     )
 
     if initialize_integrator
