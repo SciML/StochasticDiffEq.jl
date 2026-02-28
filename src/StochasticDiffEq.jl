@@ -37,7 +37,7 @@ import OrdinaryDiffEqCore: handle_callbacks!, handle_tstop!,
     increment_accept!, increment_reject!,
     calc_dt_propose!, fix_dt_at_bounds!, modify_dt_for_tstops!,
     log_step!, choose_algorithm!, update_uprev!,
-    alg_extrapolates
+    alg_extrapolates, isfsal
 
 using RecursiveArrayTools, DataStructures
 using DiffEqNoiseProcess, Random, ArrayInterface

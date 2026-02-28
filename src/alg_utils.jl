@@ -165,6 +165,9 @@ OrdinaryDiffEqCore.isaposteriori(alg::CaoTauLeaping) = true
 # SDE algorithms never extrapolate (no uprev2 storage).
 OrdinaryDiffEqCore.alg_extrapolates(alg::Union{StochasticDiffEqAlgorithm, StochasticDiffEqRODEAlgorithm}) = false
 
+# SDE algorithms are never FSAL (update_fsal! is a no-op for SDE).
+OrdinaryDiffEqCore.isfsal(alg::Union{StochasticDiffEqAlgorithm, StochasticDiffEqRODEAlgorithm}) = false
+
 alg_order(alg::EM) = 1 // 2
 alg_order(alg::LambaEM) = 1 // 2
 alg_order(alg::ImplicitEM) = 1 // 2
