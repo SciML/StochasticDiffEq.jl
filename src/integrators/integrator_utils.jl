@@ -350,6 +350,14 @@ function OrdinaryDiffEqCore.post_apply_step!(integrator::SDEIntegrator)
     return integrator.sqdt = @fastmath integrator.tdir * sqrt(abs(integrator.dt))
 end
 
+# --- Hook for _step! ---
+
+# Redirect perform_step! to StochasticDiffEq's own function (different from
+# OrdinaryDiffEqCore.perform_step!).
+@inline function OrdinaryDiffEqCore._perform_step!(integrator::SDEIntegrator)
+    return perform_step!(integrator, integrator.cache)
+end
+
 # --- Hooks for _loopfooter! ---
 
 # SDE has no reeval_fsal field; u_modified is handled by handle_callbacks!/on_callbacks_complete!.
