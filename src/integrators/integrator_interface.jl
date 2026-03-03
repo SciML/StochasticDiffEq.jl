@@ -196,9 +196,9 @@ end
             )
         end
     else
-        c[2][idxs] .= integrator.noise(length(idxs), integrator, scaling_factor)
+        c[2][idxs] .= integrator.sol.prob.noise(length(idxs), integrator, scaling_factor)
         if alg_needs_extra_process(integrator.alg)
-            c[3][idxs] .= integrator.noise(length(idxs), integrator, scaling_factor)
+            c[3][idxs] .= integrator.sol.prob.noise(length(idxs), integrator, scaling_factor)
         end
     end
 end
@@ -509,7 +509,7 @@ function SciMLBase.set_rng!(integrator::SDEIntegrator, rng)
     end
     integrator.rng = rng
     # Sync framework-constructed noise processes only
-    if integrator.noise === nothing && integrator.W !== nothing
+    if integrator.sol.prob.noise === nothing && integrator.W !== nothing
         integrator.W.rng = rng
     end
     # P (CompoundPoissonProcess) is always framework-constructed when present

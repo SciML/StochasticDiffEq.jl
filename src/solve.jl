@@ -839,7 +839,6 @@ function DiffEqBase.__init(
     dtchangeable = true
     q11 = tTypeNoUnits(1)
     success_iter = 0
-    q = tTypeNoUnits(1)
 
     ks = Vector{rateType}(undef, 0)
 
@@ -848,11 +847,11 @@ function DiffEqBase.__init(
         uBottomEltype, tType, typeof(tdir), typeof(p),
         typeof(eigen_est), QT,
         uEltypeNoUnits, typeof(W), typeof(P), rateType, typeof(sol), typeof(cache),
-        FType, CType, typeof(opts), typeof(noise), typeof(last_event_error),
+        FType, CType, typeof(opts), typeof(last_event_error),
         typeof(callback_cache), typeof(rate_constants),
         typeof(initializealg), typeof(_rng), typeof(ks),
     }(
-        f, c, noise, uprev, tprev, t, u, p, tType(dt),
+        f, c, uprev, tprev, t, u, p, tType(dt),
         tType(dt), dtcache, tdir,
         just_hit_tstop, do_error_check, isout, event_last_time,
         vector_event_last_time, last_event_error, accept_step,
@@ -865,7 +864,7 @@ function DiffEqBase.__init(
         ks,
         alg, sol,
         cache, callback_cache, tType(dt), W, P, rate_constants,
-        opts, iter, success_iter, eigen_est, EEst, q,
+        opts, iter, success_iter, eigen_est, EEst,
         QT(qoldinit), q11, stats, initializealg, _rng,
         false # isdae
     )
