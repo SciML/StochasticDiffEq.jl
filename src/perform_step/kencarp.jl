@@ -150,7 +150,8 @@ end
     (; t, dt, uprev, u, p, f) = integrator
     g = integrator.f.g
     (; z₁, z₂, z₃, z₄, k1, k2, k3, k4, atmp) = cache
-    (; g1, g4, chi2, nlsolver) = cache
+    #(; g1, g4, chi2, nlsolver) = cache
+    (; g1, g4, chi2, chi2g1, nlsolver) = cache
     (; z, tmp) = nlsolver
     (; k, dz) = nlsolver.cache # alias to reduce memory
     (;
@@ -195,16 +196,15 @@ end
 
     ##### Step 2
 
-    # TODO: Add a cache so this isn't overwritten near the end, so it can not repeat on fail
     g(g1, uprev, p, t)
 
     if is_diagonal_noise(integrator.sol.prob)
-        @.. z₄ = chi2 * g1 # use z₄ as storage for the g1*chi2
+        @.. chi2g1 = chi2 * g1 
     else
-        mul!(z₄, g1, chi2) # use z₄ as storage for the g1*chi2
+        mul!(chi2g1, g1, chi2) 
     end
 
-    @.. tmp = uprev + γ * z₁ + nb021 * z₄
+    @.. tmp = uprev + γ * z₁ + nb021 * chi2g1
 
     if alg.extrapolant == :min_correct
         @.. z₂ = zero(eltype(dz))
@@ -255,12 +255,10 @@ end
         @.. u = tmp + γ * z₃
         f2(k3, u, p, t + c3 * dt)
         k3 .*= dt
-        # z₄ is storage for the g1*chi2 from earlier
-        @.. tmp = uprev + a41 * z₁ + a42 * z₂ + a43 * z₃ + ea41 * k1 + ea42 * k2 + ea43 * k3 + nb043 * z₄
+        @.. tmp = uprev + a41 * z₁ + a42 * z₂ + a43 * z₃ + ea41 * k1 + ea42 * k2 + ea43 * k3 + nb043 * chi2g1
     else
         (; α41, α42) = cache.tab
-        # z₄ is storage for the g1*chi2
-        @.. tmp = uprev + a41 * z₁ + a42 * z₂ + a43 * z₃ + nb043 * z₄
+        @.. tmp = uprev + a41 * z₁ + a42 * z₂ + a43 * z₃ + nb043 * chi2g1
     end
 
     if alg.extrapolant == :min_correct
