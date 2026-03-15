@@ -151,7 +151,7 @@ end
     g = integrator.f.g
     (; z₁, z₂, z₃, z₄, k1, k2, k3, k4, atmp) = cache
     #(; g1, g4, chi2, nlsolver) = cache
-    (; g1, g4, chi2, chi2g1, nlsolver) = cache
+    (; g1, g4, chi2, gtmp, nlsolver) = cache
     (; z, tmp) = nlsolver
     (; k, dz) = nlsolver.cache # alias to reduce memory
     (;
@@ -196,15 +196,17 @@ end
 
     ##### Step 2
 
-    g(g1, uprev, p, t)
-
-    if is_diagonal_noise(integrator.sol.prob)
-        @.. chi2g1 = chi2 * g1 
-    else
-        mul!(chi2g1, g1, chi2) 
+    if !repeat_step && !integrator.last_stepfail
+        g(g1, uprev, p, t)
     end
 
-    @.. tmp = uprev + γ * z₁ + nb021 * chi2g1
+    if is_diagonal_noise(integrator.sol.prob)
+        @.. z₄ = chi2 * g1 # use z₄ as storage for the g1*chi2
+    else
+        mul!(z₄, g1, chi2) # use z₄ as storage for the g1*chi2
+    end
+
+    @.. tmp = uprev + γ * z₁ + nb021 * z₄
 
     if alg.extrapolant == :min_correct
         @.. z₂ = zero(eltype(dz))
@@ -255,10 +257,10 @@ end
         @.. u = tmp + γ * z₃
         f2(k3, u, p, t + c3 * dt)
         k3 .*= dt
-        @.. tmp = uprev + a41 * z₁ + a42 * z₂ + a43 * z₃ + ea41 * k1 + ea42 * k2 + ea43 * k3 + nb043 * chi2g1
+        @.. tmp = uprev + a41 * z₁ + a42 * z₂ + a43 * z₃ + ea41 * k1 + ea42 * k2 + ea43 * k3 + nb043 * z₄
     else
         (; α41, α42) = cache.tab
-        @.. tmp = uprev + a41 * z₁ + a42 * z₂ + a43 * z₃ + nb043 * chi2g1
+        @.. tmp = uprev + a41 * z₁ + a42 * z₂ + a43 * z₃ + nb043 * z₄
     end
 
     if alg.extrapolant == :min_correct
@@ -283,8 +285,8 @@ end
             @.. u = uprev + a41 * z₁ + a42 * z₂ + a43 * z₃ + γ * z₄ + eb1 * k1 + eb2 * k2 + eb3 * k3 +
                 eb4 * k4 + integrator.W.dW * g4 + E₂
         else
-            g1 .-= g4
-            mul!(E₂, g1, chi2)
+            @.. gtmp = g1 - g4
+            mul!(E₂, gtmp, chi2)
             mul!(tmp, g4, integrator.W.dW)
             @.. u = uprev + a41 * z₁ + a42 * z₂ + a43 * z₃ + γ * z₄ + eb1 * k1 + eb2 * k2 + eb3 * k3 +
                 eb4 * k4 + tmp + E₂
@@ -294,8 +296,8 @@ end
             @.. E₂ = chi2 * (g1 - g4)
             @.. u = uprev + a41 * z₁ + a42 * z₂ + a43 * z₃ + γ * z₄ + integrator.W.dW * g4 + E₂
         else
-            g1 .-= g4
-            mul!(E₂, g1, chi2)
+            @.. gtmp = g1 - g4
+            mul!(E₂, gtmp, chi2)
             mul!(tmp, g4, integrator.W.dW)
             @.. u = uprev + a41 * z₁ + a42 * z₂ + a43 * z₃ + γ * z₄ + tmp + E₂
         end
